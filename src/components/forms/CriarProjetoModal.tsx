@@ -18,6 +18,9 @@ export function CriarProjetoModal({ onProjetoCriado }: CriarProjetoModalProps) {
   const [nome, setNome] = useState('');
   const [descricaoProjeto, setDescricaoProjeto] = useState('');
   const [area, setArea] = useState<string>('');
+  const [carteiraPrimaria, setCarteiraPrimaria] = useState<string>('');
+  const [carteiraSecundaria, setCarteiraSecundaria] = useState<string>('');
+  const [carteiraTerciaria, setCarteiraTerciaria] = useState<string>('');
   const [responsavelInterno, setResponsavelInterno] = useState('');
   const [gpResponsavel, setGpResponsavel] = useState('');
   const [finalizacaoPrevista, setFinalizacaoPrevista] = useState('');
@@ -55,6 +58,9 @@ export function CriarProjetoModal({ onProjetoCriado }: CriarProjetoModalProps) {
       nome_projeto: nome,
       descricao_projeto: descricaoProjeto || null,
       area_responsavel: area as typeof CARTEIRAS[number],
+      carteira_primaria: carteiraPrimaria || null,
+      carteira_secundaria: carteiraSecundaria || null,
+      carteira_terciaria: carteiraTerciaria || null,
       responsavel_interno: responsavelInterno,
       gp_responsavel: gpResponsavel,
       finalizacao_prevista: finalizacaoPrevista || null,
@@ -66,6 +72,9 @@ export function CriarProjetoModal({ onProjetoCriado }: CriarProjetoModalProps) {
       setNome('');
       setDescricaoProjeto('');
       setArea('');
+      setCarteiraPrimaria('');
+      setCarteiraSecundaria('');
+      setCarteiraTerciaria('');
       setResponsavelInterno('');
       setGpResponsavel('');
       setFinalizacaoPrevista('');
@@ -111,10 +120,10 @@ export function CriarProjetoModal({ onProjetoCriado }: CriarProjetoModalProps) {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="area">Carteira *</Label>
+              <Label htmlFor="area">Carteira Principal *</Label>
               <Select value={area} onValueChange={setArea}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecione a carteira..." />
+                  <SelectValue placeholder="Selecione a carteira principal..." />
                 </SelectTrigger>
                 <SelectContent>
                   {CARTEIRAS.map((carteira) => (
@@ -134,6 +143,59 @@ export function CriarProjetoModal({ onProjetoCriado }: CriarProjetoModalProps) {
                 value={finalizacaoPrevista}
                 onChange={(e) => setFinalizacaoPrevista(e.target.value)}
               />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="carteira-primaria">Carteira Primária</Label>
+              <Select value={carteiraPrimaria} onValueChange={setCarteiraPrimaria}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Primária..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Nenhuma</SelectItem>
+                  {CARTEIRAS.map((carteira) => (
+                    <SelectItem key={carteira} value={carteira}>
+                      {carteira}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="carteira-secundaria">Carteira Secundária</Label>
+              <Select value={carteiraSecundaria} onValueChange={setCarteiraSecundaria}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Secundária..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Nenhuma</SelectItem>
+                  {CARTEIRAS.map((carteira) => (
+                    <SelectItem key={carteira} value={carteira}>
+                      {carteira}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="carteira-terciaria">Carteira Terciária</Label>
+              <Select value={carteiraTerciaria} onValueChange={setCarteiraTerciaria}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Terciária..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Nenhuma</SelectItem>
+                  {CARTEIRAS.map((carteira) => (
+                    <SelectItem key={carteira} value={carteira}>
+                      {carteira}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 

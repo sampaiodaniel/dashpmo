@@ -4,6 +4,7 @@ import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
 import { useLicoes } from '@/hooks/useLicoes';
 import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useLicoesFiltradas, LicoesFilters } from '@/hooks/useLicoesFiltradas';
 import { LicoesHeader } from '@/components/licoes/LicoesHeader';
 import { LicoesFilters as LicoesFiltersComponent } from '@/components/licoes/LicoesFilters';
@@ -14,6 +15,7 @@ import { useListaValores } from '@/hooks/useListaValores';
 
 export default function Licoes() {
   const { usuario, isLoading: authLoading } = useAuth();
+  const navigate = useNavigate();
   const { data: licoes, isLoading: licoesLoading, error: licoesError } = useLicoes();
   const { data: categoriasLicao } = useListaValores('categoria_licao');
   const [termoBusca, setTermoBusca] = useState('');
@@ -43,8 +45,7 @@ export default function Licoes() {
 
   const handleLicaoClick = (licaoId: number) => {
     console.log('Navegando para detalhes da lição:', licaoId);
-    // TODO: Implementar navegação para detalhes da lição
-    alert(`Funcionalidade de detalhes da lição ${licaoId} será implementada em breve`);
+    navigate(`/licoes/${licaoId}`);
   };
 
   const handleNovaLicao = () => {

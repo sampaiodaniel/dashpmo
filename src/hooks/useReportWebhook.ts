@@ -74,63 +74,71 @@ export function useReportWebhook() {
         return false;
       }
 
-      console.log('🌐 Enviando requisição POST para:', webhookUrl);
+      // Tentar diferentes métodos se POST falhar
+      const methods = ['POST', 'PUT', 'PATCH'];
+      let lastError = null;
+      
+      for (const method of methods) {
+        try {
+          console.log(`🌐 Tentando ${method} para:`, webhookUrl);
 
-      // Enviar para webhook
-      const response = await fetch(webhookUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(reportData),
-      });
+          const response = await fetch(webhookUrl, {
+            method,
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(reportData),
+          });
 
-      console.log('📡 Resposta recebida:', {
-        status: response.status,
-        statusText: response.statusText,
-        ok: response.ok,
-        type: response.type,
-        url: response.url
-      });
+          console.log('📡 Resposta recebida:', {
+            method,
+            status: response.status,
+            statusText: response.statusText,
+            ok: response.ok,
+            type: response.type,
+            url: response.url
+          });
 
-      // Tentar ler o corpo da resposta se possível
-      try {
-        const responseText = await response.text();
-        console.log('📄 Corpo da resposta:', responseText);
-      } catch (readError) {
-        console.log('⚠️ Não foi possível ler o corpo da resposta:', readError);
+          if (response.ok) {
+            console.log(`✅ Webhook chamado com sucesso usando ${method}!`);
+            toast({
+              title: "Report enviado",
+              description: `Dados da carteira ${carteira} enviados para o webhook com sucesso!`,
+            });
+            return true;
+          } else if (response.status !== 404 && response.status !== 405) {
+            // Se não for erro de método não permitido, parar tentativas
+            throw new Error(`Erro ${response.status}: ${response.statusText}`);
+          }
+          
+          lastError = `${method}: ${response.status} ${response.statusText}`;
+        } catch (methodError) {
+          console.error(`❌ Erro com método ${method}:`, methodError);
+          lastError = methodError;
+          
+          // Se é erro de CORS, pode ter funcionado
+          if (methodError instanceof TypeError && methodError.message.includes('Failed to fetch')) {
+            console.log('🌐 Possível erro de CORS detectado - requisição pode ter sido enviada mesmo assim');
+            toast({
+              title: "Requisição enviada",
+              description: `Dados enviados para ${webhookUrl}. Verifique o histórico do seu webhook para confirmar o recebimento.`,
+            });
+            return true;
+          }
+        }
       }
-
-      if (response.ok) {
-        console.log('✅ Webhook chamado com sucesso!');
-        toast({
-          title: "Report enviado",
-          description: `Dados da carteira ${carteira} enviados para o webhook com sucesso!`,
-        });
-        return true;
-      } else {
-        console.error('❌ Erro na resposta do webhook:', response.status, response.statusText);
-        toast({
-          title: "Erro no webhook",
-          description: `Erro ${response.status}: ${response.statusText}`,
-          variant: "destructive",
-        });
-        return false;
-      }
+      
+      // Se chegou aqui, nenhum método funcionou
+      console.error('❌ Nenhum método HTTP funcionou:', lastError);
+      toast({
+        title: "Erro no webhook",
+        description: `Falha ao enviar dados. Último erro: ${lastError}`,
+        variant: "destructive",
+      });
+      return false;
 
     } catch (error) {
       console.error('💥 Erro geral ao enviar report:', error);
-      
-      // Verificar se é erro de CORS
-      if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
-        console.log('🌐 Possível erro de CORS detectado - requisição pode ter sido enviada mesmo assim');
-        toast({
-          title: "Requisição enviada",
-          description: `Dados enviados para ${webhookUrl}. Verifique o histórico do seu webhook para confirmar o recebimento.`,
-        });
-        return true;
-      }
-      
       toast({
         title: "Erro",
         description: `Erro ao enviar report: ${error.message}`,
