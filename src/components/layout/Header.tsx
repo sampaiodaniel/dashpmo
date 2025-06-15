@@ -8,10 +8,12 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator 
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Bell, Settings, LogOut, Menu } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { usePerfilUsuario } from '@/hooks/usePerfilUsuario';
 import { useNavigate } from 'react-router-dom';
+import { NotificationsDropdown } from './NotificationsDropdown';
 
 interface HeaderProps {
   onToggleSidebar: () => void;
@@ -19,8 +21,8 @@ interface HeaderProps {
 
 export function Header({ onToggleSidebar }: HeaderProps) {
   const { usuario, logout } = useAuth();
+  const { data: perfil } = usePerfilUsuario(usuario?.id || 0);
   const navigate = useNavigate();
-  const [notificacoes] = useState(3);
 
   const handleLogout = () => {
     logout();
@@ -29,6 +31,20 @@ export function Header({ onToggleSidebar }: HeaderProps) {
 
   const handleConfiguracoes = () => {
     navigate('/configuracoes');
+  };
+
+  const getInitials = () => {
+    if (perfil?.nome && perfil?.sobrenome) {
+      return `${perfil.nome[0]}${perfil.sobrenome[0]}`.toUpperCase();
+    }
+    return usuario?.nome.split(' ').map(n => n[0]).join('').toUpperCase() || 'U';
+  };
+
+  const getDisplayName = () => {
+    if (perfil?.nome && perfil?.sobrenome) {
+      return `${perfil.nome} ${perfil.sobrenome}`;
+    }
+    return usuario?.nome || 'Usuário';
   };
 
   return (
@@ -56,33 +72,27 @@ export function Header({ onToggleSidebar }: HeaderProps) {
 
       <div className="flex items-center gap-3">
         {/* Notificações */}
-        <Button variant="ghost" size="sm" className="relative">
-          <Bell className="h-5 w-5 text-pmo-gray" />
-          {notificacoes > 0 && (
-            <span className="absolute -top-1 -right-1 h-5 w-5 bg-pmo-danger rounded-full text-xs text-white flex items-center justify-center">
-              {notificacoes}
-            </span>
-          )}
-        </Button>
+        <NotificationsDropdown />
 
         {/* Menu do usuário */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="flex items-center gap-2 hover:bg-pmo-background">
               <Avatar className="h-8 w-8">
+                <AvatarImage src={perfil?.foto_url} />
                 <AvatarFallback className="bg-pmo-secondary text-white text-sm">
-                  {usuario?.nome.split(' ').map(n => n[0]).join('').toUpperCase() || 'U'}
+                  {getInitials()}
                 </AvatarFallback>
               </Avatar>
               <div className="hidden md:block text-left">
-                <p className="text-sm font-medium text-pmo-primary">{usuario?.nome}</p>
+                <p className="text-sm font-medium text-pmo-primary">{getDisplayName()}</p>
                 <p className="text-xs text-pmo-gray">{usuario?.tipo_usuario}</p>
               </div>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
             <div className="px-2 py-1.5">
-              <p className="text-sm font-medium">{usuario?.nome}</p>
+              <p className="text-sm font-medium">{getDisplayName()}</p>
               <p className="text-xs text-pmo-gray">{usuario?.email}</p>
             </div>
             <DropdownMenuSeparator />
