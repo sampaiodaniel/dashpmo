@@ -1,7 +1,7 @@
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
-import { Filter, Calendar } from 'lucide-react';
+import { Filter, Calendar, X } from 'lucide-react';
 import { CARTEIRAS } from '@/types/pmo';
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -117,146 +117,167 @@ export function StatusFilters({ filtros, onFiltroChange, responsaveis }: StatusF
     onFiltroChange(novosFiltros);
   };
 
+  const handleLimparFiltros = () => {
+    onFiltroChange({});
+  };
+
+  // Verificar se há filtros aplicados
+  const temFiltrosAplicados = Object.keys(filtros).length > 0;
+
   return (
     <Card className="bg-white shadow-sm">
       <CardContent className="p-4">
-        <div className="flex items-center gap-4 flex-wrap">
-          <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4 text-pmo-gray" />
-            <span className="text-sm font-medium text-pmo-gray">Filtros:</span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4 flex-wrap">
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-pmo-gray" />
+              <span className="text-sm font-medium text-pmo-gray">Filtros:</span>
+            </div>
+            
+            <div className="flex gap-4 flex-wrap">
+              <div className="flex items-center gap-2">
+                <label className="text-sm text-pmo-gray">Carteira:</label>
+                <Select value={filtros.carteira || 'todas'} onValueChange={handleCarteiraChange}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue placeholder="Todas" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todas">Todas</SelectItem>
+                    {CARTEIRAS.map((carteira) => (
+                      <SelectItem key={carteira} value={carteira}>
+                        {carteira}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <label className="text-sm text-pmo-gray">Projeto:</label>
+                <Select value={filtros.projeto || 'todos'} onValueChange={handleProjetoChange}>
+                  <SelectTrigger className="w-60">
+                    <SelectValue placeholder="Todos os projetos" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todos">Todos os projetos</SelectItem>
+                    {projetosFiltrados.map((projeto) => (
+                      <SelectItem key={projeto.id} value={projeto.nome_projeto}>
+                        {projeto.nome_projeto}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <label className="text-sm text-pmo-gray">Responsável:</label>
+                <Select value={filtros.responsavel || 'todos'} onValueChange={handleResponsavelChange}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue placeholder="Todos" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todos">Todos</SelectItem>
+                    {responsaveis.map((responsavel) => (
+                      <SelectItem key={responsavel} value={responsavel}>
+                        {responsavel}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <label className="text-sm text-pmo-gray">Status Aprovação:</label>
+                <Select value={filtros.statusAprovacao || 'todos'} onValueChange={handleStatusAprovacaoChange}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue placeholder="Todos" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todos">Todos</SelectItem>
+                    <SelectItem value="aguardando">Aguardando Aprovação</SelectItem>
+                    <SelectItem value="aprovado">Aprovado</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <label className="text-sm text-pmo-gray">Data Início:</label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-40 justify-start text-left font-normal",
+                        !filtros.dataInicio && "text-muted-foreground"
+                      )}
+                    >
+                      <Calendar className="mr-2 h-4 w-4" />
+                      {filtros.dataInicio ? format(filtros.dataInicio, "dd/MM/yyyy") : "Selecionar"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <CalendarComponent
+                      mode="single"
+                      selected={filtros.dataInicio}
+                      onSelect={handleDataInicioChange}
+                      initialFocus
+                      className="pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <label className="text-sm text-pmo-gray">Data Fim:</label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-40 justify-start text-left font-normal",
+                        !filtros.dataFim && "text-muted-foreground"
+                      )}
+                    >
+                      <Calendar className="mr-2 h-4 w-4" />
+                      {filtros.dataFim ? format(filtros.dataFim, "dd/MM/yyyy") : "Selecionar"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <CalendarComponent
+                      mode="single"
+                      selected={filtros.dataFim}
+                      onSelect={handleDataFimChange}
+                      initialFocus
+                      className="pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="incluir-arquivados"
+                  checked={filtros.incluirArquivados || false}
+                  onCheckedChange={handleIncluirArquivadosChange}
+                />
+                <label htmlFor="incluir-arquivados" className="text-sm text-pmo-gray">
+                  Incluir arquivados
+                </label>
+              </div>
+            </div>
           </div>
-          
-          <div className="flex gap-4 flex-wrap">
-            <div className="flex items-center gap-2">
-              <label className="text-sm text-pmo-gray">Carteira:</label>
-              <Select value={filtros.carteira || 'todas'} onValueChange={handleCarteiraChange}>
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="Todas" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todas">Todas</SelectItem>
-                  {CARTEIRAS.map((carteira) => (
-                    <SelectItem key={carteira} value={carteira}>
-                      {carteira}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
 
-            <div className="flex items-center gap-2">
-              <label className="text-sm text-pmo-gray">Projeto:</label>
-              <Select value={filtros.projeto || 'todos'} onValueChange={handleProjetoChange}>
-                <SelectTrigger className="w-60">
-                  <SelectValue placeholder="Todos os projetos" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">Todos os projetos</SelectItem>
-                  {projetosFiltrados.map((projeto) => (
-                    <SelectItem key={projeto.id} value={projeto.nome_projeto}>
-                      {projeto.nome_projeto}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <label className="text-sm text-pmo-gray">Responsável:</label>
-              <Select value={filtros.responsavel || 'todos'} onValueChange={handleResponsavelChange}>
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="Todos" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">Todos</SelectItem>
-                  {responsaveis.map((responsavel) => (
-                    <SelectItem key={responsavel} value={responsavel}>
-                      {responsavel}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <label className="text-sm text-pmo-gray">Status Aprovação:</label>
-              <Select value={filtros.statusAprovacao || 'todos'} onValueChange={handleStatusAprovacaoChange}>
-                <SelectTrigger className="w-48">
-                  <SelectValue placeholder="Todos" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">Todos</SelectItem>
-                  <SelectItem value="aguardando">Aguardando Aprovação</SelectItem>
-                  <SelectItem value="aprovado">Aprovado</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <label className="text-sm text-pmo-gray">Data Início:</label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-40 justify-start text-left font-normal",
-                      !filtros.dataInicio && "text-muted-foreground"
-                    )}
-                  >
-                    <Calendar className="mr-2 h-4 w-4" />
-                    {filtros.dataInicio ? format(filtros.dataInicio, "dd/MM/yyyy") : "Selecionar"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <CalendarComponent
-                    mode="single"
-                    selected={filtros.dataInicio}
-                    onSelect={handleDataInicioChange}
-                    initialFocus
-                    className="pointer-events-auto"
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <label className="text-sm text-pmo-gray">Data Fim:</label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-40 justify-start text-left font-normal",
-                      !filtros.dataFim && "text-muted-foreground"
-                    )}
-                  >
-                    <Calendar className="mr-2 h-4 w-4" />
-                    {filtros.dataFim ? format(filtros.dataFim, "dd/MM/yyyy") : "Selecionar"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <CalendarComponent
-                    mode="single"
-                    selected={filtros.dataFim}
-                    onSelect={handleDataFimChange}
-                    initialFocus
-                    className="pointer-events-auto"
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id="incluir-arquivados"
-                checked={filtros.incluirArquivados || false}
-                onCheckedChange={handleIncluirArquivadosChange}
-              />
-              <label htmlFor="incluir-arquivados" className="text-sm text-pmo-gray">
-                Incluir arquivados
-              </label>
-            </div>
-          </div>
+          {temFiltrosAplicados && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleLimparFiltros}
+              className="flex items-center gap-2 text-pmo-gray hover:text-pmo-primary"
+            >
+              <X className="h-4 w-4" />
+              Limpar Filtros
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>
