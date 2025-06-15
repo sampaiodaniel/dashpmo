@@ -30,7 +30,7 @@ const menuItems = [
     href: "/status" 
   },
   { 
-    title: "Mudanças", 
+    title: "Replanejamentos / CRs", 
     icon: GitBranch, 
     href: "/mudancas" 
   },

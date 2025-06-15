@@ -71,8 +71,8 @@ export default function Mudancas() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-pmo-primary">Mudanças</h1>
-            <p className="text-pmo-gray mt-2">Gestão de change requests</p>
+            <h1 className="text-3xl font-bold text-pmo-primary">Replanejamentos / CRs</h1>
+            <p className="text-pmo-gray mt-2">Gestão de change requests e replanejamentos</p>
           </div>
           <CriarMudancaModal onMudancaCriada={handleMudancaCriada} />
         </div>
