@@ -47,7 +47,8 @@ export function SolicitarAcessoModal({ aberto, onClose }: SolicitarAcessoModalPr
 
   const onSubmit = async (data: SolicitacaoFormData) => {
     try {
-      await enviarSolicitacao.mutateAsync(data);
+      // Type assertion is safe here because zod validation ensures all fields are present
+      await enviarSolicitacao.mutateAsync(data as Required<SolicitacaoFormData>);
       toast({
         title: "Solicitação enviada",
         description: "Sua solicitação de acesso foi enviada para análise do administrador.",
