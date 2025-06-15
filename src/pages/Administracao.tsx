@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AdminResponsaveisASA } from '@/components/admin/AdminResponsaveisASA';
 import { AdminConfiguracoes } from '@/components/admin/AdminConfiguracoes';
-import { Settings, Users } from 'lucide-react';
+import { AdminUsuarios } from '@/components/admin/AdminUsuarios';
+import { Settings, Users, UserPlus } from 'lucide-react';
 
 export default function Administracao() {
   return (
@@ -17,10 +18,14 @@ export default function Administracao() {
         </div>
 
         <Tabs defaultValue="responsaveis-asa" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="responsaveis-asa" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               Responsáveis ASA
+            </TabsTrigger>
+            <TabsTrigger value="usuarios" className="flex items-center gap-2">
+              <UserPlus className="h-4 w-4" />
+              Usuários
             </TabsTrigger>
             <TabsTrigger value="configuracoes" className="flex items-center gap-2">
               <Settings className="h-4 w-4" />
@@ -30,6 +35,10 @@ export default function Administracao() {
 
           <TabsContent value="responsaveis-asa">
             <AdminResponsaveisASA />
+          </TabsContent>
+
+          <TabsContent value="usuarios">
+            <AdminUsuarios />
           </TabsContent>
 
           <TabsContent value="configuracoes">
