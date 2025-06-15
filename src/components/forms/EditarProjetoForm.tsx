@@ -10,21 +10,32 @@ import { supabase } from '@/integrations/supabase/client';
 import { Projeto, CARTEIRAS } from '@/types/pmo';
 import { useQueryClient } from '@tanstack/react-query';
 import { useResponsaveisASA } from '@/hooks/useResponsaveisASA';
-import { useConfiguracoesSistema } from '@/hooks/useConfiguracoesSistema';
 
 interface EditarProjetoFormProps {
   projeto: Projeto;
   onSuccess: () => void;
 }
 
+// Lista fixa de GPs
+const GPS_RESPONSAVEIS = [
+  'Camila',
+  'Elias', 
+  'Fabiano',
+  'Fred',
+  'Marco',
+  'Rafael',
+  'Jefferson'
+];
+
 export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps) {
   const queryClient = useQueryClient();
   const [carregando, setCarregando] = useState(false);
   
-  // Buscar dados do banco para os selects
+  // Buscar apenas responsáveis ASA (superintendentes)
   const { data: responsaveisASA } = useResponsaveisASA();
-  const { data: responsaveisInternos } = useConfiguracoesSistema('responsavel_interno');
-  const { data: gpsResponsaveis } = useConfiguracoesSistema('gp_responsavel');
+  
+  // Filtrar apenas superintendentes
+  const superintendentes = responsaveisASA?.filter(resp => resp.nivel === 'Superintendente') || [];
   
   const [formData, setFormData] = useState({
     nome_projeto: projeto.nome_projeto,
@@ -35,9 +46,9 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
     responsavel_cwi: projeto.responsavel_cwi || '',
     gp_responsavel_cwi: projeto.gp_responsavel_cwi || '',
     responsavel_asa: projeto.responsavel_asa || 'none',
-    carteira_primaria: projeto.carteira_primaria || '',
-    carteira_secundaria: projeto.carteira_secundaria || '',
-    carteira_terciaria: projeto.carteira_terciaria || '',
+    carteira_primaria: projeto.carteira_primaria || 'none',
+    carteira_secundaria: projeto.carteira_secundaria || 'none',
+    carteira_terciaria: projeto.carteira_terciaria || 'none',
     equipe: projeto.equipe || '',
     finalizacao_prevista: projeto.finalizacao_prevista || ''
   });
@@ -50,7 +61,10 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
       // Convert "none" back to null/empty string for database
       const dataToSubmit = {
         ...formData,
-        responsavel_asa: formData.responsavel_asa === 'none' ? '' : formData.responsavel_asa
+        responsavel_asa: formData.responsavel_asa === 'none' ? '' : formData.responsavel_asa,
+        carteira_primaria: formData.carteira_primaria === 'none' ? '' : formData.carteira_primaria,
+        carteira_secundaria: formData.carteira_secundaria === 'none' ? '' : formData.carteira_secundaria,
+        carteira_terciaria: formData.carteira_terciaria === 'none' ? '' : formData.carteira_terciaria
       };
 
       const { error } = await supabase
@@ -131,15 +145,15 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
         </div>
 
         <div>
-          <Label htmlFor="responsavel_interno">Responsável Interno</Label>
+          <Label htmlFor="responsavel_interno">Responsável Interno (Superintendente)</Label>
           <Select value={formData.responsavel_interno} onValueChange={(value) => handleInputChange('responsavel_interno', value)}>
             <SelectTrigger>
-              <SelectValue placeholder="Selecione um responsável" />
+              <SelectValue placeholder="Selecione um superintendente" />
             </SelectTrigger>
             <SelectContent>
-              {responsaveisInternos?.map((resp) => (
-                <SelectItem key={resp.id} value={resp.valor}>
-                  {resp.valor}
+              {superintendentes.map((resp) => (
+                <SelectItem key={resp.id} value={resp.nome}>
+                  {resp.nome}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -153,9 +167,9 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
               <SelectValue placeholder="Selecione um GP" />
             </SelectTrigger>
             <SelectContent>
-              {gpsResponsaveis?.map((gp) => (
-                <SelectItem key={gp.id} value={gp.valor}>
-                  {gp.valor}
+              {GPS_RESPONSAVEIS.map((gp) => (
+                <SelectItem key={gp} value={gp}>
+                  {gp}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -164,11 +178,19 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
 
         <div>
           <Label htmlFor="responsavel_cwi">Responsável CWI</Label>
-          <Input
-            id="responsavel_cwi"
-            value={formData.responsavel_cwi}
-            onChange={(e) => handleInputChange('responsavel_cwi', e.target.value)}
-          />
+          <Select value={formData.responsavel_cwi || 'none'} onValueChange={(value) => handleInputChange('responsavel_cwi', value === 'none' ? '' : value)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione um responsável CWI" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">Nenhum</SelectItem>
+              {GPS_RESPONSAVEIS.map((responsavel) => (
+                <SelectItem key={responsavel} value={responsavel}>
+                  {responsavel}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div>
@@ -181,16 +203,16 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
         </div>
 
         <div>
-          <Label htmlFor="responsavel_asa">Responsável ASA</Label>
+          <Label htmlFor="responsavel_asa">Responsável ASA (Superintendente)</Label>
           <Select value={formData.responsavel_asa} onValueChange={(value) => handleInputChange('responsavel_asa', value)}>
             <SelectTrigger>
               <SelectValue placeholder="Selecione um responsável ASA" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="none">Nenhum</SelectItem>
-              {responsaveisASA?.map((responsavel) => (
+              {superintendentes.map((responsavel) => (
                 <SelectItem key={responsavel.id} value={responsavel.nome}>
-                  {responsavel.nome} ({responsavel.nivel})
+                  {responsavel.nome}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -199,29 +221,53 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
 
         <div>
           <Label htmlFor="carteira_primaria">Carteira Primária</Label>
-          <Input
-            id="carteira_primaria"
-            value={formData.carteira_primaria}
-            onChange={(e) => handleInputChange('carteira_primaria', e.target.value)}
-          />
+          <Select value={formData.carteira_primaria} onValueChange={(value) => handleInputChange('carteira_primaria', value)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione uma carteira" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">Nenhuma</SelectItem>
+              {CARTEIRAS.map((carteira) => (
+                <SelectItem key={carteira} value={carteira}>
+                  {carteira}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div>
           <Label htmlFor="carteira_secundaria">Carteira Secundária</Label>
-          <Input
-            id="carteira_secundaria"
-            value={formData.carteira_secundaria}
-            onChange={(e) => handleInputChange('carteira_secundaria', e.target.value)}
-          />
+          <Select value={formData.carteira_secundaria} onValueChange={(value) => handleInputChange('carteira_secundaria', value)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione uma carteira" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">Nenhuma</SelectItem>
+              {CARTEIRAS.map((carteira) => (
+                <SelectItem key={carteira} value={carteira}>
+                  {carteira}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div>
           <Label htmlFor="carteira_terciaria">Carteira Terciária</Label>
-          <Input
-            id="carteira_terciaria"
-            value={formData.carteira_terciaria}
-            onChange={(e) => handleInputChange('carteira_terciaria', e.target.value)}
-          />
+          <Select value={formData.carteira_terciaria} onValueChange={(value) => handleInputChange('carteira_terciaria', value)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione uma carteira" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">Nenhuma</SelectItem>
+              {CARTEIRAS.map((carteira) => (
+                <SelectItem key={carteira} value={carteira}>
+                  {carteira}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div>
