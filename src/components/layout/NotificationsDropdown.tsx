@@ -17,8 +17,8 @@ import { useNavigate } from 'react-router-dom';
 export function NotificationsDropdown() {
   const { usuario, canApprove } = useAuth();
   const { data: statusPendentes } = useStatusPendentes();
-  const { notificacoesLidas, marcarVariasComoLidas } = useNotificacoesLidas();
   const [notificacoesProcessadasLocalmente, setNotificacoesProcessadasLocalmente] = useState<number[]>([]);
+  const { notificacoesLidas, marcarVariasComoLidas } = useNotificacoesLidas(notificacoesProcessadasLocalmente);
   const navigate = useNavigate();
 
   // Combinar notificações lidas do servidor com as processadas localmente
@@ -37,21 +37,24 @@ export function NotificationsDropdown() {
       if (novasNotificacoes.length > 0) {
         console.log('Marcando notificações como lidas:', novasNotificacoes);
         
-        // Marcar imediatamente no estado local
-        setNotificacoesProcessadasLocalmente(prev => [...prev, ...novasNotificacoes]);
+        // Marcar imediatamente no estado local e persistir
+        setNotificacoesProcessadasLocalmente(prev => {
+          const novoEstado = [...prev, ...novasNotificacoes];
+          // Salvar no localStorage para persistir
+          localStorage.setItem('notificacoes-processadas', JSON.stringify(novoEstado));
+          return novoEstado;
+        });
         
-        // Marcar no servidor em background (sem await para não bloquear UI)
-        marcarVariasComoLidas.mutateAsync(statusIds)
-          .then(() => {
-            console.log('Notificações marcadas como lidas no servidor');
-          })
-          .catch((error) => {
-            console.error('Erro ao marcar notificações como lidas:', error);
-            // Em caso de erro, remover do estado local
-            setNotificacoesProcessadasLocalmente(prev => 
-              prev.filter(id => !novasNotificacoes.includes(id))
-            );
-          });
+        // Marcar no servidor em background
+        setTimeout(() => {
+          marcarVariasComoLidas.mutateAsync(statusIds)
+            .then(() => {
+              console.log('Notificações marcadas como lidas no servidor');
+            })
+            .catch((error) => {
+              console.error('Erro ao marcar notificações como lidas:', error);
+            });
+        }, 100);
       }
     }
   };

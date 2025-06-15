@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 
-export function useNotificacoesLidas() {
+export function useNotificacoesLidas(notificacoesProcessadasLocalmente: number[] = []) {
   const { usuario } = useAuth();
   const queryClient = useQueryClient();
 
@@ -23,7 +23,9 @@ export function useNotificacoesLidas() {
       }
       return data.map(item => item.status_id);
     },
-    enabled: !!usuario?.id,
+    enabled: !!usuario?.id && notificacoesProcessadasLocalmente.length === 0,
+    staleTime: 5 * 60 * 1000, // 5 minutos
+    refetchOnWindowFocus: false,
   });
 
   const marcarComoLida = useMutation({
@@ -42,7 +44,6 @@ export function useNotificacoesLidas() {
         throw error;
       }
     },
-    // Remover invalidação automática para evitar conflito com estado local
   });
 
   const marcarVariasComoLidas = useMutation({
@@ -63,7 +64,6 @@ export function useNotificacoesLidas() {
         throw error;
       }
     },
-    // Remover invalidação automática para evitar conflito com estado local
   });
 
   return {

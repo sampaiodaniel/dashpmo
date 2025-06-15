@@ -17,6 +17,8 @@ export function usePerfilUsuario(usuarioId: number) {
   return useQuery({
     queryKey: ['perfil-usuario', usuarioId],
     queryFn: async (): Promise<PerfilUsuario | null> => {
+      if (!usuarioId) return null;
+      
       console.log('Buscando perfil do usuário:', usuarioId);
       
       const { data, error } = await supabase
@@ -27,10 +29,13 @@ export function usePerfilUsuario(usuarioId: number) {
 
       if (error) {
         console.error('Erro ao buscar perfil:', error);
-        throw error;
+        return null; // Retornar null em vez de throw para não quebrar a UI
       }
 
-      if (!data) return null;
+      if (!data) {
+        console.log('Nenhum perfil encontrado para o usuário:', usuarioId);
+        return null;
+      }
 
       return {
         id: data.id,
@@ -43,6 +48,8 @@ export function usePerfilUsuario(usuarioId: number) {
       };
     },
     enabled: !!usuarioId,
+    staleTime: 5 * 60 * 1000, // 5 minutos
+    retry: 1, // Tentar apenas uma vez
   });
 }
 
