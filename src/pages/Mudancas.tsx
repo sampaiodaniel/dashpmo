@@ -7,7 +7,6 @@ import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { MudancasHeader } from '@/components/mudancas/MudancasHeader';
 import { MudancasMetricas } from '@/components/mudancas/MudancasMetricas';
-import { MudancasSearchBar } from '@/components/mudancas/MudancasSearchBar';
 import { MudancasFilters, MudancasFilters as MudancasFiltersType } from '@/components/mudancas/MudancasFilters';
 import { MudancasList } from '@/components/mudancas/MudancasList';
 import { useMudancasFiltradas } from '@/hooks/useMudancasFiltradas';
@@ -15,7 +14,6 @@ import { useMudancasFiltradas } from '@/hooks/useMudancasFiltradas';
 export default function Mudancas() {
   const { usuario, isLoading } = useAuth();
   const { data: mudancas, isLoading: mudancasLoading, error: mudancasError } = useMudancasList();
-  const [termoBusca, setTermoBusca] = useState('');
   const [filtros, setFiltros] = useState<MudancasFiltersType>({});
   const queryClient = useQueryClient();
 
@@ -23,13 +21,14 @@ export default function Mudancas() {
     queryClient.invalidateQueries({ queryKey: ['mudancas-list'] });
   };
 
-  const mudancasFiltradas = useMudancasFiltradas(mudancas, filtros, termoBusca);
+  const mudancasFiltradas = useMudancasFiltradas(mudancas, filtros, '');
 
   const responsaveis = Array.from(new Set(mudancas?.map(m => m.solicitante) || []));
 
   const handleMudancaClick = (mudancaId: number) => {
-    console.log('Clicando na mudança:', mudancaId);
-    // TODO: Implementar navegação para detalhes da mudança
+    console.log('Navegando para detalhes da mudança:', mudancaId);
+    // TODO: Implementar navegação para página de detalhes/edição da mudança
+    // Por exemplo: navigate(`/mudancas/${mudancaId}`)
   };
 
   const handleFiltrarPendentes = () => {
@@ -80,25 +79,16 @@ export default function Mudancas() {
           onFiltrarRejeitadas={handleFiltrarRejeitadas}
         />
 
-        <div className="space-y-4">
-          <MudancasSearchBar 
-            termoBusca={termoBusca}
-            onTermoBuscaChange={setTermoBusca}
-            totalResults={mudancasFiltradas.length}
-          />
-
-          <MudancasFilters 
-            filtros={filtros}
-            onFiltroChange={setFiltros}
-            responsaveis={responsaveis}
-          />
-        </div>
+        <MudancasFilters 
+          filtros={filtros}
+          onFiltroChange={setFiltros}
+          responsaveis={responsaveis}
+        />
 
         <MudancasList
           mudancasList={mudancasFiltradas}
           isLoading={mudancasLoading}
           error={mudancasError}
-          termoBusca={termoBusca}
           filtrosAplicados={filtrosAplicados}
           onMudancaClick={handleMudancaClick}
         />
