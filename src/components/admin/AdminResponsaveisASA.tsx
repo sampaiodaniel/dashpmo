@@ -59,7 +59,6 @@ export function AdminResponsaveisASA() {
             <TableRow>
               <TableHead>Nome</TableHead>
               <TableHead>Nível</TableHead>
-              <TableHead>Head</TableHead>
               <TableHead>Carteiras</TableHead>
               <TableHead className="w-24">Ações</TableHead>
             </TableRow>
@@ -72,7 +71,6 @@ export function AdminResponsaveisASA() {
                   <TableCell>
                     <Badge variant="default">{head.nivel}</Badge>
                   </TableCell>
-                  <TableCell>-</TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1">
                       {head.carteiras?.map((carteira) => (
@@ -101,7 +99,6 @@ export function AdminResponsaveisASA() {
                       <TableCell>
                         <Badge variant="secondary">{superintendente.nivel}</Badge>
                       </TableCell>
-                      <TableCell>{head.nome}</TableCell>
                       <TableCell>
                         <div className="flex flex-wrap gap-1">
                           {superintendente.carteiras?.map((carteira) => (

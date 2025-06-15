@@ -55,22 +55,25 @@ export function AdminConfiguracoes() {
         </CardHeader>
         <CardContent>
           <Tabs value={tipoAtivo} onValueChange={setTipoAtivo}>
-            <TabsList className="grid w-full grid-cols-4 gap-2 h-auto mb-6">
-              <div className="grid grid-cols-4 gap-2 w-full">
+            <div className="space-y-2 mb-6">
+              {/* Primeira linha com 4 tabs */}
+              <TabsList className="grid w-full grid-cols-4">
                 {tiposConfiguracao.slice(0, 4).map((tipo) => (
-                  <TabsTrigger key={tipo.key} value={tipo.key} className="text-xs px-2 py-2">
+                  <TabsTrigger key={tipo.key} value={tipo.key} className="text-xs">
                     {tipo.label}
                   </TabsTrigger>
                 ))}
-              </div>
-              <div className="grid grid-cols-3 gap-2 w-full">
+              </TabsList>
+              
+              {/* Segunda linha com 3 tabs */}
+              <TabsList className="grid w-full grid-cols-3">
                 {tiposConfiguracao.slice(4).map((tipo) => (
-                  <TabsTrigger key={tipo.key} value={tipo.key} className="text-xs px-2 py-2">
+                  <TabsTrigger key={tipo.key} value={tipo.key} className="text-xs">
                     {tipo.label}
                   </TabsTrigger>
                 ))}
-              </div>
-            </TabsList>
+              </TabsList>
+            </div>
 
             {tiposConfiguracao.map((tipo) => (
               <TabsContent key={tipo.key} value={tipo.key} className="mt-6">
