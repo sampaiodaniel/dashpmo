@@ -21,7 +21,6 @@ export default function NovoStatus() {
   const navigate = useNavigate();
 
   // Campos básicos
-  const [statusImport, setStatusImport] = useState('');
   const [projetoId, setProjetoId] = useState('');
   const [progressoEstimado, setProgressoEstimado] = useState('');
   const [responsavelCwi, setResponsavelCwi] = useState('');
@@ -42,24 +41,29 @@ export default function NovoStatus() {
   // Realizado e planejamento
   const [realizadoSemana, setRealizadoSemana] = useState('');
   
-  // Entregáveis e marcos
-  const [entregaveis1, setEntregaveis1] = useState('');
-  const [entrega1, setEntrega1] = useState('');
-  const [dataMarco1, setDataMarco1] = useState('');
-  const [entregaveis2, setEntregaveis2] = useState('');
-  const [entrega2, setEntrega2] = useState('');
-  const [dataMarco2, setDataMarco2] = useState('');
-  const [entregaveis3, setEntregaveis3] = useState('');
-  const [entrega3, setEntrega3] = useState('');
-  const [dataMarco3, setDataMarco3] = useState('');
+  // Próximas entregas (anteriormente marcos)
+  const [nomeEntrega1, setNomeEntrega1] = useState('');
+  const [escopoEntrega1, setEscopoEntrega1] = useState('');
+  const [dataEntrega1, setDataEntrega1] = useState('');
+  const [nomeEntrega2, setNomeEntrega2] = useState('');
+  const [escopoEntrega2, setEscopoEntrega2] = useState('');
+  const [dataEntrega2, setDataEntrega2] = useState('');
+  const [nomeEntrega3, setNomeEntrega3] = useState('');
+  const [escopoEntrega3, setEscopoEntrega3] = useState('');
+  const [dataEntrega3, setDataEntrega3] = useState('');
   
   // Outros campos
-  const [finalizacaoPrevista, setFinalizacaoPrevista] = useState('');
   const [backlog, setBacklog] = useState('');
   const [bloqueios, setBloqueios] = useState('');
   const [observacoesPontosAtencao, setObservacoesPontosAtencao] = useState('');
-  const [descricaoProjeto, setDescricaoProjeto] = useState('');
-  const [equipe, setEquipe] = useState('');
+
+  // Listas de opções
+  const responsaveisCwi = ['Camila', 'Elias', 'Fabiano', 'Fred', 'Marco', 'Rafael', 'Jefferson'];
+  const responsaveisAsa = ['Dapper', 'Pitta', 'Judice', 'Thadeus', 'André Simões', 'Júlio', 'Mello', 'Rebonatto', 'Mickey', 'Armelin'];
+  const carteiras = ['Cadastro', 'Canais', 'Core Bancário', 'Crédito', 'Cripto', 'Empréstimos', 'Fila Rápida', 'Investimentos 1', 'Investimentos 2', 'Onboarding', 'Open Finance'];
+
+  // Gerar opções de progresso de 5 em 5
+  const progressoOpcoes = Array.from({ length: 21 }, (_, i) => i * 5);
 
   if (authLoading) {
     return (
@@ -86,7 +90,6 @@ export default function NovoStatus() {
     }
 
     const status = await salvarStatus({
-      status_import: statusImport || null,
       projeto_id: parseInt(projetoId),
       progresso_estimado: progressoEstimado ? parseInt(progressoEstimado) : null,
       responsavel_cwi: responsavelCwi || null,
@@ -100,21 +103,18 @@ export default function NovoStatus() {
       impacto_riscos: impactoRiscos as any,
       probabilidade_riscos: probabilidadeRiscos as any,
       realizado_semana_atual: realizadoSemana || null,
-      entregaveis1: entregaveis1 || null,
-      entrega1: entrega1 || null,
-      data_marco1: dataMarco1 || null,
-      entregaveis2: entregaveis2 || null,
-      entrega2: entrega2 || null,
-      data_marco2: dataMarco2 || null,
-      entregaveis3: entregaveis3 || null,
-      entrega3: entrega3 || null,
-      data_marco3: dataMarco3 || null,
-      finalizacao_prevista: finalizacaoPrevista || null,
+      entregaveis1: escopoEntrega1 || null,
+      entrega1: nomeEntrega1 || null,
+      data_marco1: dataEntrega1 || null,
+      entregaveis2: escopoEntrega2 || null,
+      entrega2: nomeEntrega2 || null,
+      data_marco2: dataEntrega2 || null,
+      entregaveis3: escopoEntrega3 || null,
+      entrega3: nomeEntrega3 || null,
+      data_marco3: dataEntrega3 || null,
       backlog: backlog || null,
       bloqueios_atuais: bloqueios || null,
       observacoes_pontos_atencao: observacoesPontosAtencao || null,
-      descricao_projeto: descricaoProjeto || null,
-      equipe: equipe || null,
     });
 
     if (status) {
@@ -131,14 +131,14 @@ export default function NovoStatus() {
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-pmo-primary">Novo Status</h1>
-          <p className="text-pmo-gray mt-2">Cadastrar atualização completa de status do projeto</p>
+          <p className="text-pmo-gray mt-2">Cadastrar atualização de status do projeto</p>
         </div>
 
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Plus className="h-5 w-5" />
-              Atualização de Status Completa
+              Atualização de Status
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -149,16 +149,6 @@ export default function NovoStatus() {
                 <h3 className="text-lg font-semibold text-pmo-primary border-b pb-2">Informações Básicas</h3>
                 
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="status-import">Status Import</Label>
-                    <Input 
-                      id="status-import" 
-                      placeholder="Status de importação..." 
-                      value={statusImport}
-                      onChange={(e) => setStatusImport(e.target.value)}
-                    />
-                  </div>
-                  
                   <div className="space-y-2">
                     <Label htmlFor="projeto">Projeto *</Label>
                     <Select value={projetoId} onValueChange={setProjetoId}>
@@ -174,19 +164,22 @@ export default function NovoStatus() {
                       </SelectContent>
                     </Select>
                   </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="progresso">Progresso Estimado (%)</Label>
-                  <Input 
-                    id="progresso" 
-                    type="number" 
-                    min="0" 
-                    max="100" 
-                    placeholder="0" 
-                    value={progressoEstimado}
-                    onChange={(e) => setProgressoEstimado(e.target.value)}
-                  />
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="progresso">Progresso Estimado (%)</Label>
+                    <Select value={progressoEstimado} onValueChange={setProgressoEstimado}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione o progresso..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {progressoOpcoes.map((valor) => (
+                          <SelectItem key={valor} value={valor.toString()}>
+                            {valor}%
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               </div>
 
@@ -197,32 +190,50 @@ export default function NovoStatus() {
                 <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="responsavel-cwi">Responsável CWI</Label>
-                    <Input 
-                      id="responsavel-cwi" 
-                      placeholder="Nome do responsável CWI..." 
-                      value={responsavelCwi}
-                      onChange={(e) => setResponsavelCwi(e.target.value)}
-                    />
+                    <Select value={responsavelCwi} onValueChange={setResponsavelCwi}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {responsaveisCwi.map((nome) => (
+                          <SelectItem key={nome} value={nome}>
+                            {nome}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   
                   <div className="space-y-2">
                     <Label htmlFor="gp-responsavel-cwi">GP Responsável CWI</Label>
-                    <Input 
-                      id="gp-responsavel-cwi" 
-                      placeholder="Nome do GP responsável CWI..." 
-                      value={gpResponsavelCwi}
-                      onChange={(e) => setGpResponsavelCwi(e.target.value)}
-                    />
+                    <Select value={gpResponsavelCwi} onValueChange={setGpResponsavelCwi}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {responsaveisCwi.map((nome) => (
+                          <SelectItem key={nome} value={nome}>
+                            {nome}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   
                   <div className="space-y-2">
                     <Label htmlFor="responsavel-asa">Responsável Asa</Label>
-                    <Input 
-                      id="responsavel-asa" 
-                      placeholder="Nome do responsável Asa..." 
-                      value={responsavelAsa}
-                      onChange={(e) => setResponsavelAsa(e.target.value)}
-                    />
+                    <Select value={responsavelAsa} onValueChange={setResponsavelAsa}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {responsaveisAsa.map((nome) => (
+                          <SelectItem key={nome} value={nome}>
+                            {nome}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
               </div>
@@ -234,32 +245,50 @@ export default function NovoStatus() {
                 <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="carteira-primaria">Carteira Primária</Label>
-                    <Input 
-                      id="carteira-primaria" 
-                      placeholder="Carteira primária..." 
-                      value={carteiraPrimaria}
-                      onChange={(e) => setCarteiraPrimaria(e.target.value)}
-                    />
+                    <Select value={carteiraPrimaria} onValueChange={setCarteiraPrimaria}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {carteiras.map((carteira) => (
+                          <SelectItem key={carteira} value={carteira}>
+                            {carteira}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   
                   <div className="space-y-2">
                     <Label htmlFor="carteira-secundaria">Carteira Secundária</Label>
-                    <Input 
-                      id="carteira-secundaria" 
-                      placeholder="Carteira secundária..." 
-                      value={carteiraSecundaria}
-                      onChange={(e) => setCarteiraSecundaria(e.target.value)}
-                    />
+                    <Select value={carteiraSecundaria} onValueChange={setCarteiraSecundaria}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {carteiras.map((carteira) => (
+                          <SelectItem key={carteira} value={carteira}>
+                            {carteira}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   
                   <div className="space-y-2">
                     <Label htmlFor="carteira-terciaria">Carteira Terciária</Label>
-                    <Input 
-                      id="carteira-terciaria" 
-                      placeholder="Carteira terciária..." 
-                      value={carteiraTerciaria}
-                      onChange={(e) => setCarteiraTerciaria(e.target.value)}
-                    />
+                    <Select value={carteiraTerciaria} onValueChange={setCarteiraTerciaria}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {carteiras.map((carteira) => (
+                          <SelectItem key={carteira} value={carteira}>
+                            {carteira}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
               </div>
@@ -334,115 +363,115 @@ export default function NovoStatus() {
                 </div>
               </div>
 
-              {/* Marco 1 */}
+              {/* Próxima Entrega 1 */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-pmo-primary border-b pb-2">Marco 1</h3>
+                <h3 className="text-lg font-semibold text-pmo-primary border-b pb-2">Próxima Entrega 1</h3>
                 
                 <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="entregaveis1">Entregáveis 1</Label>
-                    <Textarea 
-                      id="entregaveis1" 
-                      placeholder="Descreva os entregáveis..." 
-                      rows={3}
-                      value={entregaveis1}
-                      onChange={(e) => setEntregaveis1(e.target.value)}
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="entrega1">Entrega 1</Label>
+                    <Label htmlFor="nome-entrega1">Nome da Entrega</Label>
                     <Input 
-                      id="entrega1" 
+                      id="nome-entrega1" 
                       placeholder="Nome da entrega..." 
-                      value={entrega1}
-                      onChange={(e) => setEntrega1(e.target.value)}
+                      value={nomeEntrega1}
+                      onChange={(e) => setNomeEntrega1(e.target.value)}
                     />
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="data-marco1">Data Marco 1</Label>
+                    <Label htmlFor="escopo-entrega1">Escopo (Entregáveis)</Label>
+                    <Textarea 
+                      id="escopo-entrega1" 
+                      placeholder="Descreva o escopo da entrega..." 
+                      rows={3}
+                      value={escopoEntrega1}
+                      onChange={(e) => setEscopoEntrega1(e.target.value)}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="data-entrega1">Data da Entrega</Label>
                     <Input 
-                      id="data-marco1" 
+                      id="data-entrega1" 
                       type="date" 
-                      value={dataMarco1}
-                      onChange={(e) => setDataMarco1(e.target.value)}
+                      value={dataEntrega1}
+                      onChange={(e) => setDataEntrega1(e.target.value)}
                     />
                   </div>
                 </div>
               </div>
 
-              {/* Marco 2 */}
+              {/* Próxima Entrega 2 */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-pmo-primary border-b pb-2">Marco 2</h3>
+                <h3 className="text-lg font-semibold text-pmo-primary border-b pb-2">Próxima Entrega 2</h3>
                 
                 <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="entregaveis2">Entregáveis 2</Label>
-                    <Textarea 
-                      id="entregaveis2" 
-                      placeholder="Descreva os entregáveis..." 
-                      rows={3}
-                      value={entregaveis2}
-                      onChange={(e) => setEntregaveis2(e.target.value)}
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="entrega2">Entrega 2</Label>
+                    <Label htmlFor="nome-entrega2">Nome da Entrega</Label>
                     <Input 
-                      id="entrega2" 
+                      id="nome-entrega2" 
                       placeholder="Nome da entrega..." 
-                      value={entrega2}
-                      onChange={(e) => setEntrega2(e.target.value)}
+                      value={nomeEntrega2}
+                      onChange={(e) => setNomeEntrega2(e.target.value)}
                     />
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="data-marco2">Data Marco 2</Label>
+                    <Label htmlFor="escopo-entrega2">Escopo (Entregáveis)</Label>
+                    <Textarea 
+                      id="escopo-entrega2" 
+                      placeholder="Descreva o escopo da entrega..." 
+                      rows={3}
+                      value={escopoEntrega2}
+                      onChange={(e) => setEscopoEntrega2(e.target.value)}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="data-entrega2">Data da Entrega</Label>
                     <Input 
-                      id="data-marco2" 
+                      id="data-entrega2" 
                       type="date" 
-                      value={dataMarco2}
-                      onChange={(e) => setDataMarco2(e.target.value)}
+                      value={dataEntrega2}
+                      onChange={(e) => setDataEntrega2(e.target.value)}
                     />
                   </div>
                 </div>
               </div>
 
-              {/* Marco 3 */}
+              {/* Próxima Entrega 3 */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-pmo-primary border-b pb-2">Marco 3</h3>
+                <h3 className="text-lg font-semibold text-pmo-primary border-b pb-2">Próxima Entrega 3</h3>
                 
                 <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="entregaveis3">Entregáveis 3</Label>
-                    <Textarea 
-                      id="entregaveis3" 
-                      placeholder="Descreva os entregáveis..." 
-                      rows={3}
-                      value={entregaveis3}
-                      onChange={(e) => setEntregaveis3(e.target.value)}
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="entrega3">Entrega 3</Label>
+                    <Label htmlFor="nome-entrega3">Nome da Entrega</Label>
                     <Input 
-                      id="entrega3" 
+                      id="nome-entrega3" 
                       placeholder="Nome da entrega..." 
-                      value={entrega3}
-                      onChange={(e) => setEntrega3(e.target.value)}
+                      value={nomeEntrega3}
+                      onChange={(e) => setNomeEntrega3(e.target.value)}
                     />
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="data-marco3">Data Marco 3</Label>
+                    <Label htmlFor="escopo-entrega3">Escopo (Entregáveis)</Label>
+                    <Textarea 
+                      id="escopo-entrega3" 
+                      placeholder="Descreva o escopo da entrega..." 
+                      rows={3}
+                      value={escopoEntrega3}
+                      onChange={(e) => setEscopoEntrega3(e.target.value)}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="data-entrega3">Data da Entrega</Label>
                     <Input 
-                      id="data-marco3" 
+                      id="data-entrega3" 
                       type="date" 
-                      value={dataMarco3}
-                      onChange={(e) => setDataMarco3(e.target.value)}
+                      value={dataEntrega3}
+                      onChange={(e) => setDataEntrega3(e.target.value)}
                     />
                   </div>
                 </div>
@@ -452,39 +481,6 @@ export default function NovoStatus() {
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-pmo-primary border-b pb-2">Outras Informações</h3>
                 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="finalizacao-prevista">Finalização Prevista</Label>
-                    <Input 
-                      id="finalizacao-prevista" 
-                      type="date" 
-                      value={finalizacaoPrevista}
-                      onChange={(e) => setFinalizacaoPrevista(e.target.value)}
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="equipe">Equipe</Label>
-                    <Input 
-                      id="equipe" 
-                      placeholder="Membros da equipe..." 
-                      value={equipe}
-                      onChange={(e) => setEquipe(e.target.value)}
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="descricao-projeto">Descrição do Projeto</Label>
-                  <Textarea 
-                    id="descricao-projeto" 
-                    placeholder="Descreva o projeto..." 
-                    rows={4}
-                    value={descricaoProjeto}
-                    onChange={(e) => setDescricaoProjeto(e.target.value)}
-                  />
-                </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="realizado">Realizado na Semana</Label>
                   <Textarea 

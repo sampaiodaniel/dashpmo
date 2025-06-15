@@ -225,6 +225,9 @@ export type Database = {
           criado_por: string
           data_criacao: string | null
           descricao: string | null
+          descricao_projeto: string | null
+          equipe: string | null
+          finalizacao_prevista: string | null
           gp_responsavel: string
           gp_responsavel_cwi: string | null
           id: number
@@ -242,6 +245,9 @@ export type Database = {
           criado_por: string
           data_criacao?: string | null
           descricao?: string | null
+          descricao_projeto?: string | null
+          equipe?: string | null
+          finalizacao_prevista?: string | null
           gp_responsavel: string
           gp_responsavel_cwi?: string | null
           id?: number
@@ -259,6 +265,9 @@ export type Database = {
           criado_por?: string
           data_criacao?: string | null
           descricao?: string | null
+          descricao_projeto?: string | null
+          equipe?: string | null
+          finalizacao_prevista?: string | null
           gp_responsavel?: string
           gp_responsavel_cwi?: string | null
           id?: number
@@ -286,15 +295,12 @@ export type Database = {
           data_marco1: string | null
           data_marco2: string | null
           data_marco3: string | null
-          descricao_projeto: string | null
           entrega1: string | null
           entrega2: string | null
           entrega3: string | null
           entregaveis1: string | null
           entregaveis2: string | null
           entregaveis3: string | null
-          equipe: string | null
-          finalizacao_prevista: string | null
           gp_responsavel_cwi: string | null
           id: number
           impacto_riscos: Database["public"]["Enums"]["nivel_risco"]
@@ -307,7 +313,6 @@ export type Database = {
           responsavel_asa: string | null
           responsavel_cwi: string | null
           status_geral: Database["public"]["Enums"]["status_geral"]
-          status_import: string | null
           status_visao_gp: Database["public"]["Enums"]["status_visao_gp"]
         }
         Insert: {
@@ -325,15 +330,12 @@ export type Database = {
           data_marco1?: string | null
           data_marco2?: string | null
           data_marco3?: string | null
-          descricao_projeto?: string | null
           entrega1?: string | null
           entrega2?: string | null
           entrega3?: string | null
           entregaveis1?: string | null
           entregaveis2?: string | null
           entregaveis3?: string | null
-          equipe?: string | null
-          finalizacao_prevista?: string | null
           gp_responsavel_cwi?: string | null
           id?: number
           impacto_riscos: Database["public"]["Enums"]["nivel_risco"]
@@ -346,7 +348,6 @@ export type Database = {
           responsavel_asa?: string | null
           responsavel_cwi?: string | null
           status_geral: Database["public"]["Enums"]["status_geral"]
-          status_import?: string | null
           status_visao_gp: Database["public"]["Enums"]["status_visao_gp"]
         }
         Update: {
@@ -364,15 +365,12 @@ export type Database = {
           data_marco1?: string | null
           data_marco2?: string | null
           data_marco3?: string | null
-          descricao_projeto?: string | null
           entrega1?: string | null
           entrega2?: string | null
           entrega3?: string | null
           entregaveis1?: string | null
           entregaveis2?: string | null
           entregaveis3?: string | null
-          equipe?: string | null
-          finalizacao_prevista?: string | null
           gp_responsavel_cwi?: string | null
           id?: number
           impacto_riscos?: Database["public"]["Enums"]["nivel_risco"]
@@ -385,7 +383,6 @@ export type Database = {
           responsavel_asa?: string | null
           responsavel_cwi?: string | null
           status_geral?: Database["public"]["Enums"]["status_geral"]
-          status_import?: string | null
           status_visao_gp?: Database["public"]["Enums"]["status_visao_gp"]
         }
         Relationships: [
