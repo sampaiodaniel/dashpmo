@@ -1,13 +1,22 @@
 
+import { useState } from 'react';
 import { useDashboardMetricas } from '@/hooks/useDashboard';
 import { MetricCard } from '@/components/dashboard/MetricCard';
 import { StatusChart } from '@/components/dashboard/StatusChart';
 import { ProximosMarcos } from '@/components/dashboard/ProximosMarcos';
+import { DashboardFilters } from '@/components/dashboard/DashboardFilters';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart3, Users, AlertTriangle, TrendingUp, CheckCircle, Clock } from 'lucide-react';
+import { BarChart3, Users, AlertTriangle, TrendingUp, Clock } from 'lucide-react';
+import { FiltrosDashboard } from '@/types/pmo';
 
 export default function Dashboard() {
-  const { data: metricas, isLoading, error } = useDashboardMetricas();
+  const [filtros, setFiltros] = useState<FiltrosDashboard>({});
+  const { data: metricas, isLoading, error } = useDashboardMetricas(filtros);
+
+  const handleFiltroChange = (novosFiltros: FiltrosDashboard) => {
+    console.log('🔄 Atualizando filtros do dashboard:', novosFiltros);
+    setFiltros(novosFiltros);
+  };
 
   if (isLoading) {
     return (
@@ -41,6 +50,9 @@ export default function Dashboard() {
         <h1 className="text-3xl font-bold text-pmo-primary">Dashboard</h1>
         <p className="text-pmo-gray mt-2">Visão geral dos projetos e indicadores</p>
       </div>
+
+      {/* Filtros */}
+      <DashboardFilters filtros={filtros} onFiltroChange={handleFiltroChange} />
 
       {/* Métricas Principais */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -86,13 +98,13 @@ export default function Dashboard() {
         />
       </div>
 
-      {/* Projetos por Área e Próximos Marcos */}
+      {/* Projetos por Carteira e Próximos Marcos */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5" />
-              Projetos por Área
+              Projetos por Carteira
             </CardTitle>
           </CardHeader>
           <CardContent>

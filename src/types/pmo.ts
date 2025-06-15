@@ -14,7 +14,7 @@ export interface Projeto {
   id: number;
   nome_projeto: string;
   descricao?: string;
-  area_responsavel: 'Área 1' | 'Área 2' | 'Área 3';
+  area_responsavel: 'Cadastro' | 'Canais' | 'Core Bancário' | 'Crédito' | 'Cripto' | 'Empréstimos' | 'Fila Rápida' | 'Investimentos 1' | 'Investimentos 2' | 'Onboarding' | 'Open Finance';
   responsavel_interno: string;
   gp_responsavel: string;
   status_ativo: boolean;
@@ -162,6 +162,39 @@ export interface FiltrosProjeto {
   data_fim?: Date;
   busca?: string;
 }
+
+export interface FiltrosDashboard {
+  carteira?: string;
+  responsavel_asa?: string;
+}
+
+// Constantes para responsáveis ASA
+export const RESPONSAVEIS_ASA = [
+  'Dapper',
+  'Pitta', 
+  'Judice',
+  'Thadeus',
+  'André Simões',
+  'Júlio',
+  'Mello',
+  'Rebonatto',
+  'Mickey',
+  'Armelin'
+] as const;
+
+export const CARTEIRAS = [
+  'Cadastro',
+  'Canais',
+  'Core Bancário',
+  'Crédito',
+  'Cripto',
+  'Empréstimos',
+  'Fila Rápida',
+  'Investimentos 1',
+  'Investimentos 2',
+  'Onboarding',
+  'Open Finance'
+] as const;
 
 // Função utilitária para calcular probabilidade x impacto
 export function calcularProbXImpact(probabilidade: NivelRisco, impacto: NivelRisco): string {

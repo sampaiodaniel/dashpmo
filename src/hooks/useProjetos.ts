@@ -18,11 +18,8 @@ export function useProjetos(filtros?: FiltrosProjeto) {
 
       // Apply filters
       if (filtros?.area && filtros.area !== 'Todas') {
-        const validAreas: Array<'Área 1' | 'Área 2' | 'Área 3'> = ['Área 1', 'Área 2', 'Área 3'];
-        if (validAreas.includes(filtros.area as 'Área 1' | 'Área 2' | 'Área 3')) {
-          query = query.eq('area_responsavel', filtros.area as 'Área 1' | 'Área 2' | 'Área 3');
-          console.log('🏢 Filtro de área aplicado:', filtros.area);
-        }
+        query = query.eq('area_responsavel', filtros.area);
+        console.log('🏢 Filtro de área aplicado:', filtros.area);
       }
 
       if (filtros?.responsavel_interno) {
