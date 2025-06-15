@@ -3,13 +3,27 @@ import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckSquare, Clock, AlertCircle } from 'lucide-react';
+import { CheckSquare, Clock, AlertCircle, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useAprovacoes } from '@/hooks/useAprovacoes';
+import { Badge } from '@/components/ui/badge';
+import { useStatusPendentes } from '@/hooks/useStatusPendentes';
+import { useStatusOperations } from '@/hooks/useStatusOperations';
+import { getStatusColor, getStatusGeralColor } from '@/types/pmo';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function Aprovacoes() {
   const { usuario, isLoading } = useAuth();
-  const { data: aprovacoes } = useAprovacoes();
+  const { data: statusPendentes, isLoading: statusLoading } = useStatusPendentes();
+  const { aprovarStatus, isLoading: aprovandoStatus } = useStatusOperations();
+  const queryClient = useQueryClient();
+
+  const handleAprovarStatus = async (statusId: number) => {
+    const sucesso = await aprovarStatus(statusId);
+    if (sucesso) {
+      queryClient.invalidateQueries({ queryKey: ['status-pendentes'] });
+      queryClient.invalidateQueries({ queryKey: ['status-list'] });
+    }
+  };
 
   if (isLoading) {
     return (
@@ -33,7 +47,7 @@ export default function Aprovacoes() {
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-pmo-primary">Aprovações</h1>
-          <p className="text-pmo-gray mt-2">Pendências de aprovação e homologação</p>
+          <p className="text-pmo-gray mt-2">Status pendentes de aprovação</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -45,8 +59,8 @@ export default function Aprovacoes() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-pmo-warning">{aprovacoes?.aguardandoAprovacao || 0}</div>
-              <p className="text-sm text-pmo-gray">Itens pendentes</p>
+              <div className="text-2xl font-bold text-pmo-warning">{statusPendentes?.length || 0}</div>
+              <p className="text-sm text-pmo-gray">Status pendentes</p>
             </CardContent>
           </Card>
 
@@ -58,8 +72,13 @@ export default function Aprovacoes() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-pmo-danger">{aprovacoes?.emAtraso || 0}</div>
-              <p className="text-sm text-pmo-gray">Aprovações atrasadas</p>
+              <div className="text-2xl font-bold text-pmo-danger">
+                {statusPendentes?.filter(s => {
+                  const diasAtraso = Math.floor((new Date().getTime() - s.data_atualizacao.getTime()) / (1000 * 60 * 60 * 24));
+                  return diasAtraso > 3;
+                }).length || 0}
+              </div>
+              <p className="text-sm text-pmo-gray">Mais de 3 dias</p>
             </CardContent>
           </Card>
 
@@ -71,8 +90,8 @@ export default function Aprovacoes() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-pmo-success">{aprovacoes?.aprovadasHoje || 0}</div>
-              <p className="text-sm text-pmo-gray">Itens aprovados</p>
+              <div className="text-2xl font-bold text-pmo-success">0</div>
+              <p className="text-sm text-pmo-gray">Status aprovados</p>
             </CardContent>
           </Card>
         </div>
@@ -81,15 +100,83 @@ export default function Aprovacoes() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <CheckSquare className="h-5 w-5" />
-              Lista de Aprovações
+              Status Pendentes de Aprovação
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-center py-8 text-pmo-gray">
-              <CheckSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p className="text-lg mb-2">Nenhuma pendência encontrada</p>
-              <p className="text-sm">Todas as aprovações estão em dia</p>
-            </div>
+            {statusLoading ? (
+              <div className="text-center py-8 text-pmo-gray">
+                <div>Carregando status...</div>
+              </div>
+            ) : statusPendentes && statusPendentes.length > 0 ? (
+              <div className="divide-y">
+                {statusPendentes.map((status) => (
+                  <div key={status.id} className="p-4 hover:bg-gray-50 transition-colors">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-3 mb-3">
+                          <h3 className="font-semibold text-lg text-pmo-primary">
+                            {status.projeto?.nome_projeto}
+                          </h3>
+                          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                            {status.projeto?.area_responsavel}
+                          </Badge>
+                          <Badge className={getStatusGeralColor(status.status_geral)}>
+                            {status.status_geral}
+                          </Badge>
+                          <Badge className={getStatusColor(status.status_visao_gp)}>
+                            {status.status_visao_gp}
+                          </Badge>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm mb-3">
+                          <div>
+                            <span className="text-pmo-gray">Data Atualização:</span>
+                            <div className="font-medium">
+                              {status.data_atualizacao.toLocaleDateString('pt-BR')}
+                            </div>
+                          </div>
+                          <div>
+                            <span className="text-pmo-gray">Criado por:</span>
+                            <div className="font-medium">{status.criado_por}</div>
+                          </div>
+                          <div>
+                            <span className="text-pmo-gray">Progresso:</span>
+                            <div className="font-medium">{status.progresso_estimado || 0}%</div>
+                          </div>
+                        </div>
+
+                        {status.realizado_semana_atual && (
+                          <div className="p-3 bg-gray-50 rounded-lg mt-3">
+                            <div className="text-sm font-medium text-pmo-gray mb-1">Realizado na Semana:</div>
+                            <p className="text-sm text-gray-700">
+                              {status.realizado_semana_atual}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="ml-4">
+                        <Button 
+                          onClick={() => handleAprovarStatus(status.id)}
+                          disabled={aprovandoStatus}
+                          className="bg-pmo-success hover:bg-pmo-success/90"
+                        >
+                          <Check className="h-4 w-4 mr-2" />
+                          {aprovandoStatus ? 'Aprovando...' : 'Aprovar'}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-pmo-gray">
+                <CheckSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p className="text-lg mb-2">Nenhuma pendência encontrada</p>
+                <p className="text-sm">Todos os status estão aprovados</p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

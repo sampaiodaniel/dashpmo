@@ -51,8 +51,51 @@ export function useStatusOperations() {
     }
   };
 
+  const aprovarStatus = async (statusId: number) => {
+    setIsLoading(true);
+    
+    try {
+      const { error } = await supabase
+        .from('status_projeto')
+        .update({
+          aprovado: true,
+          aprovado_por: 'Sistema', // Por enquanto, até implementarmos auth
+          data_aprovacao: new Date().toISOString()
+        })
+        .eq('id', statusId);
+
+      if (error) {
+        console.error('Erro ao aprovar status:', error);
+        toast({
+          title: "Erro",
+          description: "Erro ao aprovar status",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      toast({
+        title: "Sucesso",
+        description: "Status aprovado com sucesso!",
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Erro inesperado:', error);
+      toast({
+        title: "Erro",
+        description: "Erro inesperado ao aprovar status",
+        variant: "destructive",
+      });
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return {
     salvarStatus,
+    aprovarStatus,
     isLoading,
   };
 }
