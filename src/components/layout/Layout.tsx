@@ -26,11 +26,11 @@ export function Layout({ children }: LayoutProps) {
       <Header onToggleSidebar={toggleSidebar} />
       
       <div className="flex">
-        <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
+        <Sidebar />
         
         <main className={cn(
           "flex-1 transition-all duration-200 ease-in-out",
-          "lg:ml-40" // Mesma margem para todas as telas, igual ao dashboard
+          "lg:ml-64"
         )}>
           <div className={cn(location.pathname === "/projetos" ? "p-3" : "p-6")}>
             {children}
