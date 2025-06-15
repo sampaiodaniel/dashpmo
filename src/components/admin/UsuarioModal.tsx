@@ -71,19 +71,32 @@ export function UsuarioModal({ aberto, onFechar, usuario }: UsuarioModalProps) {
   const onSubmit = async (data: UsuarioFormData) => {
     try {
       if (usuario) {
-        // Edição - só inclui senha se foi preenchida
-        const updateData = { ...data };
-        if (!data.senha) {
-          delete updateData.senha;
-        }
-        await updateUsuario.mutateAsync({ id: usuario.id, ...updateData });
+        // Edição - construir objeto com tipos corretos
+        const updateData = {
+          id: usuario.id,
+          nome: data.nome,
+          email: data.email,
+          tipo_usuario: data.tipo_usuario,
+          areas_acesso: data.areas_acesso,
+          ativo: data.ativo,
+          ...(data.senha && { senha: data.senha }) // Só inclui senha se foi preenchida
+        };
+        await updateUsuario.mutateAsync(updateData);
       } else {
         // Criação - senha é obrigatória
         if (!data.senha) {
           form.setError('senha', { message: 'Senha é obrigatória para novos usuários' });
           return;
         }
-        await createUsuario.mutateAsync(data);
+        const createData = {
+          nome: data.nome,
+          email: data.email,
+          senha: data.senha,
+          tipo_usuario: data.tipo_usuario,
+          areas_acesso: data.areas_acesso,
+          ativo: data.ativo,
+        };
+        await createUsuario.mutateAsync(createData);
       }
       onFechar();
     } catch (error) {
