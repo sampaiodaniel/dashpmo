@@ -10,6 +10,7 @@ import { LicoesMetricas } from '@/components/licoes/LicoesMetricas';
 import { LicoesFilters as LicoesFiltersComponent } from '@/components/licoes/LicoesFilters';
 import { LicoesSearchBar } from '@/components/licoes/LicoesSearchBar';
 import { LicoesList } from '@/components/licoes/LicoesList';
+import { NovaLicaoModal } from '@/components/licoes/NovaLicaoModal';
 import { useListaValores } from '@/hooks/useListaValores';
 
 export default function Licoes() {
@@ -18,6 +19,7 @@ export default function Licoes() {
   const { data: categoriasLicao } = useListaValores('categoria_licao');
   const [termoBusca, setTermoBusca] = useState('');
   const [filtros, setFiltros] = useState<LicoesFilters>({});
+  const [modalNovaLicaoAberto, setModalNovaLicaoAberto] = useState(false);
 
   // Combinar filtros de busca com outros filtros
   const filtrosCompletos = useMemo(() => ({
@@ -43,8 +45,11 @@ export default function Licoes() {
   // Calcular métricas usando as categorias da administração
   const totalLicoes = licoes?.length || 0;
   
-  // Categorias que são consideradas "boas práticas" (ajustar conforme necessário)
-  const categoriasBoacsPraticas = ['Desenvolvimento', 'DevOps', 'Qualidade e Testes', 'Gestão de Projetos'];
+  // Categorias que são consideradas "boas práticas"
+  const categoriasBoacsPraticas = categoriasLicao?.filter(cat => 
+    ['Desenvolvimento', 'DevOps', 'Qualidade e Testes', 'Gestão de Projetos'].includes(cat.valor)
+  )?.map(cat => cat.valor) || [];
+  
   const boasPraticas = licoes?.filter(l => 
     categoriasBoacsPraticas.includes(l.categoria_licao)
   ).length || 0;
@@ -52,29 +57,32 @@ export default function Licoes() {
   const pontosAtencao = totalLicoes - boasPraticas;
 
   const handleLicaoClick = (licaoId: number) => {
+    console.log('Navegando para detalhes da lição:', licaoId);
     // TODO: Implementar navegação para detalhes da lição
-    console.log('Clicou na lição:', licaoId);
   };
 
   const handleNovaLicao = () => {
-    // TODO: Implementar modal/navegação de nova lição
     console.log('Abrindo modal de nova lição');
-    // Exemplo: setModalNovaLicaoAberto(true) ou navigate('/licoes/nova')
+    setModalNovaLicaoAberto(true);
   };
 
   const handleFiltrarBoasPraticas = () => {
     // Filtrar por categorias consideradas boas práticas
     setFiltros(prev => ({
       ...prev,
-      categoria: 'Desenvolvimento' // Ou usar array de categorias
+      categoria: categoriasBoacsPraticas[0] || 'Desenvolvimento'
     }));
   };
 
   const handleFiltrarPontosAtencao = () => {
     // Filtrar por categorias que não são boas práticas
+    const categoriasNaoBoasPraticas = categoriasLicao?.filter(cat => 
+      !categoriasBoacsPraticas.includes(cat.valor)
+    )?.map(cat => cat.valor) || [];
+    
     setFiltros(prev => ({
       ...prev,
-      categoria: 'Comunicação' // Exemplo de categoria de ponto de atenção
+      categoria: categoriasNaoBoasPraticas[0] || 'Comunicação'
     }));
   };
 
@@ -136,6 +144,12 @@ export default function Licoes() {
           termoBusca={termoBusca}
           filtrosAplicados={filtrosAplicados}
           onLicaoClick={handleLicaoClick}
+        />
+
+        <NovaLicaoModal 
+          isOpen={modalNovaLicaoAberto}
+          onClose={() => setModalNovaLicaoAberto(false)}
+          categorias={categoriasLicao}
         />
       </div>
     </Layout>

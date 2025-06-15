@@ -3,6 +3,8 @@ import { Search, ChevronRight, Star, AlertTriangle, CheckCircle, Clock, XCircle,
 import { Badge } from '@/components/ui/badge';
 import { usePagination } from '@/hooks/usePagination';
 import { PaginationFooter } from '@/components/common/PaginationFooter';
+import { LicaoContextMenu } from './LicaoContextMenu';
+import { useLicaoActions } from '@/hooks/useLicaoActions';
 
 interface LicoesListProps {
   licoes: any[];
@@ -40,7 +42,7 @@ const getStatusColor = (status: string) => {
 };
 
 const getCategoriaIcon = (categoria: string) => {
-  const isBoaPratica = ['Desenvolvimento', 'DevOps', 'Qualidade e Testes'].includes(categoria);
+  const isBoaPratica = ['Desenvolvimento', 'DevOps', 'Qualidade e Testes', 'Gestão de Projetos'].includes(categoria);
   return isBoaPratica ? <Star className="h-4 w-4 text-green-600" /> : <AlertTriangle className="h-4 w-4 text-orange-600" />;
 };
 
@@ -52,6 +54,12 @@ export function LicoesList({
   filtrosAplicados, 
   onLicaoClick 
 }: LicoesListProps) {
+  const {
+    handleVisualizar,
+    handleEditar,
+    handleCardClick
+  } = useLicaoActions(onLicaoClick);
+
   const {
     paginatedData,
     currentPage,
@@ -109,8 +117,8 @@ export function LicoesList({
           {paginatedData.map((licao) => (
             <div 
               key={licao.id} 
-              className="p-6 hover:bg-gray-50 transition-colors cursor-pointer group"
-              onClick={() => onLicaoClick(licao.id)}
+              className="relative p-6 hover:bg-gray-50 transition-colors cursor-pointer group"
+              onClick={() => handleCardClick(licao.id)}
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0">
@@ -182,6 +190,11 @@ export function LicoesList({
                   )}
                 </div>
                 <div className="flex items-center gap-2 ml-4">
+                  <LicaoContextMenu
+                    licaoId={licao.id}
+                    onVisualizar={handleVisualizar}
+                    onEditar={handleEditar}
+                  />
                   <ChevronRight className="h-5 w-5 text-pmo-gray group-hover:text-pmo-primary transition-colors flex-shrink-0" />
                 </div>
               </div>
