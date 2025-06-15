@@ -6,7 +6,6 @@ import { useLicoes } from '@/hooks/useLicoes';
 import { useState, useMemo } from 'react';
 import { useLicoesFiltradas, LicoesFilters } from '@/hooks/useLicoesFiltradas';
 import { LicoesHeader } from '@/components/licoes/LicoesHeader';
-import { LicoesMetricas } from '@/components/licoes/LicoesMetricas';
 import { LicoesFilters as LicoesFiltersComponent } from '@/components/licoes/LicoesFilters';
 import { LicoesSearchBar } from '@/components/licoes/LicoesSearchBar';
 import { LicoesList } from '@/components/licoes/LicoesList';
@@ -42,53 +41,15 @@ export default function Licoes() {
     return projetosUnicos.sort();
   }, [licoes]);
 
-  // Calcular métricas usando as categorias da administração
-  const totalLicoes = licoes?.length || 0;
-  
-  // Categorias que são consideradas "boas práticas"
-  const categoriasBoacsPraticas = categoriasLicao?.filter(categoria => 
-    ['Desenvolvimento', 'DevOps', 'Qualidade e Testes', 'Gestão de Projetos'].includes(categoria)
-  ) || [];
-  
-  const boasPraticas = licoes?.filter(l => 
-    categoriasBoacsPraticas.includes(l.categoria_licao)
-  ).length || 0;
-  
-  const pontosAtencao = totalLicoes - boasPraticas;
-
   const handleLicaoClick = (licaoId: number) => {
     console.log('Navegando para detalhes da lição:', licaoId);
     // TODO: Implementar navegação para detalhes da lição
+    alert(`Funcionalidade de detalhes da lição ${licaoId} será implementada em breve`);
   };
 
   const handleNovaLicao = () => {
     console.log('Abrindo modal de nova lição');
     setModalNovaLicaoAberto(true);
-  };
-
-  const handleFiltrarBoasPraticas = () => {
-    // Filtrar por categorias consideradas boas práticas
-    setFiltros(prev => ({
-      ...prev,
-      categoria: categoriasBoacsPraticas[0] || 'Desenvolvimento'
-    }));
-  };
-
-  const handleFiltrarPontosAtencao = () => {
-    // Filtrar por categorias que não são boas práticas
-    const categoriasNaoBoasPraticas = categoriasLicao?.filter(categoria => 
-      !categoriasBoacsPraticas.includes(categoria)
-    ) || [];
-    
-    setFiltros(prev => ({
-      ...prev,
-      categoria: categoriasNaoBoasPraticas[0] || 'Comunicação'
-    }));
-  };
-
-  const handleFiltrarTodas = () => {
-    setFiltros({});
-    setTermoBusca('');
   };
 
   if (authLoading) {
@@ -114,15 +75,6 @@ export default function Licoes() {
     <Layout>
       <div className="space-y-6">
         <LicoesHeader onNovaLicao={handleNovaLicao} />
-
-        <LicoesMetricas 
-          totalLicoes={totalLicoes}
-          boasPraticas={boasPraticas}
-          pontosAtencao={pontosAtencao}
-          onFiltrarBoasPraticas={handleFiltrarBoasPraticas}
-          onFiltrarPontosAtencao={handleFiltrarPontosAtencao}
-          onFiltrarTodas={handleFiltrarTodas}
-        />
 
         <LicoesFiltersComponent 
           filtros={filtros}

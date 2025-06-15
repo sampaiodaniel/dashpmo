@@ -1,3 +1,4 @@
+
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
@@ -135,6 +136,11 @@ export default function Relatorios() {
             </div>
           </CardContent>
         </Card>
+
+        <ReportWebhookModal 
+          isOpen={showWebhookModal}
+          onClose={() => setShowWebhookModal(false)}
+        />
       </div>
     </Layout>
   );
