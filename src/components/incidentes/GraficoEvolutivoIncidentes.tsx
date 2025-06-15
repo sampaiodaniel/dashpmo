@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
@@ -30,6 +29,29 @@ const chartConfig = {
     label: "Críticos",
     color: "#d0743c",
   },
+};
+
+// Componente personalizado para o tooltip
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    return (
+      <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-md">
+        <p className="font-medium text-gray-900 mb-2">{`Data: ${label}`}</p>
+        <div className="space-y-1">
+          <p className="text-sm text-gray-600">
+            <span className="font-medium">Anterior:</span> {data.anterior || 0}
+          </p>
+          {payload.map((entry: any, index: number) => (
+            <p key={index} className="text-sm" style={{ color: entry.color }}>
+              <span className="font-medium">{entry.name}:</span> {entry.value}
+            </p>
+          ))}
+        </div>
+      </div>
+    );
+  }
+  return null;
 };
 
 export function GraficoEvolutivoIncidentes() {
@@ -160,8 +182,7 @@ export function GraficoEvolutivoIncidentes() {
                 />
                 <YAxis className="text-xs" />
                 <ChartTooltip 
-                  content={<ChartTooltipContent />}
-                  labelFormatter={(value) => `Data: ${value}`}
+                  content={<CustomTooltip />}
                 />
                 <ChartLegend 
                   content={<ChartLegendContent />}
