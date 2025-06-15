@@ -11,12 +11,13 @@ import {
 import { Bell, CheckCircle, Clock } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useStatusPendentes } from '@/hooks/useStatusPendentes';
+import { useNotificacoesLidas } from '@/hooks/useNotificacoesLidas';
 import { useNavigate } from 'react-router-dom';
 
 export function NotificationsDropdown() {
   const { usuario, canApprove } = useAuth();
   const { data: statusPendentes } = useStatusPendentes();
-  const [notificacoesLidas, setNotificacoesLidas] = useState<number[]>([]);
+  const { notificacoesLidas, marcarVariasComoLidas } = useNotificacoesLidas();
   const navigate = useNavigate();
 
   // Calcular número de notificações não lidas
@@ -25,8 +26,9 @@ export function NotificationsDropdown() {
 
   const handleOpenDropdown = () => {
     // Marcar todas as notificações como lidas quando abrir o dropdown
-    if (statusPendentes) {
-      setNotificacoesLidas(statusPendentes.map(status => status.id));
+    if (statusPendentes && statusPendentes.length > 0) {
+      const statusIds = statusPendentes.map(status => status.id);
+      marcarVariasComoLidas.mutate(statusIds);
     }
   };
 

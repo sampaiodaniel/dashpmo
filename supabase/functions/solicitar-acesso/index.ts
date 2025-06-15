@@ -1,118 +1,97 @@
 
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "npm:resend@2.0.0";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
+serve(async (req) => {
+  // CORS headers
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  }
 
-interface SolicitacaoAcessoRequest {
-  nome: string;
-  email: string;
-  area: string;
-  motivo: string;
-}
-
-const handler = async (req: Request): Promise<Response> => {
-  // Handle CORS preflight requests
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    const { nome, email, area, motivo }: SolicitacaoAcessoRequest = await req.json();
+    if (!RESEND_API_KEY) {
+      throw new Error('RESEND_API_KEY não configurada')
+    }
 
-    // Email para o administrador
-    const emailResponse = await resend.emails.send({
-      from: "Sistema PMO <onboarding@resend.dev>",
-      to: ["admin@empresa.com"], // Substituir pelo email real do admin
-      subject: `Nova Solicitação de Acesso - ${nome}`,
+    const { nome, email, motivo, telefone } = await req.json()
+
+    // Validar dados obrigatórios
+    if (!nome || !email || !motivo) {
+      return new Response(
+        JSON.stringify({ error: 'Nome, email e motivo são obrigatórios' }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    }
+
+    // Enviar email usando Resend
+    const emailData = {
+      from: 'PMO System <noreply@yourdomain.com>', // Substitua pelo seu domínio verificado
+      to: ['admin@yourdomain.com'], // Substitua pelo email do administrador
+      subject: 'Nova Solicitação de Acesso - Sistema PMO',
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #2563eb;">Nova Solicitação de Acesso ao Sistema PMO</h2>
-          
-          <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h3 style="margin-top: 0; color: #374151;">Dados do Solicitante:</h3>
-            <p><strong>Nome:</strong> ${nome}</p>
-            <p><strong>Email:</strong> ${email}</p>
-            <p><strong>Área/Departamento:</strong> ${area}</p>
-          </div>
-          
-          <div style="background-color: #fefce8; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h3 style="margin-top: 0; color: #374151;">Motivo da Solicitação:</h3>
-            <p style="white-space: pre-wrap;">${motivo}</p>
-          </div>
-          
-          <div style="background-color: #ecfdf5; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h3 style="margin-top: 0; color: #374151;">Próximos Passos:</h3>
-            <ol>
-              <li>Analise a solicitação acima</li>
-              <li>Acesse o sistema PMO na área de Administração</li>
-              <li>Crie um novo usuário com os dados fornecidos</li>
-              <li>Entre em contato com o solicitante para informar as credenciais</li>
-            </ol>
-          </div>
-          
-          <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
-            Este email foi gerado automaticamente pelo Sistema PMO.
-          </p>
-        </div>
-      `,
-    });
+        <h2>Nova Solicitação de Acesso</h2>
+        <p><strong>Nome:</strong> ${nome}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        ${telefone ? `<p><strong>Telefone:</strong> ${telefone}</p>` : ''}
+        <p><strong>Motivo:</strong></p>
+        <p>${motivo}</p>
+        <hr>
+        <p><em>Enviado pelo Sistema PMO</em></p>
+      `
+    }
 
-    // Email de confirmação para o solicitante
-    const confirmacaoResponse = await resend.emails.send({
-      from: "Sistema PMO <onboarding@resend.dev>",
-      to: [email],
-      subject: "Solicitação de Acesso Recebida - Sistema PMO",
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #2563eb;">Solicitação de Acesso Recebida</h2>
-          
-          <p>Olá ${nome},</p>
-          
-          <p>Recebemos sua solicitação de acesso ao Sistema PMO e ela foi encaminhada para análise do administrador.</p>
-          
-          <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h3 style="margin-top: 0; color: #374151;">Resumo da sua solicitação:</h3>
-            <p><strong>Nome:</strong> ${nome}</p>
-            <p><strong>Email:</strong> ${email}</p>
-            <p><strong>Área:</strong> ${area}</p>
-          </div>
-          
-          <p>O administrador entrará em contato em breve com as credenciais de acesso, caso sua solicitação seja aprovada.</p>
-          
-          <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
-            Atenciosamente,<br>
-            Equipe Sistema PMO
-          </p>
-        </div>
-      `,
-    });
-
-    console.log("Emails enviados:", { emailResponse, confirmacaoResponse });
-
-    return new Response(JSON.stringify({ success: true }), {
-      status: 200,
+    const resendResponse = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
-        ...corsHeaders,
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${RESEND_API_KEY}`
       },
-    });
-  } catch (error: any) {
-    console.error("Erro na função solicitar-acesso:", error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      }
-    );
-  }
-};
+      body: JSON.stringify(emailData)
+    })
 
-serve(handler);
+    if (!resendResponse.ok) {
+      const errorData = await resendResponse.text()
+      console.error('Erro do Resend:', errorData)
+      throw new Error('Falha ao enviar email')
+    }
+
+    const result = await resendResponse.json()
+    console.log('Email enviado com sucesso:', result)
+
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        message: 'Solicitação enviada com sucesso!',
+        emailId: result.id 
+      }),
+      { 
+        status: 200, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
+    )
+
+  } catch (error) {
+    console.error('Erro ao processar solicitação:', error)
+    
+    return new Response(
+      JSON.stringify({ 
+        error: 'Erro interno do servidor',
+        details: error.message 
+      }),
+      { 
+        status: 500, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
+    )
+  }
+})

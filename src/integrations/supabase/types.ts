@@ -246,6 +246,42 @@ export type Database = {
           },
         ]
       }
+      notificacoes_lidas: {
+        Row: {
+          data_leitura: string
+          id: number
+          status_id: number
+          usuario_id: number
+        }
+        Insert: {
+          data_leitura?: string
+          id?: number
+          status_id: number
+          usuario_id: number
+        }
+        Update: {
+          data_leitura?: string
+          id?: number
+          status_id?: number
+          usuario_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notificacoes_lidas_status_id_fkey"
+            columns: ["status_id"]
+            isOneToOne: false
+            referencedRelation: "status_projeto"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notificacoes_lidas_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       perfis_usuario: {
         Row: {
           data_atualizacao: string | null
