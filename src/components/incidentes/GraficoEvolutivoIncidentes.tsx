@@ -1,3 +1,4 @@
+
 import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
@@ -305,7 +306,7 @@ export function GraficoEvolutivoIncidentes() {
                   style={{ backgroundColor: linhasVisiveis[chave] ? config.color : '#ccc' }}
                 />
                 {config.label}
-              </div>
+              </button>
             ))}
           </div>
         </CardContent>
