@@ -220,7 +220,7 @@ export const createTestData = async () => {
       criado_por: 'Marcos Pereira'
     },
     {
-      descrição: 'Falta de documentação técnica dificultou onboarding de novos desenvolvedores',
+      situacao_ocorrida: 'Falta de documentação técnica dificultou onboarding de novos desenvolvedores',
       licao_aprendida: 'Documentação técnica deve ser mantida atualizada e ser parte do definition of done',
       impacto_gerado: 'Tempo de onboarding 3x maior que o planejado',
       acao_recomendada: 'Incluir atualização de documentação como critério obrigatório para conclusão de tasks',
