@@ -12,17 +12,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useUsuariosOperations, UsuarioComPerfil } from '@/hooks/useUsuarios';
 
-const usuarioSchema = z.object({
-  nome: z.string().min(1, 'Nome é obrigatório'),
-  sobrenome: z.string().optional(),
-  email: z.string().email('Email inválido'),
-  senha: z.string().min(6, 'Senha deve ter pelo menos 6 caracteres').optional(),
-  tipo_usuario: z.enum(['GP', 'Responsavel', 'Admin']),
-  ativo: z.boolean(),
-});
-
-type UsuarioFormData = z.infer<typeof usuarioSchema>;
-
 interface UsuarioModalProps {
   aberto: boolean;
   onFechar: () => void;
@@ -32,8 +21,24 @@ interface UsuarioModalProps {
 export function UsuarioModal({ aberto, onFechar, usuario }: UsuarioModalProps) {
   const { createUsuario, updateUsuario } = useUsuariosOperations();
 
+  // Schema dinâmico baseado se é criação ou edição
+  const getUsuarioSchema = (isEditing: boolean) => {
+    return z.object({
+      nome: z.string().min(1, 'Nome é obrigatório'),
+      sobrenome: z.string().optional(),
+      email: z.string().email('Email inválido'),
+      senha: isEditing 
+        ? z.string().optional() // Na edição, senha é opcional
+        : z.string().min(6, 'Senha deve ter pelo menos 6 caracteres'), // Na criação, senha é obrigatória
+      tipo_usuario: z.enum(['GP', 'Responsavel', 'Admin']),
+      ativo: z.boolean(),
+    });
+  };
+
+  type UsuarioFormData = z.infer<ReturnType<typeof getUsuarioSchema>>;
+
   const form = useForm<UsuarioFormData>({
-    resolver: zodResolver(usuarioSchema),
+    resolver: zodResolver(getUsuarioSchema(!!usuario)),
     defaultValues: {
       nome: '',
       sobrenome: '',
@@ -78,12 +83,12 @@ export function UsuarioModal({ aberto, onFechar, usuario }: UsuarioModalProps) {
           tipo_usuario: data.tipo_usuario,
           areas_acesso: [], // Array vazio para compatibilidade
           ativo: data.ativo,
-          ...(data.senha && { senha: data.senha }) // Só inclui senha se foi preenchida
+          ...(data.senha && data.senha.trim() !== '' && { senha: data.senha }) // Só inclui senha se foi preenchida e não está vazia
         };
         await updateUsuario.mutateAsync(updateData);
       } else {
         // Criação - senha é obrigatória
-        if (!data.senha) {
+        if (!data.senha || data.senha.trim() === '') {
           form.setError('senha', { message: 'Senha é obrigatória para novos usuários' });
           return;
         }
