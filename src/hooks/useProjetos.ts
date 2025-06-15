@@ -21,7 +21,11 @@ export function useProjetos(filtros?: FiltrosProjeto) {
 
       // Apply filters
       if (filtros?.area && filtros.area !== 'Todas') {
-        query = query.eq('area_responsavel', filtros.area);
+        // Ensure the area matches one of the valid enum values
+        const validAreas = ['Área 1', 'Área 2', 'Área 3'];
+        if (validAreas.includes(filtros.area)) {
+          query = query.eq('area_responsavel', filtros.area);
+        }
       }
 
       if (filtros?.responsavel_interno) {
