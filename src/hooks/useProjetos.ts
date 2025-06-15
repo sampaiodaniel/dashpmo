@@ -1,3 +1,4 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Projeto, FiltrosProjeto, CARTEIRAS } from '@/types/pmo';
@@ -28,7 +29,8 @@ export function useProjetos(filtros?: FiltrosProjeto) {
         // Check if the area is valid by finding it in the CARTEIRAS array
         const carteiraValida = CARTEIRAS.find(c => c === filtros.area);
         if (carteiraValida) {
-          query = query.eq('area_responsavel', carteiraValida);
+          // Buscar projetos que tenham a carteira em qualquer um dos três campos
+          query = query.or(`area_responsavel.eq.${carteiraValida},carteira_primaria.eq.${carteiraValida},carteira_secundaria.eq.${carteiraValida},carteira_terciaria.eq.${carteiraValida}`);
         }
       }
 

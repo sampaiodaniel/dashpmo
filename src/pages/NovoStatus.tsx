@@ -16,7 +16,7 @@ import { useCarteiras } from '@/hooks/useListaValores';
 
 export default function NovoStatus() {
   const { usuario, isLoading: authLoading } = useAuth();
-  const { data: todosProjetos } = useProjetos({ incluirFechados: true });
+  const { data: todosProjetos } = useProjetos({ incluirFechados: true, area: carteiraSelecionada || undefined });
   const { data: carteiras } = useCarteiras();
   const { salvarStatus, isLoading } = useStatusOperations();
   const navigate = useNavigate();
@@ -58,11 +58,10 @@ export default function NovoStatus() {
   const responsaveisCwi = ['Camila', 'Elias', 'Fabiano', 'Fred', 'Marco', 'Rafael', 'Jefferson'];
   const responsaveisAsa = ['Dapper', 'Pitta', 'Judice', 'Thadeus', 'André Simões', 'Júlio', 'Mello', 'Rebonatto', 'Mickey', 'Armelin'];
 
-  // Filtrar projetos pela carteira selecionada
+  // Filtrar projetos pela carteira selecionada não é mais necessário pois já vem filtrado do hook
   const projetosFiltrados = useMemo(() => {
-    if (!carteiraSelecionada || !todosProjetos) return [];
-    return todosProjetos.filter(projeto => projeto.area_responsavel === carteiraSelecionada);
-  }, [carteiraSelecionada, todosProjetos]);
+    return todosProjetos || [];
+  }, [todosProjetos]);
 
   // Gerar opções de progresso de 5 em 5
   const progressoOpcoes = Array.from({ length: 21 }, (_, i) => i * 5);
