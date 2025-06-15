@@ -1,21 +1,20 @@
 
 import { useState } from 'react';
-import { useUsuarios, useUsuariosOperations } from '@/hooks/useUsuarios';
+import { useUsuarios, useUsuariosOperations, UsuarioComPerfil } from '@/hooks/useUsuarios';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import { UsuarioModal } from './UsuarioModal';
-import { Usuario } from '@/types/pmo';
 
 export function AdminUsuarios() {
   const [modalAberto, setModalAberto] = useState(false);
-  const [usuarioEditando, setUsuarioEditando] = useState<Usuario | null>(null);
+  const [usuarioEditando, setUsuarioEditando] = useState<UsuarioComPerfil | null>(null);
   
   const { data: usuarios, isLoading } = useUsuarios();
   const { deleteUsuario } = useUsuariosOperations();
 
-  const handleEditar = (usuario: Usuario) => {
+  const handleEditar = (usuario: UsuarioComPerfil) => {
     setUsuarioEditando(usuario);
     setModalAberto(true);
   };
@@ -62,6 +61,13 @@ export function AdminUsuarios() {
     }
   };
 
+  const getDisplayName = (usuario: UsuarioComPerfil) => {
+    if (usuario.perfil?.nome && usuario.perfil?.sobrenome) {
+      return `${usuario.perfil.nome} ${usuario.perfil.sobrenome}`;
+    }
+    return usuario.nome;
+  };
+
   if (isLoading) {
     return <div>Carregando...</div>;
   }
@@ -96,7 +102,7 @@ export function AdminUsuarios() {
           <TableBody>
             {usuarios?.map((usuario) => (
               <TableRow key={usuario.id}>
-                <TableCell className="font-medium">{usuario.nome}</TableCell>
+                <TableCell className="font-medium">{getDisplayName(usuario)}</TableCell>
                 <TableCell>{usuario.email}</TableCell>
                 <TableCell>
                   <Badge variant={getBadgeVariant(usuario.tipo_usuario)}>

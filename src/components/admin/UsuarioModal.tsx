@@ -10,11 +10,11 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { useUsuariosOperations } from '@/hooks/useUsuarios';
-import { Usuario } from '@/types/pmo';
+import { useUsuariosOperations, UsuarioComPerfil } from '@/hooks/useUsuarios';
 
 const usuarioSchema = z.object({
   nome: z.string().min(1, 'Nome é obrigatório'),
+  sobrenome: z.string().optional(),
   email: z.string().email('Email inválido'),
   senha: z.string().min(6, 'Senha deve ter pelo menos 6 caracteres').optional(),
   tipo_usuario: z.enum(['GP', 'Responsavel', 'Admin']),
@@ -26,7 +26,7 @@ type UsuarioFormData = z.infer<typeof usuarioSchema>;
 interface UsuarioModalProps {
   aberto: boolean;
   onFechar: () => void;
-  usuario: Usuario | null;
+  usuario: UsuarioComPerfil | null;
 }
 
 export function UsuarioModal({ aberto, onFechar, usuario }: UsuarioModalProps) {
@@ -36,6 +36,7 @@ export function UsuarioModal({ aberto, onFechar, usuario }: UsuarioModalProps) {
     resolver: zodResolver(usuarioSchema),
     defaultValues: {
       nome: '',
+      sobrenome: '',
       email: '',
       senha: '',
       tipo_usuario: 'GP',
@@ -46,7 +47,8 @@ export function UsuarioModal({ aberto, onFechar, usuario }: UsuarioModalProps) {
   useEffect(() => {
     if (usuario) {
       form.reset({
-        nome: usuario.nome,
+        nome: usuario.perfil?.nome || usuario.nome,
+        sobrenome: usuario.perfil?.sobrenome || '',
         email: usuario.email,
         senha: '', // Não preenchemos a senha na edição
         tipo_usuario: usuario.tipo_usuario,
@@ -55,6 +57,7 @@ export function UsuarioModal({ aberto, onFechar, usuario }: UsuarioModalProps) {
     } else {
       form.reset({
         nome: '',
+        sobrenome: '',
         email: '',
         senha: '',
         tipo_usuario: 'GP',
@@ -70,6 +73,7 @@ export function UsuarioModal({ aberto, onFechar, usuario }: UsuarioModalProps) {
         const updateData = {
           id: usuario.id,
           nome: data.nome,
+          sobrenome: data.sobrenome,
           email: data.email,
           tipo_usuario: data.tipo_usuario,
           areas_acesso: [], // Array vazio para compatibilidade
@@ -85,6 +89,7 @@ export function UsuarioModal({ aberto, onFechar, usuario }: UsuarioModalProps) {
         }
         const createData = {
           nome: data.nome,
+          sobrenome: data.sobrenome,
           email: data.email,
           senha: data.senha,
           tipo_usuario: data.tipo_usuario,
@@ -123,19 +128,35 @@ export function UsuarioModal({ aberto, onFechar, usuario }: UsuarioModalProps) {
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="nome"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nome</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Nome completo" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="nome"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nome</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Nome" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="sobrenome"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Sobrenome</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Sobrenome" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <FormField
               control={form.control}

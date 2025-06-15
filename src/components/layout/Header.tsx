@@ -59,6 +59,13 @@ export function Header({ onToggleSidebar }: HeaderProps) {
     return usuario?.nome || 'Usuário';
   };
 
+  const getFirstName = () => {
+    if (perfil?.nome) {
+      return perfil.nome;
+    }
+    return usuario?.nome.split(' ')[0] || 'Usuário';
+  };
+
   return (
     <header className="h-16 bg-white border-b border-gray-200 px-4 flex items-center justify-between sticky top-0 z-50">
       <div className="flex items-center gap-4">
@@ -97,8 +104,7 @@ export function Header({ onToggleSidebar }: HeaderProps) {
                 </AvatarFallback>
               </Avatar>
               <div className="hidden md:block text-left">
-                <p className="text-sm font-medium text-pmo-primary">{getDisplayName()}</p>
-                <p className="text-xs text-pmo-gray">{usuario?.tipo_usuario}</p>
+                <p className="text-sm font-medium text-pmo-primary">{getFirstName()}</p>
               </div>
             </Button>
           </DropdownMenuTrigger>

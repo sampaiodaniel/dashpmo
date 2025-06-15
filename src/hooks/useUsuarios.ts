@@ -1,18 +1,32 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Usuario } from '@/types/pmo';
 import { toast } from '@/hooks/use-toast';
 
+export interface UsuarioComPerfil extends Usuario {
+  perfil?: {
+    nome?: string;
+    sobrenome?: string;
+    foto_url?: string;
+  };
+}
+
 export function useUsuarios() {
   return useQuery({
     queryKey: ['usuarios'],
-    queryFn: async () => {
+    queryFn: async (): Promise<UsuarioComPerfil[]> => {
       console.log('Buscando usuários...');
       
       const { data, error } = await supabase
         .from('usuarios')
-        .select('*')
+        .select(`
+          *,
+          perfis_usuario (
+            nome,
+            sobrenome,
+            foto_url
+          )
+        `)
         .order('nome', { ascending: true });
 
       if (error) {
@@ -22,7 +36,7 @@ export function useUsuarios() {
 
       console.log('Usuários encontrados:', data);
       
-      return data.map((usuario): Usuario => ({
+      return data.map((usuario): UsuarioComPerfil => ({
         id: usuario.id,
         nome: usuario.nome,
         email: usuario.email,
@@ -30,7 +44,8 @@ export function useUsuarios() {
         areas_acesso: usuario.areas_acesso || [],
         ativo: usuario.ativo,
         ultimo_login: usuario.ultimo_login ? new Date(usuario.ultimo_login) : undefined,
-        data_criacao: new Date(usuario.data_criacao)
+        data_criacao: new Date(usuario.data_criacao),
+        perfil: usuario.perfis_usuario?.[0] || undefined
       }));
     },
   });
@@ -42,6 +57,7 @@ export function useUsuariosOperations() {
   const createUsuario = useMutation({
     mutationFn: async (novoUsuario: {
       nome: string;
+      sobrenome?: string;
       email: string;
       senha: string;
       tipo_usuario: 'GP' | 'Responsavel' | 'Admin';
@@ -72,6 +88,21 @@ export function useUsuariosOperations() {
         throw error;
       }
 
+      // Se foi fornecido nome/sobrenome, criar perfil
+      if (novoUsuario.sobrenome) {
+        const { error: perfilError } = await supabase
+          .from('perfis_usuario')
+          .insert([{
+            usuario_id: data.id,
+            nome: novoUsuario.nome,
+            sobrenome: novoUsuario.sobrenome,
+          }]);
+
+        if (perfilError) {
+          console.error('Erro ao criar perfil:', perfilError);
+        }
+      }
+
       console.log('Usuário criado:', data);
       return data;
     },
@@ -96,6 +127,7 @@ export function useUsuariosOperations() {
     mutationFn: async (usuarioAtualizado: {
       id: number;
       nome: string;
+      sobrenome?: string;
       email: string;
       senha?: string;
       tipo_usuario: 'GP' | 'Responsavel' | 'Admin';
@@ -127,6 +159,35 @@ export function useUsuariosOperations() {
       if (error) {
         console.error('Erro ao atualizar usuário:', error);
         throw error;
+      }
+
+      // Atualizar ou criar perfil se fornecido sobrenome
+      if (usuarioAtualizado.sobrenome !== undefined) {
+        const { data: existingProfile } = await supabase
+          .from('perfis_usuario')
+          .select('id')
+          .eq('usuario_id', usuarioAtualizado.id)
+          .maybeSingle();
+
+        if (existingProfile) {
+          // Atualizar perfil existente
+          await supabase
+            .from('perfis_usuario')
+            .update({
+              nome: usuarioAtualizado.nome,
+              sobrenome: usuarioAtualizado.sobrenome,
+            })
+            .eq('usuario_id', usuarioAtualizado.id);
+        } else {
+          // Criar novo perfil
+          await supabase
+            .from('perfis_usuario')
+            .insert([{
+              usuario_id: usuarioAtualizado.id,
+              nome: usuarioAtualizado.nome,
+              sobrenome: usuarioAtualizado.sobrenome,
+            }]);
+        }
       }
 
       console.log('Usuário atualizado:', data);
