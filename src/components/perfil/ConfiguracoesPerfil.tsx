@@ -40,8 +40,8 @@ export function ConfiguracoesPerfil() {
   const perfilForm = useForm<PerfilFormData>({
     resolver: zodResolver(perfilSchema),
     defaultValues: {
-      nome: perfil?.nome || '',
-      sobrenome: perfil?.sobrenome || '',
+      nome: '',
+      sobrenome: '',
     },
   });
 
@@ -67,12 +67,25 @@ export function ConfiguracoesPerfil() {
   const onSubmitPerfil = async (data: PerfilFormData) => {
     if (!usuario) return;
 
-    await createOrUpdatePerfil.mutateAsync({
+    // Só enviar dados que foram preenchidos
+    const dadosParaEnviar: any = {
       usuario_id: usuario.id,
-      nome: data.nome,
-      sobrenome: data.sobrenome,
-      foto_url: perfil?.foto_url,
-    });
+    };
+
+    if (data.nome && data.nome.trim() !== '') {
+      dadosParaEnviar.nome = data.nome.trim();
+    }
+
+    if (data.sobrenome && data.sobrenome.trim() !== '') {
+      dadosParaEnviar.sobrenome = data.sobrenome.trim();
+    }
+
+    // Manter a foto atual se existir
+    if (perfil?.foto_url) {
+      dadosParaEnviar.foto_url = perfil.foto_url;
+    }
+
+    await createOrUpdatePerfil.mutateAsync(dadosParaEnviar);
     
     // Refetch para atualizar os dados exibidos no header
     refetch();
@@ -96,12 +109,22 @@ export function ConfiguracoesPerfil() {
     try {
       const fotoUrl = await uploadFoto.mutateAsync({ file, usuarioId: usuario.id });
       
-      await createOrUpdatePerfil.mutateAsync({
+      // Preparar dados para atualização
+      const dadosParaAtualizar: any = {
         usuario_id: usuario.id,
-        nome: perfil?.nome,
-        sobrenome: perfil?.sobrenome,
         foto_url: fotoUrl,
-      });
+      };
+
+      // Manter nome e sobrenome existentes se houver
+      if (perfil?.nome) {
+        dadosParaAtualizar.nome = perfil.nome;
+      }
+
+      if (perfil?.sobrenome) {
+        dadosParaAtualizar.sobrenome = perfil.sobrenome;
+      }
+      
+      await createOrUpdatePerfil.mutateAsync(dadosParaAtualizar);
       
       // Refetch para atualizar a foto no header
       refetch();
