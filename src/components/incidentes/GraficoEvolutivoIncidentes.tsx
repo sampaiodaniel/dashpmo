@@ -92,71 +92,36 @@ export function GraficoEvolutivoIncidentes() {
 
     console.log('Dados filtrados por carteira:', dadosFiltrados);
 
-    // Para cada data, pegar apenas o registro mais recente (maior ID) por carteira
-    const registrosPorData = new Map();
-    
-    dadosFiltrados.forEach(item => {
-      const dataKey = item.data_registro;
-      const carteiraKey = item.carteira;
-      const chaveCompleta = `${dataKey}-${carteiraKey}`;
+    // Agrupar por data, somando todas as carteiras para cada data
+    const dadosAgrupados = dadosFiltrados.reduce((acc, item) => {
+      const data = item.data_registro;
       
-      if (!registrosPorData.has(chaveCompleta) || 
-          item.id > registrosPorData.get(chaveCompleta).id) {
-        registrosPorData.set(chaveCompleta, item);
+      if (!acc[data]) {
+        acc[data] = {
+          data,
+          anterior: 0,
+          atual: 0,
+          entrada: 0,
+          saida: 0,
+          mais_15_dias: 0,
+          criticos: 0,
+        };
       }
-    });
+      
+      acc[data].anterior += item.anterior || 0;
+      acc[data].atual += item.atual || 0;
+      acc[data].entrada += item.entrada || 0;
+      acc[data].saida += item.saida || 0;
+      acc[data].mais_15_dias += item.mais_15_dias || 0;
+      acc[data].criticos += item.criticos || 0;
+      
+      return acc;
+    }, {} as Record<string, any>);
 
-    const registrosUnicos = Array.from(registrosPorData.values());
-    console.log('Registros únicos por data/carteira:', registrosUnicos);
-
-    // Se estamos filtrando por uma carteira específica, usar os dados diretamente
-    // Se estamos vendo todas as carteiras, agrupar por data
-    let dadosFinais;
-    
-    if (carteiraFiltro !== 'todas') {
-      // Para uma carteira específica, usar os registros únicos diretamente
-      dadosFinais = registrosUnicos.map(item => ({
-        data: item.data_registro,
-        anterior: item.anterior || 0,
-        atual: item.atual || 0,
-        entrada: item.entrada || 0,
-        saida: item.saida || 0,
-        mais_15_dias: item.mais_15_dias || 0,
-        criticos: item.criticos || 0,
-      }));
-    } else {
-      // Para todas as carteiras, agrupar por data e somar
-      const dadosAgrupados = registrosUnicos.reduce((acc, item) => {
-        const data = item.data_registro;
-        if (!acc[data]) {
-          acc[data] = {
-            data,
-            anterior: 0,
-            atual: 0,
-            entrada: 0,
-            saida: 0,
-            mais_15_dias: 0,
-            criticos: 0,
-          };
-        }
-        
-        acc[data].anterior += item.anterior || 0;
-        acc[data].atual += item.atual || 0;
-        acc[data].entrada += item.entrada || 0;
-        acc[data].saida += item.saida || 0;
-        acc[data].mais_15_dias += item.mais_15_dias || 0;
-        acc[data].criticos += item.criticos || 0;
-        
-        return acc;
-      }, {} as Record<string, any>);
-
-      dadosFinais = Object.values(dadosAgrupados);
-    }
-
-    console.log('Dados finais para o gráfico:', dadosFinais);
+    console.log('Dados agrupados por data:', dadosAgrupados);
 
     // Converter para array e ordenar por data
-    const resultado = dadosFinais.sort((a: any, b: any) => 
+    const resultado = Object.values(dadosAgrupados).sort((a: any, b: any) => 
       new Date(a.data).getTime() - new Date(b.data).getTime()
     ).map((item: any) => ({
       ...item,

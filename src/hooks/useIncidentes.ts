@@ -56,6 +56,20 @@ export function useIncidenteOperations() {
     mutationFn: async (data: IncidenteData & { criado_por: string }) => {
       console.log('Criando novo registro de incidente:', data);
       
+      // Verificar se já existe um registro para esta carteira e data
+      const dataRegistro = data.data_registro || new Date().toISOString().split('T')[0];
+      
+      const { data: existente } = await supabase
+        .from('incidentes')
+        .select('id')
+        .eq('carteira', data.carteira)
+        .eq('data_registro', dataRegistro)
+        .single();
+
+      if (existente) {
+        throw new Error(`Já existe um registro para a carteira ${data.carteira} na data ${dataRegistro}`);
+      }
+      
       const { data: result, error } = await supabase
         .from('incidentes')
         .insert([{
@@ -67,7 +81,7 @@ export function useIncidenteOperations() {
           mais_15_dias: data.mais_15_dias,
           criticos: data.criticos,
           criado_por: data.criado_por,
-          data_registro: data.data_registro || new Date().toISOString().split('T')[0]
+          data_registro: dataRegistro
         }])
         .select()
         .single();
@@ -82,16 +96,17 @@ export function useIncidenteOperations() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['incidentes-recentes'] });
+      queryClient.invalidateQueries({ queryKey: ['incidentes-historico'] });
       toast({
         title: "Sucesso",
         description: "Registro de incidente criado com sucesso!",
       });
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       console.error('Erro ao criar incidente:', error);
       toast({
         title: "Erro",
-        description: "Erro ao criar registro de incidente. Tente novamente.",
+        description: error.message || "Erro ao criar registro de incidente. Tente novamente.",
         variant: "destructive",
       });
     },
