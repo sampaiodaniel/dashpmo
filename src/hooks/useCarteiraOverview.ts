@@ -91,8 +91,7 @@ export function useCarteiraOverview() {
         ).length;
 
         const crFechadasReprovadas = mudancasCarteira.filter(m => 
-          m.status_aprovacao === 'Rejeitada' || 
-          m.status_aprovacao === 'Cancelada'
+          m.status_aprovacao === 'Rejeitada'
         ).length;
 
         projetosCarteira.forEach(projeto => {
