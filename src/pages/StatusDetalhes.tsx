@@ -166,7 +166,7 @@ export default function StatusDetalhes() {
               </div>
               
               <div>
-                <label className="text-sm font-medium text-pmo-gray">Área Responsável</label>
+                <label className="text-sm font-medium text-pmo-gray">Carteira</label>
                 <Badge variant="outline" className="mt-1">
                   {status.projeto?.area_responsavel}
                 </Badge>

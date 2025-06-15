@@ -1,17 +1,28 @@
 
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useCarteiras } from '@/hooks/useListaValores';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { FileText } from 'lucide-react';
+import { useProjetosOperations } from '@/hooks/useProjetosOperations';
 
 interface InformacoesBasicasSectionProps {
   carteiraSelecionada: string;
-  projetoId: string;
-  progressoEstimado: string;
+  projetoId: number | null;
+  progressoEstimado: number;
   projetosFiltrados: any[];
   onCarteiraChange: (carteira: string) => void;
-  onProjetoChange: (projeto: string) => void;
-  onProgressoChange: (progresso: string) => void;
+  onProjetoChange: (projetoId: number | null) => void;
+  onProgressoChange: (progresso: number) => void;
 }
+
+const CARTEIRAS = [
+  'Portfolio Digital',
+  'Produtos Digitais',
+  'Experiência do Cliente',
+  'Data & Analytics',
+  'Arquitetura & Plataforma'
+];
 
 export function InformacoesBasicasSection({
   carteiraSelecionada,
@@ -22,24 +33,23 @@ export function InformacoesBasicasSection({
   onProjetoChange,
   onProgressoChange,
 }: InformacoesBasicasSectionProps) {
-  const { data: carteiras } = useCarteiras();
-
-  // Gerar opções de progresso de 5 em 5
-  const progressoOpcoes = Array.from({ length: 21 }, (_, i) => i * 5);
-
   return (
-    <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-pmo-primary border-b pb-2">Informações Básicas</h3>
-      
-      <div className="grid grid-cols-3 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="carteira">Carteira *</Label>
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <FileText className="h-5 w-5" />
+          Informações Básicas
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <Label htmlFor="carteira">Carteira</Label>
           <Select value={carteiraSelecionada} onValueChange={onCarteiraChange}>
             <SelectTrigger>
-              <SelectValue placeholder="Selecione a carteira..." />
+              <SelectValue placeholder="Selecione a carteira" />
             </SelectTrigger>
             <SelectContent>
-              {carteiras?.map((carteira) => (
+              {CARTEIRAS.map((carteira) => (
                 <SelectItem key={carteira} value={carteira}>
                   {carteira}
                 </SelectItem>
@@ -48,18 +58,14 @@ export function InformacoesBasicasSection({
           </Select>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="projeto">Projeto *</Label>
-          <Select 
-            value={projetoId} 
-            onValueChange={onProjetoChange}
-            disabled={!carteiraSelecionada}
-          >
+        <div>
+          <Label htmlFor="projeto">Projeto</Label>
+          <Select value={projetoId?.toString() || ''} onValueChange={(value) => onProjetoChange(value ? Number(value) : null)}>
             <SelectTrigger>
-              <SelectValue placeholder={carteiraSelecionada ? "Selecione o projeto..." : "Selecione uma carteira primeiro"} />
+              <SelectValue placeholder="Selecione o projeto" />
             </SelectTrigger>
             <SelectContent>
-              {projetosFiltrados?.map((projeto) => (
+              {projetosFiltrados.map((projeto) => (
                 <SelectItem key={projeto.id} value={projeto.id.toString()}>
                   {projeto.nome_projeto}
                 </SelectItem>
@@ -67,23 +73,19 @@ export function InformacoesBasicasSection({
             </SelectContent>
           </Select>
         </div>
-        
-        <div className="space-y-2">
+
+        <div>
           <Label htmlFor="progresso">Progresso Estimado (%)</Label>
-          <Select value={progressoEstimado} onValueChange={onProgressoChange}>
-            <SelectTrigger>
-              <SelectValue placeholder="Selecione o progresso..." />
-            </SelectTrigger>
-            <SelectContent>
-              {progressoOpcoes.map((valor) => (
-                <SelectItem key={valor} value={valor.toString()}>
-                  {valor}%
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Input
+            id="progresso"
+            type="number"
+            min="0"
+            max="100"
+            value={progressoEstimado}
+            onChange={(e) => onProgressoChange(Number(e.target.value))}
+          />
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
