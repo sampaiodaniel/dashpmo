@@ -22,6 +22,7 @@ import { MoreVertical, Edit, Archive, Trash2 } from 'lucide-react';
 import { StatusProjeto } from '@/types/pmo';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface StatusAcoesProps {
   status: StatusProjeto;
@@ -32,6 +33,7 @@ export function StatusAcoes({ status, onStatusUpdate }: StatusAcoesProps) {
   const navigate = useNavigate();
   const [excluirDialogOpen, setExcluirDialogOpen] = useState(false);
   const [arquivarDialogOpen, setArquivarDialogOpen] = useState(false);
+  const [excluindo, setExcluindo] = useState(false);
 
   const handleEdit = () => {
     navigate(`/status/${status.id}/editar`);
@@ -47,15 +49,41 @@ export function StatusAcoes({ status, onStatusUpdate }: StatusAcoesProps) {
     setArquivarDialogOpen(false);
   };
 
-  const handleDelete = () => {
-    // TODO: Implementar exclusão
-    console.log('Excluir status:', status.id);
-    toast({
-      title: "Funcionalidade em desenvolvimento",
-      description: "A exclusão de status será implementada em breve.",
-      variant: "destructive",
-    });
-    setExcluirDialogOpen(false);
+  const handleDelete = async () => {
+    setExcluindo(true);
+    try {
+      console.log('Excluindo status:', status.id);
+      
+      const { error } = await supabase
+        .from('status_projeto')
+        .delete()
+        .eq('id', status.id);
+
+      if (error) {
+        console.error('Erro ao excluir status:', error);
+        toast({
+          title: "Erro",
+          description: "Erro ao excluir status",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Sucesso",
+          description: "Status excluído com sucesso",
+        });
+        onStatusUpdate();
+      }
+    } catch (error) {
+      console.error('Erro ao excluir status:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao excluir status",
+        variant: "destructive",
+      });
+    } finally {
+      setExcluindo(false);
+      setExcluirDialogOpen(false);
+    }
   };
 
   return (
@@ -119,8 +147,12 @@ export function StatusAcoes({ status, onStatusUpdate }: StatusAcoesProps) {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
-              Excluir
+            <AlertDialogAction 
+              onClick={handleDelete} 
+              className="bg-red-600 hover:bg-red-700"
+              disabled={excluindo}
+            >
+              {excluindo ? 'Excluindo...' : 'Excluir'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -2,7 +2,7 @@
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
-import { Search, ChevronRight, FileText, Plus, AlertTriangle } from 'lucide-react';
+import { Search, ChevronRight, FileText, Plus, AlertTriangle, Building } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -140,9 +140,12 @@ export default function Status() {
                         <h3 className="font-semibold text-xl text-pmo-primary group-hover:text-pmo-secondary transition-colors">
                           {status.projeto?.nome_projeto}
                         </h3>
-                        <Badge className="bg-pmo-primary text-white px-3 py-1 text-sm font-medium">
-                          {status.projeto?.area_responsavel}
-                        </Badge>
+                        <div className="flex items-center gap-2 bg-blue-50 px-3 py-1 rounded-lg border border-blue-200">
+                          <Building className="h-4 w-4 text-blue-600" />
+                          <span className="font-semibold text-blue-700 text-sm">
+                            {status.projeto?.area_responsavel}
+                          </span>
+                        </div>
                         {!status.aprovado && (
                           <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200 flex items-center gap-1">
                             <AlertTriangle className="h-3 w-3" />
