@@ -11,7 +11,8 @@ import {
   AlertTriangle,
   BookOpen,
   FileText,
-  X
+  X,
+  Settings
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -34,7 +35,7 @@ const menuItems = [
     description: 'Gestão de projetos'
   },
   {
-    title: 'Novo Status',
+    title: 'Status Semanal',
     href: '/status/novo',
     icon: Plus,
     description: 'Cadastrar atualização'
@@ -68,6 +69,12 @@ const menuItems = [
     href: '/incidentes',
     icon: FileText,
     description: 'Controle de incidentes'
+  },
+  {
+    title: 'Administração',
+    href: '/administracao',
+    icon: Settings,
+    description: 'Configurações do sistema'
   }
 ];
 

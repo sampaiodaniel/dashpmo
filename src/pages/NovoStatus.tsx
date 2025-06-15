@@ -130,15 +130,15 @@ export default function NovoStatus() {
     <Layout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-pmo-primary">Novo Status</h1>
-          <p className="text-pmo-gray mt-2">Cadastrar atualização de status do projeto</p>
+          <h1 className="text-3xl font-bold text-pmo-primary">Status Semanal</h1>
+          <p className="text-pmo-gray mt-2">Cadastrar atualização de status semanal do projeto</p>
         </div>
 
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Plus className="h-5 w-5" />
-              Atualização de Status
+              Atualização de Status Semanal
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -534,7 +534,7 @@ export default function NovoStatus() {
                   disabled={isLoading}
                 >
                   <Save className="h-4 w-4 mr-2" />
-                  {isLoading ? 'Salvando...' : 'Salvar Status'}
+                  {isLoading ? 'Salvando...' : 'Salvar Status Semanal'}
                 </Button>
                 <Button 
                   type="button" 
