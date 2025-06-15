@@ -6,6 +6,7 @@ import { CompactCarteiraProjetoFilter } from './filters/CompactCarteiraProjetoFi
 import { CompactResponsavelFilter } from './filters/CompactResponsavelFilter';
 import { ApprovalStatusFilter } from './filters/ApprovalStatusFilter';
 import { CheckboxFilter } from './filters/CheckboxFilter';
+import { DateFilter } from './filters/DateFilter';
 import { StatusFilters as StatusFiltersType, hasFiltersApplied, clearAllFilters } from './filters/FilterUtils';
 
 interface StatusFiltersProps {
@@ -24,48 +25,57 @@ export function StatusFilters({ filtros, onFiltroChange, responsaveis }: StatusF
   return (
     <Card className="bg-white shadow-sm">
       <CardContent className="p-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4 flex-wrap">
-            <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-pmo-gray" />
-              <span className="text-sm font-medium text-pmo-gray">Filtros:</span>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4 flex-wrap">
+              <div className="flex items-center gap-2">
+                <Filter className="h-4 w-4 text-pmo-gray" />
+                <span className="text-sm font-medium text-pmo-gray">Filtros:</span>
+              </div>
+              
+              <div className="flex gap-6 flex-wrap items-center">
+                <CompactCarteiraProjetoFilter 
+                  filtros={filtros}
+                  onFiltroChange={onFiltroChange}
+                />
+
+                <CompactResponsavelFilter 
+                  filtros={filtros}
+                  onFiltroChange={onFiltroChange}
+                  responsaveis={responsaveis}
+                />
+
+                <ApprovalStatusFilter 
+                  filtros={filtros}
+                  onFiltroChange={onFiltroChange}
+                />
+              </div>
             </div>
-            
-            <div className="flex gap-6 flex-wrap items-center">
-              <CompactCarteiraProjetoFilter 
-                filtros={filtros}
-                onFiltroChange={onFiltroChange}
-              />
 
-              <CompactResponsavelFilter 
-                filtros={filtros}
-                onFiltroChange={onFiltroChange}
-                responsaveis={responsaveis}
-              />
-
-              <ApprovalStatusFilter 
-                filtros={filtros}
-                onFiltroChange={onFiltroChange}
-              />
-
-              <CheckboxFilter 
-                filtros={filtros}
-                onFiltroChange={onFiltroChange}
-              />
-            </div>
+            {temFiltrosAplicados && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleLimparFiltros}
+                className="flex items-center gap-2 text-pmo-gray hover:text-pmo-primary"
+              >
+                <X className="h-4 w-4" />
+                Limpar
+              </Button>
+            )}
           </div>
 
-          {temFiltrosAplicados && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleLimparFiltros}
-              className="flex items-center gap-2 text-pmo-gray hover:text-pmo-primary"
-            >
-              <X className="h-4 w-4" />
-              Limpar
-            </Button>
-          )}
+          <div className="flex gap-6 flex-wrap items-center">
+            <CheckboxFilter 
+              filtros={filtros}
+              onFiltroChange={onFiltroChange}
+            />
+
+            <DateFilter 
+              filtros={filtros}
+              onFiltroChange={onFiltroChange}
+            />
+          </div>
         </div>
       </CardContent>
     </Card>

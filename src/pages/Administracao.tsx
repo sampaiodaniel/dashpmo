@@ -1,48 +1,74 @@
 
-import { useState } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
-import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { AdminUsuarios } from '@/components/admin/AdminUsuarios';
 import { AdminResponsaveisASA } from '@/components/admin/AdminResponsaveisASA';
 import { AdminConfiguracoes } from '@/components/admin/AdminConfiguracoes';
-import { AdminUsuarios } from '@/components/admin/AdminUsuarios';
-import { Settings, Users, UserPlus } from 'lucide-react';
+import { SeedTestData } from '@/components/admin/SeedTestData';
 
 export default function Administracao() {
+  const { usuario, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-pmo-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-pmo-primary rounded-xl flex items-center justify-center mx-auto mb-4">
+            <span className="text-white font-bold text-xl">PMO</span>
+          </div>
+          <div className="text-pmo-gray">Carregando...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!usuario) {
+    return <LoginForm />;
+  }
+
+  if (usuario.tipo_usuario !== 'Administrador') {
+    return (
+      <Layout>
+        <div className="text-center py-12">
+          <h1 className="text-2xl font-bold text-pmo-primary mb-4">Acesso Negado</h1>
+          <p className="text-pmo-gray">Você não tem permissão para acessar esta página.</p>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
-      <div className="container mx-auto py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-pmo-primary">Administração do Sistema</h1>
-          <p className="text-gray-600 mt-2">Gerencie configurações e dados do sistema</p>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold text-pmo-primary">Administração</h1>
+          <p className="text-pmo-gray mt-2">Gerenciamento de usuários e configurações do sistema</p>
         </div>
 
-        <Tabs defaultValue="responsaveis-asa" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="responsaveis-asa" className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              Responsáveis ASA
-            </TabsTrigger>
-            <TabsTrigger value="usuarios" className="flex items-center gap-2">
-              <UserPlus className="h-4 w-4" />
-              Usuários
-            </TabsTrigger>
-            <TabsTrigger value="configuracoes" className="flex items-center gap-2">
-              <Settings className="h-4 w-4" />
-              Configurações
-            </TabsTrigger>
+        <Tabs defaultValue="usuarios" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="usuarios">Usuários</TabsTrigger>
+            <TabsTrigger value="responsaveis">Responsáveis ASA</TabsTrigger>
+            <TabsTrigger value="configuracoes">Configurações</TabsTrigger>
+            <TabsTrigger value="dados-teste">Dados de Teste</TabsTrigger>
           </TabsList>
-
-          <TabsContent value="responsaveis-asa">
-            <AdminResponsaveisASA />
-          </TabsContent>
 
           <TabsContent value="usuarios">
             <AdminUsuarios />
           </TabsContent>
 
+          <TabsContent value="responsaveis">
+            <AdminResponsaveisASA />
+          </TabsContent>
+
           <TabsContent value="configuracoes">
             <AdminConfiguracoes />
+          </TabsContent>
+
+          <TabsContent value="dados-teste">
+            <SeedTestData />
           </TabsContent>
         </Tabs>
       </div>

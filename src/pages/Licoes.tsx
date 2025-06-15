@@ -6,9 +6,33 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BookOpen, Plus, Search, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { usePagination } from '@/hooks/usePagination';
+import { PaginationFooter } from '@/components/common/PaginationFooter';
+import { useState } from 'react';
 
 export default function Licoes() {
   const { usuario, isLoading } = useAuth();
+  const [termoBusca, setTermoBusca] = useState('');
+
+  // Mock data for now - will be replaced with real data later
+  const mockLicoes: any[] = [];
+
+  const {
+    currentPage,
+    totalPages,
+    paginatedData,
+    goToPage,
+    goToNextPage,
+    goToPreviousPage,
+    hasNextPage,
+    hasPreviousPage,
+    totalItems,
+    startItem,
+    endItem
+  } = usePagination({
+    data: mockLicoes,
+    itemsPerPage: 20
+  });
 
   if (isLoading) {
     return (
@@ -44,7 +68,12 @@ export default function Licoes() {
         <div className="flex gap-4 items-center">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-pmo-gray" />
-            <Input placeholder="Buscar lições..." className="pl-10" />
+            <Input 
+              placeholder="Buscar lições..." 
+              className="pl-10" 
+              value={termoBusca}
+              onChange={(e) => setTermoBusca(e.target.value)}
+            />
           </div>
         </div>
 
@@ -104,6 +133,19 @@ export default function Licoes() {
             </div>
           </CardContent>
         </Card>
+
+        <PaginationFooter
+          currentPage={currentPage}
+          totalPages={totalPages}
+          hasNextPage={hasNextPage}
+          hasPreviousPage={hasPreviousPage}
+          goToPage={goToPage}
+          goToNextPage={goToNextPage}
+          goToPreviousPage={goToPreviousPage}
+          startItem={startItem}
+          endItem={endItem}
+          totalItems={totalItems}
+        />
       </div>
     </Layout>
   );
