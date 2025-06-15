@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { 
   DropdownMenu, 
@@ -18,11 +18,11 @@ export function NotificationsDropdown() {
   const { usuario, canApprove } = useAuth();
   const { data: statusPendentes } = useStatusPendentes();
   const { notificacoesLidas, marcarVariasComoLidas } = useNotificacoesLidas();
-  const [notificacoesJaProcessadas, setNotificacoesJaProcessadas] = useState<number[]>([]);
+  const [notificacoesProcessadasLocalmente, setNotificacoesProcessadasLocalmente] = useState<number[]>([]);
   const navigate = useNavigate();
 
-  // Combinar notificações lidas do servidor com as já processadas localmente
-  const todasNotificacoesLidas = [...new Set([...notificacoesLidas, ...notificacoesJaProcessadas])];
+  // Combinar notificações lidas do servidor com as processadas localmente
+  const todasNotificacoesLidas = [...new Set([...notificacoesLidas, ...notificacoesProcessadasLocalmente])];
 
   // Calcular número de notificações não lidas
   const notificacoesNaoLidas = canApprove() ? 
@@ -35,20 +35,23 @@ export function NotificationsDropdown() {
       const novasNotificacoes = statusIds.filter(id => !todasNotificacoesLidas.includes(id));
       
       if (novasNotificacoes.length > 0) {
-        // Marcar imediatamente no estado local
-        setNotificacoesJaProcessadas(prev => [...prev, ...novasNotificacoes]);
+        console.log('Marcando notificações como lidas:', novasNotificacoes);
         
-        // Marcar no servidor em background
-        try {
-          await marcarVariasComoLidas.mutateAsync(statusIds);
-          console.log('Notificações marcadas como lidas com sucesso');
-        } catch (error) {
-          console.error('Erro ao marcar notificações como lidas:', error);
-          // Em caso de erro, remover do estado local
-          setNotificacoesJaProcessadas(prev => 
-            prev.filter(id => !novasNotificacoes.includes(id))
-          );
-        }
+        // Marcar imediatamente no estado local
+        setNotificacoesProcessadasLocalmente(prev => [...prev, ...novasNotificacoes]);
+        
+        // Marcar no servidor em background (sem await para não bloquear UI)
+        marcarVariasComoLidas.mutateAsync(statusIds)
+          .then(() => {
+            console.log('Notificações marcadas como lidas no servidor');
+          })
+          .catch((error) => {
+            console.error('Erro ao marcar notificações como lidas:', error);
+            // Em caso de erro, remover do estado local
+            setNotificacoesProcessadasLocalmente(prev => 
+              prev.filter(id => !novasNotificacoes.includes(id))
+            );
+          });
       }
     }
   };

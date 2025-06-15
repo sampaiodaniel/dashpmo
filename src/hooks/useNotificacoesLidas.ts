@@ -42,9 +42,7 @@ export function useNotificacoesLidas() {
         throw error;
       }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notificacoes-lidas'] });
-    },
+    // Remover invalidação automática para evitar conflito com estado local
   });
 
   const marcarVariasComoLidas = useMutation({
@@ -65,9 +63,7 @@ export function useNotificacoesLidas() {
         throw error;
       }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notificacoes-lidas'] });
-    },
+    // Remover invalidação automática para evitar conflito com estado local
   });
 
   return {
