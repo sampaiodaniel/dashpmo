@@ -40,12 +40,25 @@ export function AdminUsuarios() {
     switch (tipo) {
       case 'Admin':
         return 'destructive';
-      case 'GP':
-        return 'default';
       case 'Responsavel':
+        return 'default';
+      case 'GP':
         return 'secondary';
       default:
         return 'outline';
+    }
+  };
+
+  const getTipoUsuarioLabel = (tipo: string) => {
+    switch (tipo) {
+      case 'Admin':
+        return 'Administrador';
+      case 'Responsavel':
+        return 'Aprovador';
+      case 'GP':
+        return 'Usuário Comum';
+      default:
+        return tipo;
     }
   };
 
@@ -56,7 +69,12 @@ export function AdminUsuarios() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-semibold">Gestão de Usuários</h2>
+        <div>
+          <h2 className="text-2xl font-semibold">Gestão de Usuários</h2>
+          <p className="text-sm text-gray-600 mt-1">
+            Gerencie os usuários e seus níveis de acesso ao sistema
+          </p>
+        </div>
         <Button onClick={handleNovo}>
           <Plus className="h-4 w-4 mr-2" />
           Novo Usuário
@@ -69,8 +87,7 @@ export function AdminUsuarios() {
             <TableRow>
               <TableHead>Nome</TableHead>
               <TableHead>Email</TableHead>
-              <TableHead>Tipo</TableHead>
-              <TableHead>Áreas de Acesso</TableHead>
+              <TableHead>Nível de Acesso</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Último Login</TableHead>
               <TableHead className="w-24">Ações</TableHead>
@@ -83,17 +100,8 @@ export function AdminUsuarios() {
                 <TableCell>{usuario.email}</TableCell>
                 <TableCell>
                   <Badge variant={getBadgeVariant(usuario.tipo_usuario)}>
-                    {usuario.tipo_usuario}
+                    {getTipoUsuarioLabel(usuario.tipo_usuario)}
                   </Badge>
-                </TableCell>
-                <TableCell>
-                  <div className="flex flex-wrap gap-1">
-                    {usuario.areas_acesso?.map((area) => (
-                      <Badge key={area} variant="outline" className="text-xs">
-                        {area}
-                      </Badge>
-                    ))}
-                  </div>
                 </TableCell>
                 <TableCell>
                   <Badge variant={usuario.ativo ? 'default' : 'secondary'}>
@@ -120,6 +128,15 @@ export function AdminUsuarios() {
             ))}
           </TableBody>
         </Table>
+      </div>
+
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <h3 className="font-medium text-blue-900 mb-2">Níveis de Acesso:</h3>
+        <ul className="text-sm text-blue-800 space-y-1">
+          <li><strong>Administrador:</strong> Acesso total ao sistema, incluindo administração</li>
+          <li><strong>Aprovador:</strong> Pode aprovar status de projetos, sem acesso à administração</li>
+          <li><strong>Usuário Comum:</strong> Pode editar projetos e status, mas não aprovar nem administrar</li>
+        </ul>
       </div>
 
       <UsuarioModal

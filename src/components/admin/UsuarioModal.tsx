@@ -18,7 +18,6 @@ const usuarioSchema = z.object({
   email: z.string().email('Email inválido'),
   senha: z.string().min(6, 'Senha deve ter pelo menos 6 caracteres').optional(),
   tipo_usuario: z.enum(['GP', 'Responsavel', 'Admin']),
-  areas_acesso: z.array(z.string()),
   ativo: z.boolean(),
 });
 
@@ -32,7 +31,6 @@ interface UsuarioModalProps {
 
 export function UsuarioModal({ aberto, onFechar, usuario }: UsuarioModalProps) {
   const { createUsuario, updateUsuario } = useUsuariosOperations();
-  const [areasDisponiveis] = useState(['Área 1', 'Área 2', 'Área 3']);
 
   const form = useForm<UsuarioFormData>({
     resolver: zodResolver(usuarioSchema),
@@ -41,7 +39,6 @@ export function UsuarioModal({ aberto, onFechar, usuario }: UsuarioModalProps) {
       email: '',
       senha: '',
       tipo_usuario: 'GP',
-      areas_acesso: [],
       ativo: true,
     },
   });
@@ -53,7 +50,6 @@ export function UsuarioModal({ aberto, onFechar, usuario }: UsuarioModalProps) {
         email: usuario.email,
         senha: '', // Não preenchemos a senha na edição
         tipo_usuario: usuario.tipo_usuario,
-        areas_acesso: usuario.areas_acesso || [],
         ativo: usuario.ativo,
       });
     } else {
@@ -62,7 +58,6 @@ export function UsuarioModal({ aberto, onFechar, usuario }: UsuarioModalProps) {
         email: '',
         senha: '',
         tipo_usuario: 'GP',
-        areas_acesso: [],
         ativo: true,
       });
     }
@@ -77,7 +72,7 @@ export function UsuarioModal({ aberto, onFechar, usuario }: UsuarioModalProps) {
           nome: data.nome,
           email: data.email,
           tipo_usuario: data.tipo_usuario,
-          areas_acesso: data.areas_acesso,
+          areas_acesso: [], // Array vazio para compatibilidade
           ativo: data.ativo,
           ...(data.senha && { senha: data.senha }) // Só inclui senha se foi preenchida
         };
@@ -93,7 +88,7 @@ export function UsuarioModal({ aberto, onFechar, usuario }: UsuarioModalProps) {
           email: data.email,
           senha: data.senha,
           tipo_usuario: data.tipo_usuario,
-          areas_acesso: data.areas_acesso,
+          areas_acesso: [], // Array vazio para compatibilidade
           ativo: data.ativo,
         };
         await createUsuario.mutateAsync(createData);
@@ -104,12 +99,16 @@ export function UsuarioModal({ aberto, onFechar, usuario }: UsuarioModalProps) {
     }
   };
 
-  const handleAreaChange = (area: string, checked: boolean) => {
-    const currentAreas = form.getValues('areas_acesso');
-    if (checked) {
-      form.setValue('areas_acesso', [...currentAreas, area]);
-    } else {
-      form.setValue('areas_acesso', currentAreas.filter(a => a !== area));
+  const getTipoUsuarioDescricao = (tipo: string) => {
+    switch (tipo) {
+      case 'Admin':
+        return 'Administrador (acesso total)';
+      case 'Responsavel':
+        return 'Aprovador (pode aprovar status)';
+      case 'GP':
+        return 'Usuário Comum (edição apenas)';
+      default:
+        return tipo;
     }
   };
 
@@ -173,39 +172,26 @@ export function UsuarioModal({ aberto, onFechar, usuario }: UsuarioModalProps) {
               name="tipo_usuario"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tipo de Usuário</FormLabel>
+                  <FormLabel>Nível de Acesso</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Selecione o tipo" />
+                        <SelectValue placeholder="Selecione o nível" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="GP">GP (Gerente de Projeto)</SelectItem>
-                      <SelectItem value="Responsavel">Responsável</SelectItem>
+                      <SelectItem value="GP">Usuário Comum</SelectItem>
+                      <SelectItem value="Responsavel">Aprovador</SelectItem>
                       <SelectItem value="Admin">Administrador</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
+                  <div className="text-xs text-gray-500 mt-1">
+                    {getTipoUsuarioDescricao(form.watch('tipo_usuario'))}
+                  </div>
                 </FormItem>
               )}
             />
-
-            <div className="space-y-2">
-              <Label>Áreas de Acesso</Label>
-              <div className="space-y-2">
-                {areasDisponiveis.map((area) => (
-                  <div key={area} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={area}
-                      checked={form.watch('areas_acesso').includes(area)}
-                      onCheckedChange={(checked) => handleAreaChange(area, checked as boolean)}
-                    />
-                    <Label htmlFor={area}>{area}</Label>
-                  </div>
-                ))}
-              </div>
-            </div>
 
             <FormField
               control={form.control}

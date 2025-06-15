@@ -9,6 +9,10 @@ interface AuthContextType {
   login: (email: string, senha: string) => Promise<boolean>;
   logout: () => void;
   isLoading: boolean;
+  isAdmin: () => boolean;
+  isAprovador: () => boolean;
+  canApprove: () => boolean;
+  canAdminister: () => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -98,8 +102,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  // Funções de verificação de permissões
+  const isAdmin = () => usuario?.tipo_usuario === 'Admin';
+  const isAprovador = () => usuario?.tipo_usuario === 'Responsavel';
+  const canApprove = () => isAdmin() || isAprovador();
+  const canAdminister = () => isAdmin();
+
   return (
-    <AuthContext.Provider value={{ usuario, login, logout, isLoading }}>
+    <AuthContext.Provider value={{ 
+      usuario, 
+      login, 
+      logout, 
+      isLoading,
+      isAdmin,
+      isAprovador,
+      canApprove,
+      canAdminister
+    }}>
       {children}
     </AuthContext.Provider>
   );

@@ -3,7 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckSquare, Clock, AlertCircle, Check } from 'lucide-react';
+import { CheckSquare, Clock, AlertCircle, Check, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useStatusPendentes } from '@/hooks/useStatusPendentes';
@@ -12,7 +12,7 @@ import { getStatusColor, getStatusGeralColor } from '@/types/pmo';
 import { useQueryClient } from '@tanstack/react-query';
 
 export default function Aprovacoes() {
-  const { usuario, isLoading } = useAuth();
+  const { usuario, isLoading, canApprove } = useAuth();
   const { data: statusPendentes, isLoading: statusLoading } = useStatusPendentes();
   const { aprovarStatus, isLoading: aprovandoStatus } = useStatusOperations();
   const queryClient = useQueryClient();
@@ -40,6 +40,22 @@ export default function Aprovacoes() {
 
   if (!usuario) {
     return <LoginForm />;
+  }
+
+  // Verificar se o usuário tem permissão para acessar aprovações
+  if (!canApprove()) {
+    return (
+      <Layout>
+        <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+          <Shield className="h-16 w-16 text-gray-400 mb-4" />
+          <h1 className="text-2xl font-semibold text-gray-600 mb-2">Acesso Negado</h1>
+          <p className="text-gray-500 max-w-md">
+            Você não tem permissão para acessar a área de aprovações. 
+            Esta funcionalidade é restrita a usuários aprovadores e administradores.
+          </p>
+        </div>
+      </Layout>
+    );
   }
 
   return (
