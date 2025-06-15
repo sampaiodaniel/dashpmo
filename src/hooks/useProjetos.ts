@@ -22,9 +22,9 @@ export function useProjetos(filtros?: FiltrosProjeto) {
       // Apply filters
       if (filtros?.area && filtros.area !== 'Todas') {
         // Ensure the area matches one of the valid enum values
-        const validAreas = ['Área 1', 'Área 2', 'Área 3'];
-        if (validAreas.includes(filtros.area)) {
-          query = query.eq('area_responsavel', filtros.area);
+        const validAreas: Array<'Área 1' | 'Área 2' | 'Área 3'> = ['Área 1', 'Área 2', 'Área 3'];
+        if (validAreas.includes(filtros.area as 'Área 1' | 'Área 2' | 'Área 3')) {
+          query = query.eq('area_responsavel', filtros.area as 'Área 1' | 'Área 2' | 'Área 3');
         }
       }
 
