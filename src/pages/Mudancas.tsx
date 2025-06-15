@@ -6,9 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertTriangle, Plus, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useMudancas } from '@/hooks/useMudancas';
 
 export default function Mudancas() {
   const { usuario, isLoading } = useAuth();
+  const { criarMudanca, isLoading: criandoMudanca } = useMudancas();
 
   if (isLoading) {
     return (
@@ -35,9 +37,13 @@ export default function Mudancas() {
             <h1 className="text-3xl font-bold text-pmo-primary">Mudanças</h1>
             <p className="text-pmo-gray mt-2">Gestão de change requests</p>
           </div>
-          <Button className="bg-pmo-primary hover:bg-pmo-primary/90">
+          <Button 
+            className="bg-pmo-primary hover:bg-pmo-primary/90"
+            onClick={criarMudanca}
+            disabled={criandoMudanca}
+          >
             <Plus className="h-4 w-4 mr-2" />
-            Nova Mudança
+            {criandoMudanca ? 'Criando...' : 'Nova Mudança'}
           </Button>
         </div>
 

@@ -5,9 +5,11 @@ import { Layout } from '@/components/layout/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckSquare, Clock, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAprovacoes } from '@/hooks/useAprovacoes';
 
 export default function Aprovacoes() {
   const { usuario, isLoading } = useAuth();
+  const { data: aprovacoes } = useAprovacoes();
 
   if (isLoading) {
     return (
@@ -43,7 +45,7 @@ export default function Aprovacoes() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-pmo-warning">3</div>
+              <div className="text-2xl font-bold text-pmo-warning">{aprovacoes?.aguardandoAprovacao || 0}</div>
               <p className="text-sm text-pmo-gray">Itens pendentes</p>
             </CardContent>
           </Card>
@@ -56,7 +58,7 @@ export default function Aprovacoes() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-pmo-danger">1</div>
+              <div className="text-2xl font-bold text-pmo-danger">{aprovacoes?.emAtraso || 0}</div>
               <p className="text-sm text-pmo-gray">Aprovações atrasadas</p>
             </CardContent>
           </Card>
@@ -69,7 +71,7 @@ export default function Aprovacoes() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-pmo-success">2</div>
+              <div className="text-2xl font-bold text-pmo-success">{aprovacoes?.aprovadasHoje || 0}</div>
               <p className="text-sm text-pmo-gray">Itens aprovados</p>
             </CardContent>
           </Card>

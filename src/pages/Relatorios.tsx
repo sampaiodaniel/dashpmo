@@ -5,9 +5,11 @@ import { Layout } from '@/components/layout/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart3, Download, FileText, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useRelatorios } from '@/hooks/useRelatorios';
 
 export default function Relatorios() {
   const { usuario, isLoading } = useAuth();
+  const { gerarRelatorio, isLoading: gerandoRelatorio } = useRelatorios();
 
   if (isLoading) {
     return (
@@ -44,9 +46,14 @@ export default function Relatorios() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-pmo-gray mb-4">Visão consolidada dos projetos</p>
-              <Button size="sm" className="w-full">
+              <Button 
+                size="sm" 
+                className="w-full"
+                onClick={() => gerarRelatorio('dashboard')}
+                disabled={gerandoRelatorio}
+              >
                 <Download className="h-4 w-4 mr-2" />
-                Gerar Relatório
+                {gerandoRelatorio ? 'Gerando...' : 'Gerar Relatório'}
               </Button>
             </CardContent>
           </Card>
@@ -60,9 +67,14 @@ export default function Relatorios() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-pmo-gray mb-4">Relatório semanal de progresso</p>
-              <Button size="sm" className="w-full">
+              <Button 
+                size="sm" 
+                className="w-full"
+                onClick={() => gerarRelatorio('semanal')}
+                disabled={gerandoRelatorio}
+              >
                 <Download className="h-4 w-4 mr-2" />
-                Gerar Relatório
+                {gerandoRelatorio ? 'Gerando...' : 'Gerar Relatório'}
               </Button>
             </CardContent>
           </Card>
@@ -76,9 +88,14 @@ export default function Relatorios() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-pmo-gray mb-4">Cronograma detalhado dos projetos</p>
-              <Button size="sm" className="w-full">
+              <Button 
+                size="sm" 
+                className="w-full"
+                onClick={() => gerarRelatorio('cronograma')}
+                disabled={gerandoRelatorio}
+              >
                 <Download className="h-4 w-4 mr-2" />
-                Gerar Relatório
+                {gerandoRelatorio ? 'Gerando...' : 'Gerar Relatório'}
               </Button>
             </CardContent>
           </Card>
