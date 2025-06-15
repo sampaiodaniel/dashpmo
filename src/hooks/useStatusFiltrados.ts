@@ -1,19 +1,12 @@
-
 import { useMemo } from 'react';
 import { StatusProjeto } from '@/types/pmo';
+import { StatusFilters } from '@/components/status/filters/FilterUtils';
 
-interface FiltrosStatus {
-  carteira?: string;
-  projeto?: string;
-  responsavel?: string;
-  statusAprovacao?: string;
-  dataInicio?: Date;
-  dataFim?: Date;
+interface FiltrosStatusExtended extends StatusFilters {
   busca?: string;
-  incluirArquivados?: boolean;
 }
 
-export function useStatusFiltrados(statusList: StatusProjeto[] | undefined, filtros: FiltrosStatus) {
+export function useStatusFiltrados(statusList: StatusProjeto[] | undefined, filtros: FiltrosStatusExtended) {
   return useMemo(() => {
     if (!statusList) return [];
 
