@@ -41,7 +41,7 @@ export default function NovoStatus() {
   // Realizado e planejamento
   const [realizadoSemana, setRealizadoSemana] = useState('');
   
-  // Próximas entregas (anteriormente marcos)
+  // Próximas entregas
   const [nomeEntrega1, setNomeEntrega1] = useState('');
   const [escopoEntrega1, setEscopoEntrega1] = useState('');
   const [dataEntrega1, setDataEntrega1] = useState('');
@@ -363,116 +363,117 @@ export default function NovoStatus() {
                 </div>
               </div>
 
-              {/* Próxima Entrega 1 */}
+              {/* Próximas Entregas */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-pmo-primary border-b pb-2">Próxima Entrega 1</h3>
+                <h3 className="text-lg font-semibold text-pmo-primary border-b pb-2">Próximas Entregas</h3>
                 
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="nome-entrega1">Nome da Entrega</Label>
-                    <Input 
-                      id="nome-entrega1" 
-                      placeholder="Nome da entrega..." 
-                      value={nomeEntrega1}
-                      onChange={(e) => setNomeEntrega1(e.target.value)}
-                    />
+                <div className="space-y-6">
+                  {/* Entrega 1 */}
+                  <div className="border rounded-lg p-4 space-y-3">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="nome-entrega1">Nome da Entrega</Label>
+                        <Input 
+                          id="nome-entrega1" 
+                          placeholder="Nome da entrega..." 
+                          value={nomeEntrega1}
+                          onChange={(e) => setNomeEntrega1(e.target.value)}
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="data-entrega1">Data da Entrega</Label>
+                        <Input 
+                          id="data-entrega1" 
+                          type="date" 
+                          value={dataEntrega1}
+                          onChange={(e) => setDataEntrega1(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="escopo-entrega1">Escopo (Entregáveis)</Label>
+                      <Textarea 
+                        id="escopo-entrega1" 
+                        placeholder="Descreva o escopo da entrega..." 
+                        rows={3}
+                        value={escopoEntrega1}
+                        onChange={(e) => setEscopoEntrega1(e.target.value)}
+                      />
+                    </div>
                   </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="escopo-entrega1">Escopo (Entregáveis)</Label>
-                    <Textarea 
-                      id="escopo-entrega1" 
-                      placeholder="Descreva o escopo da entrega..." 
-                      rows={3}
-                      value={escopoEntrega1}
-                      onChange={(e) => setEscopoEntrega1(e.target.value)}
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="data-entrega1">Data da Entrega</Label>
-                    <Input 
-                      id="data-entrega1" 
-                      type="date" 
-                      value={dataEntrega1}
-                      onChange={(e) => setDataEntrega1(e.target.value)}
-                    />
-                  </div>
-                </div>
-              </div>
 
-              {/* Próxima Entrega 2 */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-pmo-primary border-b pb-2">Próxima Entrega 2</h3>
-                
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="nome-entrega2">Nome da Entrega</Label>
-                    <Input 
-                      id="nome-entrega2" 
-                      placeholder="Nome da entrega..." 
-                      value={nomeEntrega2}
-                      onChange={(e) => setNomeEntrega2(e.target.value)}
-                    />
+                  {/* Entrega 2 */}
+                  <div className="border rounded-lg p-4 space-y-3">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="nome-entrega2">Nome da Entrega</Label>
+                        <Input 
+                          id="nome-entrega2" 
+                          placeholder="Nome da entrega..." 
+                          value={nomeEntrega2}
+                          onChange={(e) => setNomeEntrega2(e.target.value)}
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="data-entrega2">Data da Entrega</Label>
+                        <Input 
+                          id="data-entrega2" 
+                          type="date" 
+                          value={dataEntrega2}
+                          onChange={(e) => setDataEntrega2(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="escopo-entrega2">Escopo (Entregáveis)</Label>
+                      <Textarea 
+                        id="escopo-entrega2" 
+                        placeholder="Descreva o escopo da entrega..." 
+                        rows={3}
+                        value={escopoEntrega2}
+                        onChange={(e) => setEscopoEntrega2(e.target.value)}
+                      />
+                    </div>
                   </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="escopo-entrega2">Escopo (Entregáveis)</Label>
-                    <Textarea 
-                      id="escopo-entrega2" 
-                      placeholder="Descreva o escopo da entrega..." 
-                      rows={3}
-                      value={escopoEntrega2}
-                      onChange={(e) => setEscopoEntrega2(e.target.value)}
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="data-entrega2">Data da Entrega</Label>
-                    <Input 
-                      id="data-entrega2" 
-                      type="date" 
-                      value={dataEntrega2}
-                      onChange={(e) => setDataEntrega2(e.target.value)}
-                    />
-                  </div>
-                </div>
-              </div>
 
-              {/* Próxima Entrega 3 */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-pmo-primary border-b pb-2">Próxima Entrega 3</h3>
-                
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="nome-entrega3">Nome da Entrega</Label>
-                    <Input 
-                      id="nome-entrega3" 
-                      placeholder="Nome da entrega..." 
-                      value={nomeEntrega3}
-                      onChange={(e) => setNomeEntrega3(e.target.value)}
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="escopo-entrega3">Escopo (Entregáveis)</Label>
-                    <Textarea 
-                      id="escopo-entrega3" 
-                      placeholder="Descreva o escopo da entrega..." 
-                      rows={3}
-                      value={escopoEntrega3}
-                      onChange={(e) => setEscopoEntrega3(e.target.value)}
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="data-entrega3">Data da Entrega</Label>
-                    <Input 
-                      id="data-entrega3" 
-                      type="date" 
-                      value={dataEntrega3}
-                      onChange={(e) => setDataEntrega3(e.target.value)}
-                    />
+                  {/* Entrega 3 */}
+                  <div className="border rounded-lg p-4 space-y-3">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="nome-entrega3">Nome da Entrega</Label>
+                        <Input 
+                          id="nome-entrega3" 
+                          placeholder="Nome da entrega..." 
+                          value={nomeEntrega3}
+                          onChange={(e) => setNomeEntrega3(e.target.value)}
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="data-entrega3">Data da Entrega</Label>
+                        <Input 
+                          id="data-entrega3" 
+                          type="date" 
+                          value={dataEntrega3}
+                          onChange={(e) => setDataEntrega3(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="escopo-entrega3">Escopo (Entregáveis)</Label>
+                      <Textarea 
+                        id="escopo-entrega3" 
+                        placeholder="Descreva o escopo da entrega..." 
+                        rows={3}
+                        value={escopoEntrega3}
+                        onChange={(e) => setEscopoEntrega3(e.target.value)}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
