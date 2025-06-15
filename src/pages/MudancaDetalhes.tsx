@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
@@ -99,7 +98,7 @@ export default function MudancaDetalhes() {
                 Editar
               </Button>
             )}
-            {usuario.tipo_usuario === 'Administrador' && mudanca.status_aprovacao === 'Pendente' && (
+            {usuario.tipo_usuario === 'Admin' && mudanca.status_aprovacao === 'Pendente' && (
               <>
                 <Button onClick={handleAprovar} className="bg-green-600 hover:bg-green-700">
                   <CheckCircle className="h-4 w-4 mr-2" />
