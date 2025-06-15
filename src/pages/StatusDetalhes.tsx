@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { useStatusList } from '@/hooks/useStatusList';
@@ -220,11 +219,6 @@ export default function StatusDetalhes() {
               <div>
                 <label className="text-sm font-medium text-pmo-gray">Probabilidade</label>
                 <p className="font-medium">{status.probabilidade_riscos}</p>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-pmo-gray">Prob x Impacto</label>
-                <p className="font-medium">{status.prob_x_impact}</p>
               </div>
 
               {risco.nivel && (

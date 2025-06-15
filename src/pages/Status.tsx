@@ -147,7 +147,7 @@ export default function Status() {
                             {status.projeto?.area_responsavel}
                           </span>
                         </div>
-                        {!status.aprovado && (
+                        {status.aprovado === false && (
                           <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200 flex items-center gap-1">
                             <AlertTriangle className="h-3 w-3" />
                             Pendente Aprovação
