@@ -393,13 +393,6 @@ export type Database = {
             referencedRelation: "projetos"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "status_projeto_projeto_id_fkey"
-            columns: ["projeto_id"]
-            isOneToOne: false
-            referencedRelation: "projetos"
-            referencedColumns: ["id"]
-          },
         ]
       }
       usuarios: {

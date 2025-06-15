@@ -10,19 +10,7 @@ export function useDashboardMetricas() {
       // Buscar projetos ativos
       const { data: projetos, error: projetosError } = await supabase
         .from('projetos')
-        .select(`
-          *,
-          status_projeto (
-            status_geral,
-            status_visao_gp,
-            data_marco1,
-            data_marco2,
-            data_marco3,
-            entrega1,
-            entrega2,
-            entrega3
-          )
-        `)
+        .select('*')
         .eq('status_ativo', true);
 
       if (projetosError) {
@@ -31,6 +19,23 @@ export function useDashboardMetricas() {
       }
 
       console.log('Projetos para dashboard:', projetos);
+
+      // Buscar status separadamente
+      let statusData: any[] = [];
+      if (projetos && projetos.length > 0) {
+        const projetosIds = projetos.map(p => p.id);
+        const { data: status, error: statusError } = await supabase
+          .from('status_projeto')
+          .select('*')
+          .in('projeto_id', projetosIds)
+          .order('data_atualizacao', { ascending: false });
+
+        if (statusError) {
+          console.error('Erro ao buscar status:', statusError);
+        } else {
+          statusData = status || [];
+        }
+      }
 
       // Buscar mudanças ativas
       const { data: mudancas, error: mudancasError } = await supabase
@@ -51,25 +56,26 @@ export function useDashboardMetricas() {
         return acc;
       }, {}) || {};
 
-      const projetosPorStatus = projetos?.reduce((acc: any, projeto: any) => {
-        const status = projeto.status_projeto?.[0]?.status_geral;
-        if (status) {
-          acc[status] = (acc[status] || 0) + 1;
-        } else {
-          // Projetos sem status definido
-          acc['Em Planejamento'] = (acc['Em Planejamento'] || 0) + 1;
+      // Mapear status por projeto (pegar o mais recente)
+      const statusPorProjeto = new Map();
+      statusData.forEach(status => {
+        if (!statusPorProjeto.has(status.projeto_id) || 
+            new Date(status.data_atualizacao) > new Date(statusPorProjeto.get(status.projeto_id).data_atualizacao)) {
+          statusPorProjeto.set(status.projeto_id, status);
         }
+      });
+
+      const projetosPorStatus = projetos?.reduce((acc: any, projeto: any) => {
+        const status = statusPorProjeto.get(projeto.id);
+        const statusGeral = status?.status_geral || 'Em Planejamento';
+        acc[statusGeral] = (acc[statusGeral] || 0) + 1;
         return acc;
       }, {}) || {};
 
       const projetosPorSaude = projetos?.reduce((acc: any, projeto: any) => {
-        const saude = projeto.status_projeto?.[0]?.status_visao_gp;
-        if (saude) {
-          acc[saude] = (acc[saude] || 0) + 1;
-        } else {
-          // Projetos sem status de saúde definido
-          acc['Verde'] = (acc['Verde'] || 0) + 1;
-        }
+        const status = statusPorProjeto.get(projeto.id);
+        const saude = status?.status_visao_gp || 'Verde';
+        acc[saude] = (acc[saude] || 0) + 1;
         return acc;
       }, {}) || {};
 
@@ -86,7 +92,7 @@ export function useDashboardMetricas() {
       em15Dias.setDate(hoje.getDate() + 15);
 
       projetos?.forEach((projeto: any) => {
-        const status = projeto.status_projeto?.[0];
+        const status = statusPorProjeto.get(projeto.id);
         if (status) {
           [
             { data: status.data_marco1, entrega: status.entrega1 },
@@ -111,9 +117,10 @@ export function useDashboardMetricas() {
 
       proximosMarcos.sort((a, b) => a.diasRestantes - b.diasRestantes);
 
-      const projetosCriticos = projetos?.filter((projeto: any) => 
-        projeto.status_projeto?.[0]?.status_visao_gp === 'Vermelho'
-      ).length || 0;
+      const projetosCriticos = projetos?.filter((projeto: any) => {
+        const status = statusPorProjeto.get(projeto.id);
+        return status?.status_visao_gp === 'Vermelho';
+      }).length || 0;
 
       const mudancasAtivas = mudancas?.length || 0;
 
