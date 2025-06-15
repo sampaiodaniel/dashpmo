@@ -1,4 +1,3 @@
-
 export interface Usuario {
   id: number;
   nome: string;
@@ -170,6 +169,7 @@ export interface FiltrosProjeto {
   data_inicio?: Date;
   data_fim?: Date;
   busca?: string;
+  incluirFechados?: boolean;
 }
 
 export interface FiltrosDashboard {
