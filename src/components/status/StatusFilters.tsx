@@ -14,6 +14,7 @@ import { useMemo } from 'react';
 interface StatusFiltersProps {
   filtros: {
     carteira?: string;
+    projeto?: string;
     responsavel?: string;
     dataInicio?: Date;
     dataFim?: Date;
@@ -122,7 +123,7 @@ export function StatusFilters({ filtros, onFiltroChange, responsaveis }: StatusF
 
             <div className="flex items-center gap-2">
               <label className="text-sm text-pmo-gray">Projeto:</label>
-              <Select value={(filtros as any).projeto || 'todos'} onValueChange={handleProjetoChange}>
+              <Select value={filtros.projeto || 'todos'} onValueChange={handleProjetoChange}>
                 <SelectTrigger className="w-60">
                   <SelectValue placeholder="Todos os projetos" />
                 </SelectTrigger>
