@@ -9,16 +9,432 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      dependencias: {
+        Row: {
+          componentes_modulos: string | null
+          criado_por: string
+          criterio_pronto: string | null
+          data_criacao: string | null
+          dependencias_prerequisitos: string | null
+          id: number
+          outras_partes_workstreams: string | null
+          projeto_id: number | null
+        }
+        Insert: {
+          componentes_modulos?: string | null
+          criado_por: string
+          criterio_pronto?: string | null
+          data_criacao?: string | null
+          dependencias_prerequisitos?: string | null
+          id?: number
+          outras_partes_workstreams?: string | null
+          projeto_id?: number | null
+        }
+        Update: {
+          componentes_modulos?: string | null
+          criado_por?: string
+          criterio_pronto?: string | null
+          data_criacao?: string | null
+          dependencias_prerequisitos?: string | null
+          id?: number
+          outras_partes_workstreams?: string | null
+          projeto_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dependencias_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "projetos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      incidentes: {
+        Row: {
+          anterior: number | null
+          area_incidentes: string
+          atual: number | null
+          criado_por: string
+          criticos: number | null
+          data_registro: string | null
+          entrada: number | null
+          id: number
+          mais_15_dias: number | null
+          saida: number | null
+        }
+        Insert: {
+          anterior?: number | null
+          area_incidentes: string
+          atual?: number | null
+          criado_por: string
+          criticos?: number | null
+          data_registro?: string | null
+          entrada?: number | null
+          id?: number
+          mais_15_dias?: number | null
+          saida?: number | null
+        }
+        Update: {
+          anterior?: number | null
+          area_incidentes?: string
+          atual?: number | null
+          criado_por?: string
+          criticos?: number | null
+          data_registro?: string | null
+          entrada?: number | null
+          id?: number
+          mais_15_dias?: number | null
+          saida?: number | null
+        }
+        Relationships: []
+      }
+      licoes_aprendidas: {
+        Row: {
+          acao_recomendada: string
+          categoria_licao: Database["public"]["Enums"]["categoria_licao"]
+          criado_por: string
+          data_criacao: string | null
+          data_registro: string | null
+          id: number
+          impacto_gerado: string
+          licao_aprendida: string
+          projeto_id: number | null
+          responsavel_registro: string
+          situacao_ocorrida: string
+          status_aplicacao:
+            | Database["public"]["Enums"]["status_aplicacao"]
+            | null
+          tags_busca: string | null
+        }
+        Insert: {
+          acao_recomendada: string
+          categoria_licao: Database["public"]["Enums"]["categoria_licao"]
+          criado_por: string
+          data_criacao?: string | null
+          data_registro?: string | null
+          id?: number
+          impacto_gerado: string
+          licao_aprendida: string
+          projeto_id?: number | null
+          responsavel_registro: string
+          situacao_ocorrida: string
+          status_aplicacao?:
+            | Database["public"]["Enums"]["status_aplicacao"]
+            | null
+          tags_busca?: string | null
+        }
+        Update: {
+          acao_recomendada?: string
+          categoria_licao?: Database["public"]["Enums"]["categoria_licao"]
+          criado_por?: string
+          data_criacao?: string | null
+          data_registro?: string | null
+          id?: number
+          impacto_gerado?: string
+          licao_aprendida?: string
+          projeto_id?: number | null
+          responsavel_registro?: string
+          situacao_ocorrida?: string
+          status_aplicacao?:
+            | Database["public"]["Enums"]["status_aplicacao"]
+            | null
+          tags_busca?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "licoes_aprendidas_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "projetos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mudancas_replanejamento: {
+        Row: {
+          criado_por: string
+          data_aprovacao: string | null
+          data_criacao: string | null
+          data_solicitacao: string | null
+          descricao: string
+          id: number
+          impacto_prazo_dias: number
+          justificativa_negocio: string
+          observacoes: string | null
+          projeto_id: number | null
+          responsavel_aprovacao: string | null
+          solicitante: string
+          status_aprovacao:
+            | Database["public"]["Enums"]["status_aprovacao"]
+            | null
+          tipo_mudanca: Database["public"]["Enums"]["tipo_mudanca"]
+        }
+        Insert: {
+          criado_por: string
+          data_aprovacao?: string | null
+          data_criacao?: string | null
+          data_solicitacao?: string | null
+          descricao: string
+          id?: number
+          impacto_prazo_dias: number
+          justificativa_negocio: string
+          observacoes?: string | null
+          projeto_id?: number | null
+          responsavel_aprovacao?: string | null
+          solicitante: string
+          status_aprovacao?:
+            | Database["public"]["Enums"]["status_aprovacao"]
+            | null
+          tipo_mudanca: Database["public"]["Enums"]["tipo_mudanca"]
+        }
+        Update: {
+          criado_por?: string
+          data_aprovacao?: string | null
+          data_criacao?: string | null
+          data_solicitacao?: string | null
+          descricao?: string
+          id?: number
+          impacto_prazo_dias?: number
+          justificativa_negocio?: string
+          observacoes?: string | null
+          projeto_id?: number | null
+          responsavel_aprovacao?: string | null
+          solicitante?: string
+          status_aprovacao?:
+            | Database["public"]["Enums"]["status_aprovacao"]
+            | null
+          tipo_mudanca?: Database["public"]["Enums"]["tipo_mudanca"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mudancas_replanejamento_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "projetos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projetos: {
+        Row: {
+          area_responsavel: Database["public"]["Enums"]["area_responsavel"]
+          criado_por: string
+          data_criacao: string | null
+          descricao: string | null
+          gp_responsavel: string
+          id: number
+          nome_projeto: string
+          responsavel_interno: string
+          status_ativo: boolean | null
+        }
+        Insert: {
+          area_responsavel: Database["public"]["Enums"]["area_responsavel"]
+          criado_por: string
+          data_criacao?: string | null
+          descricao?: string | null
+          gp_responsavel: string
+          id?: number
+          nome_projeto: string
+          responsavel_interno: string
+          status_ativo?: boolean | null
+        }
+        Update: {
+          area_responsavel?: Database["public"]["Enums"]["area_responsavel"]
+          criado_por?: string
+          data_criacao?: string | null
+          descricao?: string | null
+          gp_responsavel?: string
+          id?: number
+          nome_projeto?: string
+          responsavel_interno?: string
+          status_ativo?: boolean | null
+        }
+        Relationships: []
+      }
+      status_projeto: {
+        Row: {
+          aprovado: boolean | null
+          aprovado_por: string | null
+          backlog: string | null
+          bloqueios_atuais: string | null
+          criado_por: string
+          data_aprovacao: string | null
+          data_atualizacao: string | null
+          data_criacao: string | null
+          data_marco1: string | null
+          data_marco2: string | null
+          data_marco3: string | null
+          entrega1: string | null
+          entrega2: string | null
+          entrega3: string | null
+          entregaveis1: string | null
+          entregaveis2: string | null
+          entregaveis3: string | null
+          equipe: string | null
+          finalizacao_prevista: string | null
+          id: number
+          impacto_riscos: Database["public"]["Enums"]["nivel_risco"]
+          observacoes_pontos_atencao: string | null
+          prob_x_impact: string | null
+          probabilidade_riscos: Database["public"]["Enums"]["nivel_risco"]
+          projeto_id: number | null
+          realizado_semana_atual: string | null
+          status_geral: Database["public"]["Enums"]["status_geral"]
+          status_visao_gp: Database["public"]["Enums"]["status_visao_gp"]
+        }
+        Insert: {
+          aprovado?: boolean | null
+          aprovado_por?: string | null
+          backlog?: string | null
+          bloqueios_atuais?: string | null
+          criado_por: string
+          data_aprovacao?: string | null
+          data_atualizacao?: string | null
+          data_criacao?: string | null
+          data_marco1?: string | null
+          data_marco2?: string | null
+          data_marco3?: string | null
+          entrega1?: string | null
+          entrega2?: string | null
+          entrega3?: string | null
+          entregaveis1?: string | null
+          entregaveis2?: string | null
+          entregaveis3?: string | null
+          equipe?: string | null
+          finalizacao_prevista?: string | null
+          id?: number
+          impacto_riscos: Database["public"]["Enums"]["nivel_risco"]
+          observacoes_pontos_atencao?: string | null
+          prob_x_impact?: string | null
+          probabilidade_riscos: Database["public"]["Enums"]["nivel_risco"]
+          projeto_id?: number | null
+          realizado_semana_atual?: string | null
+          status_geral: Database["public"]["Enums"]["status_geral"]
+          status_visao_gp: Database["public"]["Enums"]["status_visao_gp"]
+        }
+        Update: {
+          aprovado?: boolean | null
+          aprovado_por?: string | null
+          backlog?: string | null
+          bloqueios_atuais?: string | null
+          criado_por?: string
+          data_aprovacao?: string | null
+          data_atualizacao?: string | null
+          data_criacao?: string | null
+          data_marco1?: string | null
+          data_marco2?: string | null
+          data_marco3?: string | null
+          entrega1?: string | null
+          entrega2?: string | null
+          entrega3?: string | null
+          entregaveis1?: string | null
+          entregaveis2?: string | null
+          entregaveis3?: string | null
+          equipe?: string | null
+          finalizacao_prevista?: string | null
+          id?: number
+          impacto_riscos?: Database["public"]["Enums"]["nivel_risco"]
+          observacoes_pontos_atencao?: string | null
+          prob_x_impact?: string | null
+          probabilidade_riscos?: Database["public"]["Enums"]["nivel_risco"]
+          projeto_id?: number | null
+          realizado_semana_atual?: string | null
+          status_geral?: Database["public"]["Enums"]["status_geral"]
+          status_visao_gp?: Database["public"]["Enums"]["status_visao_gp"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "status_projeto_projeto_id_fkey"
+            columns: ["projeto_id"]
+            isOneToOne: false
+            referencedRelation: "projetos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      usuarios: {
+        Row: {
+          areas_acesso: string[] | null
+          ativo: boolean | null
+          data_criacao: string | null
+          email: string
+          id: number
+          nome: string
+          senha_hash: string
+          tipo_usuario: Database["public"]["Enums"]["tipo_usuario"]
+          ultimo_login: string | null
+        }
+        Insert: {
+          areas_acesso?: string[] | null
+          ativo?: boolean | null
+          data_criacao?: string | null
+          email: string
+          id?: number
+          nome: string
+          senha_hash: string
+          tipo_usuario: Database["public"]["Enums"]["tipo_usuario"]
+          ultimo_login?: string | null
+        }
+        Update: {
+          areas_acesso?: string[] | null
+          ativo?: boolean | null
+          data_criacao?: string | null
+          email?: string
+          id?: number
+          nome?: string
+          senha_hash?: string
+          tipo_usuario?: Database["public"]["Enums"]["tipo_usuario"]
+          ultimo_login?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      calculate_prob_x_impact: {
+        Args: {
+          probabilidade: Database["public"]["Enums"]["nivel_risco"]
+          impacto: Database["public"]["Enums"]["nivel_risco"]
+        }
+        Returns: string
+      }
     }
     Enums: {
-      [_ in never]: never
+      area_responsavel: "Área 1" | "Área 2" | "Área 3"
+      categoria_licao:
+        | "Técnica"
+        | "Processo"
+        | "Comunicação"
+        | "Recursos"
+        | "Planejamento"
+        | "Qualidade"
+        | "Fornecedores"
+        | "Riscos"
+        | "Mudanças"
+        | "Conhecimento"
+      nivel_risco: "Baixo" | "Médio" | "Alto"
+      status_aplicacao: "Aplicada" | "Não aplicada"
+      status_aprovacao: "Aprovada" | "Em Análise" | "Rejeitada" | "Pendente"
+      status_geral:
+        | "Aguardando Aprovação"
+        | "Aguardando Homologação"
+        | "Cancelado"
+        | "Concluído"
+        | "Em Andamento"
+        | "Em Especificação"
+        | "Pausado"
+        | "Planejamento"
+      status_visao_gp: "Verde" | "Amarelo" | "Vermelho"
+      tipo_mudanca:
+        | "Correção Bug"
+        | "Melhoria"
+        | "Mudança Escopo"
+        | "Novo Requisito"
+        | "Replanejamento Cronograma"
+      tipo_usuario: "GP" | "Responsavel" | "Admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +549,42 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      area_responsavel: ["Área 1", "Área 2", "Área 3"],
+      categoria_licao: [
+        "Técnica",
+        "Processo",
+        "Comunicação",
+        "Recursos",
+        "Planejamento",
+        "Qualidade",
+        "Fornecedores",
+        "Riscos",
+        "Mudanças",
+        "Conhecimento",
+      ],
+      nivel_risco: ["Baixo", "Médio", "Alto"],
+      status_aplicacao: ["Aplicada", "Não aplicada"],
+      status_aprovacao: ["Aprovada", "Em Análise", "Rejeitada", "Pendente"],
+      status_geral: [
+        "Aguardando Aprovação",
+        "Aguardando Homologação",
+        "Cancelado",
+        "Concluído",
+        "Em Andamento",
+        "Em Especificação",
+        "Pausado",
+        "Planejamento",
+      ],
+      status_visao_gp: ["Verde", "Amarelo", "Vermelho"],
+      tipo_mudanca: [
+        "Correção Bug",
+        "Melhoria",
+        "Mudança Escopo",
+        "Novo Requisito",
+        "Replanejamento Cronograma",
+      ],
+      tipo_usuario: ["GP", "Responsavel", "Admin"],
+    },
   },
 } as const

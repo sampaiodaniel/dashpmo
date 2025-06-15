@@ -1,211 +1,128 @@
 
-import { useState, useEffect } from 'react';
+import { useDashboardMetricas } from '@/hooks/useDashboard';
 import { MetricCard } from '@/components/dashboard/MetricCard';
 import { StatusChart } from '@/components/dashboard/StatusChart';
 import { ProximosMarcos } from '@/components/dashboard/ProximosMarcos';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { 
-  FolderOpen, 
-  TrendingUp, 
-  AlertTriangle, 
-  CheckCircle, 
-  Clock,
-  Filter,
-  RefreshCw
-} from 'lucide-react';
-import { generateDashboardMetricas } from '@/data/mockData';
-import { DashboardMetricas } from '@/types/pmo';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { BarChart3, Users, AlertTriangle, TrendingUp, CheckCircle, Clock } from 'lucide-react';
 
 export default function Dashboard() {
-  const [metricas, setMetricas] = useState<DashboardMetricas | null>(null);
-  const [filtroArea, setFiltroArea] = useState<string>('all');
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: metricas, isLoading, error } = useDashboardMetricas();
 
-  useEffect(() => {
-    // Simular carregamento
-    const timer = setTimeout(() => {
-      setMetricas(generateDashboardMetricas());
-      setIsLoading(false);
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, [filtroArea]);
-
-  const handleRefresh = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setMetricas(generateDashboardMetricas());
-      setIsLoading(false);
-    }, 500);
-  };
-
-  if (isLoading || !metricas) {
+  if (isLoading) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-pmo-primary">Dashboard</h1>
-            <p className="text-pmo-gray">Visão geral dos projetos corporativos</p>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-pmo-primary rounded-xl flex items-center justify-center mx-auto mb-4">
+            <span className="text-white font-bold text-xl">PMO</span>
           </div>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-32 bg-gray-200 animate-pulse rounded-lg" />
-          ))}
+          <div className="text-pmo-gray">Carregando dashboard...</div>
         </div>
       </div>
     );
   }
 
-  return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-pmo-primary">Dashboard</h1>
-          <p className="text-pmo-gray">Visão geral dos projetos corporativos</p>
-        </div>
-        
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4 text-pmo-gray" />
-            <Select value={filtroArea} onValueChange={setFiltroArea}>
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Filtrar por área" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas as áreas</SelectItem>
-                <SelectItem value="area1">Área 1</SelectItem>
-                <SelectItem value="area2">Área 2</SelectItem>
-                <SelectItem value="area3">Área 3</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleRefresh}
-            disabled={isLoading}
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-            Atualizar
-          </Button>
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="text-pmo-danger mb-2">Erro ao carregar dashboard</div>
+          <div className="text-pmo-gray text-sm">Tente recarregar a página</div>
         </div>
       </div>
+    );
+  }
 
-      {/* Métricas principais */}
+  if (!metricas) return null;
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold text-pmo-primary">Dashboard</h1>
+        <p className="text-pmo-gray mt-2">Visão geral dos projetos e indicadores</p>
+      </div>
+
+      {/* Métricas Principais */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <MetricCard
           title="Total de Projetos"
           value={metricas.totalProjetos}
-          description="Projetos ativos"
-          icon={<FolderOpen className="h-5 w-5 text-pmo-primary" />}
-          trend={{ value: 8, isPositive: true }}
+          icon={BarChart3}
+          trend="stable"
+          className="border-l-4 border-l-pmo-primary"
         />
-        
         <MetricCard
           title="Projetos Críticos"
           value={metricas.projetosCriticos}
-          description="Status vermelho"
-          icon={<AlertTriangle className="h-5 w-5 text-pmo-danger" />}
-          className="border-pmo-danger/20"
+          icon={AlertTriangle}
+          trend="down"
+          className="border-l-4 border-l-pmo-danger"
         />
-        
         <MetricCard
-          title="Próximos Marcos"
-          value={metricas.proximosMarcos.length}
-          description="Próximos 15 dias"
-          icon={<Clock className="h-5 w-5 text-pmo-warning" />}
-        />
-        
-        <MetricCard
-          title="Change Requests"
+          title="Mudanças Ativas"
           value={metricas.mudancasAtivas}
-          description="Pendentes análise"
-          icon={<TrendingUp className="h-5 w-5 text-pmo-secondary" />}
+          icon={TrendingUp}
+          trend="up"
+          className="border-l-4 border-l-pmo-warning"
+        />
+        <MetricCard
+          title="Marcos Próximos"
+          value={metricas.proximosMarcos.length}
+          icon={Clock}
+          trend="stable"
+          className="border-l-4 border-l-pmo-success"
         />
       </div>
 
-      {/* Gráficos e próximos marcos */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <StatusChart 
-          data={metricas.projetosPorStatus}
-          title="Projetos por Status"
-        />
-        
-        <StatusChart 
-          data={metricas.projetosPorSaude}
-          title="Saúde dos Projetos"
-        />
-        
-        <ProximosMarcos marcos={metricas.proximosMarcos} />
-      </div>
-
-      {/* Distribuição por área */}
+      {/* Gráficos e Detalhes */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg font-semibold text-pmo-primary">
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5" />
+              Projetos por Status
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <StatusChart data={metricas.projetosPorStatus} type="status" />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CheckCircle className="h-5 w-5" />
+              Saúde dos Projetos
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <StatusChart data={metricas.projetosPorSaude} type="health" />
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Projetos por Área e Próximos Marcos */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
               Projetos por Área
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               {Object.entries(metricas.projetosPorArea).map(([area, quantidade]) => (
-                <div key={area} className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-pmo-primary">{area}</span>
-                  <div className="flex items-center gap-3">
-                    <div className="w-32 bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-pmo-primary h-2 rounded-full" 
-                        style={{ 
-                          width: `${(quantidade / metricas.totalProjetos) * 100}%` 
-                        }}
-                      />
-                    </div>
-                    <span className="text-sm font-semibold text-pmo-primary min-w-[2rem] text-right">
-                      {quantidade}
-                    </span>
-                  </div>
+                <div key={area} className="flex justify-between items-center">
+                  <span className="text-sm font-medium">{area}</span>
+                  <span className="text-2xl font-bold text-pmo-primary">{quantidade}</span>
                 </div>
               ))}
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold text-pmo-primary flex items-center gap-2">
-              <CheckCircle className="h-5 w-5" />
-              Resumo Executivo
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="p-4 bg-pmo-success/10 rounded-lg border border-pmo-success/20">
-                <h4 className="font-medium text-pmo-success mb-2">✅ Pontos Positivos</h4>
-                <ul className="text-sm text-pmo-gray space-y-1">
-                  <li>• {metricas.totalProjetos - metricas.projetosCriticos} projetos com saúde boa</li>
-                  <li>• {metricas.projetosPorSaude['Verde'] || 0} projetos no verde</li>
-                  <li>• Cronogramas dentro do prazo</li>
-                </ul>
-              </div>
-              
-              <div className="p-4 bg-pmo-warning/10 rounded-lg border border-pmo-warning/20">
-                <h4 className="font-medium text-pmo-warning mb-2">⚠️ Pontos de Atenção</h4>
-                <ul className="text-sm text-pmo-gray space-y-1">
-                  <li>• {metricas.projetosCriticos} projeto(s) crítico(s)</li>
-                  <li>• {metricas.mudancasAtivas} mudança(s) pendente(s)</li>
-                  <li>• {metricas.proximosMarcos.length} marco(s) próximo(s)</li>
-                </ul>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <ProximosMarcos marcos={metricas.proximosMarcos} />
       </div>
     </div>
   );

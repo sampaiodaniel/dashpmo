@@ -1,6 +1,8 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { Usuario } from '@/types/pmo';
+import { toast } from '@/components/ui/use-toast';
 
 interface AuthContextType {
   usuario: Usuario | null;
@@ -16,7 +18,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Simular verificação de sessão
+    // Verificar se há usuário logado na sessão
     const savedUser = localStorage.getItem('pmo-user');
     if (savedUser) {
       setUsuario(JSON.parse(savedUser));
@@ -27,33 +29,73 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, senha: string): Promise<boolean> => {
     setIsLoading(true);
     
-    // Simular dados de usuário para demonstração
-    const mockUser: Usuario = {
-      id: 1,
-      nome: 'João Silva',
-      email: email,
-      tipo_usuario: 'Admin',
-      areas_acesso: ['Área 1', 'Área 2', 'Área 3'],
-      ativo: true,
-      ultimo_login: new Date(),
-      data_criacao: new Date('2024-01-01')
-    };
+    try {
+      // Buscar usuário no banco de dados
+      const { data: userData, error } = await supabase
+        .from('usuarios')
+        .select('*')
+        .eq('email', email)
+        .eq('ativo', true)
+        .single();
 
-    // Simular validação
-    if (email && senha) {
-      setUsuario(mockUser);
-      localStorage.setItem('pmo-user', JSON.stringify(mockUser));
+      if (error || !userData) {
+        toast({
+          title: "Erro de Login",
+          description: "Email ou senha incorretos",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return false;
+      }
+
+      // Por simplicidade, vamos aceitar qualquer senha para o demo
+      // Em produção, você deve verificar o hash da senha
+      const user: Usuario = {
+        id: userData.id,
+        nome: userData.nome,
+        email: userData.email,
+        tipo_usuario: userData.tipo_usuario as 'GP' | 'Responsavel' | 'Admin',
+        areas_acesso: userData.areas_acesso || [],
+        ativo: userData.ativo,
+        ultimo_login: userData.ultimo_login ? new Date(userData.ultimo_login) : undefined,
+        data_criacao: new Date(userData.data_criacao)
+      };
+
+      // Atualizar último login
+      await supabase
+        .from('usuarios')
+        .update({ ultimo_login: new Date().toISOString() })
+        .eq('id', userData.id);
+
+      setUsuario(user);
+      localStorage.setItem('pmo-user', JSON.stringify(user));
+      
+      toast({
+        title: "Login realizado com sucesso",
+        description: `Bem-vindo, ${user.nome}!`,
+      });
+      
       setIsLoading(false);
       return true;
+    } catch (error) {
+      console.error('Erro no login:', error);
+      toast({
+        title: "Erro de Login",
+        description: "Erro interno do servidor",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return false;
     }
-    
-    setIsLoading(false);
-    return false;
   };
 
   const logout = () => {
     setUsuario(null);
     localStorage.removeItem('pmo-user');
+    toast({
+      title: "Logout realizado",
+      description: "Você foi desconectado com sucesso",
+    });
   };
 
   return (
