@@ -9,6 +9,7 @@ import { Plus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useIncidenteOperations } from '@/hooks/useIncidentes';
 import { useCarteiras } from '@/hooks/useListaValores';
+import { format } from 'date-fns';
 
 export function NovoRegistroIncidenteModal() {
   const [open, setOpen] = useState(false);
@@ -17,14 +18,17 @@ export function NovoRegistroIncidenteModal() {
     anterior: 0,
     entrada: 0,
     saida: 0,
-    atual: 0,
     mais_15_dias: 0,
     criticos: 0,
+    data_registro: format(new Date(), 'yyyy-MM-dd'),
   });
 
   const { usuario } = useAuth();
   const { criarIncidente } = useIncidenteOperations();
   const { data: carteiras, isLoading: carregandoCarteiras } = useCarteiras();
+
+  // Calcular o valor atual automaticamente
+  const atual = formData.anterior - formData.saida + formData.entrada;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,6 +41,7 @@ export function NovoRegistroIncidenteModal() {
     try {
       await criarIncidente.mutateAsync({
         ...formData,
+        atual, // Usar o valor calculado
         criado_por: usuario.nome,
       });
       
@@ -45,9 +50,9 @@ export function NovoRegistroIncidenteModal() {
         anterior: 0,
         entrada: 0,
         saida: 0,
-        atual: 0,
         mais_15_dias: 0,
         criticos: 0,
+        data_registro: format(new Date(), 'yyyy-MM-dd'),
       });
       setOpen(false);
     } catch (error) {
@@ -58,7 +63,7 @@ export function NovoRegistroIncidenteModal() {
   const handleInputChange = (field: string, value: string | number) => {
     setFormData(prev => ({
       ...prev,
-      [field]: field === 'carteira' ? value : Number(value)
+      [field]: field === 'carteira' || field === 'data_registro' ? value : Number(value)
     }));
   };
 
@@ -98,6 +103,16 @@ export function NovoRegistroIncidenteModal() {
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="data_registro">Data Registro</Label>
+              <Input
+                id="data_registro"
+                type="date"
+                value={formData.data_registro}
+                onChange={(e) => handleInputChange('data_registro', e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="anterior">Anterior</Label>
               <Input
                 id="anterior"
@@ -131,13 +146,13 @@ export function NovoRegistroIncidenteModal() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="atual">Atual</Label>
+              <Label htmlFor="atual">Atual (calculado)</Label>
               <Input
                 id="atual"
                 type="number"
-                min="0"
-                value={formData.atual}
-                onChange={(e) => handleInputChange('atual', e.target.value)}
+                value={atual}
+                disabled
+                className="bg-gray-100"
               />
             </div>
 
@@ -152,7 +167,7 @@ export function NovoRegistroIncidenteModal() {
               />
             </div>
 
-            <div className="space-y-2 col-span-2">
+            <div className="space-y-2">
               <Label htmlFor="criticos">Críticos</Label>
               <Input
                 id="criticos"

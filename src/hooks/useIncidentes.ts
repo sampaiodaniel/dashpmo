@@ -11,6 +11,7 @@ export interface IncidenteData {
   atual: number;
   mais_15_dias: number;
   criticos: number;
+  data_registro?: string;
 }
 
 export function useIncidentes() {
@@ -66,7 +67,7 @@ export function useIncidenteOperations() {
           mais_15_dias: data.mais_15_dias,
           criticos: data.criticos,
           criado_por: data.criado_por,
-          data_registro: new Date().toISOString().split('T')[0] // Data atual
+          data_registro: data.data_registro || new Date().toISOString().split('T')[0]
         }])
         .select()
         .single();
