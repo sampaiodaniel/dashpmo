@@ -6,7 +6,7 @@ type TipoMudanca = Database['public']['Enums']['tipo_mudanca'];
 type CategoriaLicao = Database['public']['Enums']['categoria_licao'];
 type StatusAplicacao = Database['public']['Enums']['status_aplicacao'];
 
-export const createTestChangeRequests = async () => {
+export const createTestData = async () => {
   const testMudancas = [
     {
       descricao: 'Alteração no cronograma de entrega do módulo de autenticação',
@@ -220,7 +220,7 @@ export const createTestChangeRequests = async () => {
       criado_por: 'Marcos Pereira'
     },
     {
-      situacao_ocorrida: 'Falta de documentação técnica dificultou onboarding de novos desenvolvedores',
+      descrição: 'Falta de documentação técnica dificultou onboarding de novos desenvolvedores',
       licao_aprendida: 'Documentação técnica deve ser mantida atualizada e ser parte do definition of done',
       impacto_gerado: 'Tempo de onboarding 3x maior que o planejado',
       acao_recomendada: 'Incluir atualização de documentação como critério obrigatório para conclusão de tasks',
@@ -261,3 +261,6 @@ export const createTestChangeRequests = async () => {
     throw error;
   }
 };
+
+// Manter compatibilidade com o nome antigo
+export const createTestChangeRequests = createTestData;

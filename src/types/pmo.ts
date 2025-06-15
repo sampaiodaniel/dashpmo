@@ -164,10 +164,6 @@ export interface FiltrosProjeto {
   area?: string;
   responsavel_interno?: string;
   gp_responsavel?: string;
-  status_geral?: StatusGeral[];
-  status_visao_gp?: StatusVisaoGP[];
-  data_inicio?: Date;
-  data_fim?: Date;
   busca?: string;
   incluirFechados?: boolean;
 }

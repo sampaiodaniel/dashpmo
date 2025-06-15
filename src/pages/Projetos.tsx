@@ -7,9 +7,7 @@ import { CriarProjetoModal } from '@/components/forms/CriarProjetoModal';
 import { useProjetos } from '@/hooks/useProjetos';
 import { useState, useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useProjetosOperations } from '@/hooks/useProjetosOperations';
 import { getStatusColor, getStatusGeralColor, FiltrosProjeto } from '@/types/pmo';
 import { ProjetoFilters } from '@/components/projetos/ProjetoFilters';
 import { ProjetoAcoesAdmin } from '@/components/projetos/ProjetoAcoesAdmin';
@@ -21,7 +19,6 @@ export default function Projetos() {
   const queryClient = useQueryClient();
   const [filtros, setFiltros] = useState<FiltrosProjeto>({});
   const { data: projetos, isLoading: projetosLoading, error: projetosError } = useProjetos(filtros);
-  const { criarProjetosTeste, isLoading: criandoTeste } = useProjetosOperations();
   const [termoBusca, setTermoBusca] = useState('');
 
   console.log('📋 Estado da página Projetos:', {
@@ -37,13 +34,6 @@ export default function Projetos() {
   };
 
   const handleProjetoAtualizado = () => {
-    queryClient.invalidateQueries({ queryKey: ['projetos'] });
-  };
-
-  const handleCriarProjetosTeste = async () => {
-    console.log('🔄 Criando projetos de teste...');
-    await criarProjetosTeste();
-    console.log('♻️ Invalidando cache de projetos...');
     queryClient.invalidateQueries({ queryKey: ['projetos'] });
   };
 
@@ -88,15 +78,6 @@ export default function Projetos() {
             <p className="text-pmo-gray mt-2">Gestão e acompanhamento de projetos</p>
           </div>
           <div className="flex gap-2">
-            {isAdmin && (
-              <Button
-                onClick={handleCriarProjetosTeste}
-                variant="outline"
-                disabled={criandoTeste}
-              >
-                {criandoTeste ? 'Criando...' : 'Criar 5 Projetos Teste'}
-              </Button>
-            )}
             <CriarProjetoModal onProjetoCriado={handleProjetoCriado} />
           </div>
         </div>

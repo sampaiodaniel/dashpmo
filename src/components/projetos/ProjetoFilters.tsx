@@ -1,6 +1,7 @@
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Filter } from 'lucide-react';
 import { CARTEIRAS, FiltrosProjeto } from '@/types/pmo';
 
@@ -31,16 +32,26 @@ export function ProjetoFilters({ filtros, onFiltroChange, responsaveis }: Projet
     onFiltroChange(novosFiltros);
   };
 
+  const handleIncluirFechadosChange = (checked: boolean) => {
+    const novosFiltros = { ...filtros };
+    if (checked) {
+      novosFiltros.incluirFechados = true;
+    } else {
+      delete novosFiltros.incluirFechados;
+    }
+    onFiltroChange(novosFiltros);
+  };
+
   return (
     <Card className="bg-white shadow-sm">
       <CardContent className="p-4">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 flex-wrap">
           <div className="flex items-center gap-2">
             <Filter className="h-4 w-4 text-pmo-gray" />
             <span className="text-sm font-medium text-pmo-gray">Filtros:</span>
           </div>
           
-          <div className="flex gap-4">
+          <div className="flex gap-4 flex-wrap">
             <div className="flex items-center gap-2">
               <label className="text-sm text-pmo-gray">Carteira:</label>
               <Select value={filtros.area || 'todas'} onValueChange={handleCarteiraChange}>
@@ -73,6 +84,17 @@ export function ProjetoFilters({ filtros, onFiltroChange, responsaveis }: Projet
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="incluir-fechados"
+                checked={filtros.incluirFechados || false}
+                onCheckedChange={handleIncluirFechadosChange}
+              />
+              <label htmlFor="incluir-fechados" className="text-sm text-pmo-gray">
+                Incluir projetos fechados
+              </label>
             </div>
           </div>
         </div>

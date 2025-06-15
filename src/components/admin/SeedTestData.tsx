@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Database, Loader2 } from 'lucide-react';
 import { useState } from 'react';
-import { createTestChangeRequests } from '@/utils/seedTestData';
+import { createTestData } from '@/utils/seedTestData';
 import { toast } from '@/hooks/use-toast';
 
 export function SeedTestData() {
@@ -12,7 +12,7 @@ export function SeedTestData() {
   const handleSeedData = async () => {
     setLoading(true);
     try {
-      await createTestChangeRequests();
+      await createTestData();
       toast({
         title: "Dados de teste criados",
         description: "10 mudanças de replanejamento e 10 lições aprendidas foram criadas com sucesso",
@@ -39,7 +39,7 @@ export function SeedTestData() {
       <CardContent>
         <div className="space-y-4">
           <p className="text-sm text-pmo-gray">
-            Criar dados de teste para desenvolvimento e demonstração.
+            Criar 10 lições aprendidas e 10 CRs (mudanças de replanejamento) de teste.
           </p>
           <Button 
             onClick={handleSeedData}
@@ -54,7 +54,7 @@ export function SeedTestData() {
             ) : (
               <>
                 <Database className="h-4 w-4 mr-2" />
-                Criar Dados de Teste
+                Criar 10 Lições + 10 CRs
               </>
             )}
           </Button>

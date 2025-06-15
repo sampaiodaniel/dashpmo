@@ -1,15 +1,17 @@
-
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart3, Download, FileText, Calendar } from 'lucide-react';
+import { BarChart3, Download, FileText, Calendar, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useRelatorios } from '@/hooks/useRelatorios';
+import { ReportWebhookModal } from '@/components/relatorios/ReportWebhookModal';
+import { useState } from 'react';
 
 export default function Relatorios() {
   const { usuario, isLoading } = useAuth();
   const { gerarRelatorio, isLoading: gerandoRelatorio } = useRelatorios();
+  const [showWebhookModal, setShowWebhookModal] = useState(false);
 
   if (isLoading) {
     return (
@@ -36,7 +38,7 @@ export default function Relatorios() {
           <p className="text-pmo-gray mt-2">Consultas e relatórios gerenciais</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <Card className="hover:shadow-md transition-shadow cursor-pointer">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -96,6 +98,26 @@ export default function Relatorios() {
               >
                 <Download className="h-4 w-4 mr-2" />
                 {gerandoRelatorio ? 'Gerando...' : 'Gerar Relatório'}
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-md transition-shadow cursor-pointer">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Send className="h-5 w-5 text-pmo-primary" />
+                Report Carteira
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-pmo-gray mb-4">Enviar dados da carteira via webhook</p>
+              <Button 
+                size="sm" 
+                className="w-full"
+                onClick={() => setShowWebhookModal(true)}
+              >
+                <Send className="h-4 w-4 mr-2" />
+                Enviar Report
               </Button>
             </CardContent>
           </Card>

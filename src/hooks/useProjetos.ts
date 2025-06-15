@@ -19,7 +19,7 @@ export function useProjetos(filtros?: FiltrosProjeto) {
         `)
         .order('data_criacao', { ascending: false });
 
-      // Por padrão, mostrar apenas projetos ativos, a menos que seja especificado incluir fechados
+      // Aplicar filtro de projetos fechados
       if (!filtros?.incluirFechados) {
         query = query.eq('status_ativo', true);
       }
