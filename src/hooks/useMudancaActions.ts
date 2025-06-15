@@ -1,23 +1,29 @@
 
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
+import { useMudancasOperations } from '@/hooks/useMudancasOperations';
 
 export function useMudancaActions(onMudancaClick?: (mudancaId: number) => void) {
   const { canApprove } = useAuth();
   const navigate = useNavigate();
+  const { aprovarMudanca, rejeitarMudanca } = useMudancasOperations();
 
-  const handleAprovar = (e: React.MouseEvent, mudancaId: number) => {
+  const handleAprovar = async (e: React.MouseEvent, mudancaId: number) => {
     e.preventDefault();
     e.stopPropagation();
     console.log('Aprovando mudança:', mudancaId);
-    // TODO: Implementar aprovação
+    
+    // Por enquanto, usar um responsável genérico até implementarmos auth completa
+    await aprovarMudanca(mudancaId, 'Administrador');
   };
 
-  const handleRejeitar = (e: React.MouseEvent, mudancaId: number) => {
+  const handleRejeitar = async (e: React.MouseEvent, mudancaId: number) => {
     e.preventDefault();
     e.stopPropagation();
     console.log('Rejeitando mudança:', mudancaId);
-    // TODO: Implementar rejeição
+    
+    // Por enquanto, usar um responsável genérico até implementarmos auth completa
+    await rejeitarMudanca(mudancaId, 'Administrador');
   };
 
   const handleEditar = (e: React.MouseEvent, mudancaId: number) => {

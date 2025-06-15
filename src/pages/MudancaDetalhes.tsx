@@ -1,8 +1,10 @@
+
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
 import { useMudancasList } from '@/hooks/useMudancasList';
+import { useMudancasOperations } from '@/hooks/useMudancasOperations';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Building, Calendar, User, Clock, FileText, CheckCircle, XCircle, Edit } from 'lucide-react';
@@ -13,6 +15,7 @@ export default function MudancaDetalhes() {
   const navigate = useNavigate();
   const { usuario, isLoading } = useAuth();
   const { data: mudancas, isLoading: mudancasLoading } = useMudancasList();
+  const { aprovarMudanca, rejeitarMudanca, isLoading: processandoMudanca } = useMudancasOperations();
 
   const mudanca = mudancas?.find(m => m.id === Number(id));
 
@@ -62,14 +65,14 @@ export default function MudancaDetalhes() {
     navigate(`/mudancas/${mudanca.id}/editar`);
   };
 
-  const handleAprovar = () => {
+  const handleAprovar = async () => {
     console.log('Aprovando mudança:', mudanca.id);
-    // TODO: Implementar aprovação da mudança
+    await aprovarMudanca(mudanca.id, 'Administrador');
   };
 
-  const handleRejeitar = () => {
+  const handleRejeitar = async () => {
     console.log('Rejeitando mudança:', mudanca.id);
-    // TODO: Implementar rejeição da mudança
+    await rejeitarMudanca(mudanca.id, 'Administrador');
   };
 
   return (
@@ -100,13 +103,21 @@ export default function MudancaDetalhes() {
             )}
             {usuario.tipo_usuario === 'Admin' && mudanca.status_aprovacao === 'Pendente' && (
               <>
-                <Button onClick={handleAprovar} className="bg-green-600 hover:bg-green-700">
+                <Button 
+                  onClick={handleAprovar} 
+                  className="bg-green-600 hover:bg-green-700"
+                  disabled={processandoMudanca}
+                >
                   <CheckCircle className="h-4 w-4 mr-2" />
-                  Aprovar
+                  {processandoMudanca ? 'Aprovando...' : 'Aprovar'}
                 </Button>
-                <Button onClick={handleRejeitar} variant="destructive">
+                <Button 
+                  onClick={handleRejeitar} 
+                  variant="destructive"
+                  disabled={processandoMudanca}
+                >
                   <XCircle className="h-4 w-4 mr-2" />
-                  Rejeitar
+                  {processandoMudanca ? 'Rejeitando...' : 'Rejeitar'}
                 </Button>
               </>
             )}

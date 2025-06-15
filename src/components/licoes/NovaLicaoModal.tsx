@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { X } from 'lucide-react';
+import { useLicoesOperations } from '@/hooks/useLicoesOperations';
 
 interface NovaLicaoModalProps {
   isOpen: boolean;
@@ -15,20 +16,43 @@ interface NovaLicaoModalProps {
 }
 
 export function NovaLicaoModal({ isOpen, onClose, categorias = [] }: NovaLicaoModalProps) {
+  const { criarLicao, isLoading } = useLicoesOperations();
   const [formData, setFormData] = useState({
     categoria_licao: '',
     situacao_ocorrida: '',
     licao_aprendida: '',
     acao_recomendada: '',
     tags_busca: '',
-    status_aplicacao: 'Não aplicada'
+    status_aplicacao: 'Não aplicada',
+    responsavel_registro: ''
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Criando nova lição:', formData);
-    // TODO: Implementar criação da lição
-    onClose();
+    
+    if (!formData.categoria_licao || !formData.licao_aprendida || !formData.responsavel_registro) {
+      toast({
+        title: "Erro",
+        description: "Preencha todos os campos obrigatórios",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const success = await criarLicao({
+      categoria_licao: formData.categoria_licao as any,
+      situacao_ocorrida: formData.situacao_ocorrida,
+      licao_aprendida: formData.licao_aprendida,
+      acao_recomendada: formData.acao_recomendada,
+      tags_busca: formData.tags_busca || null,
+      status_aplicacao: formData.status_aplicacao as any,
+      responsavel_registro: formData.responsavel_registro,
+      impacto_gerado: formData.acao_recomendada || 'Não especificado'
+    });
+
+    if (success) {
+      handleClose();
+    }
   };
 
   const handleClose = () => {
@@ -38,7 +62,8 @@ export function NovaLicaoModal({ isOpen, onClose, categorias = [] }: NovaLicaoMo
       licao_aprendida: '',
       acao_recomendada: '',
       tags_busca: '',
-      status_aplicacao: 'Não aplicada'
+      status_aplicacao: 'Não aplicada',
+      responsavel_registro: ''
     });
     onClose();
   };
@@ -57,7 +82,18 @@ export function NovaLicaoModal({ isOpen, onClose, categorias = [] }: NovaLicaoMo
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="categoria">Categoria</Label>
+            <Label htmlFor="responsavel">Responsável pelo Registro *</Label>
+            <Input
+              id="responsavel"
+              value={formData.responsavel_registro}
+              onChange={(e) => setFormData(prev => ({ ...prev, responsavel_registro: e.target.value }))}
+              placeholder="Nome do responsável"
+              required
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="categoria">Categoria *</Label>
             <Select 
               value={formData.categoria_licao}
               onValueChange={(value) => setFormData(prev => ({ ...prev, categoria_licao: value }))}
@@ -87,7 +123,7 @@ export function NovaLicaoModal({ isOpen, onClose, categorias = [] }: NovaLicaoMo
           </div>
 
           <div>
-            <Label htmlFor="licao">Lição Aprendida</Label>
+            <Label htmlFor="licao">Lição Aprendida *</Label>
             <Textarea
               id="licao"
               value={formData.licao_aprendida}
@@ -137,10 +173,14 @@ export function NovaLicaoModal({ isOpen, onClose, categorias = [] }: NovaLicaoMo
           </div>
 
           <div className="flex gap-2 pt-4">
-            <Button type="submit" className="bg-pmo-primary hover:bg-pmo-primary/90">
-              Criar Lição
+            <Button 
+              type="submit" 
+              className="bg-pmo-primary hover:bg-pmo-primary/90"
+              disabled={isLoading}
+            >
+              {isLoading ? 'Criando...' : 'Criar Lição'}
             </Button>
-            <Button type="button" variant="outline" onClick={handleClose}>
+            <Button type="button" variant="outline" onClick={handleClose} disabled={isLoading}>
               Cancelar
             </Button>
           </div>
