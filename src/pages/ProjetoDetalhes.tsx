@@ -5,15 +5,20 @@ import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
 import { useProjetos } from '@/hooks/useProjetos';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, User, Building } from 'lucide-react';
+import { ArrowLeft, Calendar, User, Building, Edit, History } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { getStatusColor, getStatusGeralColor } from '@/types/pmo';
+import { useState } from 'react';
+import { EditarProjetoModal } from '@/components/forms/EditarProjetoModal';
+import { HistoricoProjetoModal } from '@/components/modals/HistoricoProjetoModal';
 
 export default function ProjetoDetalhes() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { usuario, isLoading: authLoading } = useAuth();
   const { data: projetos, isLoading } = useProjetos();
+  const [editarModalAberto, setEditarModalAberto] = useState(false);
+  const [historicoModalAberto, setHistoricoModalAberto] = useState(false);
 
   const projeto = projetos?.find(p => p.id === Number(id));
 
@@ -79,10 +84,10 @@ export default function ProjetoDetalhes() {
             <div className="bg-white rounded-lg shadow-sm border p-6">
               <h2 className="text-xl font-semibold text-pmo-primary mb-4">Informações Gerais</h2>
               
-              {projeto.descricao && (
+              {projeto.descricao_projeto && (
                 <div className="mb-6">
-                  <h3 className="font-medium text-pmo-gray mb-2">Descrição</h3>
-                  <p className="text-gray-700">{projeto.descricao}</p>
+                  <h3 className="font-medium text-pmo-gray mb-2">Descrição do Projeto</h3>
+                  <p className="text-gray-700">{projeto.descricao_projeto}</p>
                 </div>
               )}
 
@@ -102,6 +107,46 @@ export default function ProjetoDetalhes() {
                   </h3>
                   <p className="text-gray-700">{projeto.gp_responsavel}</p>
                 </div>
+
+                {projeto.responsavel_cwi && (
+                  <div>
+                    <h3 className="font-medium text-pmo-gray mb-2 flex items-center gap-2">
+                      <User className="h-4 w-4" />
+                      Responsável CWI
+                    </h3>
+                    <p className="text-gray-700">{projeto.responsavel_cwi}</p>
+                  </div>
+                )}
+
+                {projeto.gp_responsavel_cwi && (
+                  <div>
+                    <h3 className="font-medium text-pmo-gray mb-2 flex items-center gap-2">
+                      <User className="h-4 w-4" />
+                      GP Responsável CWI
+                    </h3>
+                    <p className="text-gray-700">{projeto.gp_responsavel_cwi}</p>
+                  </div>
+                )}
+
+                {projeto.responsavel_asa && (
+                  <div>
+                    <h3 className="font-medium text-pmo-gray mb-2 flex items-center gap-2">
+                      <User className="h-4 w-4" />
+                      Responsável ASA
+                    </h3>
+                    <p className="text-gray-700">{projeto.responsavel_asa}</p>
+                  </div>
+                )}
+
+                {projeto.equipe && (
+                  <div>
+                    <h3 className="font-medium text-pmo-gray mb-2 flex items-center gap-2">
+                      <User className="h-4 w-4" />
+                      Equipe
+                    </h3>
+                    <p className="text-gray-700">{projeto.equipe}</p>
+                  </div>
+                )}
                 
                 <div>
                   <h3 className="font-medium text-pmo-gray mb-2 flex items-center gap-2">
@@ -110,6 +155,16 @@ export default function ProjetoDetalhes() {
                   </h3>
                   <p className="text-gray-700">{projeto.data_criacao.toLocaleDateString('pt-BR')}</p>
                 </div>
+
+                {projeto.finalizacao_prevista && (
+                  <div>
+                    <h3 className="font-medium text-pmo-gray mb-2 flex items-center gap-2">
+                      <Calendar className="h-4 w-4" />
+                      Finalização Prevista
+                    </h3>
+                    <p className="text-gray-700">{new Date(projeto.finalizacao_prevista).toLocaleDateString('pt-BR')}</p>
+                  </div>
+                )}
                 
                 <div>
                   <h3 className="font-medium text-pmo-gray mb-2">Criado por</h3>
@@ -166,12 +221,51 @@ export default function ProjetoDetalhes() {
             <div className="bg-white rounded-lg shadow-sm border p-6">
               <h2 className="text-xl font-semibold text-pmo-primary mb-4 flex items-center gap-2">
                 <Building className="h-5 w-5" />
-                Carteira
+                Carteiras
               </h2>
-              <div className="text-center">
-                <Badge variant="outline" className="text-lg px-4 py-2 bg-blue-50 text-blue-700 border-blue-200">
-                  {projeto.area_responsavel}
-                </Badge>
+              
+              <div className="space-y-3">
+                <div>
+                  <span className="text-sm text-pmo-gray">Carteira Principal:</span>
+                  <div className="mt-1">
+                    <Badge variant="outline" className="text-lg px-4 py-2 bg-blue-50 text-blue-700 border-blue-200">
+                      {projeto.area_responsavel}
+                    </Badge>
+                  </div>
+                </div>
+
+                {projeto.carteira_primaria && (
+                  <div>
+                    <span className="text-sm text-pmo-gray">Carteira Primária:</span>
+                    <div className="mt-1">
+                      <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                        {projeto.carteira_primaria}
+                      </Badge>
+                    </div>
+                  </div>
+                )}
+
+                {projeto.carteira_secundaria && (
+                  <div>
+                    <span className="text-sm text-pmo-gray">Carteira Secundária:</span>
+                    <div className="mt-1">
+                      <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
+                        {projeto.carteira_secundaria}
+                      </Badge>
+                    </div>
+                  </div>
+                )}
+
+                {projeto.carteira_terciaria && (
+                  <div>
+                    <span className="text-sm text-pmo-gray">Carteira Terciária:</span>
+                    <div className="mt-1">
+                      <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
+                        {projeto.carteira_terciaria}
+                      </Badge>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -181,10 +275,20 @@ export default function ProjetoDetalhes() {
                 <Button className="w-full" onClick={() => navigate(`/status/novo?projeto=${projeto.id}`)}>
                   Novo Status
                 </Button>
-                <Button variant="outline" className="w-full">
+                <Button 
+                  variant="outline" 
+                  className="w-full" 
+                  onClick={() => setEditarModalAberto(true)}
+                >
+                  <Edit className="h-4 w-4 mr-2" />
                   Editar Projeto
                 </Button>
-                <Button variant="outline" className="w-full">
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => setHistoricoModalAberto(true)}
+                >
+                  <History className="h-4 w-4 mr-2" />
                   Ver Histórico
                 </Button>
               </div>
@@ -192,6 +296,19 @@ export default function ProjetoDetalhes() {
           </div>
         </div>
       </div>
+
+      <EditarProjetoModal 
+        projeto={projeto}
+        aberto={editarModalAberto}
+        onFechar={() => setEditarModalAberto(false)}
+      />
+
+      <HistoricoProjetoModal
+        projetoId={projeto.id}
+        nomeProjeto={projeto.nome_projeto}
+        aberto={historicoModalAberto}
+        onFechar={() => setHistoricoModalAberto(false)}
+      />
     </Layout>
   );
 }
