@@ -10,8 +10,8 @@ export function useNovoStatusForm() {
   // Agora posso usar carteiraSelecionada no hook
   const { data: todosProjetos } = useProjetos({ incluirFechados: true, area: carteiraSelecionada || undefined });
   
-  const [projetoId, setProjetoId] = useState('');
-  const [progressoEstimado, setProgressoEstimado] = useState('');
+  const [projetoId, setProjetoId] = useState<number | null>(null);
+  const [progressoEstimado, setProgressoEstimado] = useState<number>(0);
   const [responsavelCwi, setResponsavelCwi] = useState('');
   const [gpResponsavelCwi, setGpResponsavelCwi] = useState('');
   const [responsavelAsa, setResponsavelAsa] = useState('');
@@ -49,12 +49,12 @@ export function useNovoStatusForm() {
   // Resetar projeto quando carteira muda
   const handleCarteiraChange = (novaCarteira: string) => {
     setCarteiraSelecionada(novaCarteira);
-    setProjetoId(''); // Limpar projeto selecionado
+    setProjetoId(null); // Limpar projeto selecionado
   };
 
   const getFormData = () => ({
-    projeto_id: parseInt(projetoId),
-    progresso_estimado: progressoEstimado ? parseInt(progressoEstimado) : null,
+    projeto_id: projetoId,
+    progresso_estimado: progressoEstimado || null,
     responsavel_cwi: responsavelCwi || null,
     gp_responsavel_cwi: gpResponsavelCwi || null,
     responsavel_asa: responsavelAsa || null,
