@@ -2,9 +2,9 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Filter, X } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { CarteiraProjetoFilter } from './filters/CarteiraProjetoFilter';
-import { ResponsavelStatusFilter } from './filters/ResponsavelStatusFilter';
-import { DateFilter } from './filters/DateFilter';
+import { CompactCarteiraProjetoFilter } from './filters/CompactCarteiraProjetoFilter';
+import { CompactResponsavelFilter } from './filters/CompactResponsavelFilter';
+import { ApprovalStatusFilter } from './filters/ApprovalStatusFilter';
 import { CheckboxFilter } from './filters/CheckboxFilter';
 import { StatusFilters as StatusFiltersType, hasFiltersApplied, clearAllFilters } from './filters/FilterUtils';
 
@@ -23,7 +23,7 @@ export function StatusFilters({ filtros, onFiltroChange, responsaveis }: StatusF
 
   return (
     <Card className="bg-white shadow-sm">
-      <CardContent className="p-4">
+      <CardContent className="p-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4 flex-wrap">
             <div className="flex items-center gap-2">
@@ -31,19 +31,19 @@ export function StatusFilters({ filtros, onFiltroChange, responsaveis }: StatusF
               <span className="text-sm font-medium text-pmo-gray">Filtros:</span>
             </div>
             
-            <div className="flex gap-4 flex-wrap">
-              <CarteiraProjetoFilter 
+            <div className="flex gap-6 flex-wrap items-center">
+              <CompactCarteiraProjetoFilter 
                 filtros={filtros}
                 onFiltroChange={onFiltroChange}
               />
 
-              <ResponsavelStatusFilter 
+              <CompactResponsavelFilter 
                 filtros={filtros}
                 onFiltroChange={onFiltroChange}
                 responsaveis={responsaveis}
               />
 
-              <DateFilter 
+              <ApprovalStatusFilter 
                 filtros={filtros}
                 onFiltroChange={onFiltroChange}
               />
@@ -63,7 +63,7 @@ export function StatusFilters({ filtros, onFiltroChange, responsaveis }: StatusF
               className="flex items-center gap-2 text-pmo-gray hover:text-pmo-primary"
             >
               <X className="h-4 w-4" />
-              Limpar Filtros
+              Limpar
             </Button>
           )}
         </div>

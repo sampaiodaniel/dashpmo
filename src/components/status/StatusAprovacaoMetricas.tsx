@@ -1,5 +1,5 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { CheckSquare, Clock, AlertCircle } from 'lucide-react';
 import { useStatusPendentes } from '@/hooks/useStatusPendentes';
 import { useAuth } from '@/hooks/useAuth';
@@ -30,20 +30,19 @@ export function StatusAprovacaoMetricas({
   }).length || 0;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
       <Card 
         className="border-l-4 border-l-pmo-warning cursor-pointer hover:shadow-md transition-shadow"
         onClick={onFiltrarAguardandoAprovacao}
       >
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Clock className="h-5 w-5" />
-            Aguardando Aprovação
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-pmo-warning">{aguardandoAprovacao}</div>
-          <p className="text-sm text-pmo-gray">Status pendentes</p>
+        <CardContent className="p-4">
+          <div className="flex items-center gap-3">
+            <Clock className="h-5 w-5 text-pmo-warning" />
+            <div className="flex items-baseline gap-2">
+              <div className="text-xl font-bold text-pmo-warning">{aguardandoAprovacao}</div>
+              <span className="text-sm text-pmo-gray">Aguardando Aprovação</span>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
@@ -51,15 +50,14 @@ export function StatusAprovacaoMetricas({
         className="border-l-4 border-l-pmo-danger cursor-pointer hover:shadow-md transition-shadow"
         onClick={onFiltrarEmAtraso}
       >
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <AlertCircle className="h-5 w-5" />
-            Em Atraso
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-pmo-danger">{emAtraso}</div>
-          <p className="text-sm text-pmo-gray">Mais de 3 dias</p>
+        <CardContent className="p-4">
+          <div className="flex items-center gap-3">
+            <AlertCircle className="h-5 w-5 text-pmo-danger" />
+            <div className="flex items-baseline gap-2">
+              <div className="text-xl font-bold text-pmo-danger">{emAtraso}</div>
+              <span className="text-sm text-pmo-gray">Em Atraso (+3 dias)</span>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
@@ -67,15 +65,14 @@ export function StatusAprovacaoMetricas({
         className="border-l-4 border-l-pmo-success cursor-pointer hover:shadow-md transition-shadow"
         onClick={onFiltrarAprovadosHoje}
       >
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <CheckSquare className="h-5 w-5" />
-            Aprovadas Hoje
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-pmo-success">0</div>
-          <p className="text-sm text-pmo-gray">Status aprovados</p>
+        <CardContent className="p-4">
+          <div className="flex items-center gap-3">
+            <CheckSquare className="h-5 w-5 text-pmo-success" />
+            <div className="flex items-baseline gap-2">
+              <div className="text-xl font-bold text-pmo-success">0</div>
+              <span className="text-sm text-pmo-gray">Aprovadas Hoje</span>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>

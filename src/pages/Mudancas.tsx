@@ -3,14 +3,15 @@ import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertTriangle, Plus, Search, Edit, ChevronRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { AlertTriangle, Search, Edit, ChevronRight } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useMudancasList } from '@/hooks/useMudancasList';
 import { CriarMudancaModal } from '@/components/forms/CriarMudancaModal';
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { usePagination } from '@/hooks/usePagination';
+import { PaginationFooter } from '@/components/common/PaginationFooter';
 
 export default function Mudancas() {
   const { usuario, isLoading } = useAuth();
@@ -27,6 +28,20 @@ export default function Mudancas() {
     mudanca.tipo_mudanca.toLowerCase().includes(termoBusca.toLowerCase()) ||
     mudanca.solicitante.toLowerCase().includes(termoBusca.toLowerCase())
   ) || [];
+
+  const {
+    paginatedData,
+    currentPage,
+    totalPages,
+    hasNextPage,
+    hasPreviousPage,
+    goToPage,
+    goToNextPage,
+    goToPreviousPage,
+    startItem,
+    endItem,
+    totalItems
+  } = usePagination({ data: mudancasFiltradas });
 
   const getStatusMudancaColor = (status: string) => {
     switch (status) {
@@ -142,7 +157,7 @@ export default function Mudancas() {
               Lista de Mudanças
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
             {mudancasError && (
               <div className="text-center py-8 text-red-600">
                 <p>Erro ao carregar mudanças: {mudancasError.message}</p>
@@ -153,82 +168,97 @@ export default function Mudancas() {
               <div className="text-center py-8 text-pmo-gray">
                 <div>Carregando mudanças...</div>
               </div>
-            ) : mudancasFiltradas && mudancasFiltradas.length > 0 ? (
-              <div className="divide-y">
-                {mudancasFiltradas.map((mudanca) => (
-                  <div 
-                    key={mudanca.id} 
-                    className="p-6 hover:bg-gray-50 transition-colors cursor-pointer group"
-                    onClick={() => {
-                      if (mudanca.status_aprovacao !== 'Aprovada') {
-                        // TODO: Implementar modal ou página de edição da mudança
-                        console.log('Editando mudança:', mudanca.id);
-                      }
-                    }}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-3 mb-3">
-                          <h3 className="font-semibold text-xl text-pmo-primary group-hover:text-pmo-secondary transition-colors">
-                            {mudanca.projeto?.nome_projeto}
-                          </h3>
-                          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                            {mudanca.projeto?.area_responsavel}
-                          </Badge>
-                          <Badge className={getTipoMudancaColor(mudanca.tipo_mudanca)}>
-                            {mudanca.tipo_mudanca}
-                          </Badge>
-                          <Badge className={getStatusMudancaColor(mudanca.status_aprovacao)}>
-                            {mudanca.status_aprovacao}
-                          </Badge>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm mb-3">
-                          <div>
-                            <span className="text-pmo-gray">Solicitante:</span>
-                            <div className="font-medium">{mudanca.solicitante}</div>
+            ) : paginatedData && paginatedData.length > 0 ? (
+              <>
+                <div className="divide-y">
+                  {paginatedData.map((mudanca) => (
+                    <div 
+                      key={mudanca.id} 
+                      className="p-6 hover:bg-gray-50 transition-colors cursor-pointer group"
+                      onClick={() => {
+                        if (mudanca.status_aprovacao !== 'Aprovada') {
+                          // TODO: Implementar modal ou página de edição da mudança
+                          console.log('Editando mudança:', mudanca.id);
+                        }
+                      }}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-3 mb-3">
+                            <h3 className="font-semibold text-xl text-pmo-primary group-hover:text-pmo-secondary transition-colors">
+                              {mudanca.projeto?.nome_projeto}
+                            </h3>
+                            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                              {mudanca.projeto?.area_responsavel}
+                            </Badge>
+                            <Badge className={getTipoMudancaColor(mudanca.tipo_mudanca)}>
+                              {mudanca.tipo_mudanca}
+                            </Badge>
+                            <Badge className={getStatusMudancaColor(mudanca.status_aprovacao)}>
+                              {mudanca.status_aprovacao}
+                            </Badge>
                           </div>
-                          <div>
-                            <span className="text-pmo-gray">Data Solicitação:</span>
-                            <div className="font-medium">
-                              {mudanca.data_solicitacao.toLocaleDateString('pt-BR')}
-                            </div>
-                          </div>
-                          <div>
-                            <span className="text-pmo-gray">Impacto (dias):</span>
-                            <div className="font-medium">{mudanca.impacto_prazo_dias}</div>
-                          </div>
-                          {mudanca.data_aprovacao && (
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm mb-3">
                             <div>
-                              <span className="text-pmo-gray">Data Aprovação:</span>
+                              <span className="text-pmo-gray">Solicitante:</span>
+                              <div className="font-medium">{mudanca.solicitante}</div>
+                            </div>
+                            <div>
+                              <span className="text-pmo-gray">Data Solicitação:</span>
                               <div className="font-medium">
-                                {mudanca.data_aprovacao.toLocaleDateString('pt-BR')}
+                                {mudanca.data_solicitacao.toLocaleDateString('pt-BR')}
                               </div>
                             </div>
-                          )}
-                        </div>
+                            <div>
+                              <span className="text-pmo-gray">Impacto (dias):</span>
+                              <div className="font-medium">{mudanca.impacto_prazo_dias}</div>
+                            </div>
+                            {mudanca.data_aprovacao && (
+                              <div>
+                                <span className="text-pmo-gray">Data Aprovação:</span>
+                                <div className="font-medium">
+                                  {mudanca.data_aprovacao.toLocaleDateString('pt-BR')}
+                                </div>
+                              </div>
+                            )}
+                          </div>
 
-                        <div className="p-3 bg-gray-50 rounded-lg">
-                          <div className="text-sm font-medium text-pmo-gray mb-1">Descrição:</div>
-                          <p className="text-sm text-gray-700 mb-2">
-                            {mudanca.descricao}
-                          </p>
-                          <div className="text-sm font-medium text-pmo-gray mb-1">Justificativa:</div>
-                          <p className="text-sm text-gray-700">
-                            {mudanca.justificativa_negocio}
-                          </p>
+                          <div className="p-3 bg-gray-50 rounded-lg">
+                            <div className="text-sm font-medium text-pmo-gray mb-1">Descrição:</div>
+                            <p className="text-sm text-gray-700 mb-2">
+                              {mudanca.descricao}
+                            </p>
+                            <div className="text-sm font-medium text-pmo-gray mb-1">Justificativa:</div>
+                            <p className="text-sm text-gray-700">
+                              {mudanca.justificativa_negocio}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-2 ml-4">
-                        {mudanca.status_aprovacao !== 'Aprovada' && (
-                          <Edit className="h-4 w-4 text-pmo-gray group-hover:text-pmo-primary transition-colors" />
-                        )}
-                        <ChevronRight className="h-5 w-5 text-pmo-gray group-hover:text-pmo-primary transition-colors flex-shrink-0" />
+                        <div className="flex items-center gap-2 ml-4">
+                          {mudanca.status_aprovacao !== 'Aprovada' && (
+                            <Edit className="h-4 w-4 text-pmo-gray group-hover:text-pmo-primary transition-colors" />
+                          )}
+                          <ChevronRight className="h-5 w-5 text-pmo-gray group-hover:text-pmo-primary transition-colors flex-shrink-0" />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+
+                <PaginationFooter
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  hasNextPage={hasNextPage}
+                  hasPreviousPage={hasPreviousPage}
+                  goToPage={goToPage}
+                  goToNextPage={goToNextPage}
+                  goToPreviousPage={goToPreviousPage}
+                  startItem={startItem}
+                  endItem={endItem}
+                  totalItems={totalItems}
+                />
+              </>
             ) : (
               <div className="text-center py-8 text-pmo-gray">
                 <AlertTriangle className="h-12 w-12 mx-auto mb-4 opacity-50" />

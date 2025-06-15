@@ -7,8 +7,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Save } from 'lucide-react';
+import { CARTEIRAS } from '@/types/pmo';
 import { useProjetos } from '@/hooks/useProjetos';
 import { useMudancasOperations } from '@/hooks/useMudancasOperations';
+import { useMemo } from 'react';
 
 interface CriarMudancaModalProps {
   onMudancaCriada: () => void;
@@ -16,6 +18,7 @@ interface CriarMudancaModalProps {
 
 export function CriarMudancaModal({ onMudancaCriada }: CriarMudancaModalProps) {
   const [open, setOpen] = useState(false);
+  const [carteiraSelecionada, setCarteiraSelecionada] = useState('');
   const [projetoId, setProjetoId] = useState('');
   const [solicitante, setSolicitante] = useState('');
   const [tipoMudanca, setTipoMudanca] = useState('');
@@ -24,8 +27,22 @@ export function CriarMudancaModal({ onMudancaCriada }: CriarMudancaModalProps) {
   const [impactoPrazo, setImpactoPrazo] = useState('');
   const [observacoes, setObservacoes] = useState('');
 
-  const { data: projetos } = useProjetos();
+  const { data: allProjetos } = useProjetos();
   const { criarMudanca, isLoading } = useMudancasOperations();
+
+  // Filtrar projetos baseado na carteira selecionada
+  const projetosFiltrados = useMemo(() => {
+    if (!allProjetos || !carteiraSelecionada || carteiraSelecionada === 'todas') {
+      return allProjetos || [];
+    }
+    
+    return allProjetos.filter(projeto => 
+      projeto.area_responsavel === carteiraSelecionada ||
+      projeto.carteira_primaria === carteiraSelecionada ||
+      projeto.carteira_secundaria === carteiraSelecionada ||
+      projeto.carteira_terciaria === carteiraSelecionada
+    );
+  }, [allProjetos, carteiraSelecionada]);
 
   const tiposMudanca = [
     'Correção Bug',
@@ -34,6 +51,11 @@ export function CriarMudancaModal({ onMudancaCriada }: CriarMudancaModalProps) {
     'Novo Requisito',
     'Replanejamento Cronograma'
   ];
+
+  const handleCarteiraChange = (value: string) => {
+    setCarteiraSelecionada(value);
+    setProjetoId(''); // Limpar projeto selecionado ao mudar carteira
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,6 +78,7 @@ export function CriarMudancaModal({ onMudancaCriada }: CriarMudancaModalProps) {
       setOpen(false);
       onMudancaCriada();
       // Reset form
+      setCarteiraSelecionada('');
       setProjetoId('');
       setSolicitante('');
       setTipoMudanca('');
@@ -82,13 +105,30 @@ export function CriarMudancaModal({ onMudancaCriada }: CriarMudancaModalProps) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
+              <Label htmlFor="carteira">Carteira *</Label>
+              <Select value={carteiraSelecionada} onValueChange={handleCarteiraChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione a carteira..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todas">Todas as carteiras</SelectItem>
+                  {CARTEIRAS.map((carteira) => (
+                    <SelectItem key={carteira} value={carteira}>
+                      {carteira}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="projeto">Projeto Afetado *</Label>
               <Select value={projetoId} onValueChange={setProjetoId}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o projeto..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {projetos?.map((projeto) => (
+                  {projetosFiltrados.map((projeto) => (
                     <SelectItem key={projeto.id} value={projeto.id.toString()}>
                       {projeto.nome_projeto}
                     </SelectItem>
@@ -96,17 +136,17 @@ export function CriarMudancaModal({ onMudancaCriada }: CriarMudancaModalProps) {
                 </SelectContent>
               </Select>
             </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="solicitante">Solicitante *</Label>
-              <Input 
-                id="solicitante" 
-                placeholder="Nome do solicitante..." 
-                value={solicitante}
-                onChange={(e) => setSolicitante(e.target.value)}
-                required
-              />
-            </div>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="solicitante">Solicitante *</Label>
+            <Input 
+              id="solicitante" 
+              placeholder="Nome do solicitante..." 
+              value={solicitante}
+              onChange={(e) => setSolicitante(e.target.value)}
+              required
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
