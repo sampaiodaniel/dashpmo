@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -8,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { X } from 'lucide-react';
 import { useLicoesOperations } from '@/hooks/useLicoesOperations';
+import { toast } from '@/components/ui/use-toast';
 
 interface NovaLicaoModalProps {
   isOpen: boolean;
