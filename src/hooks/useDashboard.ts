@@ -17,7 +17,7 @@ export function useDashboardMetricas(filtros?: FiltrosDashboard) {
 
       // Aplicar filtros
       if (filtros?.carteira && filtros.carteira !== 'Todas') {
-        if (CARTEIRAS.includes(filtros.carteira as any)) {
+        if (CARTEIRAS.includes(filtros.carteira as typeof CARTEIRAS[number])) {
           query = query.eq('area_responsavel', filtros.carteira);
           console.log('🏢 Filtro de carteira aplicado:', filtros.carteira);
         }

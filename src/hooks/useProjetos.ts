@@ -22,7 +22,7 @@ export function useProjetos(filtros?: FiltrosProjeto) {
 
       // Aplicar filtros
       if (filtros?.area && filtros.area !== 'Todas') {
-        if (CARTEIRAS.includes(filtros.area as any)) {
+        if (CARTEIRAS.includes(filtros.area as typeof CARTEIRAS[number])) {
           query = query.eq('area_responsavel', filtros.area);
         }
       }
@@ -67,7 +67,7 @@ export function useProjetos(filtros?: FiltrosProjeto) {
           data_marco1: projeto.ultimoStatus[0].data_marco1 ? new Date(projeto.ultimoStatus[0].data_marco1) : undefined,
           data_marco2: projeto.ultimoStatus[0].data_marco2 ? new Date(projeto.ultimoStatus[0].data_marco2) : undefined,
           data_marco3: projeto.ultimoStatus[0].data_marco3 ? new Date(projeto.ultimoStatus[0].data_marco3) : undefined,
-          finalizacao_prevista: projeto.ultimoStatus[0].finalizacao_prevista ? new Date(projeto.ultimoStatus[0].finalizacao_prevista) : undefined,
+          finalizacao_prevista: projeto.finalizacao_prevista ? new Date(projeto.finalizacao_prevista) : undefined,
           data_aprovacao: projeto.ultimoStatus[0].data_aprovacao ? new Date(projeto.ultimoStatus[0].data_aprovacao) : undefined
         } : undefined
       })) || [];
