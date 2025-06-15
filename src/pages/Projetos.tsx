@@ -3,14 +3,22 @@ import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FolderOpen, Plus, Search } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { FolderOpen, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { CriarProjetoModal } from '@/components/forms/CriarProjetoModal';
+import { useProjetos } from '@/hooks/useProjetos';
+import { useState } from 'react';
 
 export default function Projetos() {
-  const { usuario, isLoading } = useAuth();
+  const { usuario, isLoading: authLoading } = useAuth();
+  const [refreshKey, setRefreshKey] = useState(0);
+  const { data: projetos, isLoading: projetosLoading } = useProjetos({}, refreshKey);
 
-  if (isLoading) {
+  const handleProjetoCriado = () => {
+    setRefreshKey(prev => prev + 1);
+  };
+
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-pmo-background flex items-center justify-center">
         <div className="text-center">
@@ -35,10 +43,7 @@ export default function Projetos() {
             <h1 className="text-3xl font-bold text-pmo-primary">Projetos</h1>
             <p className="text-pmo-gray mt-2">Gestão e acompanhamento de projetos</p>
           </div>
-          <Button className="bg-pmo-primary hover:bg-pmo-primary/90">
-            <Plus className="h-4 w-4 mr-2" />
-            Novo Projeto
-          </Button>
+          <CriarProjetoModal onProjetoCriado={handleProjetoCriado} />
         </div>
 
         <div className="flex gap-4 items-center">
@@ -56,11 +61,33 @@ export default function Projetos() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-center py-8 text-pmo-gray">
-              <FolderOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p className="text-lg mb-2">Nenhum projeto encontrado</p>
-              <p className="text-sm">Comece criando seu primeiro projeto</p>
-            </div>
+            {projetosLoading ? (
+              <div className="text-center py-8 text-pmo-gray">
+                <div>Carregando projetos...</div>
+              </div>
+            ) : projetos && projetos.length > 0 ? (
+              <div className="space-y-4">
+                {projetos.map((projeto) => (
+                  <div key={projeto.id} className="border rounded-lg p-4">
+                    <h3 className="font-semibold text-lg">{projeto.nome_projeto}</h3>
+                    {projeto.descricao && (
+                      <p className="text-pmo-gray mt-1">{projeto.descricao}</p>
+                    )}
+                    <div className="mt-2 flex gap-4 text-sm text-pmo-gray">
+                      <span>Área: {projeto.area_responsavel}</span>
+                      <span>Responsável: {projeto.responsavel_interno}</span>
+                      <span>GP: {projeto.gp_responsavel}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-pmo-gray">
+                <FolderOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p className="text-lg mb-2">Nenhum projeto encontrado</p>
+                <p className="text-sm">Comece criando seu primeiro projeto</p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
