@@ -18,43 +18,37 @@ export function NotificationsDropdown() {
   const { usuario, canApprove } = useAuth();
   const { data: statusPendentes } = useStatusPendentes();
   const { notificacoesLidas, marcarVariasComoLidas } = useNotificacoesLidas();
-  const [localNotificacoesLidas, setLocalNotificacoesLidas] = useState<number[]>([]);
-  const [jaProcessouNotificacoes, setJaProcessouNotificacoes] = useState(false);
+  const [notificacoesJaProcessadas, setNotificacoesJaProcessadas] = useState<number[]>([]);
   const navigate = useNavigate();
 
-  // Sincronizar com as notificações lidas do servidor apenas uma vez
-  useEffect(() => {
-    if (!jaProcessouNotificacoes) {
-      setLocalNotificacoesLidas(notificacoesLidas);
-    }
-  }, [notificacoesLidas, jaProcessouNotificacoes]);
+  // Combinar notificações lidas do servidor com as já processadas localmente
+  const todasNotificacoesLidas = [...new Set([...notificacoesLidas, ...notificacoesJaProcessadas])];
 
   // Calcular número de notificações não lidas
   const notificacoesNaoLidas = canApprove() ? 
-    statusPendentes?.filter(status => !localNotificacoesLidas.includes(status.id)).length || 0 : 0;
+    statusPendentes?.filter(status => !todasNotificacoesLidas.includes(status.id)).length || 0 : 0;
 
   const handleOpenDropdown = async () => {
     // Marcar todas as notificações como lidas quando abrir o dropdown
     if (statusPendentes && statusPendentes.length > 0) {
       const statusIds = statusPendentes.map(status => status.id);
+      const novasNotificacoes = statusIds.filter(id => !todasNotificacoesLidas.includes(id));
       
-      // Atualizar estado local imediatamente para feedback visual
-      setLocalNotificacoesLidas(prev => {
-        const novosIds = statusIds.filter(id => !prev.includes(id));
-        return [...prev, ...novosIds];
-      });
-      
-      // Marcar que já processamos as notificações para evitar sobrescrever
-      setJaProcessouNotificacoes(true);
-      
-      // Marcar no servidor
-      try {
-        await marcarVariasComoLidas.mutateAsync(statusIds);
-        console.log('Notificações marcadas como lidas com sucesso');
-      } catch (error) {
-        console.error('Erro ao marcar notificações como lidas:', error);
-        // Em caso de erro, permitir nova sincronização
-        setJaProcessouNotificacoes(false);
+      if (novasNotificacoes.length > 0) {
+        // Marcar imediatamente no estado local
+        setNotificacoesJaProcessadas(prev => [...prev, ...novasNotificacoes]);
+        
+        // Marcar no servidor em background
+        try {
+          await marcarVariasComoLidas.mutateAsync(statusIds);
+          console.log('Notificações marcadas como lidas com sucesso');
+        } catch (error) {
+          console.error('Erro ao marcar notificações como lidas:', error);
+          // Em caso de erro, remover do estado local
+          setNotificacoesJaProcessadas(prev => 
+            prev.filter(id => !novasNotificacoes.includes(id))
+          );
+        }
       }
     }
   };
