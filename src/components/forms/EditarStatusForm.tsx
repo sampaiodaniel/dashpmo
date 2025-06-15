@@ -16,9 +16,9 @@ interface EditarStatusFormProps {
   onSuccess: () => void;
 }
 
-const STATUS_GERAL_OPTIONS = ['Planejamento', 'Em Andamento', 'Concluído', 'Cancelado', 'Em Espera'];
-const STATUS_VISAO_GP_OPTIONS = ['Verde', 'Amarelo', 'Vermelho'];
-const NIVEL_RISCO_OPTIONS = ['Baixo', 'Médio', 'Alto'];
+const STATUS_GERAL_OPTIONS = ['Planejamento', 'Em Andamento', 'Concluído', 'Cancelado', 'Em Espera'] as const;
+const STATUS_VISAO_GP_OPTIONS = ['Verde', 'Amarelo', 'Vermelho'] as const;
+const NIVEL_RISCO_OPTIONS = ['Baixo', 'Médio', 'Alto'] as const;
 
 export function EditarStatusForm({ status, onSuccess }: EditarStatusFormProps) {
   const queryClient = useQueryClient();
@@ -42,7 +42,7 @@ export function EditarStatusForm({ status, onSuccess }: EditarStatusFormProps) {
     entregaveis3: status.entregaveis3 || '',
     entrega3: status.entrega3 || '',
     data_marco3: status.data_marco3 ? status.data_marco3.toISOString().split('T')[0] : '',
-    progresso_estimado: status.progresso_estimado || 0
+    progresso_estimado: (status as any).progresso_estimado || 0
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -51,10 +51,10 @@ export function EditarStatusForm({ status, onSuccess }: EditarStatusFormProps) {
 
     try {
       const dataToUpdate = {
-        status_geral: formData.status_geral as typeof STATUS_GERAL_OPTIONS[number],
-        status_visao_gp: formData.status_visao_gp as typeof STATUS_VISAO_GP_OPTIONS[number],
-        impacto_riscos: formData.impacto_riscos as typeof NIVEL_RISCO_OPTIONS[number],
-        probabilidade_riscos: formData.probabilidade_riscos as typeof NIVEL_RISCO_OPTIONS[number],
+        status_geral: formData.status_geral,
+        status_visao_gp: formData.status_visao_gp,
+        impacto_riscos: formData.impacto_riscos,
+        probabilidade_riscos: formData.probabilidade_riscos,
         realizado_semana_atual: formData.realizado_semana_atual,
         backlog: formData.backlog,
         bloqueios_atuais: formData.bloqueios_atuais,

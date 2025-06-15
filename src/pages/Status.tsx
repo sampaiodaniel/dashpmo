@@ -1,7 +1,8 @@
+
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
-import { Search, ChevronRight, FileText, Plus, Edit, AlertTriangle, Trash2, Archive } from 'lucide-react';
+import { Search, ChevronRight, FileText, Plus, AlertTriangle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +13,7 @@ import { getStatusColor, getStatusGeralColor } from '@/types/pmo';
 import { useNavigate } from 'react-router-dom';
 import { StatusFilters } from '@/components/status/StatusFilters';
 import { useStatusFiltrados } from '@/hooks/useStatusFiltrados';
+import { StatusAcoes } from '@/components/status/StatusAcoes';
 
 export default function Status() {
   const { usuario, isLoading: authLoading } = useAuth();
@@ -43,29 +45,11 @@ export default function Status() {
 
   const handleCriarStatusTeste = () => {
     criarStatusTeste();
-    // Refetch será chamado automaticamente pelo onSuccess do mutation
     setTimeout(() => refetch(), 1000);
   };
 
   const handleStatusClick = (statusId: number) => {
     navigate(`/status/${statusId}`);
-  };
-
-  const handleEditStatus = (e: React.MouseEvent, statusId: number) => {
-    e.stopPropagation();
-    navigate(`/status/${statusId}/editar`);
-  };
-
-  const handleArchiveStatus = (e: React.MouseEvent, statusId: number) => {
-    e.stopPropagation();
-    // TODO: Implementar arquivamento
-    console.log('Arquivar status:', statusId);
-  };
-
-  const handleDeleteStatus = (e: React.MouseEvent, statusId: number) => {
-    e.stopPropagation();
-    // TODO: Implementar exclusão
-    console.log('Excluir status:', statusId);
   };
 
   if (authLoading) {
@@ -210,32 +194,9 @@ export default function Status() {
                       )}
                     </div>
                     <div className="flex items-center gap-2 ml-4">
-                      {!status.aprovado && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => handleEditStatus(e, status.id)}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                      )}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => handleArchiveStatus(e, status.id)}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <Archive className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => handleDeleteStatus(e, status.id)}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <StatusAcoes status={status} onStatusUpdate={refetch} />
+                      </div>
                       <ChevronRight className="h-5 w-5 text-pmo-gray group-hover:text-pmo-primary transition-colors flex-shrink-0" />
                     </div>
                   </div>
