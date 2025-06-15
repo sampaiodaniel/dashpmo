@@ -2,7 +2,7 @@
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
-import { Search, ChevronRight, FileText, Plus, Edit, AlertTriangle } from 'lucide-react';
+import { Search, ChevronRight, FileText, Plus, Edit, AlertTriangle, Trash2, Archive } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -47,6 +47,27 @@ export default function Status() {
     if (result) {
       refetch();
     }
+  };
+
+  const handleStatusClick = (statusId: number) => {
+    navigate(`/status/${statusId}`);
+  };
+
+  const handleEditStatus = (e: React.MouseEvent, statusId: number) => {
+    e.stopPropagation();
+    navigate(`/status/${statusId}/editar`);
+  };
+
+  const handleArchiveStatus = (e: React.MouseEvent, statusId: number) => {
+    e.stopPropagation();
+    // TODO: Implementar arquivamento
+    console.log('Arquivar status:', statusId);
+  };
+
+  const handleDeleteStatus = (e: React.MouseEvent, statusId: number) => {
+    e.stopPropagation();
+    // TODO: Implementar exclusão
+    console.log('Excluir status:', statusId);
   };
 
   if (authLoading) {
@@ -130,12 +151,7 @@ export default function Status() {
                 <div 
                   key={status.id} 
                   className="p-6 hover:bg-gray-50 transition-colors cursor-pointer group"
-                  onClick={() => {
-                    if (!status.aprovado) {
-                      // TODO: Implementar modal ou página de edição do status
-                      console.log('Editando status:', status.id);
-                    }
-                  }}
+                  onClick={() => handleStatusClick(status.id)}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1 min-w-0">
@@ -197,8 +213,31 @@ export default function Status() {
                     </div>
                     <div className="flex items-center gap-2 ml-4">
                       {!status.aprovado && (
-                        <Edit className="h-4 w-4 text-pmo-gray group-hover:text-pmo-primary transition-colors" />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => handleEditStatus(e, status.id)}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
                       )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => handleArchiveStatus(e, status.id)}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <Archive className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => handleDeleteStatus(e, status.id)}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity text-red-600 hover:text-red-700"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                       <ChevronRight className="h-5 w-5 text-pmo-gray group-hover:text-pmo-primary transition-colors flex-shrink-0" />
                     </div>
                   </div>

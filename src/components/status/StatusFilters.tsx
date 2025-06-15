@@ -8,6 +8,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import { useProjetos } from '@/hooks/useProjetos';
+import { useMemo } from 'react';
 
 interface StatusFiltersProps {
   filtros: {
@@ -21,12 +23,42 @@ interface StatusFiltersProps {
 }
 
 export function StatusFilters({ filtros, onFiltroChange, responsaveis }: StatusFiltersProps) {
+  // Buscar projetos para filtrar por carteira
+  const { data: projetos } = useProjetos();
+
+  // Filtrar projetos pela carteira selecionada
+  const projetosFiltrados = useMemo(() => {
+    if (!projetos) return [];
+    
+    if (filtros.carteira && filtros.carteira !== 'todas') {
+      return projetos
+        .filter(p => p.area_responsavel === filtros.carteira)
+        .sort((a, b) => a.nome_projeto.localeCompare(b.nome_projeto));
+    }
+    
+    return projetos.sort((a, b) => a.nome_projeto.localeCompare(b.nome_projeto));
+  }, [projetos, filtros.carteira]);
+
   const handleCarteiraChange = (value: string) => {
     const novosFiltros = { ...filtros };
     if (value === 'todas') {
       delete novosFiltros.carteira;
+      // Limpar também o projeto selecionado quando mudar carteira
+      delete novosFiltros.projeto;
     } else {
       novosFiltros.carteira = value;
+      // Limpar o projeto selecionado quando mudar carteira
+      delete novosFiltros.projeto;
+    }
+    onFiltroChange(novosFiltros);
+  };
+
+  const handleProjetoChange = (value: string) => {
+    const novosFiltros = { ...filtros };
+    if (value === 'todos') {
+      delete novosFiltros.projeto;
+    } else {
+      novosFiltros.projeto = value;
     }
     onFiltroChange(novosFiltros);
   };
@@ -82,6 +114,23 @@ export function StatusFilters({ filtros, onFiltroChange, responsaveis }: StatusF
                   {CARTEIRAS.map((carteira) => (
                     <SelectItem key={carteira} value={carteira}>
                       {carteira}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-pmo-gray">Projeto:</label>
+              <Select value={(filtros as any).projeto || 'todos'} onValueChange={handleProjetoChange}>
+                <SelectTrigger className="w-60">
+                  <SelectValue placeholder="Todos os projetos" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Todos os projetos</SelectItem>
+                  {projetosFiltrados.map((projeto) => (
+                    <SelectItem key={projeto.id} value={projeto.nome_projeto}>
+                      {projeto.nome_projeto}
                     </SelectItem>
                   ))}
                 </SelectContent>

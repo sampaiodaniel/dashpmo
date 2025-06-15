@@ -4,6 +4,7 @@ import { StatusProjeto } from '@/types/pmo';
 
 interface FiltrosStatus {
   carteira?: string;
+  projeto?: string;
   responsavel?: string;
   dataInicio?: Date;
   dataFim?: Date;
@@ -26,6 +27,11 @@ export function useStatusFiltrados(statusList: StatusProjeto[] | undefined, filt
       // Filtro por carteira
       if (filtros.carteira && filtros.carteira !== 'todas') {
         if (status.projeto?.area_responsavel !== filtros.carteira) return false;
+      }
+
+      // Filtro por projeto
+      if (filtros.projeto && filtros.projeto !== 'todos') {
+        if (status.projeto?.nome_projeto !== filtros.projeto) return false;
       }
 
       // Filtro por responsável
