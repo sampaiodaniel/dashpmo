@@ -22,10 +22,10 @@ export function useStatusOperations() {
 
       const statusData = {
         projeto_id: projetos.id,
-        status_geral: 'Em Andamento',
-        status_visao_gp: 'Verde',
-        impacto_riscos: 'Baixo',
-        probabilidade_riscos: 'Baixo',
+        status_geral: 'Em Andamento' as const,
+        status_visao_gp: 'Verde' as const,
+        impacto_riscos: 'Baixo' as const,
+        probabilidade_riscos: 'Baixo' as const,
         realizado_semana_atual: 'Status de teste criado automaticamente',
         criado_por: 'Sistema',
         data_atualizacao: new Date().toISOString().split('T')[0],
@@ -33,7 +33,7 @@ export function useStatusOperations() {
 
       const { data, error } = await supabase
         .from('status_projeto')
-        .insert([statusData])
+        .insert(statusData)
         .select()
         .single();
 
@@ -56,6 +56,40 @@ export function useStatusOperations() {
       toast({
         title: "Erro",
         description: "Erro ao criar status de teste",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const salvarStatus = useMutation({
+    mutationFn: async (statusData: any) => {
+      console.log('💾 Salvando status...', statusData);
+      
+      const { data, error } = await supabase
+        .from('status_projeto')
+        .insert(statusData)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Erro ao salvar status:', error);
+        throw error;
+      }
+
+      console.log('✅ Status salvo:', data);
+      return data;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Sucesso",
+        description: "Status salvo com sucesso!",
+      });
+    },
+    onError: (error) => {
+      console.error('Erro ao salvar status:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao salvar status",
         variant: "destructive",
       });
     },
@@ -102,8 +136,8 @@ export function useStatusOperations() {
 
   return {
     criarStatusTeste: criarStatusTeste.mutate,
-    isLoading: criarStatusTeste.isPending,
-    aprovarStatus: aprovarStatus.mutate,
-    isLoading: aprovarStatus.isPending,
+    salvarStatus: salvarStatus.mutateAsync,
+    aprovarStatus: aprovarStatus.mutateAsync,
+    isLoading: criarStatusTeste.isPending || salvarStatus.isPending || aprovarStatus.isPending,
   };
 }
