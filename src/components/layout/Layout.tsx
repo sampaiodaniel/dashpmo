@@ -22,16 +22,13 @@ export function Layout({ children }: LayoutProps) {
   };
 
   return (
-    <div className="min-h-screen bg-pmo-background">
-      <Header onToggleSidebar={toggleSidebar} />
+    <div className="min-h-screen bg-pmo-background flex">
+      <Sidebar />
       
-      <div className="flex">
-        <Sidebar />
+      <div className="flex-1 flex flex-col">
+        <Header onToggleSidebar={toggleSidebar} />
         
-        <main className={cn(
-          "flex-1 transition-all duration-200 ease-in-out",
-          "lg:ml-64"
-        )}>
+        <main className="flex-1">
           <div className={cn(location.pathname === "/projetos" ? "p-3" : "p-6")}>
             {children}
           </div>
