@@ -7,20 +7,38 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useStatusList } from '@/hooks/useStatusList';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { getStatusColor, getStatusGeralColor } from '@/types/pmo';
 import { useNavigate } from 'react-router-dom';
+import { StatusFilters } from '@/components/status/StatusFilters';
+import { useStatusFiltrados } from '@/hooks/useStatusFiltrados';
 
 export default function Status() {
   const { usuario, isLoading: authLoading } = useAuth();
   const { data: statusList, isLoading: statusLoading, error: statusError } = useStatusList();
   const [termoBusca, setTermoBusca] = useState('');
+  const [filtros, setFiltros] = useState<{
+    carteira?: string;
+    responsavel?: string;
+    dataInicio?: Date;
+    dataFim?: Date;
+  }>({});
   const navigate = useNavigate();
 
-  const statusFiltrados = statusList?.filter(status =>
-    status.projeto?.nome_projeto.toLowerCase().includes(termoBusca.toLowerCase()) ||
-    status.status_geral.toLowerCase().includes(termoBusca.toLowerCase())
-  ) || [];
+  // Combinar filtros de busca com outros filtros
+  const filtrosCompletos = useMemo(() => ({
+    ...filtros,
+    busca: termoBusca
+  }), [filtros, termoBusca]);
+
+  const statusFiltrados = useStatusFiltrados(statusList, filtrosCompletos);
+
+  // Extrair lista única de responsáveis para o filtro
+  const responsaveis = useMemo(() => {
+    if (!statusList) return [];
+    const responsaveisUnicos = [...new Set(statusList.map(s => s.criado_por))];
+    return responsaveisUnicos.sort();
+  }, [statusList]);
 
   if (authLoading) {
     return (
@@ -56,6 +74,12 @@ export default function Status() {
           </Button>
         </div>
 
+        <StatusFilters 
+          filtros={filtros}
+          onFiltroChange={setFiltros}
+          responsaveis={responsaveis}
+        />
+
         <div className="flex gap-4 items-center">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-pmo-gray" />
@@ -65,6 +89,9 @@ export default function Status() {
               value={termoBusca}
               onChange={(e) => setTermoBusca(e.target.value)}
             />
+          </div>
+          <div className="text-sm text-pmo-gray">
+            {statusFiltrados.length} status encontrados
           </div>
         </div>
 
@@ -109,7 +136,7 @@ export default function Status() {
                         </Badge>
                         {status.aprovado ? (
                           <Badge className="bg-green-100 text-green-700 border-green-200">
-                            Aprovado
+                            ✓ Aprovado
                           </Badge>
                         ) : (
                           <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200 flex items-center gap-1">
@@ -164,10 +191,10 @@ export default function Status() {
             <div className="text-center py-12 text-pmo-gray">
               <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p className="text-lg mb-2">
-                {termoBusca ? 'Nenhum status encontrado para sua busca' : 'Nenhum status encontrado'}
+                {termoBusca || Object.keys(filtros).length > 0 ? 'Nenhum status encontrado para os filtros aplicados' : 'Nenhum status encontrado'}
               </p>
               <p className="text-sm">
-                {termoBusca ? 'Tente alterar os termos da busca' : 'Comece criando o primeiro status'}
+                {termoBusca || Object.keys(filtros).length > 0 ? 'Tente alterar os filtros ou termos da busca' : 'Comece criando o primeiro status'}
               </p>
             </div>
           )}
