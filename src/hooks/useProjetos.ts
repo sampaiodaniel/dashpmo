@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Projeto, FiltrosProjeto, CARTEIRAS } from '@/types/pmo';
@@ -17,8 +16,12 @@ export function useProjetos(filtros?: FiltrosProjeto) {
             *
           )
         `)
-        .eq('status_ativo', true)
         .order('data_criacao', { ascending: false });
+
+      // Por padrão, mostrar apenas projetos ativos, a menos que seja especificado incluir fechados
+      if (!filtros?.incluirFechados) {
+        query = query.eq('status_ativo', true);
+      }
 
       // Aplicar filtros
       if (filtros?.area && filtros.area !== 'Todas') {

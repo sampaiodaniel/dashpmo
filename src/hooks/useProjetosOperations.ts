@@ -1,10 +1,10 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 import { Database } from '@/integrations/supabase/types';
 
 type ProjetoInsert = Database['public']['Tables']['projetos']['Insert'];
+type ProjetoUpdate = Database['public']['Tables']['projetos']['Update'];
 
 export function useProjetosOperations() {
   const [isLoading, setIsLoading] = useState(false);
@@ -46,6 +46,99 @@ export function useProjetosOperations() {
         variant: "destructive",
       });
       return null;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const atualizarProjeto = async (projetoId: number, updates: ProjetoUpdate) => {
+    setIsLoading(true);
+    
+    try {
+      const { error } = await supabase
+        .from('projetos')
+        .update(updates)
+        .eq('id', projetoId);
+
+      if (error) {
+        console.error('Erro ao atualizar projeto:', error);
+        toast({
+          title: "Erro",
+          description: "Erro ao atualizar projeto",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Erro inesperado:', error);
+      toast({
+        title: "Erro",
+        description: "Erro inesperado ao atualizar projeto",
+        variant: "destructive",
+      });
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const apagarProjeto = async (projetoId: number) => {
+    setIsLoading(true);
+    
+    try {
+      // Primeiro verificar se há status vinculados
+      const { data: statusVinculados, error: statusError } = await supabase
+        .from('status_projeto')
+        .select('id')
+        .eq('projeto_id', projetoId)
+        .limit(1);
+
+      if (statusError) {
+        console.error('Erro ao verificar status:', statusError);
+        toast({
+          title: "Erro",
+          description: "Erro ao verificar status vinculados",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      if (statusVinculados && statusVinculados.length > 0) {
+        toast({
+          title: "Não é possível apagar",
+          description: "Este projeto possui status vinculados. Não é possível apagá-lo.",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      // Se não há status vinculados, pode apagar
+      const { error } = await supabase
+        .from('projetos')
+        .delete()
+        .eq('id', projetoId);
+
+      if (error) {
+        console.error('Erro ao apagar projeto:', error);
+        toast({
+          title: "Erro",
+          description: "Erro ao apagar projeto",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Erro inesperado:', error);
+      toast({
+        title: "Erro",
+        description: "Erro inesperado ao apagar projeto",
+        variant: "destructive",
+      });
+      return false;
     } finally {
       setIsLoading(false);
     }
@@ -144,6 +237,8 @@ export function useProjetosOperations() {
 
   return {
     criarProjeto,
+    atualizarProjeto,
+    apagarProjeto,
     criarProjetosTeste,
     isLoading,
   };

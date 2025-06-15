@@ -1,4 +1,3 @@
-
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
@@ -13,10 +12,11 @@ import { Badge } from '@/components/ui/badge';
 import { useProjetosOperations } from '@/hooks/useProjetosOperations';
 import { getStatusColor, getStatusGeralColor, FiltrosProjeto } from '@/types/pmo';
 import { ProjetoFilters } from '@/components/projetos/ProjetoFilters';
+import { ProjetoAcoesAdmin } from '@/components/projetos/ProjetoAcoesAdmin';
 import { useNavigate } from 'react-router-dom';
 
 export default function Projetos() {
-  const { usuario, isLoading: authLoading } = useAuth();
+  const { usuario, isLoading: authLoading, isAdmin } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [filtros, setFiltros] = useState<FiltrosProjeto>({});
@@ -33,6 +33,10 @@ export default function Projetos() {
   });
 
   const handleProjetoCriado = () => {
+    queryClient.invalidateQueries({ queryKey: ['projetos'] });
+  };
+
+  const handleProjetoAtualizado = () => {
     queryClient.invalidateQueries({ queryKey: ['projetos'] });
   };
 
@@ -84,13 +88,15 @@ export default function Projetos() {
             <p className="text-pmo-gray mt-2">Gestão e acompanhamento de projetos</p>
           </div>
           <div className="flex gap-2">
-            <Button
-              onClick={handleCriarProjetosTeste}
-              variant="outline"
-              disabled={criandoTeste}
-            >
-              {criandoTeste ? 'Criando...' : 'Criar 5 Projetos Teste'}
-            </Button>
+            {isAdmin && (
+              <Button
+                onClick={handleCriarProjetosTeste}
+                variant="outline"
+                disabled={criandoTeste}
+              >
+                {criandoTeste ? 'Criando...' : 'Criar 5 Projetos Teste'}
+              </Button>
+            )}
             <CriarProjetoModal onProjetoCriado={handleProjetoCriado} />
           </div>
         </div>
@@ -129,11 +135,13 @@ export default function Projetos() {
               {projetosFiltrados.map((projeto) => (
                 <div 
                   key={projeto.id} 
-                  className="p-6 hover:bg-gray-50 transition-colors cursor-pointer group"
-                  onClick={() => handleProjetoClick(projeto.id)}
+                  className="p-6 hover:bg-gray-50 transition-colors group"
                 >
                   <div className="flex items-start justify-between">
-                    <div className="flex-1 min-w-0">
+                    <div 
+                      className="flex-1 min-w-0 cursor-pointer"
+                      onClick={() => handleProjetoClick(projeto.id)}
+                    >
                       <div className="flex items-center gap-3 mb-3">
                         <h3 className="font-semibold text-xl text-pmo-primary group-hover:text-pmo-secondary transition-colors">
                           {projeto.nome_projeto}
@@ -144,6 +152,11 @@ export default function Projetos() {
                             {projeto.area_responsavel}
                           </span>
                         </div>
+                        {!projeto.status_ativo && (
+                          <Badge variant="outline" className="bg-gray-100 text-gray-700 border-gray-300">
+                            Fechado
+                          </Badge>
+                        )}
                         {projeto.ultimoStatus && (
                           <div className="flex gap-2">
                             <Badge className={getStatusGeralColor(projeto.ultimoStatus.status_geral)}>
@@ -196,7 +209,15 @@ export default function Projetos() {
                         </div>
                       )}
                     </div>
-                    <ChevronRight className="h-5 w-5 text-pmo-gray group-hover:text-pmo-primary transition-colors flex-shrink-0 ml-4" />
+                    <div className="flex items-center gap-2 ml-4">
+                      {isAdmin && (
+                        <ProjetoAcoesAdmin 
+                          projeto={projeto} 
+                          onProjetoAtualizado={handleProjetoAtualizado}
+                        />
+                      )}
+                      <ChevronRight className="h-5 w-5 text-pmo-gray group-hover:text-pmo-primary transition-colors flex-shrink-0" />
+                    </div>
                   </div>
                 </div>
               ))}
