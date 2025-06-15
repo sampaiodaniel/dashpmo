@@ -9,7 +9,6 @@ import { Badge } from '@/components/ui/badge';
 import { useStatusList } from '@/hooks/useStatusList';
 import { useStatusOperations } from '@/hooks/useStatusOperations';
 import { useState, useMemo } from 'react';
-import { getStatusColor, getStatusGeralColor } from '@/types/pmo';
 import { useNavigate } from 'react-router-dom';
 import { StatusFilters } from '@/components/status/StatusFilters';
 import { useStatusFiltrados } from '@/hooks/useStatusFiltrados';
@@ -141,20 +140,10 @@ export default function Status() {
                         <h3 className="font-semibold text-xl text-pmo-primary group-hover:text-pmo-secondary transition-colors">
                           {status.projeto?.nome_projeto}
                         </h3>
-                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                        <Badge className="bg-pmo-primary text-white px-3 py-1 text-sm font-medium">
                           {status.projeto?.area_responsavel}
                         </Badge>
-                        <Badge className={getStatusGeralColor(status.status_geral)}>
-                          {status.status_geral}
-                        </Badge>
-                        <Badge className={getStatusColor(status.status_visao_gp)}>
-                          {status.status_visao_gp}
-                        </Badge>
-                        {status.aprovado ? (
-                          <Badge className="bg-green-100 text-green-700 border-green-200">
-                            ✓ Aprovado
-                          </Badge>
-                        ) : (
+                        {!status.aprovado && (
                           <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200 flex items-center gap-1">
                             <AlertTriangle className="h-3 w-3" />
                             Pendente Aprovação
