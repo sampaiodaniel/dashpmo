@@ -47,58 +47,43 @@ export default function Dashboard() {
         <MetricCard
           title="Total de Projetos"
           value={metricas.totalProjetos}
-          icon={BarChart3}
-          trend="stable"
+          icon={<BarChart3 className="h-6 w-6" />}
+          trend={{ value: 0, isPositive: true }}
           className="border-l-4 border-l-pmo-primary"
         />
         <MetricCard
           title="Projetos Críticos"
           value={metricas.projetosCriticos}
-          icon={AlertTriangle}
-          trend="down"
+          icon={<AlertTriangle className="h-6 w-6" />}
+          trend={{ value: 0, isPositive: false }}
           className="border-l-4 border-l-pmo-danger"
         />
         <MetricCard
           title="Mudanças Ativas"
           value={metricas.mudancasAtivas}
-          icon={TrendingUp}
-          trend="up"
+          icon={<TrendingUp className="h-6 w-6" />}
+          trend={{ value: 0, isPositive: true }}
           className="border-l-4 border-l-pmo-warning"
         />
         <MetricCard
           title="Marcos Próximos"
           value={metricas.proximosMarcos.length}
-          icon={Clock}
-          trend="stable"
+          icon={<Clock className="h-6 w-6" />}
+          trend={{ value: 0, isPositive: true }}
           className="border-l-4 border-l-pmo-success"
         />
       </div>
 
       {/* Gráficos e Detalhes */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5" />
-              Projetos por Status
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <StatusChart data={metricas.projetosPorStatus} type="status" />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CheckCircle className="h-5 w-5" />
-              Saúde dos Projetos
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <StatusChart data={metricas.projetosPorSaude} type="health" />
-          </CardContent>
-        </Card>
+        <StatusChart 
+          data={metricas.projetosPorStatus} 
+          title="Projetos por Status"
+        />
+        <StatusChart 
+          data={metricas.projetosPorSaude} 
+          title="Saúde dos Projetos"
+        />
       </div>
 
       {/* Projetos por Área e Próximos Marcos */}

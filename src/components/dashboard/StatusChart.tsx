@@ -1,6 +1,5 @@
 
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface StatusChartProps {
   data: Record<string, number>;
@@ -47,13 +46,13 @@ export function StatusChart({ data, title }: StatusChartProps) {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg font-semibold text-pmo-primary">
+    <div className="bg-white border border-gray-200 rounded-lg">
+      <div className="p-6 pb-0">
+        <h3 className="text-lg font-semibold text-pmo-primary">
           {title}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
+        </h3>
+      </div>
+      <div className="p-6">
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
@@ -83,7 +82,7 @@ export function StatusChart({ data, title }: StatusChartProps) {
             </PieChart>
           </ResponsiveContainer>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
