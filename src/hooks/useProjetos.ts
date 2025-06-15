@@ -13,7 +13,7 @@ export function useProjetos(filtros?: FiltrosProjeto) {
         .from('projetos')
         .select(`
           *,
-          ultimoStatus:status_projeto!inner (
+          ultimoStatus:status_projeto (
             *
           )
         `)
@@ -37,14 +37,6 @@ export function useProjetos(filtros?: FiltrosProjeto) {
         query = query.eq('gp_responsavel', filtros.gp_responsavel);
       }
 
-      if (filtros?.status_geral && filtros.status_geral.length > 0) {
-        query = query.in('ultimoStatus.status_geral', filtros.status_geral);
-      }
-
-      if (filtros?.status_visao_gp && filtros.status_visao_gp.length > 0) {
-        query = query.in('ultimoStatus.status_visao_gp', filtros.status_visao_gp);
-      }
-
       if (filtros?.busca) {
         query = query.ilike('nome_projeto', `%${filtros.busca}%`);
       }
@@ -62,14 +54,13 @@ export function useProjetos(filtros?: FiltrosProjeto) {
       const projetos = data?.map(projeto => ({
         ...projeto,
         data_criacao: new Date(projeto.data_criacao),
-        ultimoStatus: projeto.ultimoStatus ? {
+        ultimoStatus: projeto.ultimoStatus && projeto.ultimoStatus.length > 0 ? {
           ...projeto.ultimoStatus[0],
           data_atualizacao: new Date(projeto.ultimoStatus[0].data_atualizacao),
           data_criacao: new Date(projeto.ultimoStatus[0].data_criacao),
           data_marco1: projeto.ultimoStatus[0].data_marco1 ? new Date(projeto.ultimoStatus[0].data_marco1) : undefined,
           data_marco2: projeto.ultimoStatus[0].data_marco2 ? new Date(projeto.ultimoStatus[0].data_marco2) : undefined,
           data_marco3: projeto.ultimoStatus[0].data_marco3 ? new Date(projeto.ultimoStatus[0].data_marco3) : undefined,
-          finalizacao_prevista: projeto.finalizacao_prevista ? new Date(projeto.finalizacao_prevista) : undefined,
           data_aprovacao: projeto.ultimoStatus[0].data_aprovacao ? new Date(projeto.ultimoStatus[0].data_aprovacao) : undefined
         } : undefined
       })) || [];
