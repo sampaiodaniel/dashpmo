@@ -1,4 +1,3 @@
-
 import { cn } from "@/lib/utils";
 import { 
   LayoutDashboard, 
@@ -8,8 +7,7 @@ import {
   GraduationCap, 
   AlertTriangle,
   BarChart3,
-  Settings,
-  User
+  Settings
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
@@ -48,11 +46,6 @@ const menuItems = [
     title: "Relatórios", 
     icon: BarChart3, 
     href: "/relatorios" 
-  },
-  { 
-    title: "Aprovações", 
-    icon: User, 
-    href: "/aprovacoes" 
   },
   { 
     title: "Administração", 

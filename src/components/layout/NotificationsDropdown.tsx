@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { 
@@ -78,12 +77,12 @@ export function NotificationsDropdown() {
     }
   };
 
-  const handleVerAprovacoes = () => {
-    navigate('/aprovacoes');
-  };
-
   const handleVerStatus = (statusId: number) => {
     navigate(`/status/${statusId}`);
+  };
+
+  const handleVerTodosStatus = () => {
+    navigate('/status');
   };
 
   return (
@@ -136,9 +135,9 @@ export function NotificationsDropdown() {
             {statusPendentes.length > 5 && (
               <>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleVerAprovacoes} className="px-3 py-2 text-center">
+                <DropdownMenuItem onClick={handleVerTodosStatus} className="px-3 py-2 text-center">
                   <span className="text-sm text-pmo-primary font-medium">
-                    Ver todas as aprovações ({statusPendentes.length})
+                    Ver todos os status ({statusPendentes.length})
                   </span>
                 </DropdownMenuItem>
               </>

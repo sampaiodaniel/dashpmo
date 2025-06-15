@@ -1,18 +1,26 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { useStatusPendentes } from './useStatusPendentes';
 
 export function useAprovacoes() {
+  const { data: statusPendentes } = useStatusPendentes();
+  
   return useQuery({
-    queryKey: ['aprovacoes'],
+    queryKey: ['aprovacoes', statusPendentes?.length],
     queryFn: async () => {
-      // Mock data por enquanto - implementar quando houver tabela de aprovações
+      const aguardandoAprovacao = statusPendentes?.length || 0;
+      const emAtraso = statusPendentes?.filter(s => {
+        const diasAtraso = Math.floor((new Date().getTime() - s.data_atualizacao.getTime()) / (1000 * 60 * 60 * 24));
+        return diasAtraso > 3;
+      }).length || 0;
+
       return {
-        aguardandoAprovacao: 3,
-        emAtraso: 1,
-        aprovadasHoje: 2,
+        aguardandoAprovacao,
+        emAtraso,
+        aprovadasHoje: 0,
         lista: []
       };
     },
+    enabled: !!statusPendentes,
   });
 }

@@ -13,6 +13,7 @@ import { useNavigate } from 'react-router-dom';
 import { StatusFilters } from '@/components/status/StatusFilters';
 import { useStatusFiltrados } from '@/hooks/useStatusFiltrados';
 import { StatusAcoes } from '@/components/status/StatusAcoes';
+import { StatusAprovacaoMetricas } from '@/components/status/StatusAprovacaoMetricas';
 
 export default function Status() {
   const { usuario, isLoading: authLoading } = useAuth();
@@ -94,6 +95,8 @@ export default function Status() {
             </Button>
           </div>
         </div>
+
+        <StatusAprovacaoMetricas />
 
         <StatusFilters 
           filtros={filtros}

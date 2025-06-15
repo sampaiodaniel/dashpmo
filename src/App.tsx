@@ -18,7 +18,6 @@ import Mudancas from '@/pages/Mudancas';
 import Licoes from '@/pages/Licoes';
 import Incidentes from '@/pages/Incidentes';
 import Relatorios from '@/pages/Relatorios';
-import Aprovacoes from '@/pages/Aprovacoes';
 import Administracao from '@/pages/Administracao';
 import Configuracoes from '@/pages/Configuracoes';
 import NotFound from '@/pages/NotFound';
@@ -46,7 +45,6 @@ function App() {
             <Route path="/licoes" element={<Licoes />} />
             <Route path="/incidentes" element={<Incidentes />} />
             <Route path="/relatorios" element={<Relatorios />} />
-            <Route path="/aprovacoes" element={<Aprovacoes />} />
             <Route path="/admin" element={<Administracao />} />
             <Route path="/configuracoes" element={<Configuracoes />} />
             <Route path="*" element={<NotFound />} />
