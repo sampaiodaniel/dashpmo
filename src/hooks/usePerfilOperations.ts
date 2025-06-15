@@ -15,27 +15,65 @@ export function usePerfilOperations() {
     }) => {
       console.log('Criando/atualizando perfil:', dados);
 
-      const { data, error } = await supabase
+      // Primeiro, verificar se já existe um perfil para este usuário
+      const { data: existingProfile, error: checkError } = await supabase
         .from('perfis_usuario')
-        .upsert({
-          usuario_id: dados.usuario_id,
-          nome: dados.nome || null,
-          sobrenome: dados.sobrenome || null,
-          foto_url: dados.foto_url || null,
-          data_atualizacao: new Date().toISOString()
-        }, {
-          onConflict: 'usuario_id'
-        })
-        .select()
-        .single();
+        .select('id')
+        .eq('usuario_id', dados.usuario_id)
+        .maybeSingle();
 
-      if (error) {
-        console.error('Erro ao salvar perfil:', error);
-        throw new Error(`Erro ao salvar perfil: ${error.message}`);
+      if (checkError) {
+        console.error('Erro ao verificar perfil existente:', checkError);
+        throw new Error(`Erro ao verificar perfil: ${checkError.message}`);
       }
 
-      console.log('Perfil salvo com sucesso:', data);
-      return data;
+      let result;
+
+      if (existingProfile) {
+        // Atualizar perfil existente
+        const { data, error } = await supabase
+          .from('perfis_usuario')
+          .update({
+            nome: dados.nome || null,
+            sobrenome: dados.sobrenome || null,
+            foto_url: dados.foto_url || null,
+            data_atualizacao: new Date().toISOString()
+          })
+          .eq('usuario_id', dados.usuario_id)
+          .select()
+          .single();
+
+        if (error) {
+          console.error('Erro ao atualizar perfil:', error);
+          throw new Error(`Erro ao atualizar perfil: ${error.message}`);
+        }
+
+        result = data;
+      } else {
+        // Criar novo perfil
+        const { data, error } = await supabase
+          .from('perfis_usuario')
+          .insert({
+            usuario_id: dados.usuario_id,
+            nome: dados.nome || null,
+            sobrenome: dados.sobrenome || null,
+            foto_url: dados.foto_url || null,
+            data_criacao: new Date().toISOString(),
+            data_atualizacao: new Date().toISOString()
+          })
+          .select()
+          .single();
+
+        if (error) {
+          console.error('Erro ao criar perfil:', error);
+          throw new Error(`Erro ao criar perfil: ${error.message}`);
+        }
+
+        result = data;
+      }
+
+      console.log('Perfil salvo com sucesso:', result);
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['perfil-usuario'] });
