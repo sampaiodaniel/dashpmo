@@ -11,15 +11,13 @@ interface MudancasListProps {
   isLoading: boolean;
   error: Error | null;
   filtrosAplicados: boolean;
-  onMudancaClick: (mudancaId: number) => void;
 }
 
 export function MudancasList({ 
   mudancasList, 
   isLoading, 
   error, 
-  filtrosAplicados, 
-  onMudancaClick 
+  filtrosAplicados
 }: MudancasListProps) {
   const {
     canApprove,
@@ -27,7 +25,7 @@ export function MudancasList({
     handleRejeitar,
     handleEditar,
     handleCardClick
-  } = useMudancaActions(onMudancaClick);
+  } = useMudancaActions();
 
   const {
     paginatedData,

@@ -25,12 +25,6 @@ export default function Mudancas() {
 
   const responsaveis = Array.from(new Set(mudancas?.map(m => m.solicitante) || []));
 
-  const handleMudancaClick = (mudancaId: number) => {
-    console.log('Navegando para detalhes da mudança:', mudancaId);
-    // TODO: Implementar navegação para página de detalhes/edição da mudança
-    // Por exemplo: navigate(`/mudancas/${mudancaId}`)
-  };
-
   const handleFiltrarPendentes = () => {
     setFiltros({ statusAprovacao: 'Pendente' });
   };
@@ -90,7 +84,6 @@ export default function Mudancas() {
           isLoading={mudancasLoading}
           error={mudancasError}
           filtrosAplicados={filtrosAplicados}
-          onMudancaClick={handleMudancaClick}
         />
       </div>
     </Layout>

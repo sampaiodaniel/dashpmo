@@ -1,8 +1,10 @@
 
 import { useAuth } from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 
-export function useMudancaActions(onMudancaClick: (mudancaId: number) => void) {
+export function useMudancaActions(onMudancaClick?: (mudancaId: number) => void) {
   const { canApprove } = useAuth();
+  const navigate = useNavigate();
 
   const handleAprovar = (e: React.MouseEvent, mudancaId: number) => {
     e.preventDefault();
@@ -21,13 +23,17 @@ export function useMudancaActions(onMudancaClick: (mudancaId: number) => void) {
   const handleEditar = (e: React.MouseEvent, mudancaId: number) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log('Editando mudança:', mudancaId);
-    onMudancaClick(mudancaId);
+    console.log('Navegando para detalhes da mudança:', mudancaId);
+    navigate(`/mudancas/${mudancaId}`);
   };
 
   const handleCardClick = (mudancaId: number) => {
-    console.log('Clicando no card da mudança:', mudancaId);
-    onMudancaClick(mudancaId);
+    console.log('Clicando no card da mudança, navegando para:', mudancaId);
+    if (onMudancaClick) {
+      onMudancaClick(mudancaId);
+    } else {
+      navigate(`/mudancas/${mudancaId}`);
+    }
   };
 
   return {
