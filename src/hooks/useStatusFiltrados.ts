@@ -18,9 +18,13 @@ export function useStatusFiltrados(statusList: StatusProjeto[] | undefined, filt
 
     let filtrados = [...statusList];
 
-    // Filtrar por aprovação (arquivados)
+    // Filtrar por status arquivado (apenas ocultar se explicitamente arquivado)
+    // Status pendentes de aprovação (aprovado === false) devem aparecer na lista principal
+    // Apenas status com aprovado === null ou com algum campo específico de arquivamento devem ser filtrados
     if (!filtros.incluirArquivados) {
-      filtrados = filtrados.filter(status => status.aprovado !== false || status.aprovado === undefined);
+      // Por enquanto, vamos mostrar todos os status na lista principal
+      // Futuramente, podemos implementar um campo específico "arquivado" no banco
+      // filtrados = filtrados.filter(status => status.aprovado !== null);
     }
 
     // Filtrar por carteira
