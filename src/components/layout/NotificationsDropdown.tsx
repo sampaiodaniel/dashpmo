@@ -19,12 +19,15 @@ export function NotificationsDropdown() {
   const { data: statusPendentes } = useStatusPendentes();
   const { notificacoesLidas, marcarVariasComoLidas } = useNotificacoesLidas();
   const [localNotificacoesLidas, setLocalNotificacoesLidas] = useState<number[]>([]);
+  const [jaProcessouNotificacoes, setJaProcessouNotificacoes] = useState(false);
   const navigate = useNavigate();
 
-  // Sincronizar com as notificações lidas do servidor
+  // Sincronizar com as notificações lidas do servidor apenas uma vez
   useEffect(() => {
-    setLocalNotificacoesLidas(notificacoesLidas);
-  }, [notificacoesLidas]);
+    if (!jaProcessouNotificacoes) {
+      setLocalNotificacoesLidas(notificacoesLidas);
+    }
+  }, [notificacoesLidas, jaProcessouNotificacoes]);
 
   // Calcular número de notificações não lidas
   const notificacoesNaoLidas = canApprove() ? 
@@ -36,7 +39,13 @@ export function NotificationsDropdown() {
       const statusIds = statusPendentes.map(status => status.id);
       
       // Atualizar estado local imediatamente para feedback visual
-      setLocalNotificacoesLidas(statusIds);
+      setLocalNotificacoesLidas(prev => {
+        const novosIds = statusIds.filter(id => !prev.includes(id));
+        return [...prev, ...novosIds];
+      });
+      
+      // Marcar que já processamos as notificações para evitar sobrescrever
+      setJaProcessouNotificacoes(true);
       
       // Marcar no servidor
       try {
@@ -44,8 +53,8 @@ export function NotificationsDropdown() {
         console.log('Notificações marcadas como lidas com sucesso');
       } catch (error) {
         console.error('Erro ao marcar notificações como lidas:', error);
-        // Reverter estado local em caso de erro
-        setLocalNotificacoesLidas(notificacoesLidas);
+        // Em caso de erro, permitir nova sincronização
+        setJaProcessouNotificacoes(false);
       }
     }
   };
