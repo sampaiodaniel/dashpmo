@@ -11,7 +11,7 @@ export function useProjetos(filtros?: FiltrosProjeto) {
         .from('projetos')
         .select(`
           *,
-          status_projeto!inner (
+          status_projeto (
             status_geral,
             status_visao_gp,
             data_atualizacao
@@ -42,12 +42,17 @@ export function useProjetos(filtros?: FiltrosProjeto) {
 
       const { data, error } = await query;
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro ao buscar projetos:', error);
+        throw error;
+      }
+
+      console.log('Projetos encontrados:', data);
 
       return data?.map((projeto: any) => ({
         id: projeto.id,
         nome_projeto: projeto.nome_projeto,
-        descricao: projeto.descricao,
+        descricao: projeto.descricao || projeto.descricao_projeto,
         area_responsavel: projeto.area_responsavel,
         responsavel_interno: projeto.responsavel_interno,
         gp_responsavel: projeto.gp_responsavel,
