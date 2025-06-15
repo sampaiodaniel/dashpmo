@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
@@ -96,12 +95,11 @@ export function GraficoEvolutivoIncidentes() {
     let dadosProcessados;
     
     if (carteiraFiltro !== 'todas') {
-      // Para carteira específica, pegar apenas um registro por data (o mais recente)
+      // Para carteira específica, pegar apenas um registro por data (o mais recente por ID)
       const registrosPorData = new Map();
       dadosFiltrados.forEach(item => {
         const data = item.data_registro;
-        if (!registrosPorData.has(data) || 
-            new Date(item.data_criacao || 0) > new Date(registrosPorData.get(data).data_criacao || 0)) {
+        if (!registrosPorData.has(data) || item.id > registrosPorData.get(data).id) {
           registrosPorData.set(data, item);
         }
       });
@@ -307,7 +305,7 @@ export function GraficoEvolutivoIncidentes() {
                   style={{ backgroundColor: linhasVisiveis[chave] ? config.color : '#ccc' }}
                 />
                 {config.label}
-              </button>
+              </div>
             ))}
           </div>
         </CardContent>
