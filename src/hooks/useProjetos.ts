@@ -96,6 +96,8 @@ export function useProjetos(filtros?: FiltrosProjeto) {
             data_marco1: ultimoStatus.data_marco1 ? new Date(ultimoStatus.data_marco1) : undefined,
             data_marco2: ultimoStatus.data_marco2 ? new Date(ultimoStatus.data_marco2) : undefined,
             data_marco3: ultimoStatus.data_marco3 ? new Date(ultimoStatus.data_marco3) : undefined,
+            data_aprovacao: ultimoStatus.data_aprovacao ? new Date(ultimoStatus.data_aprovacao) : undefined,
+            data_criacao: new Date(ultimoStatus.data_criacao)
           } : undefined
         };
       });
