@@ -34,19 +34,50 @@ export function StatusAcoes({ status, onStatusUpdate }: StatusAcoesProps) {
   const [excluirDialogOpen, setExcluirDialogOpen] = useState(false);
   const [arquivarDialogOpen, setArquivarDialogOpen] = useState(false);
   const [excluindo, setExcluindo] = useState(false);
+  const [arquivando, setArquivando] = useState(false);
 
   const handleEdit = () => {
     navigate(`/status/${status.id}/editar`);
   };
 
-  const handleArchive = () => {
-    // TODO: Implementar arquivamento
-    console.log('Arquivar status:', status.id);
-    toast({
-      title: "Funcionalidade em desenvolvimento",
-      description: "O arquivamento de status será implementado em breve.",
-    });
-    setArquivarDialogOpen(false);
+  const handleArchive = async () => {
+    setArquivando(true);
+    try {
+      console.log('Arquivando status:', status.id);
+      
+      const { error } = await supabase
+        .from('status_projeto')
+        .update({ 
+          aprovado: false,
+          data_atualizacao: new Date().toISOString().split('T')[0]
+        })
+        .eq('id', status.id);
+
+      if (error) {
+        console.error('Erro ao arquivar status:', error);
+        toast({
+          title: "Erro",
+          description: "Erro ao arquivar status",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Sucesso",
+          description: "Status arquivado com sucesso",
+        });
+        onStatusUpdate();
+      }
+    } catch (error) {
+      console.error('Erro ao arquivar status:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao arquivar status",
+        variant: "destructive",
+      });
+    } finally {
+      setArquivando(false);
+      setArquivarDialogOpen(false);
+    }
   };
 
   const handleDelete = async () => {
@@ -129,8 +160,11 @@ export function StatusAcoes({ status, onStatusUpdate }: StatusAcoesProps) {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleArchive}>
-              Arquivar
+            <AlertDialogAction 
+              onClick={handleArchive}
+              disabled={arquivando}
+            >
+              {arquivando ? 'Arquivando...' : 'Arquivar'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
