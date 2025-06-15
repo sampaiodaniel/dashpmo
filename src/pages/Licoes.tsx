@@ -2,39 +2,79 @@
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BookOpen, Plus, Search, Star } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { usePagination } from '@/hooks/usePagination';
-import { PaginationFooter } from '@/components/common/PaginationFooter';
-import { useState } from 'react';
+import { useLicoes } from '@/hooks/useLicoes';
+import { useState, useMemo } from 'react';
+import { useLicoesFiltradas, LicoesFilters } from '@/hooks/useLicoesFiltradas';
+import { LicoesHeader } from '@/components/licoes/LicoesHeader';
+import { LicoesMetricas } from '@/components/licoes/LicoesMetricas';
+import { LicoesFilters as LicoesFiltersComponent } from '@/components/licoes/LicoesFilters';
+import { LicoesSearchBar } from '@/components/licoes/LicoesSearchBar';
+import { LicoesList } from '@/components/licoes/LicoesList';
 
 export default function Licoes() {
-  const { usuario, isLoading } = useAuth();
+  const { usuario, isLoading: authLoading } = useAuth();
+  const { data: licoes, isLoading: licoesLoading, error: licoesError } = useLicoes();
   const [termoBusca, setTermoBusca] = useState('');
+  const [filtros, setFiltros] = useState<LicoesFilters>({});
 
-  // Mock data for now - will be replaced with real data later
-  const mockLicoes: any[] = [];
+  // Combinar filtros de busca com outros filtros
+  const filtrosCompletos = useMemo(() => ({
+    ...filtros,
+    busca: termoBusca
+  }), [filtros, termoBusca]);
 
-  const {
-    currentPage,
-    totalPages,
-    paginatedData,
-    goToPage,
-    goToNextPage,
-    goToPreviousPage,
-    hasNextPage,
-    hasPreviousPage,
-    totalItems,
-    startItem,
-    endItem
-  } = usePagination({
-    data: mockLicoes,
-    itemsPerPage: 20
-  });
+  const licoesFiltradas = useLicoesFiltradas(licoes, filtrosCompletos);
 
-  if (isLoading) {
+  // Extrair listas únicas para os filtros
+  const responsaveis = useMemo(() => {
+    if (!licoes) return [];
+    const responsaveisUnicos = [...new Set(licoes.map(l => l.responsavel_registro))];
+    return responsaveisUnicos.sort();
+  }, [licoes]);
+
+  const projetos = useMemo(() => {
+    if (!licoes) return [];
+    const projetosUnicos = [...new Set(licoes.filter(l => l.projeto).map(l => l.projeto.nome_projeto))];
+    return projetosUnicos.sort();
+  }, [licoes]);
+
+  // Calcular métricas
+  const totalLicoes = licoes?.length || 0;
+  const boasPraticas = licoes?.filter(l => 
+    ['Desenvolvimento', 'DevOps', 'Qualidade e Testes'].includes(l.categoria_licao)
+  ).length || 0;
+  const pontosAtencao = totalLicoes - boasPraticas;
+
+  const handleLicaoClick = (licaoId: number) => {
+    // TODO: Implementar navegação para detalhes da lição
+    console.log('Clicou na lição:', licaoId);
+  };
+
+  const handleNovaLicao = () => {
+    // TODO: Implementar modal de nova lição
+    console.log('Nova lição');
+  };
+
+  const handleFiltrarBoasPraticas = () => {
+    setFiltros(prev => ({
+      ...prev,
+      categoria: 'Desenvolvimento' // Ou usar múltiplas categorias
+    }));
+  };
+
+  const handleFiltrarPontosAtencao = () => {
+    setFiltros(prev => ({
+      ...prev,
+      categoria: 'Comunicação' // Exemplo de categoria de ponto de atenção
+    }));
+  };
+
+  const handleFiltrarTodas = () => {
+    setFiltros({});
+    setTermoBusca('');
+  };
+
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-pmo-background flex items-center justify-center">
         <div className="text-center">
@@ -51,100 +91,42 @@ export default function Licoes() {
     return <LoginForm />;
   }
 
+  const filtrosAplicados = Object.keys(filtros).length > 0 || termoBusca.length > 0;
+
   return (
     <Layout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-pmo-primary">Lições Aprendidas</h1>
-            <p className="text-pmo-gray mt-2">Base de conhecimento e boas práticas</p>
-          </div>
-          <Button className="bg-pmo-primary hover:bg-pmo-primary/90">
-            <Plus className="h-4 w-4 mr-2" />
-            Nova Lição
-          </Button>
-        </div>
+        <LicoesHeader onNovaLicao={handleNovaLicao} />
 
-        <div className="flex gap-4 items-center">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-pmo-gray" />
-            <Input 
-              placeholder="Buscar lições..." 
-              className="pl-10" 
-              value={termoBusca}
-              onChange={(e) => setTermoBusca(e.target.value)}
-            />
-          </div>
-        </div>
+        <LicoesMetricas 
+          totalLicoes={totalLicoes}
+          boasPraticas={boasPraticas}
+          pontosAtencao={pontosAtencao}
+          onFiltrarBoasPraticas={handleFiltrarBoasPraticas}
+          onFiltrarPontosAtencao={handleFiltrarPontosAtencao}
+          onFiltrarTodas={handleFiltrarTodas}
+        />
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="border-l-4 border-l-pmo-success">
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-base">
-                <Star className="h-5 w-5" />
-                Boas Práticas
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-pmo-success">12</div>
-              <p className="text-sm text-pmo-gray">Lições registradas</p>
-            </CardContent>
-          </Card>
+        <LicoesFiltersComponent 
+          filtros={filtros}
+          onFiltroChange={setFiltros}
+          responsaveis={responsaveis}
+          projetos={projetos}
+        />
 
-          <Card className="border-l-4 border-l-pmo-warning">
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-base">
-                <BookOpen className="h-5 w-5" />
-                Pontos de Atenção
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-pmo-warning">8</div>
-              <p className="text-sm text-pmo-gray">Alertas importantes</p>
-            </CardContent>
-          </Card>
+        <LicoesSearchBar 
+          termoBusca={termoBusca}
+          onTermoBuscaChange={setTermoBusca}
+          totalResults={licoesFiltradas.length}
+        />
 
-          <Card className="border-l-4 border-l-blue-500">
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-base">
-                <BookOpen className="h-5 w-5" />
-                Total de Lições
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-blue-600">20</div>
-              <p className="text-sm text-pmo-gray">Na base de conhecimento</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BookOpen className="h-5 w-5" />
-              Base de Conhecimento
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-center py-8 text-pmo-gray">
-              <BookOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p className="text-lg mb-2">Nenhuma lição encontrada</p>
-              <p className="text-sm">Comece compartilhando conhecimentos e experiências</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <PaginationFooter
-          currentPage={currentPage}
-          totalPages={totalPages}
-          hasNextPage={hasNextPage}
-          hasPreviousPage={hasPreviousPage}
-          goToPage={goToPage}
-          goToNextPage={goToNextPage}
-          goToPreviousPage={goToPreviousPage}
-          startItem={startItem}
-          endItem={endItem}
-          totalItems={totalItems}
+        <LicoesList 
+          licoes={licoesFiltradas}
+          isLoading={licoesLoading}
+          error={licoesError}
+          termoBusca={termoBusca}
+          filtrosAplicados={filtrosAplicados}
+          onLicaoClick={handleLicaoClick}
         />
       </div>
     </Layout>

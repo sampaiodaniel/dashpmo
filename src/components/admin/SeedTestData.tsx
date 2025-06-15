@@ -15,12 +15,12 @@ export function SeedTestData() {
       await createTestChangeRequests();
       toast({
         title: "Dados de teste criados",
-        description: "10 mudanças de replanejamento foram criadas com sucesso",
+        description: "10 mudanças de replanejamento e 10 lições aprendidas foram criadas com sucesso",
       });
     } catch (error) {
       toast({
         title: "Erro ao criar dados de teste",
-        description: "Ocorreu um erro ao criar as mudanças de teste",
+        description: "Ocorreu um erro ao criar os dados de teste",
         variant: "destructive",
       });
     } finally {
@@ -54,7 +54,7 @@ export function SeedTestData() {
             ) : (
               <>
                 <Database className="h-4 w-4 mr-2" />
-                Criar 10 Mudanças de Teste
+                Criar Dados de Teste
               </>
             )}
           </Button>
