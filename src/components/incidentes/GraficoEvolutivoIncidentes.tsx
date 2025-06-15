@@ -1,3 +1,4 @@
+
 import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
@@ -22,7 +23,7 @@ const chartConfig = {
     color: "#ffc658",
   },
   mais_15_dias: {
-    label: "+ 15 dias",
+    label: "Mais de 15 dias",
     color: "#8dd1e1",
   },
   criticos: {
@@ -42,11 +43,22 @@ const CustomTooltip = ({ active, payload, label }: any) => {
           <p className="text-sm text-gray-600">
             <span className="font-medium">Anterior:</span> {data.anterior || 0}
           </p>
-          {payload.map((entry: any, index: number) => (
-            <p key={index} className="text-sm" style={{ color: entry.color }}>
-              <span className="font-medium">{entry.name}:</span> {entry.value}
-            </p>
-          ))}
+          {payload.map((entry: any, index: number) => {
+            // Formatação correta dos labels
+            let labelFormatado = entry.name;
+            if (entry.dataKey === 'mais_15_dias') {
+              labelFormatado = 'Mais de 15 dias';
+            } else {
+              // Primeira letra maiúscula
+              labelFormatado = entry.name.charAt(0).toUpperCase() + entry.name.slice(1);
+            }
+            
+            return (
+              <p key={index} className="text-sm" style={{ color: entry.color }}>
+                <span className="font-medium">{labelFormatado}:</span> {entry.value}
+              </p>
+            );
+          })}
         </div>
       </div>
     );
@@ -65,13 +77,20 @@ export function GraficoEvolutivoIncidentes() {
     criticos: true,
   });
 
+  // Log para debug dos dados
+  console.log('Dados histórico completo:', historico);
+
   const dadosGrafico = useMemo(() => {
     if (!historico) return [];
 
+    console.log('Processando dados do gráfico...');
+    
     // Filtrar por carteira se selecionada
     const dadosFiltrados = carteiraFiltro === 'todas' 
       ? historico 
       : historico.filter(item => item.carteira === carteiraFiltro);
+
+    console.log('Dados filtrados por carteira:', dadosFiltrados);
 
     // Agrupar por data e somar os valores
     const dadosAgrupados = dadosFiltrados.reduce((acc, item) => {
@@ -98,13 +117,18 @@ export function GraficoEvolutivoIncidentes() {
       return acc;
     }, {} as Record<string, any>);
 
+    console.log('Dados agrupados por data:', dadosAgrupados);
+
     // Converter para array e ordenar por data
-    return Object.values(dadosAgrupados).sort((a: any, b: any) => 
+    const resultado = Object.values(dadosAgrupados).sort((a: any, b: any) => 
       new Date(a.data).getTime() - new Date(b.data).getTime()
     ).map((item: any) => ({
       ...item,
       dataFormatada: format(new Date(item.data), 'dd/MM', { locale: ptBR }),
     }));
+
+    console.log('Resultado final do gráfico:', resultado);
+    return resultado;
   }, [historico, carteiraFiltro]);
 
   const toggleLinha = (chave: string) => {
