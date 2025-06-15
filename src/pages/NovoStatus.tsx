@@ -1,4 +1,3 @@
-
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
@@ -9,28 +8,26 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useStatusOperations } from '@/hooks/useStatusOperations';
 import { useProjetos } from '@/hooks/useProjetos';
 import { useNavigate } from 'react-router-dom';
+import { useCarteiras } from '@/hooks/useListaValores';
 
 export default function NovoStatus() {
   const { usuario, isLoading: authLoading } = useAuth();
-  const { data: projetos } = useProjetos();
+  const { data: todosProjetos } = useProjetos({ incluirFechados: true });
+  const { data: carteiras } = useCarteiras();
   const { salvarStatus, isLoading } = useStatusOperations();
   const navigate = useNavigate();
 
   // Campos básicos
+  const [carteiraSelecionada, setCarteiraSelecionada] = useState('');
   const [projetoId, setProjetoId] = useState('');
   const [progressoEstimado, setProgressoEstimado] = useState('');
   const [responsavelCwi, setResponsavelCwi] = useState('');
   const [gpResponsavelCwi, setGpResponsavelCwi] = useState('');
   const [responsavelAsa, setResponsavelAsa] = useState('');
-  
-  // Carteiras
-  const [carteiraPrimaria, setCarteiraPrimaria] = useState('');
-  const [carteiraSecundaria, setCarteiraSecundaria] = useState('');
-  const [carteiraTerciaria, setCarteiraTerciaria] = useState('');
   
   // Status e riscos
   const [statusGeral, setStatusGeral] = useState<string>('');
@@ -60,10 +57,21 @@ export default function NovoStatus() {
   // Listas de opções
   const responsaveisCwi = ['Camila', 'Elias', 'Fabiano', 'Fred', 'Marco', 'Rafael', 'Jefferson'];
   const responsaveisAsa = ['Dapper', 'Pitta', 'Judice', 'Thadeus', 'André Simões', 'Júlio', 'Mello', 'Rebonatto', 'Mickey', 'Armelin'];
-  const carteiras = ['Cadastro', 'Canais', 'Core Bancário', 'Crédito', 'Cripto', 'Empréstimos', 'Fila Rápida', 'Investimentos 1', 'Investimentos 2', 'Onboarding', 'Open Finance'];
+
+  // Filtrar projetos pela carteira selecionada
+  const projetosFiltrados = useMemo(() => {
+    if (!carteiraSelecionada || !todosProjetos) return [];
+    return todosProjetos.filter(projeto => projeto.area_responsavel === carteiraSelecionada);
+  }, [carteiraSelecionada, todosProjetos]);
 
   // Gerar opções de progresso de 5 em 5
   const progressoOpcoes = Array.from({ length: 21 }, (_, i) => i * 5);
+
+  // Resetar projeto quando carteira muda
+  const handleCarteiraChange = (novaCarteira: string) => {
+    setCarteiraSelecionada(novaCarteira);
+    setProjetoId(''); // Limpar projeto selecionado
+  };
 
   if (authLoading) {
     return (
@@ -95,9 +103,9 @@ export default function NovoStatus() {
       responsavel_cwi: responsavelCwi || null,
       gp_responsavel_cwi: gpResponsavelCwi || null,
       responsavel_asa: responsavelAsa || null,
-      carteira_primaria: carteiraPrimaria || null,
-      carteira_secundaria: carteiraSecundaria || null,
-      carteira_terciaria: carteiraTerciaria || null,
+      carteira_primaria: null,
+      carteira_secundaria: null,
+      carteira_terciaria: null,
       status_geral: statusGeral as any,
       status_visao_gp: statusVisaoGp as any,
       impacto_riscos: impactoRiscos as any,
@@ -148,15 +156,35 @@ export default function NovoStatus() {
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-pmo-primary border-b pb-2">Informações Básicas</h3>
                 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="projeto">Projeto *</Label>
-                    <Select value={projetoId} onValueChange={setProjetoId}>
+                    <Label htmlFor="carteira">Carteira *</Label>
+                    <Select value={carteiraSelecionada} onValueChange={handleCarteiraChange}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Selecione o projeto..." />
+                        <SelectValue placeholder="Selecione a carteira..." />
                       </SelectTrigger>
                       <SelectContent>
-                        {projetos?.map((projeto) => (
+                        {carteiras?.map((carteira) => (
+                          <SelectItem key={carteira} value={carteira}>
+                            {carteira}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="projeto">Projeto *</Label>
+                    <Select 
+                      value={projetoId} 
+                      onValueChange={setProjetoId}
+                      disabled={!carteiraSelecionada}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder={carteiraSelecionada ? "Selecione o projeto..." : "Selecione uma carteira primeiro"} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {projetosFiltrados?.map((projeto) => (
                           <SelectItem key={projeto.id} value={projeto.id.toString()}>
                             {projeto.nome_projeto}
                           </SelectItem>
@@ -230,61 +258,6 @@ export default function NovoStatus() {
                         {responsaveisAsa.map((nome) => (
                           <SelectItem key={nome} value={nome}>
                             {nome}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
-
-              {/* Carteiras */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-pmo-primary border-b pb-2">Carteiras</h3>
-                
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="carteira-primaria">Carteira Primária</Label>
-                    <Select value={carteiraPrimaria} onValueChange={setCarteiraPrimaria}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {carteiras.map((carteira) => (
-                          <SelectItem key={carteira} value={carteira}>
-                            {carteira}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="carteira-secundaria">Carteira Secundária</Label>
-                    <Select value={carteiraSecundaria} onValueChange={setCarteiraSecundaria}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {carteiras.map((carteira) => (
-                          <SelectItem key={carteira} value={carteira}>
-                            {carteira}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="carteira-terciaria">Carteira Terciária</Label>
-                    <Select value={carteiraTerciaria} onValueChange={setCarteiraTerciaria}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {carteiras.map((carteira) => (
-                          <SelectItem key={carteira} value={carteira}>
-                            {carteira}
                           </SelectItem>
                         ))}
                       </SelectContent>
