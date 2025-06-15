@@ -1,5 +1,5 @@
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -33,7 +33,7 @@ type SenhaFormData = z.infer<typeof senhaSchema>;
 
 export function ConfiguracoesPerfil() {
   const { usuario } = useAuth();
-  const { data: perfil } = usePerfilUsuario(usuario?.id || 0);
+  const { data: perfil, refetch } = usePerfilUsuario(usuario?.id || 0);
   const { createOrUpdatePerfil, uploadFoto, alterarSenha } = usePerfilOperations();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -55,14 +55,14 @@ export function ConfiguracoesPerfil() {
   });
 
   // Atualizar formulário quando perfil carrega
-  useState(() => {
+  useEffect(() => {
     if (perfil) {
       perfilForm.reset({
         nome: perfil.nome || '',
         sobrenome: perfil.sobrenome || '',
       });
     }
-  });
+  }, [perfil, perfilForm]);
 
   const onSubmitPerfil = async (data: PerfilFormData) => {
     if (!usuario) return;
@@ -73,12 +73,14 @@ export function ConfiguracoesPerfil() {
       sobrenome: data.sobrenome,
       foto_url: perfil?.foto_url,
     });
+    
+    // Refetch para atualizar os dados exibidos no header
+    refetch();
   };
 
   const onSubmitSenha = async (data: SenhaFormData) => {
     if (!usuario) return;
 
-    // Verificar senha atual (simulado - em produção, faça isso no backend)
     await alterarSenha.mutateAsync({
       usuarioId: usuario.id,
       novaSenha: data.novaSenha,
@@ -100,6 +102,9 @@ export function ConfiguracoesPerfil() {
         sobrenome: perfil?.sobrenome,
         foto_url: fotoUrl,
       });
+      
+      // Refetch para atualizar a foto no header
+      refetch();
     } catch (error) {
       console.error('Erro ao fazer upload:', error);
     }
@@ -112,29 +117,22 @@ export function ConfiguracoesPerfil() {
     return usuario?.nome.split(' ').map(n => n[0]).join('').toUpperCase() || 'U';
   };
 
+  const getDisplayName = () => {
+    if (perfil?.nome && perfil?.sobrenome) {
+      return `${perfil.nome} ${perfil.sobrenome}`;
+    }
+    return usuario?.nome || 'Usuário';
+  };
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-pmo-primary">Configurações</h1>
-        <p className="text-gray-600 mt-2">Gerencie suas informações pessoais e configurações da conta</p>
-      </div>
-
-      {/* Foto de Perfil */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <User className="h-5 w-5" />
-            Foto de Perfil
-          </CardTitle>
-          <CardDescription>
-            Altere sua foto de perfil que aparece no sistema
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex items-center gap-6">
+      {/* Header com Avatar e Nome */}
+      <div className="bg-white rounded-lg border p-6">
+        <div className="flex items-center gap-6">
           <div className="relative">
-            <Avatar className="h-20 w-20">
+            <Avatar className="h-24 w-24">
               <AvatarImage src={perfil?.foto_url} />
-              <AvatarFallback className="bg-pmo-secondary text-white text-lg">
+              <AvatarFallback className="bg-pmo-secondary text-white text-2xl">
                 {getInitials()}
               </AvatarFallback>
             </Avatar>
@@ -148,12 +146,8 @@ export function ConfiguracoesPerfil() {
             </Button>
           </div>
           <div>
-            <p className="text-sm text-gray-600">
-              Clique no ícone da câmera para alterar sua foto de perfil
-            </p>
-            <p className="text-xs text-gray-400 mt-1">
-              Formatos aceitos: JPG, PNG (máximo 5MB)
-            </p>
+            <h2 className="text-2xl font-bold text-pmo-primary">{getDisplayName()}</h2>
+            <p className="text-gray-600">{usuario?.email}</p>
           </div>
           <input
             ref={fileInputRef}
@@ -162,13 +156,21 @@ export function ConfiguracoesPerfil() {
             onChange={handleFileUpload}
             className="hidden"
           />
-        </CardContent>
-      </Card>
+        </div>
+      </div>
+
+      <div>
+        <h1 className="text-3xl font-bold text-pmo-primary">Configurações</h1>
+        <p className="text-gray-600 mt-2">Gerencie suas informações pessoais e configurações da conta</p>
+      </div>
 
       {/* Informações Pessoais */}
       <Card>
         <CardHeader>
-          <CardTitle>Informações Pessoais</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <User className="h-5 w-5" />
+            Informações Pessoais
+          </CardTitle>
           <CardDescription>
             Atualize suas informações pessoais
           </CardDescription>
