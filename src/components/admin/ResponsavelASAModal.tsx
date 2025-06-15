@@ -62,8 +62,7 @@ export function ResponsavelASAModal({ aberto, onFechar, responsavel }: Responsav
     } else {
       createResponsavel.mutate({
         ...formData,
-        ativo: true,
-        data_criacao: null
+        ativo: true
       });
     }
     
@@ -121,13 +120,14 @@ export function ResponsavelASAModal({ aberto, onFechar, responsavel }: Responsav
             <div>
               <Label htmlFor="head_id">Head</Label>
               <Select 
-                value={formData.head_id?.toString() || ''} 
-                onValueChange={(value) => setFormData(prev => ({ ...prev, head_id: value ? parseInt(value) : null }))}
+                value={formData.head_id?.toString() || 'none'} 
+                onValueChange={(value) => setFormData(prev => ({ ...prev, head_id: value === 'none' ? null : parseInt(value) }))}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione um Head" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="none">Nenhum</SelectItem>
                   {heads.map((head) => (
                     <SelectItem key={head.id} value={head.id.toString()}>
                       {head.nome}

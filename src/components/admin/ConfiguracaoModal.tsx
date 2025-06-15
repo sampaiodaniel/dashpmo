@@ -55,8 +55,7 @@ export function ConfiguracaoModal({ aberto, onFechar, configuracao, tipoInicial 
     } else {
       createConfiguracao.mutate({
         ...formData,
-        ativo: true,
-        data_criacao: null
+        ativo: true
       });
     }
     

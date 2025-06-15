@@ -1,35 +1,29 @@
 
 import { useState } from 'react';
-import { useConfiguracoesSistema, useConfiguracoesSistemaOperations } from '@/hooks/useConfiguracoesSistema';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Edit, Trash2 } from 'lucide-react';
-import { ConfiguracaoModal } from './ConfiguracaoModal';
-import { ConfiguracaoSistema, TIPOS_CONFIGURACAO } from '@/types/admin';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Plus, Edit, Trash2 } from 'lucide-react';
+import { useConfiguracoesSistema, useConfiguracoesSistemaOperations } from '@/hooks/useConfiguracoesSistema';
+import { ConfiguracaoModal } from './ConfiguracaoModal';
+import { ConfiguracaoSistema, TipoConfiguracao, TIPOS_CONFIGURACAO } from '@/types/admin';
 
 export function AdminConfiguracoes() {
+  const [tipoAtivo, setTipoAtivo] = useState<TipoConfiguracao>('responsavel_interno');
   const [modalAberto, setModalAberto] = useState(false);
   const [configuracaoEditando, setConfiguracaoEditando] = useState<ConfiguracaoSistema | null>(null);
-  const [tipoSelecionado, setTipoSelecionado] = useState(TIPOS_CONFIGURACAO[0]);
-  
-  const { data: configuracoes, isLoading } = useConfiguracoesSistema();
+
+  const { data: configuracoes } = useConfiguracoesSistema(tipoAtivo);
   const { deleteConfiguracao } = useConfiguracoesSistemaOperations();
 
-  const handleEditar = (configuracao: ConfiguracaoSistema) => {
-    setConfiguracaoEditando(configuracao);
+  const handleEditar = (config: ConfiguracaoSistema) => {
+    setConfiguracaoEditando(config);
     setModalAberto(true);
   };
 
-  const handleNovo = (tipo: string) => {
-    setTipoSelecionado(tipo);
+  const handleNovo = () => {
     setConfiguracaoEditando(null);
     setModalAberto(true);
-  };
-
-  const handleFecharModal = () => {
-    setModalAberto(false);
-    setConfiguracaoEditando(null);
   };
 
   const handleRemover = (id: number) => {
@@ -38,88 +32,87 @@ export function AdminConfiguracoes() {
     }
   };
 
-  if (isLoading) {
-    return <div>Carregando...</div>;
-  }
-
-  const getConfigsPorTipo = (tipo: string) => {
-    return configuracoes?.filter(c => c.tipo === tipo) || [];
-  };
-
-  const getTipoLabel = (tipo: string) => {
-    const labels: Record<string, string> = {
+  const getTipoLabel = (tipo: TipoConfiguracao) => {
+    const labels: Record<TipoConfiguracao, string> = {
       'responsavel_interno': 'Responsáveis Internos',
       'gp_responsavel': 'GPs Responsáveis',
       'carteira_primaria': 'Carteiras Primárias',
       'carteira_secundaria': 'Carteiras Secundárias',
       'carteira_terciaria': 'Carteiras Terciárias'
     };
-    return labels[tipo] || tipo;
+    return labels[tipo];
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-semibold">Configurações do Sistema</h2>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Configurações do Sistema</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Tabs value={tipoAtivo} onValueChange={(value) => setTipoAtivo(value as TipoConfiguracao)}>
+            <TabsList className="grid w-full grid-cols-5">
+              {TIPOS_CONFIGURACAO.map((tipo) => (
+                <TabsTrigger key={tipo} value={tipo} className="text-xs">
+                  {getTipoLabel(tipo).split(' ')[0]}
+                </TabsTrigger>
+              ))}
+            </TabsList>
 
-      <Tabs defaultValue={TIPOS_CONFIGURACAO[0]} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-5">
-          {TIPOS_CONFIGURACAO.map((tipo) => (
-            <TabsTrigger key={tipo} value={tipo} className="text-xs">
-              {getTipoLabel(tipo)}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+            {TIPOS_CONFIGURACAO.map((tipo) => (
+              <TabsContent key={tipo} value={tipo} className="mt-4">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold">{getTipoLabel(tipo)}</h3>
+                  <Button onClick={handleNovo} size="sm">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Adicionar
+                  </Button>
+                </div>
 
-        {TIPOS_CONFIGURACAO.map((tipo) => (
-          <TabsContent key={tipo} value={tipo}>
-            <div className="bg-white rounded-lg border">
-              <div className="p-4 border-b flex justify-between items-center">
-                <h3 className="font-medium">{getTipoLabel(tipo)}</h3>
-                <Button size="sm" onClick={() => handleNovo(tipo)}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Adicionar
-                </Button>
-              </div>
-              
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Valor</TableHead>
-                    <TableHead>Ordem</TableHead>
-                    <TableHead className="w-24">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {getConfigsPorTipo(tipo).map((config) => (
-                    <TableRow key={config.id}>
-                      <TableCell>{config.valor}</TableCell>
-                      <TableCell>{config.ordem || 0}</TableCell>
-                      <TableCell>
-                        <div className="flex gap-1">
-                          <Button size="sm" variant="outline" onClick={() => handleEditar(config)}>
-                            <Edit className="h-3 w-3" />
-                          </Button>
-                          <Button size="sm" variant="outline" onClick={() => handleRemover(config.id)}>
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
+                <div className="space-y-2">
+                  {configuracoes?.map((config) => (
+                    <div key={config.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div>
+                        <span className="font-medium">{config.valor}</span>
+                        {config.ordem && (
+                          <span className="text-sm text-gray-500 ml-2">(Ordem: {config.ordem})</span>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEditar(config)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleRemover(config.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
                   ))}
-                </TableBody>
-              </Table>
-            </div>
-          </TabsContent>
-        ))}
-      </Tabs>
+                  {configuracoes?.length === 0 && (
+                    <p className="text-center text-gray-500 py-4">
+                      Nenhuma configuração encontrada
+                    </p>
+                  )}
+                </div>
+              </TabsContent>
+            ))}
+          </Tabs>
+        </CardContent>
+      </Card>
 
       <ConfiguracaoModal
         aberto={modalAberto}
-        onFechar={handleFecharModal}
+        onFechar={() => setModalAberto(false)}
         configuracao={configuracaoEditando}
-        tipoInicial={tipoSelecionado}
+        tipoInicial={tipoAtivo}
       />
     </div>
   );
