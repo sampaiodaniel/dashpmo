@@ -18,7 +18,10 @@ export function useMudancasList() {
             nome_projeto,
             area_responsavel,
             responsavel_interno,
-            gp_responsavel
+            gp_responsavel,
+            status_ativo,
+            data_criacao,
+            criado_por
           )
         `)
         .order('data_solicitacao', { ascending: false });
@@ -35,7 +38,11 @@ export function useMudancasList() {
         ...mudanca,
         data_solicitacao: new Date(mudanca.data_solicitacao),
         data_criacao: new Date(mudanca.data_criacao),
-        data_aprovacao: mudanca.data_aprovacao ? new Date(mudanca.data_aprovacao) : undefined
+        data_aprovacao: mudanca.data_aprovacao ? new Date(mudanca.data_aprovacao) : undefined,
+        projeto: mudanca.projeto ? {
+          ...mudanca.projeto,
+          data_criacao: new Date(mudanca.projeto.data_criacao)
+        } : undefined
       })) || [];
 
       return mudancasList;

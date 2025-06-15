@@ -18,7 +18,10 @@ export function useStatusList() {
             nome_projeto,
             area_responsavel,
             responsavel_interno,
-            gp_responsavel
+            gp_responsavel,
+            status_ativo,
+            data_criacao,
+            criado_por
           )
         `)
         .order('data_atualizacao', { ascending: false });
@@ -38,7 +41,11 @@ export function useStatusList() {
         data_marco1: status.data_marco1 ? new Date(status.data_marco1) : undefined,
         data_marco2: status.data_marco2 ? new Date(status.data_marco2) : undefined,
         data_marco3: status.data_marco3 ? new Date(status.data_marco3) : undefined,
-        data_aprovacao: status.data_aprovacao ? new Date(status.data_aprovacao) : undefined
+        data_aprovacao: status.data_aprovacao ? new Date(status.data_aprovacao) : undefined,
+        projeto: status.projeto ? {
+          ...status.projeto,
+          data_criacao: new Date(status.projeto.data_criacao)
+        } : undefined
       })) || [];
 
       return statusList;
