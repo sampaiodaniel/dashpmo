@@ -3,10 +3,9 @@ import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus } from 'lucide-react';
+import { Plus, X } from 'lucide-react';
 import { useProjetosOperations } from '@/hooks/useProjetosOperations';
 
 interface CriarProjetoModalProps {
@@ -16,20 +15,48 @@ interface CriarProjetoModalProps {
 export function CriarProjetoModal({ onProjetoCriado }: CriarProjetoModalProps) {
   const [open, setOpen] = useState(false);
   const [nome, setNome] = useState('');
-  const [descricao, setDescricao] = useState('');
   const [descricaoProjeto, setDescricaoProjeto] = useState('');
   const [area, setArea] = useState<string>('');
   const [responsavelInterno, setResponsavelInterno] = useState('');
   const [gpResponsavel, setGpResponsavel] = useState('');
   const [finalizacaoPrevista, setFinalizacaoPrevista] = useState('');
-  const [equipe, setEquipe] = useState('');
+  const [equipeInput, setEquipeInput] = useState('');
+  const [equipeMembros, setEquipeMembros] = useState<string[]>([]);
   
   const { criarProjeto, isLoading } = useProjetosOperations();
 
-  // Listas de opções baseadas nas mesmas do status
-  const carteiras = ['Cadastro', 'Canais', 'Core Bancário', 'Crédito', 'Cripto', 'Empréstimos', 'Fila Rápida', 'Investimentos 1', 'Investimentos 2', 'Onboarding', 'Open Finance'];
-  const responsaveisAsa = ['Dapper', 'Pitta', 'Judice', 'Thadeus', 'André Simões', 'Júlio', 'Mello', 'Rebonatto', 'Mickey', 'Armelin'];
-  const responsaveisCwi = ['Camila', 'Elias', 'Fabiano', 'Fred', 'Marco', 'Rafael', 'Jefferson'];
+  // Mapeamento correto das áreas para os valores aceitos no banco
+  const areas = [
+    { label: 'Cadastro', value: 'Área 1' },
+    { label: 'Canais', value: 'Área 2' },
+    { label: 'Core Bancário', value: 'Área 3' },
+    { label: 'Crédito', value: 'Área 1' },
+    { label: 'Cripto', value: 'Área 2' },
+    { label: 'Empréstimos', value: 'Área 3' },
+    { label: 'Fila Rápida', value: 'Área 1' },
+    { label: 'Investimentos 1', value: 'Área 2' },
+    { label: 'Investimentos 2', value: 'Área 3' },
+    { label: 'Onboarding', value: 'Área 1' },
+    { label: 'Open Finance', value: 'Área 2' }
+  ];
+
+  const responsaveisInternos = ['Dapper', 'Pitta', 'Judice', 'Thadeus', 'André Simões', 'Júlio', 'Mello', 'Rebonatto', 'Mickey', 'Armelin'];
+  const gpsResponsaveis = ['Camila', 'Elias', 'Fabiano', 'Fred', 'Marco', 'Rafael', 'Jefferson'];
+
+  const handleEquipeKeyDown = (e: React.KeyboardEvent) => {
+    if ((e.key === ',' || e.key === ';' || e.key === 'Enter') && equipeInput.trim()) {
+      e.preventDefault();
+      const novoMembro = equipeInput.trim();
+      if (!equipeMembros.includes(novoMembro)) {
+        setEquipeMembros([...equipeMembros, novoMembro]);
+      }
+      setEquipeInput('');
+    }
+  };
+
+  const removerMembro = (index: number) => {
+    setEquipeMembros(equipeMembros.filter((_, i) => i !== index));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,25 +67,24 @@ export function CriarProjetoModal({ onProjetoCriado }: CriarProjetoModalProps) {
 
     const projeto = await criarProjeto({
       nome_projeto: nome,
-      descricao,
       descricao_projeto: descricaoProjeto || null,
       area_responsavel: area as 'Área 1' | 'Área 2' | 'Área 3',
       responsavel_interno: responsavelInterno,
       gp_responsavel: gpResponsavel,
       finalizacao_prevista: finalizacaoPrevista || null,
-      equipe: equipe || null,
+      equipe: equipeMembros.join(', ') || null,
     });
 
     if (projeto) {
       setOpen(false);
       setNome('');
-      setDescricao('');
       setDescricaoProjeto('');
       setArea('');
       setResponsavelInterno('');
       setGpResponsavel('');
       setFinalizacaoPrevista('');
-      setEquipe('');
+      setEquipeInput('');
+      setEquipeMembros([]);
       onProjetoCriado?.();
     }
   };
@@ -71,7 +97,7 @@ export function CriarProjetoModal({ onProjetoCriado }: CriarProjetoModalProps) {
           Novo Projeto
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Criar Novo Projeto</DialogTitle>
         </DialogHeader>
@@ -88,24 +114,12 @@ export function CriarProjetoModal({ onProjetoCriado }: CriarProjetoModalProps) {
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="descricao">Descrição Resumida</Label>
-            <Textarea
-              id="descricao"
-              value={descricao}
-              onChange={(e) => setDescricao(e.target.value)}
-              placeholder="Descrição resumida do projeto..."
-              rows={2}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="descricao-projeto">Descrição Detalhada do Projeto</Label>
-            <Textarea
+            <Label htmlFor="descricao-projeto">Descrição do Projeto</Label>
+            <Input
               id="descricao-projeto"
               value={descricaoProjeto}
               onChange={(e) => setDescricaoProjeto(e.target.value)}
-              placeholder="Descrição detalhada do projeto..."
-              rows={4}
+              placeholder="Descrição do projeto..."
             />
           </div>
 
@@ -117,9 +131,9 @@ export function CriarProjetoModal({ onProjetoCriado }: CriarProjetoModalProps) {
                   <SelectValue placeholder="Selecione a área..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {carteiras.map((carteira) => (
-                    <SelectItem key={carteira} value={carteira}>
-                      {carteira}
+                  {areas.map((areaItem) => (
+                    <SelectItem key={areaItem.label} value={areaItem.value}>
+                      {areaItem.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -145,7 +159,7 @@ export function CriarProjetoModal({ onProjetoCriado }: CriarProjetoModalProps) {
                   <SelectValue placeholder="Selecione o responsável..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {responsaveisAsa.map((responsavel) => (
+                  {responsaveisInternos.map((responsavel) => (
                     <SelectItem key={responsavel} value={responsavel}>
                       {responsavel}
                     </SelectItem>
@@ -161,7 +175,7 @@ export function CriarProjetoModal({ onProjetoCriado }: CriarProjetoModalProps) {
                   <SelectValue placeholder="Selecione o GP..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {responsaveisCwi.map((gp) => (
+                  {gpsResponsaveis.map((gp) => (
                     <SelectItem key={gp} value={gp}>
                       {gp}
                     </SelectItem>
@@ -173,13 +187,31 @@ export function CriarProjetoModal({ onProjetoCriado }: CriarProjetoModalProps) {
 
           <div className="space-y-2">
             <Label htmlFor="equipe">Equipe</Label>
-            <Textarea
-              id="equipe"
-              value={equipe}
-              onChange={(e) => setEquipe(e.target.value)}
-              placeholder="Membros da equipe do projeto..."
-              rows={3}
-            />
+            <div className="space-y-2">
+              <Input
+                id="equipe"
+                value={equipeInput}
+                onChange={(e) => setEquipeInput(e.target.value)}
+                onKeyDown={handleEquipeKeyDown}
+                placeholder="Digite o nome e pressione Enter, vírgula ou ponto e vírgula para adicionar..."
+              />
+              {equipeMembros.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {equipeMembros.map((membro, index) => (
+                    <div key={index} className="bg-pmo-primary text-white px-2 py-1 rounded-md text-sm flex items-center gap-1">
+                      {membro}
+                      <button
+                        type="button"
+                        onClick={() => removerMembro(index)}
+                        className="hover:bg-white/20 rounded-full p-0.5"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="flex gap-2 pt-4">

@@ -1,4 +1,3 @@
-
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
@@ -9,13 +8,21 @@ import { CriarProjetoModal } from '@/components/forms/CriarProjetoModal';
 import { useProjetos } from '@/hooks/useProjetos';
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { Button } from '@/components/ui/button';
+import { useProjetosOperations } from '@/hooks/useProjetosOperations';
 
 export default function Projetos() {
   const { usuario, isLoading: authLoading } = useAuth();
   const queryClient = useQueryClient();
   const { data: projetos, isLoading: projetosLoading } = useProjetos();
+  const { criarProjetosTeste, isLoading: criandoTeste } = useProjetosOperations();
 
   const handleProjetoCriado = () => {
+    queryClient.invalidateQueries({ queryKey: ['projetos'] });
+  };
+
+  const handleCriarProjetosTeste = async () => {
+    await criarProjetosTeste();
     queryClient.invalidateQueries({ queryKey: ['projetos'] });
   };
 
@@ -44,7 +51,16 @@ export default function Projetos() {
             <h1 className="text-3xl font-bold text-pmo-primary">Projetos</h1>
             <p className="text-pmo-gray mt-2">Gestão e acompanhamento de projetos</p>
           </div>
-          <CriarProjetoModal onProjetoCriado={handleProjetoCriado} />
+          <div className="flex gap-2">
+            <Button 
+              onClick={handleCriarProjetosTeste}
+              variant="outline"
+              disabled={criandoTeste}
+            >
+              {criandoTeste ? 'Criando...' : 'Criar 5 Projetos Teste'}
+            </Button>
+            <CriarProjetoModal onProjetoCriado={handleProjetoCriado} />
+          </div>
         </div>
 
         <div className="flex gap-4 items-center">

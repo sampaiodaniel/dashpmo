@@ -51,8 +51,100 @@ export function useProjetosOperations() {
     }
   };
 
+  const criarProjetosTeste = async () => {
+    setIsLoading(true);
+    
+    const projetosTeste = [
+      {
+        nome_projeto: 'Implementação Open Banking',
+        descricao_projeto: 'Projeto para implementar funcionalidades de Open Banking',
+        area_responsavel: 'Área 2' as const,
+        responsavel_interno: 'Dapper',
+        gp_responsavel: 'Camila',
+        finalizacao_prevista: '2024-08-15',
+        equipe: 'João Silva, Maria Santos, Pedro Costa',
+        criado_por: 'Sistema'
+      },
+      {
+        nome_projeto: 'Modernização Core Bancário',
+        descricao_projeto: 'Atualização da arquitetura do sistema core',
+        area_responsavel: 'Área 3' as const,
+        responsavel_interno: 'Pitta',
+        gp_responsavel: 'Elias',
+        finalizacao_prevista: '2024-12-30',
+        equipe: 'Ana Lima, Carlos Ferreira, Bruno Oliveira',
+        criado_por: 'Sistema'
+      },
+      {
+        nome_projeto: 'Portal de Investimentos V2',
+        descricao_projeto: 'Nova versão do portal de investimentos com melhorias de UX',
+        area_responsavel: 'Área 2' as const,
+        responsavel_interno: 'Judice',
+        gp_responsavel: 'Fabiano',
+        finalizacao_prevista: '2024-09-20',
+        equipe: 'Sandra Reis, Roberto Alves, Lucia Martins',
+        criado_por: 'Sistema'
+      },
+      {
+        nome_projeto: 'Sistema de Empréstimos Digitais',
+        descricao_projeto: 'Plataforma digital para solicitação e aprovação de empréstimos',
+        area_responsavel: 'Área 3' as const,
+        responsavel_interno: 'Thadeus',
+        gp_responsavel: 'Fred',
+        finalizacao_prevista: '2024-11-15',
+        equipe: 'Felipe Nascimento, Carla Torres, Diego Pereira',
+        criado_por: 'Sistema'
+      },
+      {
+        nome_projeto: 'App Mobile Cripto',
+        descricao_projeto: 'Aplicativo mobile para negociação de criptomoedas',
+        area_responsavel: 'Área 2' as const,
+        responsavel_interno: 'André Simões',
+        gp_responsavel: 'Marco',
+        finalizacao_prevista: '2024-10-10',
+        equipe: 'Marcos Silva, Julia Fernandes, Rafael Souza',
+        criado_por: 'Sistema'
+      }
+    ];
+
+    try {
+      const { data, error } = await supabase
+        .from('projetos')
+        .insert(projetosTeste)
+        .select();
+
+      if (error) {
+        console.error('Erro ao criar projetos de teste:', error);
+        toast({
+          title: "Erro",
+          description: "Erro ao criar projetos de teste",
+          variant: "destructive",
+        });
+        return null;
+      }
+
+      toast({
+        title: "Sucesso",
+        description: "5 projetos de teste criados com sucesso!",
+      });
+
+      return data;
+    } catch (error) {
+      console.error('Erro inesperado:', error);
+      toast({
+        title: "Erro",
+        description: "Erro inesperado ao criar projetos de teste",
+        variant: "destructive",
+      });
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return {
     criarProjeto,
+    criarProjetosTeste,
     isLoading,
   };
 }
