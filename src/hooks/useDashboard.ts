@@ -12,7 +12,7 @@ export function useDashboardMetricas() {
         .from('projetos')
         .select(`
           *,
-          status_projeto!inner (
+          status_projeto (
             status_geral,
             status_visao_gp,
             data_marco1,
@@ -25,7 +25,12 @@ export function useDashboardMetricas() {
         `)
         .eq('status_ativo', true);
 
-      if (projetosError) throw projetosError;
+      if (projetosError) {
+        console.error('Erro ao buscar projetos no dashboard:', projetosError);
+        throw projetosError;
+      }
+
+      console.log('Projetos para dashboard:', projetos);
 
       // Buscar mudanças ativas
       const { data: mudancas, error: mudancasError } = await supabase
@@ -33,7 +38,10 @@ export function useDashboardMetricas() {
         .select('id')
         .in('status_aprovacao', ['Pendente', 'Em Análise']);
 
-      if (mudancasError) throw mudancasError;
+      if (mudancasError) {
+        console.error('Erro ao buscar mudanças:', mudancasError);
+        throw mudancasError;
+      }
 
       // Calcular métricas
       const totalProjetos = projetos?.length || 0;
@@ -44,17 +52,23 @@ export function useDashboardMetricas() {
       }, {}) || {};
 
       const projetosPorStatus = projetos?.reduce((acc: any, projeto: any) => {
-        const status = projeto.status_projeto[0]?.status_geral;
+        const status = projeto.status_projeto?.[0]?.status_geral;
         if (status) {
           acc[status] = (acc[status] || 0) + 1;
+        } else {
+          // Projetos sem status definido
+          acc['Em Planejamento'] = (acc['Em Planejamento'] || 0) + 1;
         }
         return acc;
       }, {}) || {};
 
       const projetosPorSaude = projetos?.reduce((acc: any, projeto: any) => {
-        const saude = projeto.status_projeto[0]?.status_visao_gp;
+        const saude = projeto.status_projeto?.[0]?.status_visao_gp;
         if (saude) {
           acc[saude] = (acc[saude] || 0) + 1;
+        } else {
+          // Projetos sem status de saúde definido
+          acc['Verde'] = (acc['Verde'] || 0) + 1;
         }
         return acc;
       }, {}) || {};
@@ -72,7 +86,7 @@ export function useDashboardMetricas() {
       em15Dias.setDate(hoje.getDate() + 15);
 
       projetos?.forEach((projeto: any) => {
-        const status = projeto.status_projeto[0];
+        const status = projeto.status_projeto?.[0];
         if (status) {
           [
             { data: status.data_marco1, entrega: status.entrega1 },
@@ -98,7 +112,7 @@ export function useDashboardMetricas() {
       proximosMarcos.sort((a, b) => a.diasRestantes - b.diasRestantes);
 
       const projetosCriticos = projetos?.filter((projeto: any) => 
-        projeto.status_projeto[0]?.status_visao_gp === 'Vermelho'
+        projeto.status_projeto?.[0]?.status_visao_gp === 'Vermelho'
       ).length || 0;
 
       const mudancasAtivas = mudancas?.length || 0;
