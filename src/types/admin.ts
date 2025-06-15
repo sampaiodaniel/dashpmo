@@ -21,11 +21,14 @@ export interface ConfiguracaoSistema {
 }
 
 export const TIPOS_CONFIGURACAO = [
-  'responsavel_interno',
-  'gp_responsavel',
-  'carteira_primaria',
-  'carteira_secundaria',
-  'carteira_terciaria'
+  'gp_responsavel_cwi',
+  'responsavel_cwi',
+  'carteira',
+  'status_geral',
+  'status_visao_gp',
+  'nivel_risco',
+  'tipo_mudanca',
+  'categoria_licao'
 ] as const;
 
 export type TipoConfiguracao = typeof TIPOS_CONFIGURACAO[number];

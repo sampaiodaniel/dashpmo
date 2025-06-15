@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { ConfiguracaoSistema, TipoConfiguracao } from '@/types/admin';
 import { toast } from '@/hooks/use-toast';
 
-export function useConfiguracoesSistema(tipo?: TipoConfiguracao) {
+export function useConfiguracoesSistema(tipo?: TipoConfiguracao | string) {
   return useQuery({
     queryKey: ['configuracoes-sistema', tipo],
     queryFn: async () => {
@@ -31,6 +31,29 @@ export function useConfiguracoesSistema(tipo?: TipoConfiguracao) {
   });
 }
 
+// Hook específico para buscar listas de valores usadas nos formulários
+export function useListaValores(tipo: string) {
+  return useQuery({
+    queryKey: ['lista-valores', tipo],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('configuracoes_sistema')
+        .select('valor')
+        .eq('tipo', tipo)
+        .eq('ativo', true)
+        .order('ordem', { ascending: true })
+        .order('valor', { ascending: true });
+
+      if (error) {
+        console.error(`Erro ao buscar lista de valores para ${tipo}:`, error);
+        throw error;
+      }
+
+      return data?.map(item => item.valor) || [];
+    },
+  });
+}
+
 export function useConfiguracoesSistemaOperations() {
   const queryClient = useQueryClient();
 
@@ -47,6 +70,7 @@ export function useConfiguracoesSistemaOperations() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['configuracoes-sistema'] });
+      queryClient.invalidateQueries({ queryKey: ['lista-valores'] });
       toast({
         title: "Sucesso",
         description: "Configuração criada com sucesso!",
@@ -76,6 +100,7 @@ export function useConfiguracoesSistemaOperations() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['configuracoes-sistema'] });
+      queryClient.invalidateQueries({ queryKey: ['lista-valores'] });
       toast({
         title: "Sucesso",
         description: "Configuração atualizada com sucesso!",
@@ -102,6 +127,7 @@ export function useConfiguracoesSistemaOperations() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['configuracoes-sistema'] });
+      queryClient.invalidateQueries({ queryKey: ['lista-valores'] });
       toast({
         title: "Sucesso",
         description: "Configuração removida com sucesso!",

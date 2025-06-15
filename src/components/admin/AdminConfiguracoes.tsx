@@ -6,15 +6,27 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import { useConfiguracoesSistema, useConfiguracoesSistemaOperations } from '@/hooks/useConfiguracoesSistema';
 import { ConfiguracaoModal } from './ConfiguracaoModal';
-import { ConfiguracaoSistema, TipoConfiguracao, TIPOS_CONFIGURACAO } from '@/types/admin';
+import { ConfiguracaoSistema } from '@/types/admin';
 
 export function AdminConfiguracoes() {
-  const [tipoAtivo, setTipoAtivo] = useState<TipoConfiguracao>('responsavel_interno');
+  const [tipoAtivo, setTipoAtivo] = useState<string>('gp_responsavel_cwi');
   const [modalAberto, setModalAberto] = useState(false);
   const [configuracaoEditando, setConfiguracaoEditando] = useState<ConfiguracaoSistema | null>(null);
 
-  const { data: configuracoes } = useConfiguracoesSistema(tipoAtivo);
+  const { data: configuracoes } = useConfiguracoesSistema(tipoAtivo as any);
   const { deleteConfiguracao } = useConfiguracoesSistemaOperations();
+
+  // Tipos de configuração disponíveis no sistema
+  const tiposConfiguracao = [
+    { key: 'gp_responsavel_cwi', label: 'GPs CWI', descricao: 'Lista de GPs responsáveis da CWI' },
+    { key: 'responsavel_cwi', label: 'Responsáveis CWI', descricao: 'Lista de responsáveis técnicos da CWI' },
+    { key: 'carteira', label: 'Carteiras', descricao: 'Lista de carteiras/áreas de negócio' },
+    { key: 'status_geral', label: 'Status Geral', descricao: 'Lista de status gerais dos projetos' },
+    { key: 'status_visao_gp', label: 'Status Visão GP', descricao: 'Cores de status na visão do GP' },
+    { key: 'nivel_risco', label: 'Níveis de Risco', descricao: 'Níveis de risco (Baixo, Médio, Alto)' },
+    { key: 'tipo_mudanca', label: 'Tipos de Mudança', descricao: 'Tipos de mudança/replanejamento' },
+    { key: 'categoria_licao', label: 'Categorias de Lição', descricao: 'Categorias para lições aprendidas' }
+  ];
 
   const handleEditar = (config: ConfiguracaoSistema) => {
     setConfiguracaoEditando(config);
@@ -32,75 +44,75 @@ export function AdminConfiguracoes() {
     }
   };
 
-  const getTipoLabel = (tipo: TipoConfiguracao) => {
-    const labels: Record<TipoConfiguracao, string> = {
-      'responsavel_interno': 'Responsáveis Internos',
-      'gp_responsavel': 'GPs Responsáveis',
-      'carteira_primaria': 'Carteiras Primárias',
-      'carteira_secundaria': 'Carteiras Secundárias',
-      'carteira_terciaria': 'Carteiras Terciárias'
-    };
-    return labels[tipo];
-  };
-
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>Configurações do Sistema</CardTitle>
+          <p className="text-sm text-gray-600">
+            Gerencie as listas de valores utilizadas em todo o sistema. 
+            Alterações aqui serão refletidas imediatamente nos formulários e filtros.
+          </p>
         </CardHeader>
         <CardContent>
-          <Tabs value={tipoAtivo} onValueChange={(value) => setTipoAtivo(value as TipoConfiguracao)}>
-            <TabsList className="grid w-full grid-cols-5">
-              {TIPOS_CONFIGURACAO.map((tipo) => (
-                <TabsTrigger key={tipo} value={tipo} className="text-xs">
-                  {getTipoLabel(tipo).split(' ')[0]}
+          <Tabs value={tipoAtivo} onValueChange={setTipoAtivo}>
+            <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
+              {tiposConfiguracao.map((tipo) => (
+                <TabsTrigger key={tipo.key} value={tipo.key} className="text-xs">
+                  {tipo.label}
                 </TabsTrigger>
               ))}
             </TabsList>
 
-            {TIPOS_CONFIGURACAO.map((tipo) => (
-              <TabsContent key={tipo} value={tipo} className="mt-4">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-semibold">{getTipoLabel(tipo)}</h3>
-                  <Button onClick={handleNovo} size="sm">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Adicionar
-                  </Button>
-                </div>
-
-                <div className="space-y-2">
-                  {configuracoes?.map((config) => (
-                    <div key={config.id} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div>
-                        <span className="font-medium">{config.valor}</span>
-                        {config.ordem && (
-                          <span className="text-sm text-gray-500 ml-2">(Ordem: {config.ordem})</span>
-                        )}
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleEditar(config)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleRemover(config.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+            {tiposConfiguracao.map((tipo) => (
+              <TabsContent key={tipo.key} value={tipo.key} className="mt-6">
+                <div className="space-y-4">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="text-lg font-semibold">{tipo.label}</h3>
+                      <p className="text-sm text-gray-600">{tipo.descricao}</p>
                     </div>
-                  ))}
-                  {configuracoes?.length === 0 && (
-                    <p className="text-center text-gray-500 py-4">
-                      Nenhuma configuração encontrada
-                    </p>
-                  )}
+                    <Button onClick={handleNovo} size="sm">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Adicionar
+                    </Button>
+                  </div>
+
+                  <div className="space-y-2">
+                    {configuracoes?.map((config) => (
+                      <div key={config.id} className="flex items-center justify-between p-3 border rounded-lg bg-gray-50">
+                        <div className="flex-1">
+                          <span className="font-medium">{config.valor}</span>
+                          {config.ordem && (
+                            <span className="text-sm text-gray-500 ml-2">(Ordem: {config.ordem})</span>
+                          )}
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEditar(config)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleRemover(config.id)}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                    {configuracoes?.length === 0 && (
+                      <div className="text-center py-8 text-gray-500">
+                        <p>Nenhuma configuração encontrada</p>
+                        <p className="text-sm">Clique em "Adicionar" para criar a primeira configuração</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </TabsContent>
             ))}
@@ -112,7 +124,7 @@ export function AdminConfiguracoes() {
         aberto={modalAberto}
         onFechar={() => setModalAberto(false)}
         configuracao={configuracaoEditando}
-        tipoInicial={tipoAtivo}
+        tipoInicial={tipoAtivo as any}
       />
     </div>
   );
