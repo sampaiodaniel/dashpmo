@@ -21,6 +21,7 @@ import Relatorios from '@/pages/Relatorios';
 import Aprovacoes from '@/pages/Aprovacoes';
 import Administracao from '@/pages/Administracao';
 import NotFound from '@/pages/NotFound';
+import { Layout } from '@/components/layout/Layout';
 
 const queryClient = new QueryClient();
 
@@ -30,21 +31,24 @@ function App() {
       <AuthProvider>
         <Router>
           <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/projetos" element={<Projetos />} />
-            <Route path="/projetos/:id" element={<ProjetoDetalhes />} />
-            <Route path="/status" element={<Status />} />
-            <Route path="/status/:id" element={<StatusDetalhes />} />
-            <Route path="/status/:id/editar" element={<EditarStatus />} />
-            <Route path="/status/novo" element={<NovoStatus />} />
-            <Route path="/mudancas" element={<Mudancas />} />
-            <Route path="/licoes" element={<Licoes />} />
-            <Route path="/incidentes" element={<Incidentes />} />
-            <Route path="/relatorios" element={<Relatorios />} />
-            <Route path="/aprovacoes" element={<Aprovacoes />} />
-            <Route path="/admin" element={<Administracao />} />
-            <Route path="*" element={<NotFound />} />
+            {/* Rota inicial que inclui verificação de autenticação */}
+            <Route path="/" element={<Index />} />
+            
+            {/* Todas as outras rotas com Layout */}
+            <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
+            <Route path="/projetos" element={<Layout><Projetos /></Layout>} />
+            <Route path="/projetos/:id" element={<Layout><ProjetoDetalhes /></Layout>} />
+            <Route path="/status" element={<Layout><Status /></Layout>} />
+            <Route path="/status/:id" element={<Layout><StatusDetalhes /></Layout>} />
+            <Route path="/status/:id/editar" element={<Layout><EditarStatus /></Layout>} />
+            <Route path="/status/novo" element={<Layout><NovoStatus /></Layout>} />
+            <Route path="/mudancas" element={<Layout><Mudancas /></Layout>} />
+            <Route path="/licoes" element={<Layout><Licoes /></Layout>} />
+            <Route path="/incidentes" element={<Layout><Incidentes /></Layout>} />
+            <Route path="/relatorios" element={<Layout><Relatorios /></Layout>} />
+            <Route path="/aprovacoes" element={<Layout><Aprovacoes /></Layout>} />
+            <Route path="/admin" element={<Layout><Administracao /></Layout>} />
+            <Route path="*" element={<Layout><NotFound /></Layout>} />
           </Routes>
         </Router>
       </AuthProvider>
