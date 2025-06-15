@@ -2,14 +2,16 @@
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
-import { Search, ChevronRight } from 'lucide-react';
+import { Search, ChevronRight, FileText } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { CriarProjetoModal } from '@/components/forms/CriarProjetoModal';
 import { useProjetos } from '@/hooks/useProjetos';
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { useProjetosOperations } from '@/hooks/useProjetosOperations';
+import { getStatusColor, getStatusGeralColor } from '@/types/pmo';
 
 export default function Projetos() {
   const { usuario, isLoading: authLoading } = useAuth();
@@ -106,27 +108,75 @@ export default function Projetos() {
               {projetosFiltrados.map((projeto) => (
                 <div 
                   key={projeto.id} 
-                  className="p-4 hover:bg-gray-50 transition-colors cursor-pointer group flex items-center justify-between"
+                  className="p-6 hover:bg-gray-50 transition-colors cursor-pointer group"
                   onClick={() => {
                     // TODO: Implementar modal ou página de detalhes do projeto
                     console.log('Clicou no projeto:', projeto.nome_projeto);
                   }}
                 >
-                  <div className="flex-1">
-                    <div className="flex items-center gap-4">
-                      <h3 className="font-semibold text-lg text-pmo-primary group-hover:text-pmo-secondary transition-colors">
-                        {projeto.nome_projeto}
-                      </h3>
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        {projeto.area_responsavel}
-                      </span>
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-3 mb-3">
+                        <h3 className="font-semibold text-xl text-pmo-primary group-hover:text-pmo-secondary transition-colors">
+                          {projeto.nome_projeto}
+                        </h3>
+                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                          {projeto.area_responsavel}
+                        </Badge>
+                        {projeto.ultimoStatus && (
+                          <div className="flex gap-2">
+                            <Badge className={getStatusGeralColor(projeto.ultimoStatus.status_geral)}>
+                              {projeto.ultimoStatus.status_geral}
+                            </Badge>
+                            <Badge className={getStatusColor(projeto.ultimoStatus.status_visao_gp)}>
+                              {projeto.ultimoStatus.status_visao_gp}
+                            </Badge>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {projeto.descricao && (
+                        <p className="text-sm text-pmo-gray mb-3 line-clamp-2">
+                          {projeto.descricao}
+                        </p>
+                      )}
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                        <div>
+                          <span className="text-pmo-gray">Responsável Interno:</span>
+                          <div className="font-medium">{projeto.responsavel_interno}</div>
+                        </div>
+                        <div>
+                          <span className="text-pmo-gray">GP Responsável:</span>
+                          <div className="font-medium">{projeto.gp_responsavel}</div>
+                        </div>
+                        <div>
+                          <span className="text-pmo-gray">Criado em:</span>
+                          <div className="font-medium">
+                            {projeto.data_criacao.toLocaleDateString('pt-BR')}
+                          </div>
+                        </div>
+                      </div>
+
+                      {projeto.ultimoStatus && (
+                        <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                          <div className="flex items-center gap-2 mb-2">
+                            <FileText className="h-4 w-4 text-pmo-gray" />
+                            <span className="text-sm font-medium text-pmo-gray">Último Status:</span>
+                            <span className="text-xs text-pmo-gray">
+                              {projeto.ultimoStatus.data_atualizacao.toLocaleDateString('pt-BR')}
+                            </span>
+                          </div>
+                          {projeto.ultimoStatus.realizado_semana_atual && (
+                            <p className="text-sm text-gray-700">
+                              {projeto.ultimoStatus.realizado_semana_atual}
+                            </p>
+                          )}
+                        </div>
+                      )}
                     </div>
-                    <div className="mt-1 flex gap-4 text-sm text-pmo-gray">
-                      <span>Responsável: {projeto.responsavel_interno}</span>
-                      <span>GP: {projeto.gp_responsavel}</span>
-                    </div>
+                    <ChevronRight className="h-5 w-5 text-pmo-gray group-hover:text-pmo-primary transition-colors flex-shrink-0 ml-4" />
                   </div>
-                  <ChevronRight className="h-5 w-5 text-pmo-gray group-hover:text-pmo-primary transition-colors" />
                 </div>
               ))}
             </div>

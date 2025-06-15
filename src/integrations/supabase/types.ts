@@ -218,7 +218,9 @@ export type Database = {
       }
       projetos: {
         Row: {
-          area_responsavel: Database["public"]["Enums"]["area_responsavel"]
+          area_responsavel:
+            | Database["public"]["Enums"]["area_responsavel"]
+            | null
           carteira_primaria: string | null
           carteira_secundaria: string | null
           carteira_terciaria: string | null
@@ -238,7 +240,9 @@ export type Database = {
           status_ativo: boolean | null
         }
         Insert: {
-          area_responsavel: Database["public"]["Enums"]["area_responsavel"]
+          area_responsavel?:
+            | Database["public"]["Enums"]["area_responsavel"]
+            | null
           carteira_primaria?: string | null
           carteira_secundaria?: string | null
           carteira_terciaria?: string | null
@@ -258,7 +262,9 @@ export type Database = {
           status_ativo?: boolean | null
         }
         Update: {
-          area_responsavel?: Database["public"]["Enums"]["area_responsavel"]
+          area_responsavel?:
+            | Database["public"]["Enums"]["area_responsavel"]
+            | null
           carteira_primaria?: string | null
           carteira_secundaria?: string | null
           carteira_terciaria?: string | null
@@ -445,7 +451,18 @@ export type Database = {
       }
     }
     Enums: {
-      area_responsavel: "Área 1" | "Área 2" | "Área 3"
+      area_responsavel:
+        | "Cadastro"
+        | "Canais"
+        | "Core Bancário"
+        | "Crédito"
+        | "Cripto"
+        | "Empréstimos"
+        | "Fila Rápida"
+        | "Investimentos 1"
+        | "Investimentos 2"
+        | "Onboarding"
+        | "Open Finance"
       categoria_licao:
         | "Técnica"
         | "Processo"
@@ -592,7 +609,19 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      area_responsavel: ["Área 1", "Área 2", "Área 3"],
+      area_responsavel: [
+        "Cadastro",
+        "Canais",
+        "Core Bancário",
+        "Crédito",
+        "Cripto",
+        "Empréstimos",
+        "Fila Rápida",
+        "Investimentos 1",
+        "Investimentos 2",
+        "Onboarding",
+        "Open Finance",
+      ],
       categoria_licao: [
         "Técnica",
         "Processo",

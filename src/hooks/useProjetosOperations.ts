@@ -58,7 +58,7 @@ export function useProjetosOperations() {
       {
         nome_projeto: 'Implementação Open Banking',
         descricao_projeto: 'Projeto para implementar funcionalidades de Open Banking',
-        area_responsavel: 'Área 2' as const,
+        area_responsavel: 'Open Finance' as const,
         responsavel_interno: 'Dapper',
         gp_responsavel: 'Camila',
         finalizacao_prevista: '2024-08-15',
@@ -68,7 +68,7 @@ export function useProjetosOperations() {
       {
         nome_projeto: 'Modernização Core Bancário',
         descricao_projeto: 'Atualização da arquitetura do sistema core',
-        area_responsavel: 'Área 3' as const,
+        area_responsavel: 'Core Bancário' as const,
         responsavel_interno: 'Pitta',
         gp_responsavel: 'Elias',
         finalizacao_prevista: '2024-12-30',
@@ -78,7 +78,7 @@ export function useProjetosOperations() {
       {
         nome_projeto: 'Portal de Investimentos V2',
         descricao_projeto: 'Nova versão do portal de investimentos com melhorias de UX',
-        area_responsavel: 'Área 2' as const,
+        area_responsavel: 'Investimentos 1' as const,
         responsavel_interno: 'Judice',
         gp_responsavel: 'Fabiano',
         finalizacao_prevista: '2024-09-20',
@@ -88,7 +88,7 @@ export function useProjetosOperations() {
       {
         nome_projeto: 'Sistema de Empréstimos Digitais',
         descricao_projeto: 'Plataforma digital para solicitação e aprovação de empréstimos',
-        area_responsavel: 'Área 3' as const,
+        area_responsavel: 'Empréstimos' as const,
         responsavel_interno: 'Thadeus',
         gp_responsavel: 'Fred',
         finalizacao_prevista: '2024-11-15',
@@ -98,7 +98,7 @@ export function useProjetosOperations() {
       {
         nome_projeto: 'App Mobile Cripto',
         descricao_projeto: 'Aplicativo mobile para negociação de criptomoedas',
-        area_responsavel: 'Área 2' as const,
+        area_responsavel: 'Cripto' as const,
         responsavel_interno: 'André Simões',
         gp_responsavel: 'Marco',
         finalizacao_prevista: '2024-10-10',

@@ -1,17 +1,35 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { DashboardMetricas } from '@/types/pmo';
+import { DashboardMetricas, FiltrosDashboard, CARTEIRAS } from '@/types/pmo';
 
-export function useDashboardMetricas() {
+export function useDashboardMetricas(filtros?: FiltrosDashboard) {
   return useQuery({
-    queryKey: ['dashboard-metricas'],
+    queryKey: ['dashboard-metricas', filtros],
     queryFn: async (): Promise<DashboardMetricas> => {
-      // Buscar projetos ativos
-      const { data: projetos, error: projetosError } = await supabase
+      console.log('📊 Buscando métricas do dashboard com filtros:', filtros);
+
+      // Buscar projetos ativos com filtros
+      let query = supabase
         .from('projetos')
         .select('*')
         .eq('status_ativo', true);
+
+      // Aplicar filtros
+      if (filtros?.carteira && filtros.carteira !== 'Todas') {
+        // Check if the carteira is valid by finding it in the CARTEIRAS array
+        const carteiraValida = CARTEIRAS.find(c => c === filtros.carteira);
+        if (carteiraValida) {
+          query = query.eq('area_responsavel', carteiraValida);
+          console.log('🏢 Filtro de carteira aplicado:', carteiraValida);
+        }
+      }
+
+      if (filtros?.responsavel_asa) {
+        query = query.eq('responsavel_asa', filtros.responsavel_asa);
+        console.log('👤 Filtro de responsável ASA aplicado:', filtros.responsavel_asa);
+      }
+
+      const { data: projetos, error: projetosError } = await query;
 
       if (projetosError) {
         console.error('Erro ao buscar projetos no dashboard:', projetosError);
@@ -38,10 +56,18 @@ export function useDashboardMetricas() {
       }
 
       // Buscar mudanças ativas
-      const { data: mudancas, error: mudancasError } = await supabase
+      let mudancasQuery = supabase
         .from('mudancas_replanejamento')
-        .select('id')
+        .select('id, projeto_id')
         .in('status_aprovacao', ['Pendente', 'Em Análise']);
+
+      // Filtrar mudanças por projetos se houver filtros
+      if (projetos && projetos.length > 0) {
+        const projetosIds = projetos.map(p => p.id);
+        mudancasQuery = mudancasQuery.in('projeto_id', projetosIds);
+      }
+
+      const { data: mudancas, error: mudancasError } = await mudancasQuery;
 
       if (mudancasError) {
         console.error('Erro ao buscar mudanças:', mudancasError);
@@ -123,6 +149,13 @@ export function useDashboardMetricas() {
       }).length || 0;
 
       const mudancasAtivas = mudancas?.length || 0;
+
+      console.log('📈 Métricas calculadas:', {
+        totalProjetos,
+        projetosCriticos,
+        mudancasAtivas,
+        proximosMarcos: proximosMarcos.length
+      });
 
       return {
         totalProjetos,

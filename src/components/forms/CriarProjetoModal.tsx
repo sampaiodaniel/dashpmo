@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, X } from 'lucide-react';
 import { useProjetosOperations } from '@/hooks/useProjetosOperations';
+import { CARTEIRAS } from '@/types/pmo';
 
 interface CriarProjetoModalProps {
   onProjetoCriado?: () => void;
@@ -24,21 +25,6 @@ export function CriarProjetoModal({ onProjetoCriado }: CriarProjetoModalProps) {
   const [equipeMembros, setEquipeMembros] = useState<string[]>([]);
   
   const { criarProjeto, isLoading } = useProjetosOperations();
-
-  // Mapeamento correto das áreas para os valores aceitos no banco
-  const areas = [
-    { label: 'Cadastro', value: 'Área 1' },
-    { label: 'Canais', value: 'Área 2' },
-    { label: 'Core Bancário', value: 'Área 3' },
-    { label: 'Crédito', value: 'Área 1' },
-    { label: 'Cripto', value: 'Área 2' },
-    { label: 'Empréstimos', value: 'Área 3' },
-    { label: 'Fila Rápida', value: 'Área 1' },
-    { label: 'Investimentos 1', value: 'Área 2' },
-    { label: 'Investimentos 2', value: 'Área 3' },
-    { label: 'Onboarding', value: 'Área 1' },
-    { label: 'Open Finance', value: 'Área 2' }
-  ];
 
   const responsaveisInternos = ['Dapper', 'Pitta', 'Judice', 'Thadeus', 'André Simões', 'Júlio', 'Mello', 'Rebonatto', 'Mickey', 'Armelin'];
   const gpsResponsaveis = ['Camila', 'Elias', 'Fabiano', 'Fred', 'Marco', 'Rafael', 'Jefferson'];
@@ -68,7 +54,7 @@ export function CriarProjetoModal({ onProjetoCriado }: CriarProjetoModalProps) {
     const projeto = await criarProjeto({
       nome_projeto: nome,
       descricao_projeto: descricaoProjeto || null,
-      area_responsavel: area as 'Área 1' | 'Área 2' | 'Área 3',
+      area_responsavel: area as typeof CARTEIRAS[number],
       responsavel_interno: responsavelInterno,
       gp_responsavel: gpResponsavel,
       finalizacao_prevista: finalizacaoPrevista || null,
@@ -125,15 +111,15 @@ export function CriarProjetoModal({ onProjetoCriado }: CriarProjetoModalProps) {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="area">Área Responsável *</Label>
+              <Label htmlFor="area">Carteira *</Label>
               <Select value={area} onValueChange={setArea}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecione a área..." />
+                  <SelectValue placeholder="Selecione a carteira..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {areas.map((areaItem) => (
-                    <SelectItem key={areaItem.label} value={areaItem.value}>
-                      {areaItem.label}
+                  {CARTEIRAS.map((carteira) => (
+                    <SelectItem key={carteira} value={carteira}>
+                      {carteira}
                     </SelectItem>
                   ))}
                 </SelectContent>
