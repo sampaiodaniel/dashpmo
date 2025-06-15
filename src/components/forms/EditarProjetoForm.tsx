@@ -40,12 +40,9 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
   const [formData, setFormData] = useState({
     nome_projeto: projeto.nome_projeto,
     descricao_projeto: projeto.descricao_projeto || '',
-    area_responsavel: projeto.area_responsavel,
-    responsavel_interno: projeto.responsavel_interno,
-    gp_responsavel: projeto.gp_responsavel,
-    responsavel_cwi: projeto.responsavel_cwi || '',
-    gp_responsavel_cwi: projeto.gp_responsavel_cwi || '',
     responsavel_asa: projeto.responsavel_asa || 'none',
+    gp_responsavel_cwi: projeto.gp_responsavel_cwi || '',
+    responsavel_cwi: projeto.responsavel_cwi || '',
     carteira_primaria: projeto.carteira_primaria || 'none',
     carteira_secundaria: projeto.carteira_secundaria || 'none',
     carteira_terciaria: projeto.carteira_terciaria || 'none',
@@ -64,7 +61,11 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
         responsavel_asa: formData.responsavel_asa === 'none' ? '' : formData.responsavel_asa,
         carteira_primaria: formData.carteira_primaria === 'none' ? '' : formData.carteira_primaria,
         carteira_secundaria: formData.carteira_secundaria === 'none' ? '' : formData.carteira_secundaria,
-        carteira_terciaria: formData.carteira_terciaria === 'none' ? '' : formData.carteira_terciaria
+        carteira_terciaria: formData.carteira_terciaria === 'none' ? '' : formData.carteira_terciaria,
+        // Manter os campos obrigatórios do banco com valores padrão
+        area_responsavel: formData.carteira_primaria === 'none' ? 'Cadastro' : formData.carteira_primaria,
+        responsavel_interno: formData.responsavel_asa === 'none' ? 'Admin' : formData.responsavel_asa,
+        gp_responsavel: formData.gp_responsavel_cwi || 'Admin'
       };
 
       const { error } = await supabase
@@ -129,15 +130,16 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
         </div>
 
         <div>
-          <Label htmlFor="area_responsavel">Área Responsável</Label>
-          <Select value={formData.area_responsavel} onValueChange={(value) => handleInputChange('area_responsavel', value)}>
+          <Label htmlFor="responsavel_asa">Responsável ASA (Superintendente)</Label>
+          <Select value={formData.responsavel_asa} onValueChange={(value) => handleInputChange('responsavel_asa', value)}>
             <SelectTrigger>
-              <SelectValue placeholder="Selecione uma área" />
+              <SelectValue placeholder="Selecione um responsável ASA" />
             </SelectTrigger>
             <SelectContent>
-              {CARTEIRAS.map((carteira) => (
-                <SelectItem key={carteira} value={carteira}>
-                  {carteira}
+              <SelectItem value="none">Nenhum</SelectItem>
+              {superintendentes.map((responsavel) => (
+                <SelectItem key={responsavel.id} value={responsavel.nome}>
+                  {responsavel.nome}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -145,28 +147,13 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
         </div>
 
         <div>
-          <Label htmlFor="responsavel_interno">Responsável Interno (Superintendente)</Label>
-          <Select value={formData.responsavel_interno} onValueChange={(value) => handleInputChange('responsavel_interno', value)}>
+          <Label htmlFor="gp_responsavel_cwi">GP Responsável CWI</Label>
+          <Select value={formData.gp_responsavel_cwi || 'none'} onValueChange={(value) => handleInputChange('gp_responsavel_cwi', value === 'none' ? '' : value)}>
             <SelectTrigger>
-              <SelectValue placeholder="Selecione um superintendente" />
+              <SelectValue placeholder="Selecione um GP responsável CWI" />
             </SelectTrigger>
             <SelectContent>
-              {superintendentes.map((resp) => (
-                <SelectItem key={resp.id} value={resp.nome}>
-                  {resp.nome}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div>
-          <Label htmlFor="gp_responsavel">GP Responsável</Label>
-          <Select value={formData.gp_responsavel} onValueChange={(value) => handleInputChange('gp_responsavel', value)}>
-            <SelectTrigger>
-              <SelectValue placeholder="Selecione um GP" />
-            </SelectTrigger>
-            <SelectContent>
+              <SelectItem value="none">Nenhum</SelectItem>
               {GPS_RESPONSAVEIS.map((gp) => (
                 <SelectItem key={gp} value={gp}>
                   {gp}
@@ -187,32 +174,6 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
               {GPS_RESPONSAVEIS.map((responsavel) => (
                 <SelectItem key={responsavel} value={responsavel}>
                   {responsavel}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div>
-          <Label htmlFor="gp_responsavel_cwi">GP Responsável CWI</Label>
-          <Input
-            id="gp_responsavel_cwi"
-            value={formData.gp_responsavel_cwi}
-            onChange={(e) => handleInputChange('gp_responsavel_cwi', e.target.value)}
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="responsavel_asa">Responsável ASA (Superintendente)</Label>
-          <Select value={formData.responsavel_asa} onValueChange={(value) => handleInputChange('responsavel_asa', value)}>
-            <SelectTrigger>
-              <SelectValue placeholder="Selecione um responsável ASA" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">Nenhum</SelectItem>
-              {superintendentes.map((responsavel) => (
-                <SelectItem key={responsavel.id} value={responsavel.nome}>
-                  {responsavel.nome}
                 </SelectItem>
               ))}
             </SelectContent>
