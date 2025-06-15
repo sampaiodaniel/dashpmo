@@ -219,34 +219,52 @@ export type Database = {
       projetos: {
         Row: {
           area_responsavel: Database["public"]["Enums"]["area_responsavel"]
+          carteira_primaria: string | null
+          carteira_secundaria: string | null
+          carteira_terciaria: string | null
           criado_por: string
           data_criacao: string | null
           descricao: string | null
           gp_responsavel: string
+          gp_responsavel_cwi: string | null
           id: number
           nome_projeto: string
+          responsavel_asa: string | null
+          responsavel_cwi: string | null
           responsavel_interno: string
           status_ativo: boolean | null
         }
         Insert: {
           area_responsavel: Database["public"]["Enums"]["area_responsavel"]
+          carteira_primaria?: string | null
+          carteira_secundaria?: string | null
+          carteira_terciaria?: string | null
           criado_por: string
           data_criacao?: string | null
           descricao?: string | null
           gp_responsavel: string
+          gp_responsavel_cwi?: string | null
           id?: number
           nome_projeto: string
+          responsavel_asa?: string | null
+          responsavel_cwi?: string | null
           responsavel_interno: string
           status_ativo?: boolean | null
         }
         Update: {
           area_responsavel?: Database["public"]["Enums"]["area_responsavel"]
+          carteira_primaria?: string | null
+          carteira_secundaria?: string | null
+          carteira_terciaria?: string | null
           criado_por?: string
           data_criacao?: string | null
           descricao?: string | null
           gp_responsavel?: string
+          gp_responsavel_cwi?: string | null
           id?: number
           nome_projeto?: string
+          responsavel_asa?: string | null
+          responsavel_cwi?: string | null
           responsavel_interno?: string
           status_ativo?: boolean | null
         }
@@ -258,6 +276,9 @@ export type Database = {
           aprovado_por: string | null
           backlog: string | null
           bloqueios_atuais: string | null
+          carteira_primaria: string | null
+          carteira_secundaria: string | null
+          carteira_terciaria: string | null
           criado_por: string
           data_aprovacao: string | null
           data_atualizacao: string | null
@@ -265,6 +286,7 @@ export type Database = {
           data_marco1: string | null
           data_marco2: string | null
           data_marco3: string | null
+          descricao_projeto: string | null
           entrega1: string | null
           entrega2: string | null
           entrega3: string | null
@@ -273,14 +295,19 @@ export type Database = {
           entregaveis3: string | null
           equipe: string | null
           finalizacao_prevista: string | null
+          gp_responsavel_cwi: string | null
           id: number
           impacto_riscos: Database["public"]["Enums"]["nivel_risco"]
           observacoes_pontos_atencao: string | null
           prob_x_impact: string | null
           probabilidade_riscos: Database["public"]["Enums"]["nivel_risco"]
+          progresso_estimado: number | null
           projeto_id: number | null
           realizado_semana_atual: string | null
+          responsavel_asa: string | null
+          responsavel_cwi: string | null
           status_geral: Database["public"]["Enums"]["status_geral"]
+          status_import: string | null
           status_visao_gp: Database["public"]["Enums"]["status_visao_gp"]
         }
         Insert: {
@@ -288,6 +315,9 @@ export type Database = {
           aprovado_por?: string | null
           backlog?: string | null
           bloqueios_atuais?: string | null
+          carteira_primaria?: string | null
+          carteira_secundaria?: string | null
+          carteira_terciaria?: string | null
           criado_por: string
           data_aprovacao?: string | null
           data_atualizacao?: string | null
@@ -295,6 +325,7 @@ export type Database = {
           data_marco1?: string | null
           data_marco2?: string | null
           data_marco3?: string | null
+          descricao_projeto?: string | null
           entrega1?: string | null
           entrega2?: string | null
           entrega3?: string | null
@@ -303,14 +334,19 @@ export type Database = {
           entregaveis3?: string | null
           equipe?: string | null
           finalizacao_prevista?: string | null
+          gp_responsavel_cwi?: string | null
           id?: number
           impacto_riscos: Database["public"]["Enums"]["nivel_risco"]
           observacoes_pontos_atencao?: string | null
           prob_x_impact?: string | null
           probabilidade_riscos: Database["public"]["Enums"]["nivel_risco"]
+          progresso_estimado?: number | null
           projeto_id?: number | null
           realizado_semana_atual?: string | null
+          responsavel_asa?: string | null
+          responsavel_cwi?: string | null
           status_geral: Database["public"]["Enums"]["status_geral"]
+          status_import?: string | null
           status_visao_gp: Database["public"]["Enums"]["status_visao_gp"]
         }
         Update: {
@@ -318,6 +354,9 @@ export type Database = {
           aprovado_por?: string | null
           backlog?: string | null
           bloqueios_atuais?: string | null
+          carteira_primaria?: string | null
+          carteira_secundaria?: string | null
+          carteira_terciaria?: string | null
           criado_por?: string
           data_aprovacao?: string | null
           data_atualizacao?: string | null
@@ -325,6 +364,7 @@ export type Database = {
           data_marco1?: string | null
           data_marco2?: string | null
           data_marco3?: string | null
+          descricao_projeto?: string | null
           entrega1?: string | null
           entrega2?: string | null
           entrega3?: string | null
@@ -333,14 +373,19 @@ export type Database = {
           entregaveis3?: string | null
           equipe?: string | null
           finalizacao_prevista?: string | null
+          gp_responsavel_cwi?: string | null
           id?: number
           impacto_riscos?: Database["public"]["Enums"]["nivel_risco"]
           observacoes_pontos_atencao?: string | null
           prob_x_impact?: string | null
           probabilidade_riscos?: Database["public"]["Enums"]["nivel_risco"]
+          progresso_estimado?: number | null
           projeto_id?: number | null
           realizado_semana_atual?: string | null
+          responsavel_asa?: string | null
+          responsavel_cwi?: string | null
           status_geral?: Database["public"]["Enums"]["status_geral"]
+          status_import?: string | null
           status_visao_gp?: Database["public"]["Enums"]["status_visao_gp"]
         }
         Relationships: [
