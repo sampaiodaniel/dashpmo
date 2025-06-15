@@ -5,6 +5,7 @@ import { MetricCard } from '@/components/dashboard/MetricCard';
 import { StatusChart } from '@/components/dashboard/StatusChart';
 import { ProximosMarcos } from '@/components/dashboard/ProximosMarcos';
 import { DashboardFilters } from '@/components/dashboard/DashboardFilters';
+import { CarteiraOverviewTable } from '@/components/dashboard/CarteiraOverviewTable';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart3, Users, AlertTriangle, TrendingUp, Clock } from 'lucide-react';
 import { FiltrosDashboard } from '@/types/pmo';
@@ -50,6 +51,9 @@ export default function Dashboard() {
         <h1 className="text-3xl font-bold text-pmo-primary">Dashboard</h1>
         <p className="text-pmo-gray mt-2">Visão geral dos projetos e indicadores</p>
       </div>
+
+      {/* Overview Consolidado de Todas as Carteiras */}
+      <CarteiraOverviewTable />
 
       {/* Filtros */}
       <DashboardFilters filtros={filtros} onFiltroChange={handleFiltroChange} />

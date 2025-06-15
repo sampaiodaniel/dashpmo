@@ -1,7 +1,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { DashboardMetricas, FiltrosDashboard } from '@/types/pmo';
+import { DashboardMetricas, FiltrosDashboard, CARTEIRAS } from '@/types/pmo';
 
 export function useDashboardMetricas(filtros?: FiltrosDashboard) {
   return useQuery({
@@ -17,8 +17,10 @@ export function useDashboardMetricas(filtros?: FiltrosDashboard) {
 
       // Aplicar filtros
       if (filtros?.carteira && filtros.carteira !== 'Todas') {
-        query = query.eq('area_responsavel', filtros.carteira);
-        console.log('🏢 Filtro de carteira aplicado:', filtros.carteira);
+        if (CARTEIRAS.includes(filtros.carteira as any)) {
+          query = query.eq('area_responsavel', filtros.carteira);
+          console.log('🏢 Filtro de carteira aplicado:', filtros.carteira);
+        }
       }
 
       if (filtros?.responsavel_asa) {
