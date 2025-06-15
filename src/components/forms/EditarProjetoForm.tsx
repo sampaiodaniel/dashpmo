@@ -5,10 +5,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Projeto, CARTEIRAS, RESPONSAVEIS_ASA } from '@/types/pmo';
+import { Projeto, CARTEIRAS } from '@/types/pmo';
 import { useQueryClient } from '@tanstack/react-query';
+import { useResponsaveisASA } from '@/hooks/useResponsaveisASA';
+import { useConfiguracoesSistema } from '@/hooks/useConfiguracoesSistema';
 
 interface EditarProjetoFormProps {
   projeto: Projeto;
@@ -18,6 +20,12 @@ interface EditarProjetoFormProps {
 export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps) {
   const queryClient = useQueryClient();
   const [carregando, setCarregando] = useState(false);
+  
+  // Buscar dados do banco para os selects
+  const { data: responsaveisASA } = useResponsaveisASA();
+  const { data: responsaveisInternos } = useConfiguracoesSistema('responsavel_interno');
+  const { data: gpsResponsaveis } = useConfiguracoesSistema('gp_responsavel');
+  
   const [formData, setFormData] = useState({
     nome_projeto: projeto.nome_projeto,
     descricao_projeto: projeto.descricao_projeto || '',
@@ -118,22 +126,34 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
 
         <div>
           <Label htmlFor="responsavel_interno">Responsável Interno</Label>
-          <Input
-            id="responsavel_interno"
-            value={formData.responsavel_interno}
-            onChange={(e) => handleInputChange('responsavel_interno', e.target.value)}
-            required
-          />
+          <Select value={formData.responsavel_interno} onValueChange={(value) => handleInputChange('responsavel_interno', value)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione um responsável" />
+            </SelectTrigger>
+            <SelectContent>
+              {responsaveisInternos?.map((resp) => (
+                <SelectItem key={resp.id} value={resp.valor}>
+                  {resp.valor}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div>
           <Label htmlFor="gp_responsavel">GP Responsável</Label>
-          <Input
-            id="gp_responsavel"
-            value={formData.gp_responsavel}
-            onChange={(e) => handleInputChange('gp_responsavel', e.target.value)}
-            required
-          />
+          <Select value={formData.gp_responsavel} onValueChange={(value) => handleInputChange('gp_responsavel', value)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione um GP" />
+            </SelectTrigger>
+            <SelectContent>
+              {gpsResponsaveis?.map((gp) => (
+                <SelectItem key={gp.id} value={gp.valor}>
+                  {gp.valor}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div>
@@ -162,9 +182,9 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="">Nenhum</SelectItem>
-              {RESPONSAVEIS_ASA.map((responsavel) => (
-                <SelectItem key={responsavel} value={responsavel}>
-                  {responsavel}
+              {responsaveisASA?.map((responsavel) => (
+                <SelectItem key={responsavel.id} value={responsavel.nome}>
+                  {responsavel.nome} ({responsavel.nivel})
                 </SelectItem>
               ))}
             </SelectContent>

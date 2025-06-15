@@ -9,6 +9,36 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      configuracoes_sistema: {
+        Row: {
+          ativo: boolean | null
+          criado_por: string
+          data_criacao: string | null
+          id: number
+          ordem: number | null
+          tipo: string
+          valor: string
+        }
+        Insert: {
+          ativo?: boolean | null
+          criado_por: string
+          data_criacao?: string | null
+          id?: number
+          ordem?: number | null
+          tipo: string
+          valor: string
+        }
+        Update: {
+          ativo?: boolean | null
+          criado_por?: string
+          data_criacao?: string | null
+          id?: number
+          ordem?: number | null
+          tipo?: string
+          valor?: string
+        }
+        Relationships: []
+      }
       dependencias: {
         Row: {
           componentes_modulos: string | null
@@ -284,6 +314,47 @@ export type Database = {
           status_ativo?: boolean | null
         }
         Relationships: []
+      }
+      responsaveis_asa: {
+        Row: {
+          ativo: boolean | null
+          carteiras: string[] | null
+          criado_por: string
+          data_criacao: string | null
+          head_id: number | null
+          id: number
+          nivel: string
+          nome: string
+        }
+        Insert: {
+          ativo?: boolean | null
+          carteiras?: string[] | null
+          criado_por: string
+          data_criacao?: string | null
+          head_id?: number | null
+          id?: number
+          nivel: string
+          nome: string
+        }
+        Update: {
+          ativo?: boolean | null
+          carteiras?: string[] | null
+          criado_por?: string
+          data_criacao?: string | null
+          head_id?: number | null
+          id?: number
+          nivel?: string
+          nome?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "responsaveis_asa_head_id_fkey"
+            columns: ["head_id"]
+            isOneToOne: false
+            referencedRelation: "responsaveis_asa"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       status_projeto: {
         Row: {
