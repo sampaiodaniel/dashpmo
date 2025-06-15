@@ -10,10 +10,9 @@ export interface CarteiraOverviewData {
   baixo: number;
   medio: number;
   alto: number;
-  verde: number;
-  amarelo: number;
-  vermelho: number;
-  cinza: number;
+  crAbertasAprovadas: number;
+  crFechadasReprovadas: number;
+  entregasProximos15Dias: number;
   emDia: number;
   comAtraso: number;
   entregues: number;
@@ -47,11 +46,10 @@ export function useCarteiraOverview() {
         throw statusError;
       }
 
-      // Buscar mudanças ativas
+      // Buscar mudanças por status
       const { data: mudancas, error: mudancasError } = await supabase
         .from('mudancas_replanejamento')
-        .select('*')
-        .in('status_aprovacao', ['Pendente', 'Em Análise']);
+        .select('*');
 
       if (mudancasError) {
         console.error('Erro ao buscar mudanças:', mudancasError);
@@ -67,6 +65,11 @@ export function useCarteiraOverview() {
         }
       });
 
+      // Data atual e data limite (15 dias à frente)
+      const hoje = new Date();
+      const em15Dias = new Date();
+      em15Dias.setDate(hoje.getDate() + 15);
+
       // Calcular métricas por carteira
       const carteiraOverview: CarteiraOverviewData[] = CARTEIRAS.map(carteira => {
         const projetosCarteira = projetos?.filter(p => p.area_responsavel === carteira) || [];
@@ -77,8 +80,20 @@ export function useCarteiraOverview() {
 
         // Contar por nível de risco
         let baixo = 0, medio = 0, alto = 0;
-        let verde = 0, amarelo = 0, vermelho = 0, cinza = 0;
         let emDia = 0, comAtraso = 0, entregues = 0;
+        let entregasProximos15Dias = 0;
+
+        // Contar CRs abertas/aprovadas vs fechadas/reprovadas
+        const crAbertasAprovadas = mudancasCarteira.filter(m => 
+          m.status_aprovacao === 'Pendente' || 
+          m.status_aprovacao === 'Em Análise' || 
+          m.status_aprovacao === 'Aprovada'
+        ).length;
+
+        const crFechadasReprovadas = mudancasCarteira.filter(m => 
+          m.status_aprovacao === 'Rejeitada' || 
+          m.status_aprovacao === 'Cancelada'
+        ).length;
 
         projetosCarteira.forEach(projeto => {
           const status = statusPorProjeto.get(projeto.id);
@@ -89,25 +104,30 @@ export function useCarteiraOverview() {
             else if (risco === 'Médio') medio++;
             else if (risco === 'Alto') alto++;
 
-            // Contar saúde
-            const saude = status.status_visao_gp || 'Verde';
-            if (saude === 'Verde') verde++;
-            else if (saude === 'Amarelo') amarelo++;
-            else if (saude === 'Vermelho') vermelho++;
-
             // Contar status geral
             const statusGeral = status.status_geral;
-            if (statusGeral === 'Concluído') entregues++;
-            else if (statusGeral === 'Em Andamento') {
+            if (statusGeral === 'Concluído') {
+              entregues++;
+            } else if (statusGeral === 'Em Andamento') {
               // Simular lógica de em dia vs com atraso baseado na saúde
+              const saude = status.status_visao_gp || 'Verde';
               if (saude === 'Verde' || saude === 'Amarelo') emDia++;
               else comAtraso++;
-            } else {
-              cinza++;
             }
-          } else {
-            // Sem status = cinza
-            cinza++;
+
+            // Contar entregas nos próximos 15 dias
+            [
+              { data: status.data_marco1, entrega: status.entrega1 },
+              { data: status.data_marco2, entrega: status.entrega2 },
+              { data: status.data_marco3, entrega: status.entrega3 }
+            ].forEach(marco => {
+              if (marco.data && marco.entrega) {
+                const dataMarco = new Date(marco.data);
+                if (dataMarco >= hoje && dataMarco <= em15Dias) {
+                  entregasProximos15Dias++;
+                }
+              }
+            });
           }
         });
 
@@ -118,10 +138,9 @@ export function useCarteiraOverview() {
           baixo,
           medio,
           alto,
-          verde,
-          amarelo,
-          vermelho,
-          cinza,
+          crAbertasAprovadas,
+          crFechadasReprovadas,
+          entregasProximos15Dias,
           emDia,
           comAtraso,
           entregues

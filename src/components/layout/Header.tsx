@@ -11,6 +11,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Bell, Settings, LogOut, Menu } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 
 interface HeaderProps {
   onToggleSidebar: () => void;
@@ -18,10 +19,12 @@ interface HeaderProps {
 
 export function Header({ onToggleSidebar }: HeaderProps) {
   const { usuario, logout } = useAuth();
+  const navigate = useNavigate();
   const [notificacoes] = useState(3); // Mock de notificações
 
   const handleLogout = () => {
     logout();
+    navigate('/');
   };
 
   return (

@@ -52,10 +52,9 @@ export function CarteiraOverviewTable() {
                 <th className="text-center p-2 font-medium">Baixo</th>
                 <th className="text-center p-2 font-medium">Médio</th>
                 <th className="text-center p-2 font-medium">Alto</th>
-                <th className="text-center p-2 font-medium">Verde</th>
-                <th className="text-center p-2 font-medium">Amarelo</th>
-                <th className="text-center p-2 font-medium">Vermelho</th>
-                <th className="text-center p-2 font-medium">Cinza</th>
+                <th className="text-center p-2 font-medium">CR Abertas/Aprovadas</th>
+                <th className="text-center p-2 font-medium">CR Fechadas/Reprovadas</th>
+                <th className="text-center p-2 font-medium">Entregas 15 dias</th>
                 <th className="text-center p-2 font-medium">Em Dia</th>
                 <th className="text-center p-2 font-medium">Com Atraso</th>
                 <th className="text-center p-2 font-medium">Entregues</th>
@@ -72,22 +71,17 @@ export function CarteiraOverviewTable() {
                   <td className="text-center p-2">{item.alto}</td>
                   <td className="text-center p-2">
                     <Badge className="bg-green-100 text-green-700 border-green-200">
-                      {item.verde}
-                    </Badge>
-                  </td>
-                  <td className="text-center p-2">
-                    <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200">
-                      {item.amarelo}
+                      {item.crAbertasAprovadas}
                     </Badge>
                   </td>
                   <td className="text-center p-2">
                     <Badge className="bg-red-100 text-red-700 border-red-200">
-                      {item.vermelho}
+                      {item.crFechadasReprovadas}
                     </Badge>
                   </td>
                   <td className="text-center p-2">
-                    <Badge className="bg-gray-100 text-gray-700 border-gray-200">
-                      {item.cinza}
+                    <Badge className="bg-blue-100 text-blue-700 border-blue-200">
+                      {item.entregasProximos15Dias}
                     </Badge>
                   </td>
                   <td className="text-center p-2">{item.emDia}</td>
