@@ -76,6 +76,7 @@ export function usePerfilOperations() {
       return result;
     },
     onSuccess: () => {
+      // Invalidar cache para forçar recarregamento dos dados
       queryClient.invalidateQueries({ queryKey: ['perfil-usuario'] });
       toast({
         title: "Perfil atualizado",
