@@ -33,10 +33,10 @@ serve(async (req) => {
       )
     }
 
-    // Enviar email usando Resend
+    // Enviar email usando Resend com domínio padrão
     const emailData = {
-      from: 'PMO System <noreply@yourdomain.com>', // Substitua pelo seu domínio verificado
-      to: ['admin@yourdomain.com'], // Substitua pelo email do administrador
+      from: 'PMO System <onboarding@resend.dev>',
+      to: ['delivered@resend.dev'], // Email de teste do Resend
       subject: 'Nova Solicitação de Acesso - Sistema PMO',
       html: `
         <h2>Nova Solicitação de Acesso</h2>
