@@ -1,4 +1,3 @@
-
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
@@ -42,11 +41,10 @@ export default function Status() {
     return responsaveisUnicos.sort();
   }, [statusList]);
 
-  const handleCriarStatusTeste = async () => {
-    const result = await criarStatusTeste();
-    if (result) {
-      refetch();
-    }
+  const handleCriarStatusTeste = () => {
+    criarStatusTeste();
+    // Refetch será chamado automaticamente pelo onSuccess do mutation
+    setTimeout(() => refetch(), 1000);
   };
 
   const handleStatusClick = (statusId: number) => {
