@@ -28,7 +28,7 @@ export default function Administracao() {
     return <LoginForm />;
   }
 
-  if (usuario.tipo_usuario !== 'Administrador') {
+  if (usuario.tipo_usuario !== 'Admin') {
     return (
       <Layout>
         <div className="text-center py-12">
