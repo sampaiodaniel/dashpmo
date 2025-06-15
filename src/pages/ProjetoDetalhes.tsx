@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
@@ -11,7 +10,6 @@ import { EditarProjetoModal } from '@/components/forms/EditarProjetoModal';
 import { HistoricoProjetoModal } from '@/components/modals/HistoricoProjetoModal';
 import { ProjetoInfoGerais } from '@/components/projetos/ProjetoInfoGerais';
 import { ProjetoStatus } from '@/components/projetos/ProjetoStatus';
-import { ProjetoCarteiras } from '@/components/projetos/ProjetoCarteiras';
 import { ProjetoAcoes } from '@/components/projetos/ProjetoAcoes';
 
 export default function ProjetoDetalhes() {
@@ -88,7 +86,6 @@ export default function ProjetoDetalhes() {
           </div>
 
           <div className="space-y-6">
-            <ProjetoCarteiras projeto={projeto} />
             <ProjetoAcoes 
               projeto={projeto}
               onEditarClick={() => setEditarModalAberto(true)}
