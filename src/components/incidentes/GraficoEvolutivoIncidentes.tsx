@@ -77,7 +77,6 @@ export function GraficoEvolutivoIncidentes() {
     criticos: true,
   });
 
-  // Log para debug dos dados
   console.log('Dados histórico completo:', historico);
 
   const dadosGrafico = useMemo(() => {
@@ -86,47 +85,72 @@ export function GraficoEvolutivoIncidentes() {
     console.log('Processando dados do gráfico...');
     
     // Filtrar por carteira se selecionada
-    const dadosFiltrados = carteiraFiltro === 'todas' 
-      ? historico 
-      : historico.filter(item => item.carteira === carteiraFiltro);
+    let dadosFiltrados = historico;
+    if (carteiraFiltro !== 'todas') {
+      dadosFiltrados = historico.filter(item => item.carteira === carteiraFiltro);
+      console.log(`Dados filtrados para carteira ${carteiraFiltro}:`, dadosFiltrados);
+    }
 
-    console.log('Dados filtrados por carteira:', dadosFiltrados);
+    // Se filtrando por carteira específica, manter registros individuais
+    // Se "todas", agrupar por data somando valores
+    let dadosProcessados;
+    
+    if (carteiraFiltro !== 'todas') {
+      // Para carteira específica, pegar apenas um registro por data (o mais recente)
+      const registrosPorData = new Map();
+      dadosFiltrados.forEach(item => {
+        const data = item.data_registro;
+        if (!registrosPorData.has(data) || 
+            new Date(item.data_criacao || 0) > new Date(registrosPorData.get(data).data_criacao || 0)) {
+          registrosPorData.set(data, item);
+        }
+      });
+      dadosProcessados = Array.from(registrosPorData.values());
+    } else {
+      // Para "todas as carteiras", agrupar por data somando valores
+      const dadosAgrupados = dadosFiltrados.reduce((acc, item) => {
+        const data = item.data_registro;
+        
+        if (!acc[data]) {
+          acc[data] = {
+            data_registro: data,
+            anterior: 0,
+            atual: 0,
+            entrada: 0,
+            saida: 0,
+            mais_15_dias: 0,
+            criticos: 0,
+          };
+        }
+        
+        acc[data].anterior += item.anterior || 0;
+        acc[data].atual += item.atual || 0;
+        acc[data].entrada += item.entrada || 0;
+        acc[data].saida += item.saida || 0;
+        acc[data].mais_15_dias += item.mais_15_dias || 0;
+        acc[data].criticos += item.criticos || 0;
+        
+        return acc;
+      }, {} as Record<string, any>);
 
-    // Agrupar por data, somando todas as carteiras para cada data
-    const dadosAgrupados = dadosFiltrados.reduce((acc, item) => {
-      const data = item.data_registro;
-      
-      if (!acc[data]) {
-        acc[data] = {
-          data,
-          anterior: 0,
-          atual: 0,
-          entrada: 0,
-          saida: 0,
-          mais_15_dias: 0,
-          criticos: 0,
-        };
-      }
-      
-      acc[data].anterior += item.anterior || 0;
-      acc[data].atual += item.atual || 0;
-      acc[data].entrada += item.entrada || 0;
-      acc[data].saida += item.saida || 0;
-      acc[data].mais_15_dias += item.mais_15_dias || 0;
-      acc[data].criticos += item.criticos || 0;
-      
-      return acc;
-    }, {} as Record<string, any>);
+      dadosProcessados = Object.values(dadosAgrupados);
+    }
 
-    console.log('Dados agrupados por data:', dadosAgrupados);
+    console.log('Dados processados:', dadosProcessados);
 
-    // Converter para array e ordenar por data
-    const resultado = Object.values(dadosAgrupados).sort((a: any, b: any) => 
-      new Date(a.data).getTime() - new Date(b.data).getTime()
-    ).map((item: any) => ({
-      ...item,
-      dataFormatada: format(new Date(item.data), 'dd/MM', { locale: ptBR }),
-    }));
+    // Ordenar por data e formatar para o gráfico
+    const resultado = dadosProcessados
+      .sort((a: any, b: any) => new Date(a.data_registro).getTime() - new Date(b.data_registro).getTime())
+      .map((item: any) => ({
+        data: item.data_registro,
+        dataFormatada: format(new Date(item.data_registro), 'dd/MM', { locale: ptBR }),
+        anterior: item.anterior || 0,
+        atual: item.atual || 0,
+        entrada: item.entrada || 0,
+        saida: item.saida || 0,
+        mais_15_dias: item.mais_15_dias || 0,
+        criticos: item.criticos || 0,
+      }));
 
     console.log('Resultado final do gráfico:', resultado);
     return resultado;
