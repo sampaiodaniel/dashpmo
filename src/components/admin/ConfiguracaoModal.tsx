@@ -64,7 +64,6 @@ export function ConfiguracaoModal({ aberto, onFechar, configuracao, tipoInicial 
 
   const getTipoLabel = (tipo: string) => {
     const labels: Record<string, string> = {
-      'gp_responsavel_cwi': 'GPs CWI',
       'responsavel_cwi': 'Responsáveis CWI',
       'carteira': 'Carteiras',
       'status_geral': 'Status Geral',

@@ -9,17 +9,16 @@ import { ConfiguracaoModal } from './ConfiguracaoModal';
 import { ConfiguracaoSistema } from '@/types/admin';
 
 export function AdminConfiguracoes() {
-  const [tipoAtivo, setTipoAtivo] = useState<string>('gp_responsavel_cwi');
+  const [tipoAtivo, setTipoAtivo] = useState<string>('responsavel_cwi');
   const [modalAberto, setModalAberto] = useState(false);
   const [configuracaoEditando, setConfiguracaoEditando] = useState<ConfiguracaoSistema | null>(null);
 
   const { data: configuracoes, isLoading } = useConfiguracoesSistema(tipoAtivo as any);
   const { deleteConfiguracao } = useConfiguracoesSistemaOperations();
 
-  // Todas as listas usadas no sistema
+  // Todas as listas usadas no sistema - organizadas em 2 linhas
   const tiposConfiguracao = [
-    { key: 'gp_responsavel_cwi', label: 'GPs CWI', descricao: 'Gerentes de Projeto responsáveis da CWI' },
-    { key: 'responsavel_cwi', label: 'Responsáveis CWI', descricao: 'Responsáveis técnicos da CWI' },
+    { key: 'responsavel_cwi', label: 'Responsáveis CWI', descricao: 'Gerentes de Projeto e Responsáveis técnicos da CWI' },
     { key: 'carteira', label: 'Carteiras', descricao: 'Carteiras/áreas de negócio (primária, secundária, terciária)' },
     { key: 'status_geral', label: 'Status Geral', descricao: 'Status gerais dos projetos' },
     { key: 'status_visao_gp', label: 'Status Visão GP', descricao: 'Cores de status na visão do GP (Verde, Amarelo, Vermelho)' },
@@ -56,12 +55,21 @@ export function AdminConfiguracoes() {
         </CardHeader>
         <CardContent>
           <Tabs value={tipoAtivo} onValueChange={setTipoAtivo}>
-            <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8 mb-6">
-              {tiposConfiguracao.map((tipo) => (
-                <TabsTrigger key={tipo.key} value={tipo.key} className="text-xs">
-                  {tipo.label}
-                </TabsTrigger>
-              ))}
+            <TabsList className="grid w-full grid-cols-4 gap-2 h-auto mb-6">
+              <div className="grid grid-cols-4 gap-2 w-full">
+                {tiposConfiguracao.slice(0, 4).map((tipo) => (
+                  <TabsTrigger key={tipo.key} value={tipo.key} className="text-xs px-2 py-2">
+                    {tipo.label}
+                  </TabsTrigger>
+                ))}
+              </div>
+              <div className="grid grid-cols-3 gap-2 w-full">
+                {tiposConfiguracao.slice(4).map((tipo) => (
+                  <TabsTrigger key={tipo.key} value={tipo.key} className="text-xs px-2 py-2">
+                    {tipo.label}
+                  </TabsTrigger>
+                ))}
+              </div>
             </TabsList>
 
             {tiposConfiguracao.map((tipo) => (

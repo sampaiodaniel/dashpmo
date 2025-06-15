@@ -30,7 +30,6 @@ export function useListaValores(tipo: string) {
 }
 
 // Hooks específicos para cada tipo de lista
-export const useGPsResponsavelCWI = () => useListaValores('gp_responsavel_cwi');
 export const useResponsaveisCWI = () => useListaValores('responsavel_cwi');
 export const useCarteiras = () => useListaValores('carteira');
 export const useStatusGeral = () => useListaValores('status_geral');
