@@ -11,7 +11,7 @@ import { X } from 'lucide-react';
 interface NovaLicaoModalProps {
   isOpen: boolean;
   onClose: () => void;
-  categorias?: any[];
+  categorias?: string[];
 }
 
 export function NovaLicaoModal({ isOpen, onClose, categorias = [] }: NovaLicaoModalProps) {
@@ -66,9 +66,9 @@ export function NovaLicaoModal({ isOpen, onClose, categorias = [] }: NovaLicaoMo
                 <SelectValue placeholder="Selecione uma categoria" />
               </SelectTrigger>
               <SelectContent>
-                {categorias.map((categoria) => (
-                  <SelectItem key={categoria.id} value={categoria.valor}>
-                    {categoria.valor}
+                {categorias.map((categoria, index) => (
+                  <SelectItem key={index} value={categoria}>
+                    {categoria}
                   </SelectItem>
                 ))}
               </SelectContent>

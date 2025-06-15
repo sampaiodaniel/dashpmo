@@ -1,6 +1,6 @@
 
 import { MoreVertical, Eye, Edit } from 'lucide-react';
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@/components/ui/context-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 interface LicaoContextMenuProps {
   licaoId: number;
@@ -14,25 +14,25 @@ export function LicaoContextMenu({
   onEditar
 }: LicaoContextMenuProps) {
   return (
-    <ContextMenu>
-      <ContextMenuTrigger asChild>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
         <div 
           className="flex items-center gap-1 p-2 rounded hover:bg-gray-100 transition-colors cursor-pointer visible"
           onClick={(e) => e.stopPropagation()}
         >
           <MoreVertical className="h-4 w-4 text-pmo-gray" />
         </div>
-      </ContextMenuTrigger>
-      <ContextMenuContent className="w-48">
-        <ContextMenuItem onClick={(e) => onVisualizar(e, licaoId)}>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-48">
+        <DropdownMenuItem onClick={(e) => onVisualizar(e, licaoId)}>
           <Eye className="h-4 w-4 mr-2" />
           Ver Detalhes
-        </ContextMenuItem>
-        <ContextMenuItem onClick={(e) => onEditar(e, licaoId)}>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={(e) => onEditar(e, licaoId)}>
           <Edit className="h-4 w-4 mr-2" />
           Editar
-        </ContextMenuItem>
-      </ContextMenuContent>
-    </ContextMenu>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
