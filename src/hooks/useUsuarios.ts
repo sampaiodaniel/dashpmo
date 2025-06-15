@@ -36,17 +36,26 @@ export function useUsuarios() {
 
       console.log('Usuários encontrados:', data);
       
-      return data.map((usuario): UsuarioComPerfil => ({
-        id: usuario.id,
-        nome: usuario.nome,
-        email: usuario.email,
-        tipo_usuario: usuario.tipo_usuario as 'GP' | 'Responsavel' | 'Admin',
-        areas_acesso: usuario.areas_acesso || [],
-        ativo: usuario.ativo,
-        ultimo_login: usuario.ultimo_login ? new Date(usuario.ultimo_login) : undefined,
-        data_criacao: new Date(usuario.data_criacao),
-        perfil: usuario.perfis_usuario?.[0] || undefined
-      }));
+      return data.map((usuario): UsuarioComPerfil => {
+        // Verifica se existe perfil e pega o primeiro (deveria ser único por usuario_id)
+        const perfilData = usuario.perfis_usuario && usuario.perfis_usuario.length > 0 
+          ? usuario.perfis_usuario[0] 
+          : null;
+
+        console.log(`Usuario ${usuario.id} - perfil:`, perfilData);
+
+        return {
+          id: usuario.id,
+          nome: usuario.nome,
+          email: usuario.email,
+          tipo_usuario: usuario.tipo_usuario as 'GP' | 'Responsavel' | 'Admin',
+          areas_acesso: usuario.areas_acesso || [],
+          ativo: usuario.ativo,
+          ultimo_login: usuario.ultimo_login ? new Date(usuario.ultimo_login) : undefined,
+          data_criacao: new Date(usuario.data_criacao),
+          perfil: perfilData || undefined
+        };
+      });
     },
   });
 }
