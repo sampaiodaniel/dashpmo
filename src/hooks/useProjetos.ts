@@ -92,7 +92,10 @@ export function useProjetos(filtros?: FiltrosProjeto) {
           criado_por: projeto.criado_por,
           ultimoStatus: ultimoStatus ? {
             ...ultimoStatus,
-            data_atualizacao: new Date(ultimoStatus.data_atualizacao)
+            data_atualizacao: new Date(ultimoStatus.data_atualizacao),
+            data_marco1: ultimoStatus.data_marco1 ? new Date(ultimoStatus.data_marco1) : undefined,
+            data_marco2: ultimoStatus.data_marco2 ? new Date(ultimoStatus.data_marco2) : undefined,
+            data_marco3: ultimoStatus.data_marco3 ? new Date(ultimoStatus.data_marco3) : undefined,
           } : undefined
         };
       });
