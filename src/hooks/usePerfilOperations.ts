@@ -15,37 +15,22 @@ export function usePerfilOperations() {
     }) => {
       console.log('Criando/atualizando perfil:', dados);
 
-      // Criar objeto apenas com campos definidos
-      const dadosLimpos: any = {
-        usuario_id: dados.usuario_id,
-        data_atualizacao: new Date().toISOString()
-      };
-
-      // Só adicionar campos que têm valor
-      if (dados.nome !== undefined && dados.nome !== null && dados.nome.trim() !== '') {
-        dadosLimpos.nome = dados.nome.trim();
-      }
-
-      if (dados.sobrenome !== undefined && dados.sobrenome !== null && dados.sobrenome.trim() !== '') {
-        dadosLimpos.sobrenome = dados.sobrenome.trim();
-      }
-
-      if (dados.foto_url !== undefined && dados.foto_url !== null && dados.foto_url.trim() !== '') {
-        dadosLimpos.foto_url = dados.foto_url.trim();
-      }
-
-      console.log('Dados limpos para envio:', dadosLimpos);
-
       const { data, error } = await supabase
         .from('perfis_usuario')
-        .upsert(dadosLimpos, {
+        .upsert({
+          usuario_id: dados.usuario_id,
+          nome: dados.nome || null,
+          sobrenome: dados.sobrenome || null,
+          foto_url: dados.foto_url || null,
+          data_atualizacao: new Date().toISOString()
+        }, {
           onConflict: 'usuario_id'
         })
         .select()
         .single();
 
       if (error) {
-        console.error('Erro detalhado ao salvar perfil:', error);
+        console.error('Erro ao salvar perfil:', error);
         throw new Error(`Erro ao salvar perfil: ${error.message}`);
       }
 
@@ -115,7 +100,6 @@ export function usePerfilOperations() {
     mutationFn: async ({ usuarioId, novaSenha }: { usuarioId: number; novaSenha: string }) => {
       console.log('Alterando senha do usuário:', usuarioId);
 
-      // Hash básico da senha (em produção, use um hash mais seguro)
       const senhaHash = btoa(novaSenha);
 
       const { error } = await supabase
