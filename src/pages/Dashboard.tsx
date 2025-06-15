@@ -1,5 +1,8 @@
 
 import { useState } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { LoginForm } from '@/components/auth/LoginForm';
+import { Layout } from '@/components/layout/Layout';
 import { useDashboardMetricas } from '@/hooks/useDashboard';
 import { MetricCard } from '@/components/dashboard/MetricCard';
 import { StatusChart } from '@/components/dashboard/StatusChart';
@@ -10,7 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart3, Users, AlertTriangle, TrendingUp, Clock } from 'lucide-react';
 import { FiltrosDashboard } from '@/types/pmo';
 
-export default function Dashboard() {
+function DashboardContent() {
   const [filtros, setFiltros] = useState<FiltrosDashboard>({});
   const { data: metricas, isLoading, error } = useDashboardMetricas(filtros);
 
@@ -128,3 +131,33 @@ export default function Dashboard() {
     </div>
   );
 }
+
+export default function Dashboard() {
+  const { usuario, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-pmo-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-pmo-primary rounded-xl flex items-center justify-center mx-auto mb-4">
+            <span className="text-white font-bold text-xl">PMO</span>
+          </div>
+          <div className="text-pmo-gray">Carregando...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!usuario) {
+    return <LoginForm />;
+  }
+
+  return (
+    <Layout>
+      <DashboardContent />
+    </Layout>
+  );
+}
+
+// Export DashboardContent para uso na página Index
+export { DashboardContent };

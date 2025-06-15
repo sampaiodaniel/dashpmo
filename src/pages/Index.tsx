@@ -2,7 +2,7 @@
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
-import Dashboard from './Dashboard';
+import { DashboardContent } from './Dashboard';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -37,7 +37,7 @@ export default function Index() {
   // Se chegou até aqui, renderiza o dashboard com layout
   return (
     <Layout>
-      <Dashboard />
+      <DashboardContent />
     </Layout>
   );
 }
