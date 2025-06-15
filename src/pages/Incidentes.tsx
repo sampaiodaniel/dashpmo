@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import { NovoRegistroIncidenteModal } from '@/components/incidentes/NovoRegistroIncidenteModal';
 import { TabelaIncidentesRecentes } from '@/components/incidentes/TabelaIncidentesRecentes';
+import { GraficoEvolutivoIncidentes } from '@/components/incidentes/GraficoEvolutivoIncidentes';
 
 export default function Incidentes() {
   const { usuario, isLoading } = useAuth();
@@ -102,6 +103,8 @@ export default function Incidentes() {
         </div>
 
         <TabelaIncidentesRecentes />
+        
+        <GraficoEvolutivoIncidentes />
       </div>
     </Layout>
   );
