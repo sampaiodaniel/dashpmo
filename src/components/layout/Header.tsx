@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { 
   DropdownMenu, 
@@ -20,9 +20,21 @@ interface HeaderProps {
 }
 
 export function Header({ onToggleSidebar }: HeaderProps) {
-  const { usuario, logout } = useAuth();
-  const { data: perfil } = usePerfilUsuario(usuario?.id || 0);
+  const { usuario, logout, refreshUsuario } = useAuth();
+  const { data: perfil, refetch: refetchPerfil } = usePerfilUsuario(usuario?.id || 0);
   const navigate = useNavigate();
+
+  // Atualizar dados quando necessário
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (usuario?.id) {
+        refreshUsuario();
+        refetchPerfil();
+      }
+    }, 60000); // Atualizar a cada minuto
+
+    return () => clearInterval(interval);
+  }, [usuario?.id, refreshUsuario, refetchPerfil]);
 
   const handleLogout = () => {
     logout();

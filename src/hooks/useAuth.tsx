@@ -13,6 +13,7 @@ interface AuthContextType {
   isAprovador: () => boolean;
   canApprove: () => boolean;
   canAdminister: () => boolean;
+  refreshUsuario: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -21,11 +22,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Função para buscar dados atualizados do usuário
+  const refreshUsuario = async () => {
+    const savedUser = localStorage.getItem('pmo-user');
+    if (!savedUser) return;
+
+    const userFromStorage = JSON.parse(savedUser);
+    
+    try {
+      const { data: userData, error } = await supabase
+        .from('usuarios')
+        .select('*')
+        .eq('id', userFromStorage.id)
+        .single();
+
+      if (error) {
+        console.error('Erro ao atualizar dados do usuário:', error);
+        return;
+      }
+
+      const updatedUser: Usuario = {
+        id: userData.id,
+        nome: userData.nome,
+        email: userData.email,
+        tipo_usuario: userData.tipo_usuario as 'GP' | 'Responsavel' | 'Admin',
+        areas_acesso: userData.areas_acesso || [],
+        ativo: userData.ativo,
+        ultimo_login: userData.ultimo_login ? new Date(userData.ultimo_login) : undefined,
+        data_criacao: new Date(userData.data_criacao)
+      };
+
+      setUsuario(updatedUser);
+      localStorage.setItem('pmo-user', JSON.stringify(updatedUser));
+    } catch (error) {
+      console.error('Erro ao buscar usuário atualizado:', error);
+    }
+  };
+
   useEffect(() => {
     // Verificar se há usuário logado na sessão
     const savedUser = localStorage.getItem('pmo-user');
     if (savedUser) {
-      setUsuario(JSON.parse(savedUser));
+      const user = JSON.parse(savedUser);
+      setUsuario(user);
+      
+      // Buscar dados atualizados do usuário no banco
+      refreshUsuario();
     }
     setIsLoading(false);
   }, []);
@@ -127,7 +169,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAdmin,
       isAprovador,
       canApprove,
-      canAdminister
+      canAdminister,
+      refreshUsuario
     }}>
       {children}
     </AuthContext.Provider>

@@ -132,8 +132,30 @@ export function useUsuariosOperations() {
       console.log('Usuário atualizado:', data);
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['usuarios'] });
+      // Invalidar também o perfil do usuário atualizado
+      queryClient.invalidateQueries({ queryKey: ['perfil-usuario', data.id] });
+      
+      // Se o usuário logado foi atualizado, atualizar o localStorage
+      const savedUser = localStorage.getItem('pmo-user');
+      if (savedUser) {
+        const currentUser = JSON.parse(savedUser);
+        if (currentUser.id === data.id) {
+          const updatedUser = {
+            ...currentUser,
+            nome: data.nome,
+            email: data.email,
+            tipo_usuario: data.tipo_usuario,
+            areas_acesso: data.areas_acesso,
+            ativo: data.ativo
+          };
+          localStorage.setItem('pmo-user', JSON.stringify(updatedUser));
+          // Forçar atualização da página para refletir mudanças
+          window.location.reload();
+        }
+      }
+      
       toast({
         title: "Usuário atualizado",
         description: "O usuário foi atualizado com sucesso.",
