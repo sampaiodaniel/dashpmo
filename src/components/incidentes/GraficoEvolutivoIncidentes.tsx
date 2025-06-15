@@ -92,8 +92,22 @@ export function GraficoEvolutivoIncidentes() {
 
     console.log('Dados filtrados por carteira:', dadosFiltrados);
 
-    // Agrupar por data e somar os valores
-    const dadosAgrupados = dadosFiltrados.reduce((acc, item) => {
+    // Agrupar por data e carteira, pegando apenas o registro mais recente de cada carteira por data
+    const registrosPorDataCarteira = new Map();
+    
+    dadosFiltrados.forEach(item => {
+      const chave = `${item.data_registro}-${item.carteira}`;
+      if (!registrosPorDataCarteira.has(chave) || 
+          item.id > registrosPorDataCarteira.get(chave).id) {
+        registrosPorDataCarteira.set(chave, item);
+      }
+    });
+
+    const registrosUnicos = Array.from(registrosPorDataCarteira.values());
+    console.log('Registros únicos por data/carteira:', registrosUnicos);
+
+    // Agrupar por data e somar os valores dos registros únicos
+    const dadosAgrupados = registrosUnicos.reduce((acc, item) => {
       const data = item.data_registro;
       if (!acc[data]) {
         acc[data] = {
