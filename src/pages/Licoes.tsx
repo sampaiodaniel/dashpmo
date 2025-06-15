@@ -46,9 +46,9 @@ export default function Licoes() {
   const totalLicoes = licoes?.length || 0;
   
   // Categorias que são consideradas "boas práticas"
-  const categoriasBoacsPraticas = categoriasLicao?.filter(cat => 
-    ['Desenvolvimento', 'DevOps', 'Qualidade e Testes', 'Gestão de Projetos'].includes(cat.valor)
-  )?.map(cat => cat.valor) || [];
+  const categoriasBoacsPraticas = categoriasLicao?.filter(categoria => 
+    ['Desenvolvimento', 'DevOps', 'Qualidade e Testes', 'Gestão de Projetos'].includes(categoria)
+  ) || [];
   
   const boasPraticas = licoes?.filter(l => 
     categoriasBoacsPraticas.includes(l.categoria_licao)
@@ -76,9 +76,9 @@ export default function Licoes() {
 
   const handleFiltrarPontosAtencao = () => {
     // Filtrar por categorias que não são boas práticas
-    const categoriasNaoBoasPraticas = categoriasLicao?.filter(cat => 
-      !categoriasBoacsPraticas.includes(cat.valor)
-    )?.map(cat => cat.valor) || [];
+    const categoriasNaoBoasPraticas = categoriasLicao?.filter(categoria => 
+      !categoriasBoacsPraticas.includes(categoria)
+    ) || [];
     
     setFiltros(prev => ({
       ...prev,
