@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Projeto, CARTEIRAS } from '@/types/pmo';
@@ -113,150 +114,172 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="md:col-span-2">
-          <Label htmlFor="nome_projeto">Nome do Projeto</Label>
-          <Input
-            id="nome_projeto"
-            value={formData.nome_projeto}
-            onChange={(e) => handleInputChange('nome_projeto', e.target.value)}
-            required
-          />
-        </div>
+      {/* Informações Básicas */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Informações Básicas</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label htmlFor="nome_projeto">Nome do Projeto</Label>
+            <Input
+              id="nome_projeto"
+              value={formData.nome_projeto}
+              onChange={(e) => handleInputChange('nome_projeto', e.target.value)}
+              required
+            />
+          </div>
 
-        <div className="md:col-span-2">
-          <Label htmlFor="descricao_projeto">Descrição do Projeto</Label>
-          <Textarea
-            id="descricao_projeto"
-            value={formData.descricao_projeto}
-            onChange={(e) => handleInputChange('descricao_projeto', e.target.value)}
-            rows={3}
-          />
-        </div>
+          <div>
+            <Label htmlFor="descricao_projeto">Descrição do Projeto</Label>
+            <Textarea
+              id="descricao_projeto"
+              value={formData.descricao_projeto}
+              onChange={(e) => handleInputChange('descricao_projeto', e.target.value)}
+              rows={3}
+            />
+          </div>
 
-        <div>
-          <Label htmlFor="responsavel_asa">Responsável ASA (Superintendente)</Label>
-          <Select value={formData.responsavel_asa} onValueChange={(value) => handleInputChange('responsavel_asa', value)}>
-            <SelectTrigger>
-              <SelectValue placeholder="Selecione um responsável ASA" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">Nenhum</SelectItem>
-              {superintendentes.map((responsavel) => (
-                <SelectItem key={responsavel.id} value={responsavel.nome}>
-                  {responsavel.nome}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+          <div>
+            <Label htmlFor="finalizacao_prevista">Finalização Prevista</Label>
+            <Input
+              id="finalizacao_prevista"
+              type="date"
+              value={formData.finalizacao_prevista}
+              onChange={(e) => handleInputChange('finalizacao_prevista', e.target.value)}
+            />
+          </div>
 
-        <div>
-          <Label htmlFor="gp_responsavel_cwi">GP Responsável CWI</Label>
-          <Select value={formData.gp_responsavel_cwi} onValueChange={(value) => handleInputChange('gp_responsavel_cwi', value)}>
-            <SelectTrigger>
-              <SelectValue placeholder="Selecione um GP responsável CWI" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">Nenhum</SelectItem>
-              {GPS_RESPONSAVEIS.map((gp) => (
-                <SelectItem key={gp} value={gp}>
-                  {gp}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+          <div>
+            <Label htmlFor="equipe">Equipe</Label>
+            <Textarea
+              id="equipe"
+              value={formData.equipe}
+              onChange={(e) => handleInputChange('equipe', e.target.value)}
+              placeholder="Membros da equipe separados por vírgula"
+              rows={2}
+            />
+          </div>
+        </CardContent>
+      </Card>
 
-        <div>
-          <Label htmlFor="responsavel_cwi">Responsável CWI</Label>
-          <Select value={formData.responsavel_cwi} onValueChange={(value) => handleInputChange('responsavel_cwi', value)}>
-            <SelectTrigger>
-              <SelectValue placeholder="Selecione um responsável CWI" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">Nenhum</SelectItem>
-              {GPS_RESPONSAVEIS.map((responsavel) => (
-                <SelectItem key={responsavel} value={responsavel}>
-                  {responsavel}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+      {/* Responsáveis */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Responsáveis</CardTitle>
+        </CardHeader>
+        <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <Label htmlFor="responsavel_asa">Responsável ASA (Superintendente)</Label>
+            <Select value={formData.responsavel_asa} onValueChange={(value) => handleInputChange('responsavel_asa', value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione um responsável ASA" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Nenhum</SelectItem>
+                {superintendentes.map((responsavel) => (
+                  <SelectItem key={responsavel.id} value={responsavel.nome}>
+                    {responsavel.nome}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-        <div>
-          <Label htmlFor="carteira_primaria">Carteira Primária</Label>
-          <Select value={formData.carteira_primaria} onValueChange={(value) => handleInputChange('carteira_primaria', value)}>
-            <SelectTrigger>
-              <SelectValue placeholder="Selecione uma carteira" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">Nenhuma</SelectItem>
-              {CARTEIRAS.map((carteira) => (
-                <SelectItem key={carteira} value={carteira}>
-                  {carteira}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+          <div>
+            <Label htmlFor="gp_responsavel_cwi">GP Responsável CWI</Label>
+            <Select value={formData.gp_responsavel_cwi} onValueChange={(value) => handleInputChange('gp_responsavel_cwi', value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione um GP responsável CWI" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Nenhum</SelectItem>
+                {GPS_RESPONSAVEIS.map((gp) => (
+                  <SelectItem key={gp} value={gp}>
+                    {gp}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-        <div>
-          <Label htmlFor="carteira_secundaria">Carteira Secundária</Label>
-          <Select value={formData.carteira_secundaria} onValueChange={(value) => handleInputChange('carteira_secundaria', value)}>
-            <SelectTrigger>
-              <SelectValue placeholder="Selecione uma carteira" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">Nenhuma</SelectItem>
-              {CARTEIRAS.map((carteira) => (
-                <SelectItem key={carteira} value={carteira}>
-                  {carteira}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+          <div>
+            <Label htmlFor="responsavel_cwi">Responsável CWI</Label>
+            <Select value={formData.responsavel_cwi} onValueChange={(value) => handleInputChange('responsavel_cwi', value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione um responsável CWI" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Nenhum</SelectItem>
+                {GPS_RESPONSAVEIS.map((responsavel) => (
+                  <SelectItem key={responsavel} value={responsavel}>
+                    {responsavel}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
 
-        <div>
-          <Label htmlFor="carteira_terciaria">Carteira Terciária</Label>
-          <Select value={formData.carteira_terciaria} onValueChange={(value) => handleInputChange('carteira_terciaria', value)}>
-            <SelectTrigger>
-              <SelectValue placeholder="Selecione uma carteira" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">Nenhuma</SelectItem>
-              {CARTEIRAS.map((carteira) => (
-                <SelectItem key={carteira} value={carteira}>
-                  {carteira}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+      {/* Carteiras */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Carteiras</CardTitle>
+        </CardHeader>
+        <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <Label htmlFor="carteira_primaria">Carteira Primária</Label>
+            <Select value={formData.carteira_primaria} onValueChange={(value) => handleInputChange('carteira_primaria', value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione uma carteira" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Nenhuma</SelectItem>
+                {CARTEIRAS.map((carteira) => (
+                  <SelectItem key={carteira} value={carteira}>
+                    {carteira}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-        <div>
-          <Label htmlFor="finalizacao_prevista">Finalização Prevista</Label>
-          <Input
-            id="finalizacao_prevista"
-            type="date"
-            value={formData.finalizacao_prevista}
-            onChange={(e) => handleInputChange('finalizacao_prevista', e.target.value)}
-          />
-        </div>
+          <div>
+            <Label htmlFor="carteira_secundaria">Carteira Secundária</Label>
+            <Select value={formData.carteira_secundaria} onValueChange={(value) => handleInputChange('carteira_secundaria', value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione uma carteira" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Nenhuma</SelectItem>
+                {CARTEIRAS.map((carteira) => (
+                  <SelectItem key={carteira} value={carteira}>
+                    {carteira}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-        <div className="md:col-span-2">
-          <Label htmlFor="equipe">Equipe</Label>
-          <Textarea
-            id="equipe"
-            value={formData.equipe}
-            onChange={(e) => handleInputChange('equipe', e.target.value)}
-            placeholder="Membros da equipe separados por vírgula"
-            rows={2}
-          />
-        </div>
-      </div>
+          <div>
+            <Label htmlFor="carteira_terciaria">Carteira Terciária</Label>
+            <Select value={formData.carteira_terciaria} onValueChange={(value) => handleInputChange('carteira_terciaria', value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione uma carteira" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Nenhuma</SelectItem>
+                {CARTEIRAS.map((carteira) => (
+                  <SelectItem key={carteira} value={carteira}>
+                    {carteira}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="flex justify-end gap-2">
         <Button type="submit" disabled={carregando}>
