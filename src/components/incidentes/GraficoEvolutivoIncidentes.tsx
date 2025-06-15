@@ -169,16 +169,7 @@ export function GraficoEvolutivoIncidentes() {
                   labelFormatter={(value) => `Data: ${value}`}
                 />
                 <ChartLegend 
-                  content={
-                    <ChartLegendContent 
-                      onClick={(data) => {
-                        if (data?.dataKey) {
-                          toggleLinha(data.dataKey);
-                        }
-                      }}
-                      className="cursor-pointer"
-                    />
-                  }
+                  content={<ChartLegendContent />}
                 />
                 
                 {linhasVisiveis.anterior && (
@@ -261,7 +252,7 @@ export function GraficoEvolutivoIncidentes() {
                   style={{ backgroundColor: linhasVisiveis[chave] ? config.color : '#ccc' }}
                 />
                 {config.label}
-              </button>
+              </div>
             ))}
           </div>
         </CardContent>
