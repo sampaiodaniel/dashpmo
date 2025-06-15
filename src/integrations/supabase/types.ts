@@ -246,6 +246,44 @@ export type Database = {
           },
         ]
       }
+      perfis_usuario: {
+        Row: {
+          data_atualizacao: string | null
+          data_criacao: string | null
+          foto_url: string | null
+          id: number
+          nome: string | null
+          sobrenome: string | null
+          usuario_id: number
+        }
+        Insert: {
+          data_atualizacao?: string | null
+          data_criacao?: string | null
+          foto_url?: string | null
+          id?: number
+          nome?: string | null
+          sobrenome?: string | null
+          usuario_id: number
+        }
+        Update: {
+          data_atualizacao?: string | null
+          data_criacao?: string | null
+          foto_url?: string | null
+          id?: number
+          nome?: string | null
+          sobrenome?: string | null
+          usuario_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "perfis_usuario_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: true
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       projetos: {
         Row: {
           area_responsavel:

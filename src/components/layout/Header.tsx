@@ -20,11 +20,15 @@ interface HeaderProps {
 export function Header({ onToggleSidebar }: HeaderProps) {
   const { usuario, logout } = useAuth();
   const navigate = useNavigate();
-  const [notificacoes] = useState(3); // Mock de notificações
+  const [notificacoes] = useState(3);
 
   const handleLogout = () => {
     logout();
     navigate('/');
+  };
+
+  const handleConfiguracoes = () => {
+    navigate('/configuracoes');
   };
 
   return (
@@ -82,7 +86,7 @@ export function Header({ onToggleSidebar }: HeaderProps) {
               <p className="text-xs text-pmo-gray">{usuario?.email}</p>
             </div>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={handleConfiguracoes}>
               <Settings className="mr-2 h-4 w-4" />
               Configurações
             </DropdownMenuItem>

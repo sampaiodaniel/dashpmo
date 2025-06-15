@@ -45,15 +45,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error || !userData) {
         toast({
           title: "Erro de Login",
-          description: "Email ou senha incorretos",
+          description: "Email não encontrado ou usuário inativo",
           variant: "destructive",
         });
         setIsLoading(false);
         return false;
       }
 
-      // Por simplicidade, vamos aceitar qualquer senha para o demo
-      // Em produção, você deve verificar o hash da senha
+      // Verificar senha - comparar com hash armazenado
+      const senhaHash = btoa(senha); // Base64 básico para demonstração
+      if (userData.senha_hash !== senhaHash) {
+        toast({
+          title: "Erro de Login", 
+          description: "Senha incorreta",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return false;
+      }
+
       const user: Usuario = {
         id: userData.id,
         nome: userData.nome,

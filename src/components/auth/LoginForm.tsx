@@ -64,9 +64,9 @@ export function LoginForm() {
           </form>
           
           <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-            <p className="text-sm text-blue-800 font-medium mb-2">Dados de teste:</p>
-            <p className="text-xs text-blue-600">Email: admin@empresa.com</p>
-            <p className="text-xs text-blue-600">Senha: qualquer senha (demo)</p>
+            <p className="text-sm text-blue-800 font-medium mb-2">Acesso ao sistema:</p>
+            <p className="text-xs text-blue-600">Use as credenciais cadastradas na gestão de usuários</p>
+            <p className="text-xs text-blue-600">Para criar usuários, acesse a área de administração</p>
           </div>
         </CardContent>
       </Card>

@@ -20,6 +20,7 @@ import Incidentes from '@/pages/Incidentes';
 import Relatorios from '@/pages/Relatorios';
 import Aprovacoes from '@/pages/Aprovacoes';
 import Administracao from '@/pages/Administracao';
+import Configuracoes from '@/pages/Configuracoes';
 import NotFound from '@/pages/NotFound';
 import { Layout } from '@/components/layout/Layout';
 
@@ -48,6 +49,7 @@ function App() {
             <Route path="/relatorios" element={<Layout><Relatorios /></Layout>} />
             <Route path="/aprovacoes" element={<Layout><Aprovacoes /></Layout>} />
             <Route path="/admin" element={<Layout><Administracao /></Layout>} />
+            <Route path="/configuracoes" element={<Layout><Configuracoes /></Layout>} />
             <Route path="*" element={<Layout><NotFound /></Layout>} />
           </Routes>
         </Router>
