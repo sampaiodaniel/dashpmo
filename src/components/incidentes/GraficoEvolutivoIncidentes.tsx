@@ -10,10 +10,6 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 const chartConfig = {
-  anterior: {
-    label: "Anterior",
-    color: "#8884d8",
-  },
   entrada: {
     label: "Entrada",
     color: "#82ca9d",
@@ -21,10 +17,6 @@ const chartConfig = {
   saida: {
     label: "Saída",
     color: "#ffc658",
-  },
-  atual: {
-    label: "Atual",
-    color: "#ff7300",
   },
   mais_15_dias: {
     label: "+ 15 dias",
@@ -40,10 +32,8 @@ export function GraficoEvolutivoIncidentes() {
   const { data: historico, isLoading, error } = useIncidentesHistorico();
   const [carteiraFiltro, setCarteiraFiltro] = useState<string>('todas');
   const [linhasVisiveis, setLinhasVisiveis] = useState<Record<string, boolean>>({
-    anterior: true,
     entrada: true,
     saida: true,
-    atual: true,
     mais_15_dias: true,
     criticos: true,
   });
@@ -62,19 +52,15 @@ export function GraficoEvolutivoIncidentes() {
       if (!acc[data]) {
         acc[data] = {
           data,
-          anterior: 0,
           entrada: 0,
           saida: 0,
-          atual: 0,
           mais_15_dias: 0,
           criticos: 0,
         };
       }
       
-      acc[data].anterior += item.anterior || 0;
       acc[data].entrada += item.entrada || 0;
       acc[data].saida += item.saida || 0;
-      acc[data].atual += item.atual || 0;
       acc[data].mais_15_dias += item.mais_15_dias || 0;
       acc[data].criticos += item.criticos || 0;
       
@@ -172,16 +158,6 @@ export function GraficoEvolutivoIncidentes() {
                   content={<ChartLegendContent />}
                 />
                 
-                {linhasVisiveis.anterior && (
-                  <Line
-                    type="monotone"
-                    dataKey="anterior"
-                    stroke="var(--color-anterior)"
-                    strokeWidth={2}
-                    dot={{ r: 4 }}
-                    activeDot={{ r: 6 }}
-                  />
-                )}
                 {linhasVisiveis.entrada && (
                   <Line
                     type="monotone"
@@ -197,16 +173,6 @@ export function GraficoEvolutivoIncidentes() {
                     type="monotone"
                     dataKey="saida"
                     stroke="var(--color-saida)"
-                    strokeWidth={2}
-                    dot={{ r: 4 }}
-                    activeDot={{ r: 6 }}
-                  />
-                )}
-                {linhasVisiveis.atual && (
-                  <Line
-                    type="monotone"
-                    dataKey="atual"
-                    stroke="var(--color-atual)"
                     strokeWidth={2}
                     dot={{ r: 4 }}
                     activeDot={{ r: 6 }}
@@ -252,7 +218,7 @@ export function GraficoEvolutivoIncidentes() {
                   style={{ backgroundColor: linhasVisiveis[chave] ? config.color : '#ccc' }}
                 />
                 {config.label}
-              </div>
+              </button>
             ))}
           </div>
         </CardContent>
