@@ -6,9 +6,15 @@ import { useAuth } from '@/hooks/useAuth';
 
 interface StatusAprovacaoMetricasProps {
   onFiltrarAguardandoAprovacao?: () => void;
+  onFiltrarEmAtraso?: () => void;
+  onFiltrarAprovadosHoje?: () => void;
 }
 
-export function StatusAprovacaoMetricas({ onFiltrarAguardandoAprovacao }: StatusAprovacaoMetricasProps) {
+export function StatusAprovacaoMetricas({ 
+  onFiltrarAguardandoAprovacao,
+  onFiltrarEmAtraso,
+  onFiltrarAprovadosHoje 
+}: StatusAprovacaoMetricasProps) {
   const { canApprove } = useAuth();
   const { data: statusPendentes } = useStatusPendentes();
 
@@ -41,7 +47,10 @@ export function StatusAprovacaoMetricas({ onFiltrarAguardandoAprovacao }: Status
         </CardContent>
       </Card>
 
-      <Card className="border-l-4 border-l-pmo-danger">
+      <Card 
+        className="border-l-4 border-l-pmo-danger cursor-pointer hover:shadow-md transition-shadow"
+        onClick={onFiltrarEmAtraso}
+      >
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
             <AlertCircle className="h-5 w-5" />
@@ -54,7 +63,10 @@ export function StatusAprovacaoMetricas({ onFiltrarAguardandoAprovacao }: Status
         </CardContent>
       </Card>
 
-      <Card className="border-l-4 border-l-pmo-success">
+      <Card 
+        className="border-l-4 border-l-pmo-success cursor-pointer hover:shadow-md transition-shadow"
+        onClick={onFiltrarAprovadosHoje}
+      >
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
             <CheckSquare className="h-5 w-5" />

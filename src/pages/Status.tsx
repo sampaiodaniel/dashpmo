@@ -1,4 +1,3 @@
-
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
@@ -61,6 +60,29 @@ export default function Status() {
     }));
   };
 
+  const handleFiltrarEmAtraso = () => {
+    const dataLimite = new Date();
+    dataLimite.setDate(dataLimite.getDate() - 3);
+    
+    setFiltros(prev => ({
+      ...prev,
+      statusAprovacao: 'aguardando',
+      dataFim: dataLimite
+    }));
+  };
+
+  const handleFiltrarAprovadosHoje = () => {
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    
+    setFiltros(prev => ({
+      ...prev,
+      statusAprovacao: 'aprovado',
+      dataInicio: hoje,
+      dataFim: hoje
+    }));
+  };
+
   if (authLoading) {
     return (
       <div className="min-h-screen bg-pmo-background flex items-center justify-center">
@@ -104,7 +126,11 @@ export default function Status() {
           </div>
         </div>
 
-        <StatusAprovacaoMetricas onFiltrarAguardandoAprovacao={handleFiltrarAguardandoAprovacao} />
+        <StatusAprovacaoMetricas 
+          onFiltrarAguardandoAprovacao={handleFiltrarAguardandoAprovacao}
+          onFiltrarEmAtraso={handleFiltrarEmAtraso}
+          onFiltrarAprovadosHoje={handleFiltrarAprovadosHoje}
+        />
 
         <StatusFilters 
           filtros={filtros}
