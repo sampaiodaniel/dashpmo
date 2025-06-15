@@ -3,9 +3,11 @@ import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileText, Plus, Search, AlertCircle, CheckCircle, Clock } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { FileText, AlertCircle, CheckCircle, Clock } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { Search } from 'lucide-react';
+import { NovoRegistroIncidenteModal } from '@/components/incidentes/NovoRegistroIncidenteModal';
+import { TabelaIncidentesRecentes } from '@/components/incidentes/TabelaIncidentesRecentes';
 
 export default function Incidentes() {
   const { usuario, isLoading } = useAuth();
@@ -35,16 +37,13 @@ export default function Incidentes() {
             <h1 className="text-3xl font-bold text-pmo-primary">Incidentes</h1>
             <p className="text-pmo-gray mt-2">Controle e gestão de incidentes</p>
           </div>
-          <Button className="bg-pmo-primary hover:bg-pmo-primary/90">
-            <Plus className="h-4 w-4 mr-2" />
-            Novo Incidente
-          </Button>
+          <NovoRegistroIncidenteModal />
         </div>
 
         <div className="flex gap-4 items-center">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-pmo-gray" />
-            <Input placeholder="Buscar incidentes..." className="pl-10" />
+            <Input placeholder="Buscar por carteira..." className="pl-10" />
           </div>
         </div>
 
@@ -102,21 +101,7 @@ export default function Incidentes() {
           </Card>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              Lista de Incidentes
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-center py-8 text-pmo-gray">
-              <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p className="text-lg mb-2">Nenhum incidente encontrado</p>
-              <p className="text-sm">Sistema funcionando sem problemas reportados</p>
-            </div>
-          </CardContent>
-        </Card>
+        <TabelaIncidentesRecentes />
       </div>
     </Layout>
   );

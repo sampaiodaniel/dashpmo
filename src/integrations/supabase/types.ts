@@ -83,8 +83,8 @@ export type Database = {
       incidentes: {
         Row: {
           anterior: number | null
-          area_incidentes: string
           atual: number | null
+          carteira: string
           criado_por: string
           criticos: number | null
           data_registro: string | null
@@ -95,8 +95,8 @@ export type Database = {
         }
         Insert: {
           anterior?: number | null
-          area_incidentes: string
           atual?: number | null
+          carteira?: string
           criado_por: string
           criticos?: number | null
           data_registro?: string | null
@@ -107,8 +107,8 @@ export type Database = {
         }
         Update: {
           anterior?: number | null
-          area_incidentes?: string
           atual?: number | null
+          carteira?: string
           criado_por?: string
           criticos?: number | null
           data_registro?: string | null
