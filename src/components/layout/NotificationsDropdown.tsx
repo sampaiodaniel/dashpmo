@@ -18,17 +18,35 @@ export function NotificationsDropdown() {
   const { usuario, canApprove } = useAuth();
   const { data: statusPendentes } = useStatusPendentes();
   const { notificacoesLidas, marcarVariasComoLidas } = useNotificacoesLidas();
+  const [localNotificacoesLidas, setLocalNotificacoesLidas] = useState<number[]>([]);
   const navigate = useNavigate();
+
+  // Sincronizar com as notificações lidas do servidor
+  useEffect(() => {
+    setLocalNotificacoesLidas(notificacoesLidas);
+  }, [notificacoesLidas]);
 
   // Calcular número de notificações não lidas
   const notificacoesNaoLidas = canApprove() ? 
-    statusPendentes?.filter(status => !notificacoesLidas.includes(status.id)).length || 0 : 0;
+    statusPendentes?.filter(status => !localNotificacoesLidas.includes(status.id)).length || 0 : 0;
 
-  const handleOpenDropdown = () => {
+  const handleOpenDropdown = async () => {
     // Marcar todas as notificações como lidas quando abrir o dropdown
     if (statusPendentes && statusPendentes.length > 0) {
       const statusIds = statusPendentes.map(status => status.id);
-      marcarVariasComoLidas.mutate(statusIds);
+      
+      // Atualizar estado local imediatamente para feedback visual
+      setLocalNotificacoesLidas(statusIds);
+      
+      // Marcar no servidor
+      try {
+        await marcarVariasComoLidas.mutateAsync(statusIds);
+        console.log('Notificações marcadas como lidas com sucesso');
+      } catch (error) {
+        console.error('Erro ao marcar notificações como lidas:', error);
+        // Reverter estado local em caso de erro
+        setLocalNotificacoesLidas(notificacoesLidas);
+      }
     }
   };
 
