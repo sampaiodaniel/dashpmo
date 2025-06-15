@@ -2,21 +2,25 @@
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
-import { Search, ChevronRight, FileText } from 'lucide-react';
+import { Search, ChevronRight, FileText, Building } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { CriarProjetoModal } from '@/components/forms/CriarProjetoModal';
 import { useProjetos } from '@/hooks/useProjetos';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useProjetosOperations } from '@/hooks/useProjetosOperations';
-import { getStatusColor, getStatusGeralColor } from '@/types/pmo';
+import { getStatusColor, getStatusGeralColor, FiltrosProjeto } from '@/types/pmo';
+import { ProjetoFilters } from '@/components/projetos/ProjetoFilters';
+import { useNavigate } from 'react-router-dom';
 
 export default function Projetos() {
   const { usuario, isLoading: authLoading } = useAuth();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { data: projetos, isLoading: projetosLoading, error: projetosError } = useProjetos();
+  const [filtros, setFiltros] = useState<FiltrosProjeto>({});
+  const { data: projetos, isLoading: projetosLoading, error: projetosError } = useProjetos(filtros);
   const { criarProjetosTeste, isLoading: criandoTeste } = useProjetosOperations();
   const [termoBusca, setTermoBusca] = useState('');
 
@@ -24,7 +28,8 @@ export default function Projetos() {
     projetos,
     projetosLoading,
     projetosError,
-    quantidadeProjetos: projetos?.length || 0
+    quantidadeProjetos: projetos?.length || 0,
+    filtros
   });
 
   const handleProjetoCriado = () => {
@@ -42,6 +47,16 @@ export default function Projetos() {
     projeto.nome_projeto.toLowerCase().includes(termoBusca.toLowerCase()) ||
     projeto.area_responsavel.toLowerCase().includes(termoBusca.toLowerCase())
   ) || [];
+
+  const responsaveisUnicos = useMemo(() => {
+    if (!projetos) return [];
+    const responsaveis = new Set(projetos.map(p => p.responsavel_interno));
+    return Array.from(responsaveis).sort();
+  }, [projetos]);
+
+  const handleProjetoClick = (projetoId: number) => {
+    navigate(`/projetos/${projetoId}`);
+  };
 
   if (authLoading) {
     return (
@@ -80,6 +95,12 @@ export default function Projetos() {
           </div>
         </div>
 
+        <ProjetoFilters 
+          filtros={filtros}
+          onFiltroChange={setFiltros}
+          responsaveis={responsaveisUnicos}
+        />
+
         <div className="flex gap-4 items-center">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-pmo-gray" />
@@ -109,10 +130,7 @@ export default function Projetos() {
                 <div 
                   key={projeto.id} 
                   className="p-6 hover:bg-gray-50 transition-colors cursor-pointer group"
-                  onClick={() => {
-                    // TODO: Implementar modal ou página de detalhes do projeto
-                    console.log('Clicou no projeto:', projeto.nome_projeto);
-                  }}
+                  onClick={() => handleProjetoClick(projeto.id)}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1 min-w-0">
@@ -120,9 +138,12 @@ export default function Projetos() {
                         <h3 className="font-semibold text-xl text-pmo-primary group-hover:text-pmo-secondary transition-colors">
                           {projeto.nome_projeto}
                         </h3>
-                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                          {projeto.area_responsavel}
-                        </Badge>
+                        <div className="flex items-center gap-2 bg-blue-50 px-3 py-1 rounded-lg border border-blue-200">
+                          <Building className="h-4 w-4 text-blue-600" />
+                          <span className="font-semibold text-blue-700 text-sm">
+                            {projeto.area_responsavel}
+                          </span>
+                        </div>
                         {projeto.ultimoStatus && (
                           <div className="flex gap-2">
                             <Badge className={getStatusGeralColor(projeto.ultimoStatus.status_geral)}>
@@ -184,10 +205,10 @@ export default function Projetos() {
             <div className="text-center py-12 text-pmo-gray">
               <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p className="text-lg mb-2">
-                {termoBusca ? 'Nenhum projeto encontrado para sua busca' : 'Nenhum projeto encontrado'}
+                {termoBusca || Object.keys(filtros).length > 0 ? 'Nenhum projeto encontrado para sua busca' : 'Nenhum projeto encontrado'}
               </p>
               <p className="text-sm">
-                {termoBusca ? 'Tente alterar os termos da busca' : 'Comece criando seu primeiro projeto'}
+                {termoBusca || Object.keys(filtros).length > 0 ? 'Tente alterar os filtros ou termos da busca' : 'Comece criando seu primeiro projeto'}
               </p>
             </div>
           )}
