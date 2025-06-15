@@ -13,17 +13,17 @@ export function AdminConfiguracoes() {
   const [modalAberto, setModalAberto] = useState(false);
   const [configuracaoEditando, setConfiguracaoEditando] = useState<ConfiguracaoSistema | null>(null);
 
-  const { data: configuracoes } = useConfiguracoesSistema(tipoAtivo as any);
+  const { data: configuracoes, isLoading } = useConfiguracoesSistema(tipoAtivo as any);
   const { deleteConfiguracao } = useConfiguracoesSistemaOperations();
 
-  // Tipos de configuração disponíveis no sistema
+  // Todas as listas usadas no sistema
   const tiposConfiguracao = [
-    { key: 'gp_responsavel_cwi', label: 'GPs CWI', descricao: 'Lista de GPs responsáveis da CWI' },
-    { key: 'responsavel_cwi', label: 'Responsáveis CWI', descricao: 'Lista de responsáveis técnicos da CWI' },
-    { key: 'carteira', label: 'Carteiras', descricao: 'Lista de carteiras/áreas de negócio' },
-    { key: 'status_geral', label: 'Status Geral', descricao: 'Lista de status gerais dos projetos' },
-    { key: 'status_visao_gp', label: 'Status Visão GP', descricao: 'Cores de status na visão do GP' },
-    { key: 'nivel_risco', label: 'Níveis de Risco', descricao: 'Níveis de risco (Baixo, Médio, Alto)' },
+    { key: 'gp_responsavel_cwi', label: 'GPs CWI', descricao: 'Gerentes de Projeto responsáveis da CWI' },
+    { key: 'responsavel_cwi', label: 'Responsáveis CWI', descricao: 'Responsáveis técnicos da CWI' },
+    { key: 'carteira', label: 'Carteiras', descricao: 'Carteiras/áreas de negócio (primária, secundária, terciária)' },
+    { key: 'status_geral', label: 'Status Geral', descricao: 'Status gerais dos projetos' },
+    { key: 'status_visao_gp', label: 'Status Visão GP', descricao: 'Cores de status na visão do GP (Verde, Amarelo, Vermelho)' },
+    { key: 'nivel_risco', label: 'Níveis de Risco', descricao: 'Níveis de risco para probabilidade e impacto' },
     { key: 'tipo_mudanca', label: 'Tipos de Mudança', descricao: 'Tipos de mudança/replanejamento' },
     { key: 'categoria_licao', label: 'Categorias de Lição', descricao: 'Categorias para lições aprendidas' }
   ];
@@ -50,13 +50,13 @@ export function AdminConfiguracoes() {
         <CardHeader>
           <CardTitle>Configurações do Sistema</CardTitle>
           <p className="text-sm text-gray-600">
-            Gerencie as listas de valores utilizadas em todo o sistema. 
-            Alterações aqui serão refletidas imediatamente nos formulários e filtros.
+            Gerencie todas as listas de valores utilizadas em todo o sistema. 
+            Alterações aqui serão refletidas imediatamente nos formulários, filtros e seleções.
           </p>
         </CardHeader>
         <CardContent>
           <Tabs value={tipoAtivo} onValueChange={setTipoAtivo}>
-            <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
+            <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8 mb-6">
               {tiposConfiguracao.map((tipo) => (
                 <TabsTrigger key={tipo.key} value={tipo.key} className="text-xs">
                   {tipo.label}
@@ -78,41 +78,47 @@ export function AdminConfiguracoes() {
                     </Button>
                   </div>
 
-                  <div className="space-y-2">
-                    {configuracoes?.map((config) => (
-                      <div key={config.id} className="flex items-center justify-between p-3 border rounded-lg bg-gray-50">
-                        <div className="flex-1">
-                          <span className="font-medium">{config.valor}</span>
-                          {config.ordem && (
-                            <span className="text-sm text-gray-500 ml-2">(Ordem: {config.ordem})</span>
-                          )}
+                  {isLoading ? (
+                    <div className="text-center py-8 text-gray-500">
+                      <p>Carregando configurações...</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {configuracoes?.map((config) => (
+                        <div key={config.id} className="flex items-center justify-between p-3 border rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
+                          <div className="flex-1">
+                            <span className="font-medium">{config.valor}</span>
+                            {config.ordem && (
+                              <span className="text-sm text-gray-500 ml-2">(Ordem: {config.ordem})</span>
+                            )}
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleEditar(config)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleRemover(config.id)}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEditar(config)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleRemover(config.id)}
-                            className="text-red-600 hover:text-red-700"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                      ))}
+                      {configuracoes?.length === 0 && (
+                        <div className="text-center py-8 text-gray-500">
+                          <p>Nenhuma configuração encontrada</p>
+                          <p className="text-sm">Clique em "Adicionar" para criar a primeira configuração</p>
                         </div>
-                      </div>
-                    ))}
-                    {configuracoes?.length === 0 && (
-                      <div className="text-center py-8 text-gray-500">
-                        <p>Nenhuma configuração encontrada</p>
-                        <p className="text-sm">Clique em "Adicionar" para criar a primeira configuração</p>
-                      </div>
-                    )}
-                  </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </TabsContent>
             ))}

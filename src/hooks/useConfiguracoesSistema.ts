@@ -8,6 +8,8 @@ export function useConfiguracoesSistema(tipo?: TipoConfiguracao | string) {
   return useQuery({
     queryKey: ['configuracoes-sistema', tipo],
     queryFn: async () => {
+      console.log(`Buscando configurações do sistema. Tipo: ${tipo}`);
+      
       let query = supabase
         .from('configuracoes_sistema')
         .select('*')
@@ -26,31 +28,11 @@ export function useConfiguracoesSistema(tipo?: TipoConfiguracao | string) {
         throw error;
       }
 
+      console.log(`Configurações encontradas (${tipo}):`, data);
       return data as ConfiguracaoSistema[];
     },
-  });
-}
-
-// Hook específico para buscar listas de valores usadas nos formulários
-export function useListaValores(tipo: string) {
-  return useQuery({
-    queryKey: ['lista-valores', tipo],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('configuracoes_sistema')
-        .select('valor')
-        .eq('tipo', tipo)
-        .eq('ativo', true)
-        .order('ordem', { ascending: true })
-        .order('valor', { ascending: true });
-
-      if (error) {
-        console.error(`Erro ao buscar lista de valores para ${tipo}:`, error);
-        throw error;
-      }
-
-      return data?.map(item => item.valor) || [];
-    },
+    staleTime: 2 * 60 * 1000, // 2 minutos
+    gcTime: 5 * 60 * 1000, // 5 minutos
   });
 }
 
@@ -59,13 +41,20 @@ export function useConfiguracoesSistemaOperations() {
 
   const createConfiguracao = useMutation({
     mutationFn: async (config: Omit<ConfiguracaoSistema, 'id' | 'data_criacao'>) => {
+      console.log('Criando nova configuração:', config);
+      
       const { data, error } = await supabase
         .from('configuracoes_sistema')
         .insert([config])
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro ao criar configuração:', error);
+        throw error;
+      }
+      
+      console.log('Configuração criada com sucesso:', data);
       return data;
     },
     onSuccess: () => {
@@ -88,6 +77,8 @@ export function useConfiguracoesSistemaOperations() {
 
   const updateConfiguracao = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<ConfiguracaoSistema> & { id: number }) => {
+      console.log('Atualizando configuração:', { id, ...updates });
+      
       const { data, error } = await supabase
         .from('configuracoes_sistema')
         .update(updates)
@@ -95,7 +86,12 @@ export function useConfiguracoesSistemaOperations() {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro ao atualizar configuração:', error);
+        throw error;
+      }
+      
+      console.log('Configuração atualizada com sucesso:', data);
       return data;
     },
     onSuccess: () => {
@@ -118,12 +114,19 @@ export function useConfiguracoesSistemaOperations() {
 
   const deleteConfiguracao = useMutation({
     mutationFn: async (id: number) => {
+      console.log('Removendo configuração:', id);
+      
       const { error } = await supabase
         .from('configuracoes_sistema')
         .update({ ativo: false })
         .eq('id', id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro ao remover configuração:', error);
+        throw error;
+      }
+      
+      console.log('Configuração removida com sucesso');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['configuracoes-sistema'] });

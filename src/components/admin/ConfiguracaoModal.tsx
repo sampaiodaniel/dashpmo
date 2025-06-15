@@ -64,11 +64,14 @@ export function ConfiguracaoModal({ aberto, onFechar, configuracao, tipoInicial 
 
   const getTipoLabel = (tipo: string) => {
     const labels: Record<string, string> = {
-      'responsavel_interno': 'Responsáveis Internos',
-      'gp_responsavel': 'GPs Responsáveis',
-      'carteira_primaria': 'Carteiras Primárias',
-      'carteira_secundaria': 'Carteiras Secundárias',
-      'carteira_terciaria': 'Carteiras Terciárias'
+      'gp_responsavel_cwi': 'GPs CWI',
+      'responsavel_cwi': 'Responsáveis CWI',
+      'carteira': 'Carteiras',
+      'status_geral': 'Status Geral',
+      'status_visao_gp': 'Status Visão GP',
+      'nivel_risco': 'Níveis de Risco',
+      'tipo_mudanca': 'Tipos de Mudança',
+      'categoria_licao': 'Categorias de Lição'
     };
     return labels[tipo] || tipo;
   };
@@ -109,6 +112,7 @@ export function ConfiguracaoModal({ aberto, onFechar, configuracao, tipoInicial 
               value={formData.valor}
               onChange={(e) => setFormData(prev => ({ ...prev, valor: e.target.value }))}
               required
+              placeholder="Digite o valor da configuração"
             />
           </div>
 
@@ -119,6 +123,7 @@ export function ConfiguracaoModal({ aberto, onFechar, configuracao, tipoInicial 
               type="number"
               value={formData.ordem}
               onChange={(e) => setFormData(prev => ({ ...prev, ordem: parseInt(e.target.value) || 0 }))}
+              placeholder="Ordem de exibição (opcional)"
             />
           </div>
 

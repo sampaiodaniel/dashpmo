@@ -22,7 +22,7 @@ export interface ConfiguracaoSistema {
 
 export const TIPOS_CONFIGURACAO = [
   'gp_responsavel_cwi',
-  'responsavel_cwi',
+  'responsavel_cwi', 
   'carteira',
   'status_geral',
   'status_visao_gp',
