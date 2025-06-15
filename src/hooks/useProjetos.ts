@@ -7,6 +7,8 @@ export function useProjetos(filtros?: FiltrosProjeto) {
   return useQuery({
     queryKey: ['projetos', filtros],
     queryFn: async (): Promise<Projeto[]> => {
+      console.log('🔍 Iniciando busca de projetos...');
+      
       let query = supabase
         .from('projetos')
         .select(`
@@ -19,51 +21,72 @@ export function useProjetos(filtros?: FiltrosProjeto) {
         `)
         .eq('status_ativo', true);
 
+      console.log('📋 Query inicial configurada');
+
       // Apply filters
       if (filtros?.area && filtros.area !== 'Todas') {
         // Ensure the area matches one of the valid enum values
         const validAreas: Array<'Área 1' | 'Área 2' | 'Área 3'> = ['Área 1', 'Área 2', 'Área 3'];
         if (validAreas.includes(filtros.area as 'Área 1' | 'Área 2' | 'Área 3')) {
           query = query.eq('area_responsavel', filtros.area as 'Área 1' | 'Área 2' | 'Área 3');
+          console.log('🏢 Filtro de área aplicado:', filtros.area);
         }
       }
 
       if (filtros?.responsavel_interno) {
         query = query.eq('responsavel_interno', filtros.responsavel_interno);
+        console.log('👤 Filtro de responsável interno aplicado:', filtros.responsavel_interno);
       }
 
       if (filtros?.gp_responsavel) {
         query = query.eq('gp_responsavel', filtros.gp_responsavel);
+        console.log('👥 Filtro de GP aplicado:', filtros.gp_responsavel);
       }
 
       if (filtros?.busca) {
         query = query.ilike('nome_projeto', `%${filtros.busca}%`);
+        console.log('🔎 Filtro de busca aplicado:', filtros.busca);
       }
 
+      console.log('⚡ Executando query...');
       const { data, error } = await query;
 
+      console.log('📊 Resultado da query:', { data, error });
+      console.log('📈 Número de projetos encontrados:', data?.length || 0);
+
       if (error) {
-        console.error('Erro ao buscar projetos:', error);
+        console.error('❌ Erro ao buscar projetos:', error);
         throw error;
       }
 
-      console.log('Projetos encontrados:', data);
+      if (!data || data.length === 0) {
+        console.warn('⚠️ Nenhum projeto encontrado na base de dados');
+        return [];
+      }
 
-      return data?.map((projeto: any) => ({
-        id: projeto.id,
-        nome_projeto: projeto.nome_projeto,
-        descricao: projeto.descricao || projeto.descricao_projeto,
-        area_responsavel: projeto.area_responsavel,
-        responsavel_interno: projeto.responsavel_interno,
-        gp_responsavel: projeto.gp_responsavel,
-        status_ativo: projeto.status_ativo,
-        data_criacao: new Date(projeto.data_criacao),
-        criado_por: projeto.criado_por,
-        ultimoStatus: projeto.status_projeto?.[0] ? {
-          ...projeto.status_projeto[0],
-          data_atualizacao: new Date(projeto.status_projeto[0].data_atualizacao)
-        } : undefined
-      })) || [];
+      console.log('✅ Projetos encontrados, mapeando dados...');
+
+      const projetosMapeados = data?.map((projeto: any) => {
+        console.log('🗂️ Mapeando projeto:', projeto.nome_projeto);
+        return {
+          id: projeto.id,
+          nome_projeto: projeto.nome_projeto,
+          descricao: projeto.descricao || projeto.descricao_projeto,
+          area_responsavel: projeto.area_responsavel,
+          responsavel_interno: projeto.responsavel_interno,
+          gp_responsavel: projeto.gp_responsavel,
+          status_ativo: projeto.status_ativo,
+          data_criacao: new Date(projeto.data_criacao),
+          criado_por: projeto.criado_por,
+          ultimoStatus: projeto.status_projeto?.[0] ? {
+            ...projeto.status_projeto[0],
+            data_atualizacao: new Date(projeto.status_projeto[0].data_atualizacao)
+          } : undefined
+        };
+      }) || [];
+
+      console.log('🎯 Projetos mapeados finais:', projetosMapeados);
+      return projetosMapeados;
     },
   });
 }

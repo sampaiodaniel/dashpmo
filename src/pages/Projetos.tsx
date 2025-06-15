@@ -1,3 +1,4 @@
+
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
@@ -14,15 +15,24 @@ import { useProjetosOperations } from '@/hooks/useProjetosOperations';
 export default function Projetos() {
   const { usuario, isLoading: authLoading } = useAuth();
   const queryClient = useQueryClient();
-  const { data: projetos, isLoading: projetosLoading } = useProjetos();
+  const { data: projetos, isLoading: projetosLoading, error: projetosError } = useProjetos();
   const { criarProjetosTeste, isLoading: criandoTeste } = useProjetosOperations();
+
+  console.log('📋 Estado da página Projetos:', {
+    projetos,
+    projetosLoading,
+    projetosError,
+    quantidadeProjetos: projetos?.length || 0
+  });
 
   const handleProjetoCriado = () => {
     queryClient.invalidateQueries({ queryKey: ['projetos'] });
   };
 
   const handleCriarProjetosTeste = async () => {
+    console.log('🔄 Criando projetos de teste...');
     await criarProjetosTeste();
+    console.log('♻️ Invalidando cache de projetos...');
     queryClient.invalidateQueries({ queryKey: ['projetos'] });
   };
 
@@ -78,6 +88,12 @@ export default function Projetos() {
             </CardTitle>
           </CardHeader>
           <CardContent>
+            {projetosError && (
+              <div className="text-center py-8 text-red-600">
+                <p>Erro ao carregar projetos: {projetosError.message}</p>
+              </div>
+            )}
+            
             {projetosLoading ? (
               <div className="text-center py-8 text-pmo-gray">
                 <div>Carregando projetos...</div>
@@ -103,6 +119,9 @@ export default function Projetos() {
                 <FolderOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <p className="text-lg mb-2">Nenhum projeto encontrado</p>
                 <p className="text-sm">Comece criando seu primeiro projeto</p>
+                <div className="mt-4 text-xs text-gray-500">
+                  Debug: {projetos ? `Array vazio (${projetos.length})` : 'Dados undefined'}
+                </div>
               </div>
             )}
           </CardContent>
