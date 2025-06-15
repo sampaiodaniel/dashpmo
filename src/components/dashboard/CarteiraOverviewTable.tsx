@@ -167,7 +167,7 @@ export function CarteiraOverviewTable() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-200">
-                <th className="text-left p-2 font-medium">Carteira</th>
+                <th className="text-left p-2 font-medium w-40">Carteira</th>
                 <th className="text-center p-2 font-medium">Projetos</th>
                 <th className="text-center p-2 font-medium">CRs</th>
                 <th className="text-center p-2 font-medium">Baixo</th>
@@ -184,7 +184,7 @@ export function CarteiraOverviewTable() {
             <tbody>
               {carteiraData?.map((item) => (
                 <tr key={item.carteira} className="border-b border-gray-100 hover:bg-gray-50">
-                  <td className="p-2 font-medium">{item.carteira}</td>
+                  <td className="p-2 font-medium w-40">{item.carteira}</td>
                   <td className="text-center p-2">{item.projetos}</td>
                   <td className="text-center p-2">{item.crs}</td>
                   <td className="text-center p-2">{item.baixo}</td>

@@ -30,7 +30,7 @@ export function Layout({ children }: LayoutProps) {
           "flex-1 transition-all duration-200 ease-in-out",
           "lg:ml-64" // Sempre com margem no desktop
         )}>
-          <div className="p-6">
+          <div className="p-4">
             {children}
           </div>
         </main>
