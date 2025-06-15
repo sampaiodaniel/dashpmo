@@ -68,7 +68,7 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
         equipe: formData.equipe,
         finalizacao_prevista: formData.finalizacao_prevista,
         // Manter os campos obrigatórios do banco com valores derivados dos novos campos
-        area_responsavel: formData.carteira_primaria === 'none' ? 'Cadastro' : formData.carteira_primaria,
+        area_responsavel: (formData.carteira_primaria === 'none' ? 'Cadastro' : formData.carteira_primaria) as typeof CARTEIRAS[number],
         responsavel_interno: formData.responsavel_asa === 'none' ? 'Admin' : formData.responsavel_asa,
         gp_responsavel: formData.gp_responsavel_cwi === 'none' ? 'Admin' : formData.gp_responsavel_cwi
       };
