@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { 
   DropdownMenu, 
@@ -21,6 +21,25 @@ export function NotificationsDropdown() {
   const { notificacoesLidas, marcarVariasComoLidas } = useNotificacoesLidas(notificacoesProcessadasLocalmente);
   const navigate = useNavigate();
 
+  // Carregar notificações processadas do localStorage ao inicializar
+  useEffect(() => {
+    if (usuario?.id) {
+      const chaveStorage = `notificacoes-processadas-${usuario.id}`;
+      const saved = localStorage.getItem(chaveStorage);
+      if (saved) {
+        try {
+          const parsedIds = JSON.parse(saved);
+          if (Array.isArray(parsedIds)) {
+            setNotificacoesProcessadasLocalmente(parsedIds);
+          }
+        } catch (error) {
+          console.error('Erro ao carregar notificações processadas:', error);
+          localStorage.removeItem(chaveStorage);
+        }
+      }
+    }
+  }, [usuario?.id]);
+
   // Combinar notificações lidas do servidor com as processadas localmente
   const todasNotificacoesLidas = [...new Set([...notificacoesLidas, ...notificacoesProcessadasLocalmente])];
 
@@ -30,20 +49,20 @@ export function NotificationsDropdown() {
 
   const handleOpenDropdown = async () => {
     // Marcar todas as notificações como lidas quando abrir o dropdown
-    if (statusPendentes && statusPendentes.length > 0) {
+    if (statusPendentes && statusPendentes.length > 0 && usuario?.id) {
       const statusIds = statusPendentes.map(status => status.id);
       const novasNotificacoes = statusIds.filter(id => !todasNotificacoesLidas.includes(id));
       
       if (novasNotificacoes.length > 0) {
         console.log('Marcando notificações como lidas:', novasNotificacoes);
         
-        // Marcar imediatamente no estado local e persistir
-        setNotificacoesProcessadasLocalmente(prev => {
-          const novoEstado = [...prev, ...novasNotificacoes];
-          // Salvar no localStorage para persistir
-          localStorage.setItem('notificacoes-processadas', JSON.stringify(novoEstado));
-          return novoEstado;
-        });
+        // Marcar imediatamente no estado local e persistir por usuário
+        const novosIds = [...notificacoesProcessadasLocalmente, ...novasNotificacoes];
+        setNotificacoesProcessadasLocalmente(novosIds);
+        
+        // Salvar no localStorage com chave específica do usuário
+        const chaveStorage = `notificacoes-processadas-${usuario.id}`;
+        localStorage.setItem(chaveStorage, JSON.stringify(novosIds));
         
         // Marcar no servidor em background
         setTimeout(() => {

@@ -71,33 +71,16 @@ export function ConfiguracoesPerfil() {
       return;
     }
 
-    console.log('Dados do formulário:', data);
-    console.log('Usuário atual:', usuario);
+    console.log('Dados do formulário de perfil:', data);
 
     try {
-      // Preparar dados básicos
-      const dadosParaEnviar: any = {
+      await createOrUpdatePerfil.mutateAsync({
         usuario_id: usuario.id,
-      };
-
-      // Só incluir nome se foi preenchido
-      if (data.nome && data.nome.trim() !== '') {
-        dadosParaEnviar.nome = data.nome.trim();
-      }
-
-      // Só incluir sobrenome se foi preenchido
-      if (data.sobrenome && data.sobrenome.trim() !== '') {
-        dadosParaEnviar.sobrenome = data.sobrenome.trim();
-      }
-
-      // Manter a foto atual se existir
-      if (perfil?.foto_url) {
-        dadosParaEnviar.foto_url = perfil.foto_url;
-      }
-
-      console.log('Enviando dados para API:', dadosParaEnviar);
-
-      await createOrUpdatePerfil.mutateAsync(dadosParaEnviar);
+        nome: data.nome,
+        sobrenome: data.sobrenome,
+        // Manter foto atual se existir
+        foto_url: perfil?.foto_url
+      });
       
       // Refetch para atualizar os dados exibidos
       await refetch();
@@ -131,24 +114,13 @@ export function ConfiguracoesPerfil() {
       
       console.log('Upload concluído, URL:', fotoUrl);
       
-      // Preparar dados para atualização - manter dados existentes
-      const dadosParaAtualizar: any = {
+      // Atualizar perfil com nova foto mantendo dados existentes
+      await createOrUpdatePerfil.mutateAsync({
         usuario_id: usuario.id,
         foto_url: fotoUrl,
-      };
-
-      // Manter nome e sobrenome existentes se houver
-      if (perfil?.nome) {
-        dadosParaAtualizar.nome = perfil.nome;
-      }
-
-      if (perfil?.sobrenome) {
-        dadosParaAtualizar.sobrenome = perfil.sobrenome;
-      }
-      
-      console.log('Atualizando perfil com nova foto:', dadosParaAtualizar);
-      
-      await createOrUpdatePerfil.mutateAsync(dadosParaAtualizar);
+        nome: perfil?.nome,
+        sobrenome: perfil?.sobrenome
+      });
       
       // Refetch para atualizar a foto no header
       await refetch();
