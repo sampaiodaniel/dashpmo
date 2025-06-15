@@ -41,8 +41,8 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
     nome_projeto: projeto.nome_projeto,
     descricao_projeto: projeto.descricao_projeto || '',
     responsavel_asa: projeto.responsavel_asa || 'none',
-    gp_responsavel_cwi: projeto.gp_responsavel_cwi || '',
-    responsavel_cwi: projeto.responsavel_cwi || '',
+    gp_responsavel_cwi: projeto.gp_responsavel_cwi || 'none',
+    responsavel_cwi: projeto.responsavel_cwi || 'none',
     carteira_primaria: projeto.carteira_primaria || 'none',
     carteira_secundaria: projeto.carteira_secundaria || 'none',
     carteira_terciaria: projeto.carteira_terciaria || 'none',
@@ -57,15 +57,20 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
     try {
       // Convert "none" back to null/empty string for database
       const dataToSubmit = {
-        ...formData,
+        nome_projeto: formData.nome_projeto,
+        descricao_projeto: formData.descricao_projeto,
         responsavel_asa: formData.responsavel_asa === 'none' ? '' : formData.responsavel_asa,
+        gp_responsavel_cwi: formData.gp_responsavel_cwi === 'none' ? '' : formData.gp_responsavel_cwi,
+        responsavel_cwi: formData.responsavel_cwi === 'none' ? '' : formData.responsavel_cwi,
         carteira_primaria: formData.carteira_primaria === 'none' ? '' : formData.carteira_primaria,
         carteira_secundaria: formData.carteira_secundaria === 'none' ? '' : formData.carteira_secundaria,
         carteira_terciaria: formData.carteira_terciaria === 'none' ? '' : formData.carteira_terciaria,
-        // Manter os campos obrigatórios do banco com valores padrão
+        equipe: formData.equipe,
+        finalizacao_prevista: formData.finalizacao_prevista,
+        // Manter os campos obrigatórios do banco com valores derivados dos novos campos
         area_responsavel: formData.carteira_primaria === 'none' ? 'Cadastro' : formData.carteira_primaria,
         responsavel_interno: formData.responsavel_asa === 'none' ? 'Admin' : formData.responsavel_asa,
-        gp_responsavel: formData.gp_responsavel_cwi || 'Admin'
+        gp_responsavel: formData.gp_responsavel_cwi === 'none' ? 'Admin' : formData.gp_responsavel_cwi
       };
 
       const { error } = await supabase
@@ -148,7 +153,7 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
 
         <div>
           <Label htmlFor="gp_responsavel_cwi">GP Responsável CWI</Label>
-          <Select value={formData.gp_responsavel_cwi || 'none'} onValueChange={(value) => handleInputChange('gp_responsavel_cwi', value === 'none' ? '' : value)}>
+          <Select value={formData.gp_responsavel_cwi} onValueChange={(value) => handleInputChange('gp_responsavel_cwi', value)}>
             <SelectTrigger>
               <SelectValue placeholder="Selecione um GP responsável CWI" />
             </SelectTrigger>
@@ -165,7 +170,7 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
 
         <div>
           <Label htmlFor="responsavel_cwi">Responsável CWI</Label>
-          <Select value={formData.responsavel_cwi || 'none'} onValueChange={(value) => handleInputChange('responsavel_cwi', value === 'none' ? '' : value)}>
+          <Select value={formData.responsavel_cwi} onValueChange={(value) => handleInputChange('responsavel_cwi', value)}>
             <SelectTrigger>
               <SelectValue placeholder="Selecione um responsável CWI" />
             </SelectTrigger>
