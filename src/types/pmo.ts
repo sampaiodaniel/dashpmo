@@ -14,9 +14,18 @@ export interface Projeto {
   id: number;
   nome_projeto: string;
   descricao?: string;
+  descricao_projeto?: string;
   area_responsavel: 'Cadastro' | 'Canais' | 'Core Bancário' | 'Crédito' | 'Cripto' | 'Empréstimos' | 'Fila Rápida' | 'Investimentos 1' | 'Investimentos 2' | 'Onboarding' | 'Open Finance';
   responsavel_interno: string;
   gp_responsavel: string;
+  responsavel_cwi?: string;
+  gp_responsavel_cwi?: string;
+  responsavel_asa?: string;
+  carteira_primaria?: string;
+  carteira_secundaria?: string;
+  carteira_terciaria?: string;
+  equipe?: string;
+  finalizacao_prevista?: string;
   status_ativo: boolean;
   data_criacao: Date;
   criado_por: string;
