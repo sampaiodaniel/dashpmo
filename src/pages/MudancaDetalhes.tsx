@@ -58,8 +58,8 @@ export default function MudancaDetalhes() {
   }
 
   const handleEditar = () => {
-    console.log('Editando mudança:', mudanca.id);
-    // TODO: Implementar edição da mudança
+    console.log('Navegando para edição da mudança:', mudanca.id);
+    navigate(`/mudancas/${mudanca.id}/editar`);
   };
 
   const handleAprovar = () => {

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -32,8 +31,8 @@ export function CriarMudancaModal({ onMudancaCriada }: CriarMudancaModalProps) {
 
   // Filtrar projetos baseado na carteira selecionada
   const projetosFiltrados = useMemo(() => {
-    if (!allProjetos || !carteiraSelecionada || carteiraSelecionada === 'todas') {
-      return allProjetos || [];
+    if (!allProjetos || !carteiraSelecionada) {
+      return [];
     }
     
     return allProjetos.filter(projeto => 
@@ -111,7 +110,6 @@ export function CriarMudancaModal({ onMudancaCriada }: CriarMudancaModalProps) {
                   <SelectValue placeholder="Selecione a carteira..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="todas">Todas as carteiras</SelectItem>
                   {CARTEIRAS.map((carteira) => (
                     <SelectItem key={carteira} value={carteira}>
                       {carteira}
@@ -123,9 +121,19 @@ export function CriarMudancaModal({ onMudancaCriada }: CriarMudancaModalProps) {
 
             <div className="space-y-2">
               <Label htmlFor="projeto">Projeto Afetado *</Label>
-              <Select value={projetoId} onValueChange={setProjetoId}>
+              <Select 
+                value={projetoId} 
+                onValueChange={setProjetoId}
+                disabled={!carteiraSelecionada}
+              >
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecione o projeto..." />
+                  <SelectValue 
+                    placeholder={
+                      !carteiraSelecionada 
+                        ? "Selecione primeiro a carteira..." 
+                        : "Selecione o projeto..."
+                    } 
+                  />
                 </SelectTrigger>
                 <SelectContent>
                   {projetosFiltrados.map((projeto) => (

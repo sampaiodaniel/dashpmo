@@ -16,6 +16,7 @@ import NovoStatus from '@/pages/NovoStatus';
 import EditarStatus from '@/pages/EditarStatus';
 import Mudancas from '@/pages/Mudancas';
 import MudancaDetalhes from '@/pages/MudancaDetalhes';
+import EditarMudanca from '@/pages/EditarMudanca';
 import Licoes from '@/pages/Licoes';
 import Incidentes from '@/pages/Incidentes';
 import Relatorios from '@/pages/Relatorios';
@@ -47,6 +48,7 @@ function App() {
             <Route path="/status/novo" element={<NovoStatus />} />
             <Route path="/mudancas" element={<Mudancas />} />
             <Route path="/mudancas/:id" element={<MudancaDetalhes />} />
+            <Route path="/mudancas/:id/editar" element={<EditarMudanca />} />
             <Route path="/licoes" element={<Licoes />} />
             <Route path="/incidentes" element={<Incidentes />} />
             <Route path="/relatorios" element={<Relatorios />} />
