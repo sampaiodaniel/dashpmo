@@ -34,7 +34,7 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
     gp_responsavel: projeto.gp_responsavel,
     responsavel_cwi: projeto.responsavel_cwi || '',
     gp_responsavel_cwi: projeto.gp_responsavel_cwi || '',
-    responsavel_asa: projeto.responsavel_asa || '',
+    responsavel_asa: projeto.responsavel_asa || 'none',
     carteira_primaria: projeto.carteira_primaria || '',
     carteira_secundaria: projeto.carteira_secundaria || '',
     carteira_terciaria: projeto.carteira_terciaria || '',
@@ -47,9 +47,15 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
     setCarregando(true);
 
     try {
+      // Convert "none" back to null/empty string for database
+      const dataToSubmit = {
+        ...formData,
+        responsavel_asa: formData.responsavel_asa === 'none' ? '' : formData.responsavel_asa
+      };
+
       const { error } = await supabase
         .from('projetos')
-        .update(formData)
+        .update(dataToSubmit)
         .eq('id', projeto.id);
 
       if (error) {
@@ -181,7 +187,7 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
               <SelectValue placeholder="Selecione um responsável ASA" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Nenhum</SelectItem>
+              <SelectItem value="none">Nenhum</SelectItem>
               {responsaveisASA?.map((responsavel) => (
                 <SelectItem key={responsavel.id} value={responsavel.nome}>
                   {responsavel.nome} ({responsavel.nivel})
