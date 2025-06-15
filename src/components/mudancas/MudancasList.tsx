@@ -59,20 +59,28 @@ export function MudancasList({
   };
 
   const handleAprovar = (e: React.MouseEvent, mudancaId: number) => {
+    e.preventDefault();
     e.stopPropagation();
     console.log('Aprovando mudança:', mudancaId);
     // TODO: Implementar aprovação
   };
 
   const handleRejeitar = (e: React.MouseEvent, mudancaId: number) => {
+    e.preventDefault();
     e.stopPropagation();
     console.log('Rejeitando mudança:', mudancaId);
     // TODO: Implementar rejeição
   };
 
   const handleEditar = (e: React.MouseEvent, mudancaId: number) => {
+    e.preventDefault();
     e.stopPropagation();
     console.log('Editando mudança:', mudancaId);
+    onMudancaClick(mudancaId);
+  };
+
+  const handleCardClick = (mudancaId: number) => {
+    console.log('Clicando no card da mudança:', mudancaId);
     onMudancaClick(mudancaId);
   };
 
@@ -117,102 +125,103 @@ export function MudancasList({
       <div className="bg-white rounded-lg shadow-sm border">
         <div className="divide-y">
           {paginatedData.map((mudanca) => (
-            <ContextMenu key={mudanca.id}>
-              <ContextMenuTrigger asChild>
-                <div 
-                  className="p-6 hover:bg-gray-50 transition-colors cursor-pointer group relative"
-                  onClick={() => onMudancaClick(mudanca.id)}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-3 mb-3">
-                        <h3 className="font-semibold text-xl text-pmo-primary group-hover:text-pmo-secondary transition-colors">
-                          {mudanca.projeto?.nome_projeto}
-                        </h3>
-                        <div className="flex items-center gap-2 bg-blue-50 px-3 py-1 rounded-lg border border-blue-200">
-                          <Building className="h-4 w-4 text-blue-600" />
-                          <span className="font-semibold text-blue-700 text-sm">
-                            {mudanca.projeto?.area_responsavel}
-                          </span>
-                        </div>
-                        <Badge className={getTipoMudancaColor(mudanca.tipo_mudanca)}>
-                          {mudanca.tipo_mudanca}
-                        </Badge>
-                        <Badge className={getStatusMudancaColor(mudanca.status_aprovacao)}>
-                          {mudanca.status_aprovacao}
-                        </Badge>
+            <div key={mudanca.id} className="relative">
+              <div 
+                className="p-6 hover:bg-gray-50 transition-colors cursor-pointer group"
+                onClick={() => handleCardClick(mudanca.id)}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-3 mb-3">
+                      <h3 className="font-semibold text-xl text-pmo-primary group-hover:text-pmo-secondary transition-colors">
+                        {mudanca.projeto?.nome_projeto}
+                      </h3>
+                      <div className="flex items-center gap-2 bg-blue-50 px-3 py-1 rounded-lg border border-blue-200">
+                        <Building className="h-4 w-4 text-blue-600" />
+                        <span className="font-semibold text-blue-700 text-sm">
+                          {mudanca.projeto?.area_responsavel}
+                        </span>
                       </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm mb-3">
-                        <div>
-                          <span className="text-pmo-gray">Solicitante:</span>
-                          <div className="font-medium">{mudanca.solicitante}</div>
-                        </div>
-                        <div>
-                          <span className="text-pmo-gray">Data Solicitação:</span>
-                          <div className="font-medium">
-                            {mudanca.data_solicitacao.toLocaleDateString('pt-BR')}
-                          </div>
-                        </div>
-                        <div>
-                          <span className="text-pmo-gray">Impacto (dias):</span>
-                          <div className="font-medium">{mudanca.impacto_prazo_dias}</div>
-                        </div>
-                        {mudanca.data_aprovacao && (
-                          <div>
-                            <span className="text-pmo-gray">Data Aprovação:</span>
-                            <div className="font-medium">
-                              {mudanca.data_aprovacao.toLocaleDateString('pt-BR')}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="p-3 bg-gray-50 rounded-lg">
-                        <div className="text-sm font-medium text-pmo-gray mb-1">Descrição:</div>
-                        <p className="text-sm text-gray-700 mb-2">
-                          {mudanca.descricao}
-                        </p>
-                        <div className="text-sm font-medium text-pmo-gray mb-1">Justificativa:</div>
-                        <p className="text-sm text-gray-700">
-                          {mudanca.justificativa_negocio}
-                        </p>
-                      </div>
+                      <Badge className={getTipoMudancaColor(mudanca.tipo_mudanca)}>
+                        {mudanca.tipo_mudanca}
+                      </Badge>
+                      <Badge className={getStatusMudancaColor(mudanca.status_aprovacao)}>
+                        {mudanca.status_aprovacao}
+                      </Badge>
                     </div>
-                    <div className="flex items-center gap-2 ml-4">
-                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <MoreVertical className="h-4 w-4 text-pmo-gray" />
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm mb-3">
+                      <div>
+                        <span className="text-pmo-gray">Solicitante:</span>
+                        <div className="font-medium">{mudanca.solicitante}</div>
                       </div>
-                      <ChevronRight className="h-5 w-5 text-pmo-gray group-hover:text-pmo-primary transition-colors flex-shrink-0" />
+                      <div>
+                        <span className="text-pmo-gray">Data Solicitação:</span>
+                        <div className="font-medium">
+                          {mudanca.data_solicitacao.toLocaleDateString('pt-BR')}
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-pmo-gray">Impacto (dias):</span>
+                        <div className="font-medium">{mudanca.impacto_prazo_dias}</div>
+                      </div>
+                      {mudanca.data_aprovacao && (
+                        <div>
+                          <span className="text-pmo-gray">Data Aprovação:</span>
+                          <div className="font-medium">
+                            {mudanca.data_aprovacao.toLocaleDateString('pt-BR')}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="p-3 bg-gray-50 rounded-lg">
+                      <div className="text-sm font-medium text-pmo-gray mb-1">Descrição:</div>
+                      <p className="text-sm text-gray-700">
+                        {mudanca.descricao}
+                      </p>
                     </div>
                   </div>
+                  <div className="flex items-center gap-2 ml-4">
+                    <ContextMenu>
+                      <ContextMenuTrigger asChild>
+                        <div 
+                          className="flex items-center gap-1 p-2 rounded hover:bg-gray-100 transition-colors cursor-pointer"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <MoreVertical className="h-4 w-4 text-pmo-gray" />
+                        </div>
+                      </ContextMenuTrigger>
+                      <ContextMenuContent className="w-48">
+                        <ContextMenuItem onClick={(e) => handleEditar(e, mudanca.id)}>
+                          <Eye className="h-4 w-4 mr-2" />
+                          Ver Detalhes
+                        </ContextMenuItem>
+                        {mudanca.status_aprovacao !== 'Aprovada' && (
+                          <ContextMenuItem onClick={(e) => handleEditar(e, mudanca.id)}>
+                            <Edit className="h-4 w-4 mr-2" />
+                            Editar
+                          </ContextMenuItem>
+                        )}
+                        {canApprove() && mudanca.status_aprovacao === 'Pendente' && (
+                          <>
+                            <ContextMenuItem onClick={(e) => handleAprovar(e, mudanca.id)}>
+                              <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
+                              Aprovar
+                            </ContextMenuItem>
+                            <ContextMenuItem onClick={(e) => handleRejeitar(e, mudanca.id)}>
+                              <XCircle className="h-4 w-4 mr-2 text-red-600" />
+                              Rejeitar
+                            </ContextMenuItem>
+                          </>
+                        )}
+                      </ContextMenuContent>
+                    </ContextMenu>
+                    <ChevronRight className="h-5 w-5 text-pmo-gray group-hover:text-pmo-primary transition-colors flex-shrink-0" />
+                  </div>
                 </div>
-              </ContextMenuTrigger>
-              <ContextMenuContent className="w-48">
-                <ContextMenuItem onClick={(e) => handleEditar(e, mudanca.id)}>
-                  <Eye className="h-4 w-4 mr-2" />
-                  Ver Detalhes
-                </ContextMenuItem>
-                {mudanca.status_aprovacao !== 'Aprovada' && (
-                  <ContextMenuItem onClick={(e) => handleEditar(e, mudanca.id)}>
-                    <Edit className="h-4 w-4 mr-2" />
-                    Editar
-                  </ContextMenuItem>
-                )}
-                {canApprove() && mudanca.status_aprovacao === 'Pendente' && (
-                  <>
-                    <ContextMenuItem onClick={(e) => handleAprovar(e, mudanca.id)}>
-                      <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
-                      Aprovar
-                    </ContextMenuItem>
-                    <ContextMenuItem onClick={(e) => handleRejeitar(e, mudanca.id)}>
-                      <XCircle className="h-4 w-4 mr-2 text-red-600" />
-                      Rejeitar
-                    </ContextMenuItem>
-                  </>
-                )}
-              </ContextMenuContent>
-            </ContextMenu>
+              </div>
+            </div>
           ))}
         </div>
       </div>

@@ -10,10 +10,12 @@ import { LicoesMetricas } from '@/components/licoes/LicoesMetricas';
 import { LicoesFilters as LicoesFiltersComponent } from '@/components/licoes/LicoesFilters';
 import { LicoesSearchBar } from '@/components/licoes/LicoesSearchBar';
 import { LicoesList } from '@/components/licoes/LicoesList';
+import { useListaValores } from '@/hooks/useListaValores';
 
 export default function Licoes() {
   const { usuario, isLoading: authLoading } = useAuth();
   const { data: licoes, isLoading: licoesLoading, error: licoesError } = useLicoes();
+  const { data: categoriasLicao } = useListaValores('categoria_licao');
   const [termoBusca, setTermoBusca] = useState('');
   const [filtros, setFiltros] = useState<LicoesFilters>({});
 
@@ -38,11 +40,15 @@ export default function Licoes() {
     return projetosUnicos.sort();
   }, [licoes]);
 
-  // Calcular métricas
+  // Calcular métricas usando as categorias da administração
   const totalLicoes = licoes?.length || 0;
+  
+  // Categorias que são consideradas "boas práticas" (ajustar conforme necessário)
+  const categoriasBoacsPraticas = ['Desenvolvimento', 'DevOps', 'Qualidade e Testes', 'Gestão de Projetos'];
   const boasPraticas = licoes?.filter(l => 
-    ['Desenvolvimento', 'DevOps', 'Qualidade e Testes'].includes(l.categoria_licao)
+    categoriasBoacsPraticas.includes(l.categoria_licao)
   ).length || 0;
+  
   const pontosAtencao = totalLicoes - boasPraticas;
 
   const handleLicaoClick = (licaoId: number) => {
@@ -51,18 +57,21 @@ export default function Licoes() {
   };
 
   const handleNovaLicao = () => {
-    // TODO: Implementar modal de nova lição
-    console.log('Nova lição');
+    // TODO: Implementar modal/navegação de nova lição
+    console.log('Abrindo modal de nova lição');
+    // Exemplo: setModalNovaLicaoAberto(true) ou navigate('/licoes/nova')
   };
 
   const handleFiltrarBoasPraticas = () => {
+    // Filtrar por categorias consideradas boas práticas
     setFiltros(prev => ({
       ...prev,
-      categoria: 'Desenvolvimento' // Ou usar múltiplas categorias
+      categoria: 'Desenvolvimento' // Ou usar array de categorias
     }));
   };
 
   const handleFiltrarPontosAtencao = () => {
+    // Filtrar por categorias que não são boas práticas
     setFiltros(prev => ({
       ...prev,
       categoria: 'Comunicação' // Exemplo de categoria de ponto de atenção
