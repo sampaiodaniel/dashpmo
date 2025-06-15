@@ -8,14 +8,15 @@ import { Input } from '@/components/ui/input';
 import { CriarProjetoModal } from '@/components/forms/CriarProjetoModal';
 import { useProjetos } from '@/hooks/useProjetos';
 import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function Projetos() {
   const { usuario, isLoading: authLoading } = useAuth();
-  const [refreshKey, setRefreshKey] = useState(0);
-  const { data: projetos, isLoading: projetosLoading } = useProjetos({}, refreshKey);
+  const queryClient = useQueryClient();
+  const { data: projetos, isLoading: projetosLoading } = useProjetos();
 
   const handleProjetoCriado = () => {
-    setRefreshKey(prev => prev + 1);
+    queryClient.invalidateQueries({ queryKey: ['projetos'] });
   };
 
   if (authLoading) {
