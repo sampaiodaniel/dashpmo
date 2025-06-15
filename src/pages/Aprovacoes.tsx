@@ -140,10 +140,6 @@ export default function Aprovacoes() {
                             <span className="text-pmo-gray">Criado por:</span>
                             <div className="font-medium">{status.criado_por}</div>
                           </div>
-                          <div>
-                            <span className="text-pmo-gray">Progresso:</span>
-                            <div className="font-medium">{status.progresso_estimado || 0}%</div>
-                          </div>
                         </div>
 
                         {status.realizado_semana_atual && (

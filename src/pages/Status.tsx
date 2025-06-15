@@ -3,7 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Search, ChevronRight, FileText, Plus, Edit } from 'lucide-react';
+import { Search, ChevronRight, FileText, Plus, Edit, AlertTriangle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -45,8 +45,8 @@ export default function Status() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-pmo-primary">Status dos Projetos</h1>
-            <p className="text-pmo-gray mt-2">Atualizações de status e acompanhamento</p>
+            <h1 className="text-3xl font-bold text-pmo-primary">Status Semanal</h1>
+            <p className="text-pmo-gray mt-2">Atualizações de status e acompanhamento dos projetos</p>
           </div>
           <Button 
             onClick={() => navigate('/status/novo')}
@@ -113,8 +113,9 @@ export default function Status() {
                             Aprovado
                           </Badge>
                         ) : (
-                          <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200">
-                            Pendente
+                          <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200 flex items-center gap-1">
+                            <AlertTriangle className="h-3 w-3" />
+                            Pendente Aprovação
                           </Badge>
                         )}
                       </div>
