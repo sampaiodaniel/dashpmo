@@ -4,7 +4,11 @@ import { CheckSquare, Clock, AlertCircle } from 'lucide-react';
 import { useStatusPendentes } from '@/hooks/useStatusPendentes';
 import { useAuth } from '@/hooks/useAuth';
 
-export function StatusAprovacaoMetricas() {
+interface StatusAprovacaoMetricasProps {
+  onFiltrarAguardandoAprovacao?: () => void;
+}
+
+export function StatusAprovacaoMetricas({ onFiltrarAguardandoAprovacao }: StatusAprovacaoMetricasProps) {
   const { canApprove } = useAuth();
   const { data: statusPendentes } = useStatusPendentes();
 
@@ -21,7 +25,10 @@ export function StatusAprovacaoMetricas() {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-      <Card className="border-l-4 border-l-pmo-warning">
+      <Card 
+        className="border-l-4 border-l-pmo-warning cursor-pointer hover:shadow-md transition-shadow"
+        onClick={onFiltrarAguardandoAprovacao}
+      >
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
             <Clock className="h-5 w-5" />

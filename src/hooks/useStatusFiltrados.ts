@@ -6,6 +6,7 @@ interface FiltrosStatus {
   carteira?: string;
   projeto?: string;
   responsavel?: string;
+  statusAprovacao?: string;
   dataInicio?: Date;
   dataFim?: Date;
   busca?: string;
@@ -46,6 +47,15 @@ export function useStatusFiltrados(statusList: StatusProjeto[] | undefined, filt
       filtrados = filtrados.filter(status => 
         status.criado_por === filtros.responsavel
       );
+    }
+
+    // Filtrar por status de aprovação
+    if (filtros.statusAprovacao && filtros.statusAprovacao !== 'todos') {
+      if (filtros.statusAprovacao === 'aguardando') {
+        filtrados = filtrados.filter(status => status.aprovado === false);
+      } else if (filtros.statusAprovacao === 'aprovado') {
+        filtrados = filtrados.filter(status => status.aprovado === true);
+      }
     }
 
     // Filtrar por data de início

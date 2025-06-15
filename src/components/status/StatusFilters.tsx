@@ -17,6 +17,7 @@ interface StatusFiltersProps {
     carteira?: string;
     projeto?: string;
     responsavel?: string;
+    statusAprovacao?: string;
     dataInicio?: Date;
     dataFim?: Date;
     incluirArquivados?: boolean;
@@ -72,6 +73,16 @@ export function StatusFilters({ filtros, onFiltroChange, responsaveis }: StatusF
       delete novosFiltros.responsavel;
     } else {
       novosFiltros.responsavel = value;
+    }
+    onFiltroChange(novosFiltros);
+  };
+
+  const handleStatusAprovacaoChange = (value: string) => {
+    const novosFiltros = { ...filtros };
+    if (value === 'todos') {
+      delete novosFiltros.statusAprovacao;
+    } else {
+      novosFiltros.statusAprovacao = value;
     }
     onFiltroChange(novosFiltros);
   };
@@ -163,6 +174,20 @@ export function StatusFilters({ filtros, onFiltroChange, responsaveis }: StatusF
                       {responsavel}
                     </SelectItem>
                   ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-pmo-gray">Status Aprovação:</label>
+              <Select value={filtros.statusAprovacao || 'todos'} onValueChange={handleStatusAprovacaoChange}>
+                <SelectTrigger className="w-48">
+                  <SelectValue placeholder="Todos" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Todos</SelectItem>
+                  <SelectItem value="aguardando">Aguardando Aprovação</SelectItem>
+                  <SelectItem value="aprovado">Aprovado</SelectItem>
                 </SelectContent>
               </Select>
             </div>

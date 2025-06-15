@@ -23,6 +23,7 @@ export default function Status() {
   const [filtros, setFiltros] = useState<{
     carteira?: string;
     responsavel?: string;
+    statusAprovacao?: string;
     dataInicio?: Date;
     dataFim?: Date;
     incluirArquivados?: boolean;
@@ -51,6 +52,13 @@ export default function Status() {
 
   const handleStatusClick = (statusId: number) => {
     navigate(`/status/${statusId}`);
+  };
+
+  const handleFiltrarAguardandoAprovacao = () => {
+    setFiltros(prev => ({
+      ...prev,
+      statusAprovacao: 'aguardando'
+    }));
   };
 
   if (authLoading) {
@@ -96,7 +104,7 @@ export default function Status() {
           </div>
         </div>
 
-        <StatusAprovacaoMetricas />
+        <StatusAprovacaoMetricas onFiltrarAguardandoAprovacao={handleFiltrarAguardandoAprovacao} />
 
         <StatusFilters 
           filtros={filtros}
