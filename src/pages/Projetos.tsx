@@ -60,14 +60,14 @@ export default function Projetos() {
 
   return (
     <Layout>
-      <div className="max-w-6xl mx-auto space-y-6">
+      <div className="mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-pmo-primary">Projetos</h1>
             <p className="text-pmo-gray mt-2">Gestão e acompanhamento de projetos</p>
           </div>
           <div className="flex gap-2">
-            <Button 
+            <Button
               onClick={handleCriarProjetosTeste}
               variant="outline"
               disabled={criandoTeste}
