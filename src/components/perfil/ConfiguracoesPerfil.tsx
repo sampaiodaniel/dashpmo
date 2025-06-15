@@ -95,6 +95,7 @@ export function ConfiguracoesPerfil() {
 
     await alterarSenha.mutateAsync({
       usuarioId: usuario.id,
+      senhaAtual: data.senhaAtual,
       novaSenha: data.novaSenha,
     });
 

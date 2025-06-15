@@ -136,14 +136,33 @@ export function usePerfilOperations() {
   });
 
   const alterarSenha = useMutation({
-    mutationFn: async ({ usuarioId, novaSenha }: { usuarioId: number; novaSenha: string }) => {
+    mutationFn: async ({ usuarioId, senhaAtual, novaSenha }: { usuarioId: number; senhaAtual: string; novaSenha: string }) => {
       console.log('Alterando senha do usuário:', usuarioId);
 
-      const senhaHash = btoa(novaSenha);
+      // Primeiro, verificar se a senha atual está correta
+      const { data: userData, error: fetchError } = await supabase
+        .from('usuarios')
+        .select('senha_hash')
+        .eq('id', usuarioId)
+        .single();
+
+      if (fetchError) {
+        console.error('Erro ao buscar dados do usuário:', fetchError);
+        throw new Error(`Erro ao verificar usuário: ${fetchError.message}`);
+      }
+
+      // Verificar se a senha atual está correta
+      const senhaAtualHash = btoa(senhaAtual);
+      if (userData.senha_hash !== senhaAtualHash) {
+        throw new Error('Senha atual incorreta');
+      }
+
+      // Se a senha atual está correta, alterar para a nova senha
+      const novaSenhaHash = btoa(novaSenha);
 
       const { error } = await supabase
         .from('usuarios')
-        .update({ senha_hash: senhaHash })
+        .update({ senha_hash: novaSenhaHash })
         .eq('id', usuarioId);
 
       if (error) {
