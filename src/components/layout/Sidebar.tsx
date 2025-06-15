@@ -1,141 +1,101 @@
 
-import { useState } from 'react';
-import { NavLink } from 'react-router-dom';
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
 import { 
-  Home, 
+  LayoutDashboard, 
   FolderOpen, 
-  Plus, 
-  CheckSquare, 
-  BarChart3, 
+  ClipboardCheck, 
+  GitBranch, 
+  GraduationCap, 
   AlertTriangle,
-  BookOpen,
-  FileText,
-  X,
-  Settings
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-
-interface SidebarProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
+  BarChart3,
+  Settings,
+  User
+} from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
 
 const menuItems = [
-  {
-    title: 'Dashboard',
-    href: '/',
-    icon: Home,
-    description: 'Visão geral dos projetos'
+  { 
+    title: "Dashboard", 
+    icon: LayoutDashboard, 
+    href: "/" 
   },
-  {
-    title: 'Projetos',
-    href: '/projetos',
-    icon: FolderOpen,
-    description: 'Gestão de projetos'
+  { 
+    title: "Projetos", 
+    icon: FolderOpen, 
+    href: "/projetos" 
   },
-  {
-    title: 'Status Semanal',
-    href: '/status/novo',
-    icon: Plus,
-    description: 'Cadastrar atualização'
+  { 
+    title: "Status", 
+    icon: ClipboardCheck, 
+    href: "/status" 
   },
-  {
-    title: 'Aprovações',
-    href: '/aprovacoes',
-    icon: CheckSquare,
-    description: 'Pendências de aprovação'
+  { 
+    title: "Mudanças", 
+    icon: GitBranch, 
+    href: "/mudancas" 
   },
-  {
-    title: 'Relatórios',
-    href: '/relatorios',
-    icon: BarChart3,
-    description: 'Consultas e relatórios'
+  { 
+    title: "Lições", 
+    icon: GraduationCap, 
+    href: "/licoes" 
   },
-  {
-    title: 'Mudanças',
-    href: '/mudancas',
-    icon: AlertTriangle,
-    description: 'Change requests'
+  { 
+    title: "Incidentes", 
+    icon: AlertTriangle, 
+    href: "/incidentes" 
   },
-  {
-    title: 'Lições Aprendidas',
-    href: '/licoes',
-    icon: BookOpen,
-    description: 'Base de conhecimento'
+  { 
+    title: "Relatórios", 
+    icon: BarChart3, 
+    href: "/relatorios" 
   },
-  {
-    title: 'Incidentes',
-    href: '/incidentes',
-    icon: FileText,
-    description: 'Controle de incidentes'
+  { 
+    title: "Aprovações", 
+    icon: User, 
+    href: "/aprovacoes" 
   },
-  {
-    title: 'Administração',
-    href: '/administracao',
-    icon: Settings,
-    description: 'Configurações do sistema'
-  }
+  { 
+    title: "Administração", 
+    icon: Settings, 
+    href: "/admin" 
+  },
 ];
 
-export function Sidebar({ isOpen, onClose }: SidebarProps) {
+export function Sidebar() {
+  const location = useLocation();
+
   return (
-    <>
-      {/* Overlay para mobile */}
-      {isOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
-          onClick={onClose}
-        />
-      )}
-      
-      {/* Sidebar */}
-      <aside className={cn(
-        "fixed left-0 top-16 h-[calc(100vh-4rem)] w-48 bg-white border-r border-gray-200 z-50 transform transition-transform duration-200 ease-in-out",
-        isOpen ? "translate-x-0" : "-translate-x-full",
-        "lg:translate-x-0 lg:static lg:z-auto"
-      )}>
-        <div className="flex flex-col h-full">
-          {/* Header do sidebar com botão fechar (mobile) */}
-          <div className="flex items-center justify-between p-4 lg:hidden">
-            <h2 className="text-lg font-semibold text-pmo-primary">Menu</h2>
-            <Button variant="ghost" size="sm" onClick={onClose}>
-              <X className="h-5 w-5" />
-            </Button>
-          </div>
-
-          {/* Navegação */}
-          <nav className="flex-1 px-3 py-4 space-y-1">
-            {menuItems.map((item) => (
-              <NavLink
-                key={item.href}
-                to={item.href}
-                onClick={() => window.innerWidth < 1024 && onClose()}
-                className={({ isActive }) => cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors group",
-                  isActive 
-                    ? "bg-pmo-primary text-white" 
-                    : "text-pmo-gray hover:bg-pmo-background hover:text-pmo-primary"
-                )}
-              >
-                <item.icon className="h-5 w-5 flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium">{item.title}</div>
-                  <div className="text-xs opacity-75 truncate">{item.description}</div>
-                </div>
-              </NavLink>
-            ))}
-          </nav>
-
-          {/* Footer do sidebar */}
-          <div className="p-4 border-t border-gray-200">
-            <div className="text-xs text-pmo-gray text-center">
-              <div className="font-medium">Sistema PMO v1.0</div>
-              <div>Gestão de Projetos Corporativo</div>
-            </div>
-          </div>
+    <div className="w-64 bg-white border-r border-gray-200 px-4 py-6">
+      <div className="flex items-center gap-2 mb-8">
+        <div className="w-8 h-8 bg-pmo-primary rounded-lg flex items-center justify-center">
+          <span className="text-white font-bold text-sm">PMO</span>
         </div>
-      </aside>
-    </>
+        <h1 className="text-xl font-bold text-pmo-primary">Sistema PMO</h1>
+      </div>
+      
+      <nav className="space-y-2">
+        {menuItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = location.pathname === item.href || 
+            (item.href === '/status' && location.pathname.startsWith('/status'));
+          
+          return (
+            <Link
+              key={item.href}
+              to={item.href}
+              className={cn(
+                "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                isActive 
+                  ? "bg-pmo-primary text-white" 
+                  : "text-pmo-gray hover:bg-gray-100 hover:text-pmo-primary"
+              )}
+            >
+              <Icon className="h-4 w-4" />
+              {item.title}
+            </Link>
+          );
+        })}
+      </nav>
+    </div>
   );
 }

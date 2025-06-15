@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useStatusList } from '@/hooks/useStatusList';
+import { useStatusOperations } from '@/hooks/useStatusOperations';
 import { useState, useMemo } from 'react';
 import { getStatusColor, getStatusGeralColor } from '@/types/pmo';
 import { useNavigate } from 'react-router-dom';
@@ -15,7 +16,8 @@ import { useStatusFiltrados } from '@/hooks/useStatusFiltrados';
 
 export default function Status() {
   const { usuario, isLoading: authLoading } = useAuth();
-  const { data: statusList, isLoading: statusLoading, error: statusError } = useStatusList();
+  const { data: statusList, isLoading: statusLoading, error: statusError, refetch } = useStatusList();
+  const { criarStatusTeste, isLoading: creatingTeste } = useStatusOperations();
   const [termoBusca, setTermoBusca] = useState('');
   const [filtros, setFiltros] = useState<{
     carteira?: string;
@@ -39,6 +41,13 @@ export default function Status() {
     const responsaveisUnicos = [...new Set(statusList.map(s => s.criado_por))];
     return responsaveisUnicos.sort();
   }, [statusList]);
+
+  const handleCriarStatusTeste = async () => {
+    const result = await criarStatusTeste();
+    if (result) {
+      refetch();
+    }
+  };
 
   if (authLoading) {
     return (
@@ -65,13 +74,22 @@ export default function Status() {
             <h1 className="text-3xl font-bold text-pmo-primary">Status Semanal</h1>
             <p className="text-pmo-gray mt-2">Atualizações de status e acompanhamento dos projetos</p>
           </div>
-          <Button 
-            onClick={() => navigate('/status/novo')}
-            className="bg-pmo-primary hover:bg-pmo-primary/90"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Novo Status
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              onClick={handleCriarStatusTeste}
+              variant="outline"
+              disabled={creatingTeste}
+            >
+              {creatingTeste ? 'Criando...' : 'Criar Status Teste'}
+            </Button>
+            <Button 
+              onClick={() => navigate('/status/novo')}
+              className="bg-pmo-primary hover:bg-pmo-primary/90"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Novo Status
+            </Button>
+          </div>
         </div>
 
         <StatusFilters 
