@@ -17,7 +17,10 @@ export function useNotificacoesLidas() {
         .select('status_id')
         .eq('usuario_id', usuario.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro ao buscar notificações lidas:', error);
+        return [];
+      }
       return data.map(item => item.status_id);
     },
     enabled: !!usuario?.id,
@@ -34,7 +37,10 @@ export function useNotificacoesLidas() {
           status_id: statusId,
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro ao marcar notificação como lida:', error);
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notificacoes-lidas'] });
@@ -46,7 +52,7 @@ export function useNotificacoesLidas() {
       if (!usuario?.id) throw new Error('Usuário não encontrado');
 
       const notificacoes = statusIds.map(statusId => ({
-        usuario_id: usuario.id,
+        usuario_id: usuario.id!,
         status_id: statusId,
       }));
 
@@ -54,7 +60,10 @@ export function useNotificacoesLidas() {
         .from('notificacoes_lidas')
         .upsert(notificacoes);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro ao marcar notificações como lidas:', error);
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notificacoes-lidas'] });
