@@ -5,6 +5,7 @@ import { toast } from '@/components/ui/use-toast';
 import { Database } from '@/integrations/supabase/types';
 
 type MudancaInsert = Database['public']['Tables']['mudancas_replanejamento']['Insert'];
+type MudancaUpdate = Database['public']['Tables']['mudancas_replanejamento']['Update'];
 
 export function useMudancasOperations() {
   const [isLoading, setIsLoading] = useState(false);
@@ -51,8 +52,49 @@ export function useMudancasOperations() {
     }
   };
 
+  const atualizarMudanca = async (id: number, mudanca: Omit<MudancaUpdate, 'id'>) => {
+    setIsLoading(true);
+    
+    try {
+      const { data, error } = await supabase
+        .from('mudancas_replanejamento')
+        .update(mudanca)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Erro ao atualizar mudança:', error);
+        toast({
+          title: "Erro",
+          description: "Erro ao atualizar solicitação de mudança",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      toast({
+        title: "Sucesso",
+        description: "Solicitação de mudança atualizada com sucesso!",
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Erro inesperado:', error);
+      toast({
+        title: "Erro",
+        description: "Erro inesperado ao atualizar mudança",
+        variant: "destructive",
+      });
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return {
     criarMudanca,
+    atualizarMudanca,
     isLoading,
   };
 }
