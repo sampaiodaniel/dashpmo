@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Usuario } from '@/types/pmo';
@@ -37,10 +38,15 @@ export function useUsuarios() {
       console.log('Usuários encontrados:', data);
       
       return data.map((usuario): UsuarioComPerfil => {
-        // Verifica se existe perfil e pega o primeiro (deveria ser único por usuario_id)
-        const perfilData = usuario.perfis_usuario && usuario.perfis_usuario.length > 0 
-          ? usuario.perfis_usuario[0] 
-          : null;
+        // O perfis_usuario pode vir como array ou objeto dependendo da consulta
+        let perfilData = null;
+        if (usuario.perfis_usuario) {
+          if (Array.isArray(usuario.perfis_usuario)) {
+            perfilData = usuario.perfis_usuario.length > 0 ? usuario.perfis_usuario[0] : null;
+          } else {
+            perfilData = usuario.perfis_usuario;
+          }
+        }
 
         console.log(`Usuario ${usuario.id} - perfil:`, perfilData);
 
