@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 
 export function useReportWebhook() {
   const [isLoading, setIsLoading] = useState(false);
@@ -10,6 +10,8 @@ export function useReportWebhook() {
     setIsLoading(true);
     
     try {
+      console.log('Iniciando busca de dados para carteira:', carteira);
+      
       // Buscar último status aprovado da carteira
       const { data: ultimoStatus, error: statusError } = await supabase
         .from('status_projeto')
@@ -30,6 +32,8 @@ export function useReportWebhook() {
         console.error('Erro ao buscar status:', statusError);
       }
 
+      console.log('Último status encontrado:', ultimoStatus);
+
       // Buscar último registro de incidentes da carteira
       const { data: ultimosIncidentes, error: incidentesError } = await supabase
         .from('incidentes')
@@ -43,6 +47,8 @@ export function useReportWebhook() {
         console.error('Erro ao buscar incidentes:', incidentesError);
       }
 
+      console.log('Últimos incidentes encontrados:', ultimosIncidentes);
+
       // Preparar dados para envio
       const reportData = {
         carteira,
@@ -52,7 +58,7 @@ export function useReportWebhook() {
         enviado_de: window.location.origin
       };
 
-      console.log('Enviando dados do report:', reportData);
+      console.log('Enviando dados do report para webhook:', webhookUrl, reportData);
 
       // Enviar para webhook
       const response = await fetch(webhookUrl, {
@@ -63,6 +69,8 @@ export function useReportWebhook() {
         mode: 'no-cors',
         body: JSON.stringify(reportData),
       });
+
+      console.log('Resposta do webhook:', response);
 
       toast({
         title: "Report enviado",

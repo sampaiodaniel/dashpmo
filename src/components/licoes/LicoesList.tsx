@@ -1,5 +1,5 @@
 
-import { Search, ChevronRight, Star, AlertTriangle, CheckCircle, Clock, XCircle, BookOpen, User } from 'lucide-react';
+import { Search, ChevronRight, Star, CheckCircle, Clock, XCircle, BookOpen, User } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { usePagination } from '@/hooks/usePagination';
 import { PaginationFooter } from '@/components/common/PaginationFooter';
@@ -39,11 +39,6 @@ const getStatusColor = (status: string) => {
     default:
       return 'bg-gray-100 text-gray-700 border-gray-200';
   }
-};
-
-const getCategoriaIcon = (categoria: string) => {
-  const isBoaPratica = ['Desenvolvimento', 'DevOps', 'Qualidade e Testes', 'Gestão de Projetos'].includes(categoria);
-  return isBoaPratica ? <Star className="h-4 w-4 text-green-600" /> : <AlertTriangle className="h-4 w-4 text-orange-600" />;
 };
 
 export function LicoesList({ 
@@ -123,7 +118,7 @@ export function LicoesList({
               <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 mb-3">
-                    {getCategoriaIcon(licao.categoria_licao)}
+                    <BookOpen className="h-4 w-4 text-blue-600" />
                     <h3 className="font-semibold text-xl text-pmo-primary group-hover:text-pmo-secondary transition-colors">
                       {licao.categoria_licao}
                     </h3>
@@ -165,18 +160,6 @@ export function LicoesList({
                         {licao.licao_aprendida}
                       </p>
                     </div>
-
-                    {licao.acao_recomendada && (
-                      <div className="p-3 bg-green-50 rounded-lg">
-                        <div className="flex items-center gap-2 mb-2">
-                          <CheckCircle className="h-4 w-4 text-green-600" />
-                          <span className="text-sm font-medium text-green-700">Ação Recomendada:</span>
-                        </div>
-                        <p className="text-sm text-green-800">
-                          {licao.acao_recomendada}
-                        </p>
-                      </div>
-                    )}
                   </div>
 
                   {licao.tags_busca && (

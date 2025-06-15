@@ -2,7 +2,6 @@
 import { Button } from "@/components/ui/button";
 import { Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useStatusOperations } from '@/hooks/useStatusOperations';
 
 interface StatusHeaderProps {
   onRefetch: () => void;
@@ -10,12 +9,6 @@ interface StatusHeaderProps {
 
 export function StatusHeader({ onRefetch }: StatusHeaderProps) {
   const navigate = useNavigate();
-  const { criarStatusTeste, isLoading: creatingTeste } = useStatusOperations();
-
-  const handleCriarStatusTeste = () => {
-    criarStatusTeste();
-    setTimeout(() => onRefetch(), 1000);
-  };
 
   return (
     <div className="flex items-center justify-between">
@@ -24,13 +17,6 @@ export function StatusHeader({ onRefetch }: StatusHeaderProps) {
         <p className="text-pmo-gray mt-2">Atualizações de status e acompanhamento dos projetos</p>
       </div>
       <div className="flex gap-2">
-        <Button 
-          onClick={handleCriarStatusTeste}
-          variant="outline"
-          disabled={creatingTeste}
-        >
-          {creatingTeste ? 'Criando...' : 'Criar Status Teste'}
-        </Button>
         <Button 
           onClick={() => navigate('/status/novo')}
           className="bg-pmo-primary hover:bg-pmo-primary/90"
