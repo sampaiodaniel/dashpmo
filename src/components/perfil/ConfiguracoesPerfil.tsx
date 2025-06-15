@@ -57,6 +57,7 @@ export function ConfiguracoesPerfil() {
   // Atualizar formulário quando perfil carrega
   useEffect(() => {
     if (perfil) {
+      console.log('Perfil carregado, atualizando form:', perfil);
       perfilForm.reset({
         nome: perfil.nome || '',
         sobrenome: perfil.sobrenome || '',
@@ -65,30 +66,44 @@ export function ConfiguracoesPerfil() {
   }, [perfil, perfilForm]);
 
   const onSubmitPerfil = async (data: PerfilFormData) => {
-    if (!usuario) return;
-
-    // Só enviar dados que foram preenchidos
-    const dadosParaEnviar: any = {
-      usuario_id: usuario.id,
-    };
-
-    if (data.nome && data.nome.trim() !== '') {
-      dadosParaEnviar.nome = data.nome.trim();
+    if (!usuario) {
+      console.error('Usuário não encontrado');
+      return;
     }
 
-    if (data.sobrenome && data.sobrenome.trim() !== '') {
-      dadosParaEnviar.sobrenome = data.sobrenome.trim();
-    }
+    console.log('Dados do formulário:', data);
+    console.log('Usuário atual:', usuario);
 
-    // Manter a foto atual se existir
-    if (perfil?.foto_url) {
-      dadosParaEnviar.foto_url = perfil.foto_url;
-    }
+    try {
+      // Preparar dados básicos
+      const dadosParaEnviar: any = {
+        usuario_id: usuario.id,
+      };
 
-    await createOrUpdatePerfil.mutateAsync(dadosParaEnviar);
-    
-    // Refetch para atualizar os dados exibidos no header
-    refetch();
+      // Só incluir nome se foi preenchido
+      if (data.nome && data.nome.trim() !== '') {
+        dadosParaEnviar.nome = data.nome.trim();
+      }
+
+      // Só incluir sobrenome se foi preenchido
+      if (data.sobrenome && data.sobrenome.trim() !== '') {
+        dadosParaEnviar.sobrenome = data.sobrenome.trim();
+      }
+
+      // Manter a foto atual se existir
+      if (perfil?.foto_url) {
+        dadosParaEnviar.foto_url = perfil.foto_url;
+      }
+
+      console.log('Enviando dados para API:', dadosParaEnviar);
+
+      await createOrUpdatePerfil.mutateAsync(dadosParaEnviar);
+      
+      // Refetch para atualizar os dados exibidos
+      await refetch();
+    } catch (error) {
+      console.error('Erro ao salvar perfil:', error);
+    }
   };
 
   const onSubmitSenha = async (data: SenhaFormData) => {
@@ -104,12 +119,19 @@ export function ConfiguracoesPerfil() {
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file || !usuario) return;
+    if (!file || !usuario) {
+      console.log('Arquivo ou usuário não encontrado');
+      return;
+    }
+
+    console.log('Iniciando upload de arquivo:', file.name);
 
     try {
       const fotoUrl = await uploadFoto.mutateAsync({ file, usuarioId: usuario.id });
       
-      // Preparar dados para atualização
+      console.log('Upload concluído, URL:', fotoUrl);
+      
+      // Preparar dados para atualização - manter dados existentes
       const dadosParaAtualizar: any = {
         usuario_id: usuario.id,
         foto_url: fotoUrl,
@@ -124,10 +146,12 @@ export function ConfiguracoesPerfil() {
         dadosParaAtualizar.sobrenome = perfil.sobrenome;
       }
       
+      console.log('Atualizando perfil com nova foto:', dadosParaAtualizar);
+      
       await createOrUpdatePerfil.mutateAsync(dadosParaAtualizar);
       
       // Refetch para atualizar a foto no header
-      refetch();
+      await refetch();
     } catch (error) {
       console.error('Erro ao fazer upload:', error);
     }

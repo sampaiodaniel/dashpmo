@@ -1,4 +1,3 @@
-
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -15,37 +14,41 @@ export function usePerfilOperations() {
     }) => {
       console.log('Criando/atualizando perfil:', dados);
 
-      // Filtrar dados undefined para evitar problemas
-      const dadosLimpos: any = {
+      // Construir objeto apenas com campos que têm valores válidos
+      const dadosParaEnviar: any = {
         usuario_id: dados.usuario_id,
         data_atualizacao: new Date().toISOString()
       };
 
-      if (dados.nome !== undefined && dados.nome !== '') {
-        dadosLimpos.nome = dados.nome;
+      // Só incluir campos que têm valores não vazios
+      if (dados.nome && dados.nome.trim() !== '') {
+        dadosParaEnviar.nome = dados.nome.trim();
       }
 
-      if (dados.sobrenome !== undefined && dados.sobrenome !== '') {
-        dadosLimpos.sobrenome = dados.sobrenome;
+      if (dados.sobrenome && dados.sobrenome.trim() !== '') {
+        dadosParaEnviar.sobrenome = dados.sobrenome.trim();
       }
 
-      if (dados.foto_url !== undefined && dados.foto_url !== '') {
-        dadosLimpos.foto_url = dados.foto_url;
+      if (dados.foto_url && dados.foto_url.trim() !== '') {
+        dadosParaEnviar.foto_url = dados.foto_url.trim();
       }
+
+      console.log('Dados que serão enviados:', dadosParaEnviar);
 
       const { data, error } = await supabase
         .from('perfis_usuario')
-        .upsert(dadosLimpos, {
+        .upsert(dadosParaEnviar, {
           onConflict: 'usuario_id'
         })
         .select()
         .single();
 
       if (error) {
-        console.error('Erro ao salvar perfil:', error);
+        console.error('Erro detalhado ao salvar perfil:', error);
         throw error;
       }
 
+      console.log('Perfil salvo com sucesso:', data);
       return data;
     },
     onSuccess: () => {
@@ -59,7 +62,7 @@ export function usePerfilOperations() {
       console.error('Erro ao salvar perfil:', error);
       toast({
         title: "Erro ao atualizar perfil",
-        description: "Ocorreu um erro ao salvar suas informações.",
+        description: `Ocorreu um erro ao salvar suas informações: ${error.message}`,
         variant: "destructive",
       });
     },
@@ -67,15 +70,20 @@ export function usePerfilOperations() {
 
   const uploadFoto = useMutation({
     mutationFn: async ({ file, usuarioId }: { file: File; usuarioId: number }) => {
+      console.log('Iniciando upload da foto para usuário:', usuarioId);
+      
       const fileExt = file.name.split('.').pop();
       const fileName = `${usuarioId}.${fileExt}`;
       const filePath = `avatars/${fileName}`;
+
+      console.log('Fazendo upload do arquivo:', filePath);
 
       const { error: uploadError } = await supabase.storage
         .from('avatars')
         .upload(filePath, file, { upsert: true });
 
       if (uploadError) {
+        console.error('Erro no upload:', uploadError);
         throw uploadError;
       }
 
@@ -83,6 +91,7 @@ export function usePerfilOperations() {
         .from('avatars')
         .getPublicUrl(filePath);
 
+      console.log('URL da foto gerada:', data.publicUrl);
       return data.publicUrl;
     },
     onSuccess: () => {
@@ -95,7 +104,7 @@ export function usePerfilOperations() {
       console.error('Erro ao fazer upload da foto:', error);
       toast({
         title: "Erro ao atualizar foto",
-        description: "Ocorreu um erro ao fazer upload da foto.",
+        description: `Ocorreu um erro ao fazer upload da foto: ${error.message}`,
         variant: "destructive",
       });
     },
