@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -12,7 +11,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Separator } from '@/components/ui/separator';
 import { Camera, User, Lock } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { usePerfilUsuario, usePerfilOperations } from '@/hooks/usePerfilUsuario';
+import { usePerfilUsuario } from '@/hooks/usePerfilUsuario';
+import { usePerfilOperations } from '@/hooks/usePerfilOperations';
 
 const perfilSchema = z.object({
   nome: z.string().min(1, 'Nome é obrigatório'),
