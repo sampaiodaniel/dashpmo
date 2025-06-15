@@ -22,8 +22,10 @@ export function useProjetos(filtros?: FiltrosProjeto) {
 
       // Aplicar filtros
       if (filtros?.area && filtros.area !== 'Todas') {
-        if (CARTEIRAS.includes(filtros.area as typeof CARTEIRAS[number])) {
-          query = query.eq('area_responsavel', filtros.area);
+        // Check if the area is valid by finding it in the CARTEIRAS array
+        const carteiraValida = CARTEIRAS.find(c => c === filtros.area);
+        if (carteiraValida) {
+          query = query.eq('area_responsavel', carteiraValida);
         }
       }
 

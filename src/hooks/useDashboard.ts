@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { DashboardMetricas, FiltrosDashboard, CARTEIRAS } from '@/types/pmo';
@@ -17,9 +16,11 @@ export function useDashboardMetricas(filtros?: FiltrosDashboard) {
 
       // Aplicar filtros
       if (filtros?.carteira && filtros.carteira !== 'Todas') {
-        if (CARTEIRAS.includes(filtros.carteira as typeof CARTEIRAS[number])) {
-          query = query.eq('area_responsavel', filtros.carteira);
-          console.log('🏢 Filtro de carteira aplicado:', filtros.carteira);
+        // Check if the carteira is valid by finding it in the CARTEIRAS array
+        const carteiraValida = CARTEIRAS.find(c => c === filtros.carteira);
+        if (carteiraValida) {
+          query = query.eq('area_responsavel', carteiraValida);
+          console.log('🏢 Filtro de carteira aplicado:', carteiraValida);
         }
       }
 
