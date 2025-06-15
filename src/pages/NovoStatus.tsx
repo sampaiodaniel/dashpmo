@@ -16,13 +16,16 @@ import { useCarteiras } from '@/hooks/useListaValores';
 
 export default function NovoStatus() {
   const { usuario, isLoading: authLoading } = useAuth();
-  const { data: todosProjetos } = useProjetos({ incluirFechados: true, area: carteiraSelecionada || undefined });
   const { data: carteiras } = useCarteiras();
   const { salvarStatus, isLoading } = useStatusOperations();
   const navigate = useNavigate();
 
-  // Campos básicos
+  // Campos básicos - declarar carteiraSelecionada primeiro
   const [carteiraSelecionada, setCarteiraSelecionada] = useState('');
+  
+  // Agora posso usar carteiraSelecionada no hook
+  const { data: todosProjetos } = useProjetos({ incluirFechados: true, area: carteiraSelecionada || undefined });
+  
   const [projetoId, setProjetoId] = useState('');
   const [progressoEstimado, setProgressoEstimado] = useState('');
   const [responsavelCwi, setResponsavelCwi] = useState('');
