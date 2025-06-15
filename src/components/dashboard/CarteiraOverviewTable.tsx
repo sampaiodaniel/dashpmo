@@ -1,10 +1,11 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useDashboardMetricas } from "@/hooks/useDashboard";
+import { useCarteiraOverview } from "@/hooks/useCarteiraOverview";
 import { BarChart3 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 export function CarteiraOverviewTable() {
-  const { data: carteiraData, isLoading, error } = useDashboardMetricas();
+  const { data: carteiraData, isLoading, error } = useCarteiraOverview();
 
   if (isLoading) {
     return (
