@@ -24,6 +24,7 @@ export default function Status() {
     responsavel?: string;
     dataInicio?: Date;
     dataFim?: Date;
+    incluirArquivados?: boolean;
   }>({});
   const navigate = useNavigate();
 

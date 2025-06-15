@@ -10,6 +10,25 @@ import { ArrowLeft, Edit, Trash2, Archive, FileText, Calendar, User, AlertTriang
 import { getStatusColor, getStatusGeralColor } from '@/types/pmo';
 import { toast } from '@/hooks/use-toast';
 
+// Função para calcular o risco baseado na fórmula do Excel
+function calcularRisco(impacto: string, probabilidade: string): { nivel: string; cor: string } {
+  if (!impacto || !probabilidade) {
+    return { nivel: '', cor: '' };
+  }
+
+  const impactoValor = impacto === 'Baixo' ? 1 : impacto === 'Médio' ? 2 : 3;
+  const probabilidadeValor = probabilidade === 'Baixo' ? 1 : probabilidade === 'Médio' ? 2 : 3;
+  const risco = impactoValor * probabilidadeValor;
+
+  if (risco <= 2) {
+    return { nivel: 'Baixo', cor: 'bg-green-100 text-green-700 border-green-200' };
+  } else if (risco <= 4) {
+    return { nivel: 'Médio', cor: 'bg-yellow-100 text-yellow-700 border-yellow-200' };
+  } else {
+    return { nivel: 'Alto', cor: 'bg-red-100 text-red-700 border-red-200' };
+  }
+}
+
 export default function StatusDetalhes() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -70,6 +89,8 @@ export default function StatusDetalhes() {
       </Layout>
     );
   }
+
+  const risco = calcularRisco(status.impacto_riscos, status.probabilidade_riscos);
 
   return (
     <Layout>
@@ -205,6 +226,15 @@ export default function StatusDetalhes() {
                 <label className="text-sm font-medium text-pmo-gray">Prob x Impacto</label>
                 <p className="font-medium">{status.prob_x_impact}</p>
               </div>
+
+              {risco.nivel && (
+                <div>
+                  <label className="text-sm font-medium text-pmo-gray">Farol de Risco</label>
+                  <Badge className={risco.cor}>
+                    {risco.nivel}
+                  </Badge>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -280,81 +310,87 @@ export default function StatusDetalhes() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="space-y-6">
               {status.entregaveis1 && (
-                <div className="p-4 border rounded-lg">
-                  <h4 className="font-medium text-pmo-primary mb-2">Marco 1</h4>
-                  <div className="space-y-2">
-                    <div>
-                      <label className="text-sm text-pmo-gray">Entregável:</label>
+                <div className="border rounded-lg p-4">
+                  <h4 className="font-medium text-pmo-primary mb-4">Marco 1</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="md:col-span-2">
+                      <label className="text-sm text-pmo-gray">Entregáveis:</label>
                       <p className="text-sm">{status.entregaveis1}</p>
                     </div>
-                    {status.entrega1 && (
-                      <div>
-                        <label className="text-sm text-pmo-gray">Entrega:</label>
-                        <p className="text-sm">{status.entrega1}</p>
-                      </div>
-                    )}
-                    {status.data_marco1 && (
-                      <div>
-                        <label className="text-sm text-pmo-gray">Data:</label>
-                        <p className="text-sm font-medium">
-                          {status.data_marco1.toLocaleDateString('pt-BR')}
-                        </p>
-                      </div>
-                    )}
+                    <div className="space-y-2">
+                      {status.entrega1 && (
+                        <div>
+                          <label className="text-sm text-pmo-gray">Entrega:</label>
+                          <p className="text-sm font-medium">{status.entrega1}</p>
+                        </div>
+                      )}
+                      {status.data_marco1 && (
+                        <div>
+                          <label className="text-sm text-pmo-gray">Data:</label>
+                          <p className="text-sm font-medium">
+                            {status.data_marco1.toLocaleDateString('pt-BR')}
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               )}
 
               {status.entregaveis2 && (
-                <div className="p-4 border rounded-lg">
-                  <h4 className="font-medium text-pmo-primary mb-2">Marco 2</h4>
-                  <div className="space-y-2">
-                    <div>
-                      <label className="text-sm text-pmo-gray">Entregável:</label>
+                <div className="border rounded-lg p-4">
+                  <h4 className="font-medium text-pmo-primary mb-4">Marco 2</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="md:col-span-2">
+                      <label className="text-sm text-pmo-gray">Entregáveis:</label>
                       <p className="text-sm">{status.entregaveis2}</p>
                     </div>
-                    {status.entrega2 && (
-                      <div>
-                        <label className="text-sm text-pmo-gray">Entrega:</label>
-                        <p className="text-sm">{status.entrega2}</p>
-                      </div>
-                    )}
-                    {status.data_marco2 && (
-                      <div>
-                        <label className="text-sm text-pmo-gray">Data:</label>
-                        <p className="text-sm font-medium">
-                          {status.data_marco2.toLocaleDateString('pt-BR')}
-                        </p>
-                      </div>
-                    )}
+                    <div className="space-y-2">
+                      {status.entrega2 && (
+                        <div>
+                          <label className="text-sm text-pmo-gray">Entrega:</label>
+                          <p className="text-sm font-medium">{status.entrega2}</p>
+                        </div>
+                      )}
+                      {status.data_marco2 && (
+                        <div>
+                          <label className="text-sm text-pmo-gray">Data:</label>
+                          <p className="text-sm font-medium">
+                            {status.data_marco2.toLocaleDateString('pt-BR')}
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               )}
 
               {status.entregaveis3 && (
-                <div className="p-4 border rounded-lg">
-                  <h4 className="font-medium text-pmo-primary mb-2">Marco 3</h4>
-                  <div className="space-y-2">
-                    <div>
-                      <label className="text-sm text-pmo-gray">Entregável:</label>
+                <div className="border rounded-lg p-4">
+                  <h4 className="font-medium text-pmo-primary mb-4">Marco 3</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="md:col-span-2">
+                      <label className="text-sm text-pmo-gray">Entregáveis:</label>
                       <p className="text-sm">{status.entregaveis3}</p>
                     </div>
-                    {status.entrega3 && (
-                      <div>
-                        <label className="text-sm text-pmo-gray">Entrega:</label>
-                        <p className="text-sm">{status.entrega3}</p>
-                      </div>
-                    )}
-                    {status.data_marco3 && (
-                      <div>
-                        <label className="text-sm text-pmo-gray">Data:</label>
-                        <p className="text-sm font-medium">
-                          {status.data_marco3.toLocaleDateString('pt-BR')}
-                        </p>
-                      </div>
-                    )}
+                    <div className="space-y-2">
+                      {status.entrega3 && (
+                        <div>
+                          <label className="text-sm text-pmo-gray">Entrega:</label>
+                          <p className="text-sm font-medium">{status.entrega3}</p>
+                        </div>
+                      )}
+                      {status.data_marco3 && (
+                        <div>
+                          <label className="text-sm text-pmo-gray">Data:</label>
+                          <p className="text-sm font-medium">
+                            {status.data_marco3.toLocaleDateString('pt-BR')}
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               )}

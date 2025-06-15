@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { useProjetos } from '@/hooks/useProjetos';
 import { useMemo } from 'react';
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface StatusFiltersProps {
   filtros: {
@@ -18,6 +19,7 @@ interface StatusFiltersProps {
     responsavel?: string;
     dataInicio?: Date;
     dataFim?: Date;
+    incluirArquivados?: boolean;
   };
   onFiltroChange: (filtros: any) => void;
   responsaveis: string[];
@@ -90,6 +92,16 @@ export function StatusFilters({ filtros, onFiltroChange, responsaveis }: StatusF
       novosFiltros.dataFim = date;
     } else {
       delete novosFiltros.dataFim;
+    }
+    onFiltroChange(novosFiltros);
+  };
+
+  const handleIncluirArquivadosChange = (checked: boolean) => {
+    const novosFiltros = { ...filtros };
+    if (checked) {
+      novosFiltros.incluirArquivados = true;
+    } else {
+      delete novosFiltros.incluirArquivados;
     }
     onFiltroChange(novosFiltros);
   };
@@ -207,6 +219,17 @@ export function StatusFilters({ filtros, onFiltroChange, responsaveis }: StatusF
                   />
                 </PopoverContent>
               </Popover>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="incluir-arquivados"
+                checked={filtros.incluirArquivados || false}
+                onCheckedChange={handleIncluirArquivadosChange}
+              />
+              <label htmlFor="incluir-arquivados" className="text-sm text-pmo-gray">
+                Incluir arquivados
+              </label>
             </div>
           </div>
         </div>
