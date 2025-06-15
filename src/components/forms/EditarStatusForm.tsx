@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { StatusProjeto } from '@/types/pmo';
@@ -19,6 +20,25 @@ interface EditarStatusFormProps {
 const STATUS_GERAL_OPTIONS = ['Planejamento', 'Em Andamento', 'Concluído', 'Cancelado', 'Em Espera'] as const;
 const STATUS_VISAO_GP_OPTIONS = ['Verde', 'Amarelo', 'Vermelho'] as const;
 const NIVEL_RISCO_OPTIONS = ['Baixo', 'Médio', 'Alto'] as const;
+
+// Função para calcular o risco baseado na fórmula do Excel
+function calcularRisco(impacto: string, probabilidade: string): { nivel: string; cor: string } {
+  if (!impacto || !probabilidade) {
+    return { nivel: '', cor: '' };
+  }
+
+  const impactoValor = impacto === 'Baixo' ? 1 : impacto === 'Médio' ? 2 : 3;
+  const probabilidadeValor = probabilidade === 'Baixo' ? 1 : probabilidade === 'Médio' ? 2 : 3;
+  const risco = impactoValor * probabilidadeValor;
+
+  if (risco <= 2) {
+    return { nivel: 'Baixo', cor: 'bg-green-100 text-green-700 border-green-200' };
+  } else if (risco <= 4) {
+    return { nivel: 'Médio', cor: 'bg-yellow-100 text-yellow-700 border-yellow-200' };
+  } else {
+    return { nivel: 'Alto', cor: 'bg-red-100 text-red-700 border-red-200' };
+  }
+}
 
 export function EditarStatusForm({ status, onSuccess }: EditarStatusFormProps) {
   const queryClient = useQueryClient();
@@ -44,6 +64,8 @@ export function EditarStatusForm({ status, onSuccess }: EditarStatusFormProps) {
     data_marco3: status.data_marco3 ? status.data_marco3.toISOString().split('T')[0] : '',
     progresso_estimado: (status as any).progresso_estimado || 0
   });
+
+  const risco = calcularRisco(formData.impacto_riscos, formData.probabilidade_riscos);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -169,7 +191,7 @@ export function EditarStatusForm({ status, onSuccess }: EditarStatusFormProps) {
         <CardHeader>
           <CardTitle className="text-lg">Gestão de Riscos</CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <Label htmlFor="impacto_riscos">Impacto dos Riscos</Label>
             <Select value={formData.impacto_riscos} onValueChange={(value) => handleInputChange('impacto_riscos', value)}>
@@ -201,6 +223,15 @@ export function EditarStatusForm({ status, onSuccess }: EditarStatusFormProps) {
               </SelectContent>
             </Select>
           </div>
+
+          {risco.nivel && (
+            <div>
+              <Label>Farol de Risco</Label>
+              <Badge className={`${risco.cor} mt-2 block w-fit`}>
+                {risco.nivel}
+              </Badge>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -241,7 +272,7 @@ export function EditarStatusForm({ status, onSuccess }: EditarStatusFormProps) {
           {/* Marco 1 */}
           <div className="border rounded-lg p-4">
             <h4 className="font-medium text-pmo-primary mb-4">Marco 1</h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
               <div className="md:col-span-2">
                 <Label htmlFor="entregaveis1">Entregáveis</Label>
                 <Textarea
@@ -249,6 +280,7 @@ export function EditarStatusForm({ status, onSuccess }: EditarStatusFormProps) {
                   value={formData.entregaveis1}
                   onChange={(e) => handleInputChange('entregaveis1', e.target.value)}
                   rows={4}
+                  className="min-h-[120px]"
                 />
               </div>
               <div className="space-y-4">
@@ -276,7 +308,7 @@ export function EditarStatusForm({ status, onSuccess }: EditarStatusFormProps) {
           {/* Marco 2 */}
           <div className="border rounded-lg p-4">
             <h4 className="font-medium text-pmo-primary mb-4">Marco 2</h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
               <div className="md:col-span-2">
                 <Label htmlFor="entregaveis2">Entregáveis</Label>
                 <Textarea
@@ -284,6 +316,7 @@ export function EditarStatusForm({ status, onSuccess }: EditarStatusFormProps) {
                   value={formData.entregaveis2}
                   onChange={(e) => handleInputChange('entregaveis2', e.target.value)}
                   rows={4}
+                  className="min-h-[120px]"
                 />
               </div>
               <div className="space-y-4">
@@ -311,7 +344,7 @@ export function EditarStatusForm({ status, onSuccess }: EditarStatusFormProps) {
           {/* Marco 3 */}
           <div className="border rounded-lg p-4">
             <h4 className="font-medium text-pmo-primary mb-4">Marco 3</h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
               <div className="md:col-span-2">
                 <Label htmlFor="entregaveis3">Entregáveis</Label>
                 <Textarea
@@ -319,6 +352,7 @@ export function EditarStatusForm({ status, onSuccess }: EditarStatusFormProps) {
                   value={formData.entregaveis3}
                   onChange={(e) => handleInputChange('entregaveis3', e.target.value)}
                   rows={4}
+                  className="min-h-[120px]"
                 />
               </div>
               <div className="space-y-4">
