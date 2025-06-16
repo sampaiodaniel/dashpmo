@@ -1,426 +1,290 @@
+
 import { useParams, useNavigate } from 'react-router-dom';
-import { Layout } from '@/components/layout/Layout';
-import { useStatusList } from '@/hooks/useStatusList';
-import { useStatusOperations } from '@/hooks/useStatusOperations';
 import { useAuth } from '@/hooks/useAuth';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { LoginForm } from '@/components/auth/LoginForm';
+import { Layout } from '@/components/layout/Layout';
+import { useStatusOperations } from '@/hooks/useStatusOperations';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Edit, Trash2, Archive, FileText, Calendar, User, AlertTriangle, CheckCircle } from 'lucide-react';
-import { getStatusColor, getStatusGeralColor } from '@/types/pmo';
-import { toast } from '@/hooks/use-toast';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft, CheckCircle, XCircle, Calendar, User, Building2, Edit, Clock } from 'lucide-react';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { StatusProjeto } from '@/types/pmo';
 
-// Função para calcular o risco baseado na fórmula do Excel
-function calcularRisco(impacto: string, probabilidade: string): { nivel: string; cor: string } {
-  if (!impacto || !probabilidade) {
-    return { nivel: '', cor: '' };
-  }
-
-  const impactoValor = impacto === 'Baixo' ? 1 : impacto === 'Médio' ? 2 : 3;
-  const probabilidadeValor = probabilidade === 'Baixo' ? 1 : probabilidade === 'Médio' ? 2 : 3;
-  const risco = impactoValor * probabilidadeValor;
-
-  if (risco <= 2) {
-    return { nivel: 'Baixo', cor: 'bg-green-100 text-green-700 border-green-200' };
-  } else if (risco <= 4) {
-    return { nivel: 'Médio', cor: 'bg-yellow-100 text-yellow-700 border-yellow-200' };
-  } else {
-    return { nivel: 'Alto', cor: 'bg-red-100 text-red-700 border-red-200' };
-  }
-}
-
-export default function StatusDetalhes() {
-  const { id } = useParams();
+function StatusDetalhesContent() {
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { usuario } = useAuth();
-  const { data: statusList, isLoading, refetch } = useStatusList();
-  const { aprovarStatus, isLoading: operationLoading } = useStatusOperations();
+  const { revisar, rejeitarStatus } = useStatusOperations();
 
-  const status = statusList?.find(s => s.id === Number(id));
+  const { data: status, isLoading, refetch } = useQuery({
+    queryKey: ['status-detalhes', id],
+    queryFn: async () => {
+      if (!id) throw new Error('ID do status não encontrado');
+      
+      const { data, error } = await supabase
+        .from('status_projetos')
+        .select(`
+          *,
+          projeto:projetos(*)
+        `)
+        .eq('id', parseInt(id))
+        .single();
 
-  const handleAprovar = async () => {
-    if (!status || !usuario) return;
+      if (error) throw error;
+      return data as StatusProjeto;
+    },
+    enabled: !!id,
+  });
+
+  const handleRevisar = async () => {
+    if (!status) return;
     
-    aprovarStatus({ 
-      statusId: status.id, 
-      aprovadoPor: usuario.nome 
+    await revisar.mutateAsync({
+      statusId: status.id,
+      aprovado: true,
     });
-    
     refetch();
-    toast({
-      title: "Sucesso",
-      description: "Status aprovado com sucesso!",
-    });
   };
 
-  const handleArquivar = () => {
-    // TODO: Implementar arquivamento
-    toast({
-      title: "Funcionalidade",
-      description: "Arquivamento será implementado em breve",
+  const handleRejeitar = async () => {
+    if (!status) return;
+    
+    await revisar.mutateAsync({
+      statusId: status.id,
+      aprovado: false,
     });
-  };
-
-  const handleExcluir = () => {
-    // TODO: Implementar exclusão
-    toast({
-      title: "Funcionalidade",
-      description: "Exclusão será implementada em breve",
-    });
+    refetch();
   };
 
   if (isLoading) {
     return (
-      <Layout>
-        <div className="text-center py-8 text-pmo-gray">
-          <div>Carregando detalhes do status...</div>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-pmo-primary rounded-xl flex items-center justify-center mx-auto mb-4">
+            <span className="text-white font-bold text-xl">PMO</span>
+          </div>
+          <div className="text-pmo-gray">Carregando status...</div>
         </div>
-      </Layout>
+      </div>
     );
   }
 
   if (!status) {
     return (
-      <Layout>
-        <div className="text-center py-8">
-          <h1 className="text-2xl font-bold text-pmo-primary mb-4">Status não encontrado</h1>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="text-pmo-danger mb-2">Status não encontrado</div>
           <Button onClick={() => navigate('/status')}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Voltar para Status
           </Button>
         </div>
-      </Layout>
+      </div>
     );
   }
 
-  const risco = calcularRisco(status.impacto_riscos, status.probabilidade_riscos);
+  const statusRevisao = status.aprovado === null ? 'Pendente Revisão' : 
+                       status.aprovado ? 'Revisado' : 'Rejeitado';
+  const isRevisado = status.aprovado !== null;
 
   return (
-    <Layout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button 
-              variant="outline" 
-              onClick={() => navigate('/status')}
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Voltar
-            </Button>
-            <div>
-              <h1 className="text-3xl font-bold text-pmo-primary">
-                {status.projeto?.nome_projeto}
-              </h1>
-              <p className="text-pmo-gray mt-2">
-                Status atualizado em {status.data_atualizacao.toLocaleDateString('pt-BR')}
-              </p>
-            </div>
-          </div>
-          
-          <div className="flex gap-2">
-            {!status.aprovado && (
-              <>
-                <Button 
-                  onClick={handleAprovar}
-                  disabled={operationLoading}
-                  className="bg-pmo-success hover:bg-pmo-success/90"
-                >
-                  <CheckCircle className="h-4 w-4 mr-2" />
-                  Aprovar
-                </Button>
-                <Button 
-                  variant="outline"
-                  onClick={() => navigate(`/status/${status.id}/editar`)}
-                >
-                  <Edit className="h-4 w-4 mr-2" />
-                  Editar
-                </Button>
-              </>
-            )}
-            <Button 
-              variant="outline"
-              onClick={handleArquivar}
-            >
-              <Archive className="h-4 w-4 mr-2" />
-              Arquivar
-            </Button>
-            <Button 
-              variant="destructive"
-              onClick={handleExcluir}
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Excluir
-            </Button>
-          </div>
+    <div className="space-y-6">
+      <div className="flex items-center gap-4">
+        <Button variant="outline" onClick={() => navigate('/status')}>
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Voltar
+        </Button>
+        <div className="flex-1">
+          <h1 className="text-3xl font-bold text-pmo-primary">Detalhes do Status</h1>
+          <p className="text-pmo-gray mt-2">{status.projeto?.nome}</p>
         </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Informações Gerais */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5" />
-                Informações Gerais
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <label className="text-sm font-medium text-pmo-gray">Projeto</label>
-                <p className="font-medium">{status.projeto?.nome_projeto}</p>
-              </div>
-              
-              <div>
-                <label className="text-sm font-medium text-pmo-gray">Carteira</label>
-                <Badge variant="outline" className="mt-1">
-                  {status.projeto?.area_responsavel}
-                </Badge>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-pmo-gray">Status Geral</label>
-                <Badge className={getStatusGeralColor(status.status_geral)}>
-                  {status.status_geral}
-                </Badge>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-pmo-gray">Visão GP</label>
-                <Badge className={getStatusColor(status.status_visao_gp)}>
-                  {status.status_visao_gp}
-                </Badge>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-pmo-gray">Status</label>
-                {status.aprovado ? (
-                  <Badge className="bg-green-100 text-green-700 border-green-200">
-                    ✓ Aprovado
-                  </Badge>
-                ) : (
-                  <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200 flex items-center gap-1 w-fit">
-                    <AlertTriangle className="h-3 w-3" />
-                    Pendente Aprovação
-                  </Badge>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Riscos */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5" />
-                Gestão de Riscos
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <label className="text-sm font-medium text-pmo-gray">Impacto</label>
-                <p className="font-medium">{status.impacto_riscos}</p>
-              </div>
-              
-              <div>
-                <label className="text-sm font-medium text-pmo-gray">Probabilidade</label>
-                <p className="font-medium">{status.probabilidade_riscos}</p>
-              </div>
-
-              {risco.nivel && (
-                <div>
-                  <label className="text-sm font-medium text-pmo-gray">Farol de Risco</label>
-                  <Badge className={risco.cor}>
-                    {risco.nivel}
-                  </Badge>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Datas e Responsáveis */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
-                Responsáveis e Datas
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <label className="text-sm font-medium text-pmo-gray">Criado por</label>
-                <p className="font-medium">{status.criado_por}</p>
-              </div>
-              
-              <div>
-                <label className="text-sm font-medium text-pmo-gray">Data de Criação</label>
-                <p className="font-medium">{status.data_criacao.toLocaleDateString('pt-BR')}</p>
-              </div>
-
-              {status.aprovado && (
-                <>
-                  <div>
-                    <label className="text-sm font-medium text-pmo-gray">Aprovado por</label>
-                    <p className="font-medium">{status.aprovado_por}</p>
-                  </div>
-                  
-                  <div>
-                    <label className="text-sm font-medium text-pmo-gray">Data de Aprovação</label>
-                    <p className="font-medium">
-                      {status.data_aprovacao?.toLocaleDateString('pt-BR')}
-                    </p>
-                  </div>
-                </>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Atividades e Entregas */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Realizado na Semana</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-700">
-                {status.realizado_semana_atual || 'Nenhuma atividade informada'}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Backlog</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-700">
-                {status.backlog || 'Nenhum backlog informado'}
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Entregáveis e Marcos */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
-              Entregáveis e Marcos
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-6">
-              {status.entregaveis1 && (
-                <div className="border rounded-lg p-4">
-                  <h4 className="font-medium text-pmo-primary mb-4">Marco 1</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="md:col-span-2">
-                      <label className="text-sm text-pmo-gray">Entregáveis:</label>
-                      <p className="text-sm">{status.entregaveis1}</p>
-                    </div>
-                    <div className="space-y-2">
-                      {status.entrega1 && (
-                        <div>
-                          <label className="text-sm text-pmo-gray">Entrega:</label>
-                          <p className="text-sm font-medium">{status.entrega1}</p>
-                        </div>
-                      )}
-                      {status.data_marco1 && (
-                        <div>
-                          <label className="text-sm text-pmo-gray">Data:</label>
-                          <p className="text-sm font-medium">
-                            {status.data_marco1.toLocaleDateString('pt-BR')}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {status.entregaveis2 && (
-                <div className="border rounded-lg p-4">
-                  <h4 className="font-medium text-pmo-primary mb-4">Marco 2</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="md:col-span-2">
-                      <label className="text-sm text-pmo-gray">Entregáveis:</label>
-                      <p className="text-sm">{status.entregaveis2}</p>
-                    </div>
-                    <div className="space-y-2">
-                      {status.entrega2 && (
-                        <div>
-                          <label className="text-sm text-pmo-gray">Entrega:</label>
-                          <p className="text-sm font-medium">{status.entrega2}</p>
-                        </div>
-                      )}
-                      {status.data_marco2 && (
-                        <div>
-                          <label className="text-sm text-pmo-gray">Data:</label>
-                          <p className="text-sm font-medium">
-                            {status.data_marco2.toLocaleDateString('pt-BR')}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {status.entregaveis3 && (
-                <div className="border rounded-lg p-4">
-                  <h4 className="font-medium text-pmo-primary mb-4">Marco 3</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="md:col-span-2">
-                      <label className="text-sm text-pmo-gray">Entregáveis:</label>
-                      <p className="text-sm">{status.entregaveis3}</p>
-                    </div>
-                    <div className="space-y-2">
-                      {status.entrega3 && (
-                        <div>
-                          <label className="text-sm text-pmo-gray">Entrega:</label>
-                          <p className="text-sm font-medium">{status.entrega3}</p>
-                        </div>
-                      )}
-                      {status.data_marco3 && (
-                        <div>
-                          <label className="text-sm text-pmo-gray">Data:</label>
-                          <p className="text-sm font-medium">
-                            {status.data_marco3.toLocaleDateString('pt-BR')}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Observações e Bloqueios */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {status.bloqueios_atuais && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-red-600">Bloqueios Atuais</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-700">{status.bloqueios_atuais}</p>
-              </CardContent>
-            </Card>
-          )}
-
-          {status.observacoes_pontos_atencao && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-yellow-600">Pontos de Atenção</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-700">{status.observacoes_pontos_atencao}</p>
-              </CardContent>
-            </Card>
+        <div className="flex items-center gap-2">
+          <Badge variant={status.aprovado === null ? 'destructive' : 'default'}>
+            <Clock className="h-3 w-3 mr-1" />
+            {statusRevisao}
+          </Badge>
+          {!isRevisado && (
+            <Button onClick={() => navigate(`/status/${status.id}/editar`)}>
+              <Edit className="h-4 w-4 mr-2" />
+              Editar
+            </Button>
           )}
         </div>
       </div>
+
+      {/* Informações Básicas */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Informações Básicas</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="flex items-center gap-2">
+              <Building2 className="h-4 w-4 text-pmo-gray" />
+              <div>
+                <span className="text-sm text-pmo-gray">Projeto:</span>
+                <p className="font-medium">{status.projeto?.nome}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Calendar className="h-4 w-4 text-pmo-gray" />
+              <div>
+                <span className="text-sm text-pmo-gray">Data de Criação:</span>
+                <p className="font-medium">
+                  {format(new Date(status.data_criacao), 'dd/MM/yyyy', { locale: ptBR })}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <User className="h-4 w-4 text-pmo-gray" />
+              <div>
+                <span className="text-sm text-pmo-gray">Criado por:</span>
+                <p className="font-medium">{status.criado_por}</p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Status e Informações do Projeto */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Status do Projeto</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <span className="text-sm text-pmo-gray">Status Geral:</span>
+              <p className="font-medium">{status.status_geral}</p>
+            </div>
+            <div>
+              <span className="text-sm text-pmo-gray">Visão GP:</span>
+              <p className="font-medium">{status.status_visao_gp}</p>
+            </div>
+            {status.progresso_estimado !== null && (
+              <div>
+                <span className="text-sm text-pmo-gray">Progresso Estimado:</span>
+                <p className="font-medium">{status.progresso_estimado}%</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Gestão de Riscos</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <span className="text-sm text-pmo-gray">Probabilidade de Riscos:</span>
+              <p className="font-medium">{status.probabilidade_riscos}</p>
+            </div>
+            <div>
+              <span className="text-sm text-pmo-gray">Impacto dos Riscos:</span>
+              <p className="font-medium">{status.impacto_riscos}</p>
+            </div>
+            <div>
+              <span className="text-sm text-pmo-gray">Matriz de Risco:</span>
+              <p className="font-medium">{status.prob_x_impact}</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Detalhes Textuais */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Detalhes do Status</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {status.entregas_realizadas && (
+            <div>
+              <h4 className="font-medium mb-2">Entregas Realizadas:</h4>
+              <p className="text-pmo-gray whitespace-pre-wrap">{status.entregas_realizadas}</p>
+            </div>
+          )}
+          
+          {status.backlog && (
+            <div>
+              <h4 className="font-medium mb-2">Backlog:</h4>
+              <p className="text-pmo-gray whitespace-pre-wrap">{status.backlog}</p>
+            </div>
+          )}
+          
+          {status.bloqueios_atuais && (
+            <div>
+              <h4 className="font-medium mb-2">Bloqueios Atuais:</h4>
+              <p className="text-pmo-gray whitespace-pre-wrap">{status.bloqueios_atuais}</p>
+            </div>
+          )}
+          
+          {status.observacoes_gerais && (
+            <div>
+              <h4 className="font-medium mb-2">Observações Gerais:</h4>
+              <p className="text-pmo-gray whitespace-pre-wrap">{status.observacoes_gerais}</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Ações de Revisão */}
+      {!isRevisado && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Ações de Revisão</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-4">
+              <Button
+                onClick={handleRevisar}
+                disabled={revisar.isPending}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                <CheckCircle className="h-4 w-4 mr-2" />
+                Marcar como Revisado
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleRejeitar}
+                disabled={rejeitarStatus.isPending}
+              >
+                <XCircle className="h-4 w-4 mr-2" />
+                Rejeitar Status
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+export default function StatusDetalhes() {
+  const { usuario, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-pmo-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-pmo-primary rounded-xl flex items-center justify-center mx-auto mb-4">
+            <span className="text-white font-bold text-xl">PMO</span>
+          </div>
+          <div className="text-pmo-gray">Carregando...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!usuario) {
+    return <LoginForm />;
+  }
+
+  return (
+    <Layout>
+      <StatusDetalhesContent />
     </Layout>
   );
 }

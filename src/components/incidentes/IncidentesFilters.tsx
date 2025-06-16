@@ -24,7 +24,7 @@ export function IncidentesFilters({ responsavelSelecionado, onResponsavelChange 
             <SelectContent>
               <SelectItem value="todos">Todos os responsáveis</SelectItem>
               {isLoading ? (
-                <SelectItem value="" disabled>Carregando...</SelectItem>
+                <SelectItem value="loading" disabled>Carregando...</SelectItem>
               ) : (
                 responsaveisASA?.map((responsavel) => (
                   <SelectItem key={responsavel} value={responsavel}>
