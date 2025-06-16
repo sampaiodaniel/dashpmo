@@ -2,7 +2,7 @@
 # Detalhamento Técnico do Sistema PMO ASA
 
 ## Visão Geral
-O Sistema PMO ASA é uma aplicação web moderna desenvolvida para gerenciar projetos de TI, controle de incidentes, lições aprendidas e relatórios gerenciais.
+O Sistema DashPMO ASA é uma aplicação web moderna desenvolvida para gerenciar projetos de TI, controle de incidentes, lições aprendidas e relatórios gerenciais.
 
 ## Arquitetura Técnica
 
