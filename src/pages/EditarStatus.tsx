@@ -11,7 +11,12 @@ export default function EditarStatus() {
   const navigate = useNavigate();
   const { data: statusList, isLoading } = useStatusList();
 
+  console.log('EditarStatus - ID:', id);
+  console.log('EditarStatus - StatusList:', statusList);
+
   const status = statusList?.find(s => s.id === Number(id));
+
+  console.log('EditarStatus - Status encontrado:', status);
 
   if (isLoading) {
     return (
@@ -23,11 +28,12 @@ export default function EditarStatus() {
     );
   }
 
-  if (!status) {
+  if (!status && !isLoading) {
     return (
       <Layout>
         <div className="text-center py-8">
           <h1 className="text-2xl font-bold text-pmo-primary mb-4">Status não encontrado</h1>
+          <p className="text-pmo-gray mb-4">O status com ID {id} não foi encontrado.</p>
           <Button onClick={() => navigate('/status')}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Voltar para Status
@@ -37,7 +43,7 @@ export default function EditarStatus() {
     );
   }
 
-  if (status.aprovado) {
+  if (status && status.aprovado) {
     return (
       <Layout>
         <div className="text-center py-8">
@@ -53,8 +59,19 @@ export default function EditarStatus() {
   }
 
   const handleSuccess = () => {
-    navigate(`/status/${status.id}`);
+    navigate(`/status/${status?.id}`);
   };
+
+  // Se ainda está carregando ou não encontrou o status, não renderiza o formulário
+  if (!status) {
+    return (
+      <Layout>
+        <div className="text-center py-8 text-pmo-gray">
+          <div>Carregando dados do status...</div>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
