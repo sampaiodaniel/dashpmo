@@ -49,8 +49,8 @@ export function ProjetosOverview({ projetos }: ProjetosOverviewProps) {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center justify-end gap-2">
-                      <span className="text-sm text-[#6B7280] font-medium">Status</span>
-                      <div className={`w-6 h-6 rounded-full ${getStatusColor(projeto.ultimoStatus?.status_visao_gp || 'Cinza')}`}></div>
+                      <span className="text-sm text-[#6B7280] font-medium">Status:</span>
+                      <div className={`w-8 h-8 rounded-full ${getStatusColor(projeto.ultimoStatus?.status_visao_gp || 'Cinza')}`}></div>
                     </div>
                   </TableCell>
                   <TableCell>

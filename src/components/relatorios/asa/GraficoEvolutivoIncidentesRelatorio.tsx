@@ -14,27 +14,25 @@ export function GraficoEvolutivoIncidentesRelatorio({ carteira }: GraficoEvoluti
   const dadosCarteira = incidentesData?.filter(item => item.carteira === carteira)
     ?.sort((a, b) => new Date(a.data_registro || '').getTime() - new Date(b.data_registro || '').getTime())
     ?.map(item => ({
-      mes: new Date(item.data_registro || '').toLocaleDateString('pt-BR', { month: 'short' }),
+      mes: new Date(item.data_registro || '').toLocaleDateString('pt-BR', { 
+        day: '2-digit', 
+        month: 'short' 
+      }),
       data: item.data_registro,
-      total: item.atual,
-      novos: item.entrada,
-      resolvidos: item.saida,
+      estoqueAtual: item.atual,
+      entradas: item.entrada,
+      saidas: item.saida,
       criticos: item.criticos
     })) || [];
-
-  // Se não há dados, usar dados de exemplo mínimos
-  const dados = dadosCarteira.length > 0 ? dadosCarteira : [
-    { mes: 'Jun', total: 12, novos: 5, resolvidos: 8, criticos: 2 }
-  ];
 
   const CustomDot = (props: any) => {
     const { cx, cy, payload, dataKey } = props;
     if (!payload) return null;
     
     const value = payload[dataKey];
-    const color = dataKey === 'total' ? '#1B365D' : 
-                 dataKey === 'novos' ? '#10B981' : 
-                 dataKey === 'resolvidos' ? '#2E5984' : '#EF4444';
+    const color = dataKey === 'estoqueAtual' ? '#1B365D' : 
+                 dataKey === 'entradas' ? '#10B981' : 
+                 dataKey === 'saidas' ? '#2E5984' : '#EF4444';
     
     return (
       <g>
@@ -53,6 +51,24 @@ export function GraficoEvolutivoIncidentesRelatorio({ carteira }: GraficoEvoluti
     );
   };
 
+  if (!dadosCarteira || dadosCarteira.length === 0) {
+    return (
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-[#1B365D]">
+            <div className="w-4 h-4 bg-[#1B365D] rounded"></div>
+            Evolução de Incidentes - {carteira}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8 text-[#6B7280]">
+            <p>Nenhum dado de incidentes disponível para esta carteira</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="mt-6">
       <CardHeader>
@@ -64,7 +80,7 @@ export function GraficoEvolutivoIncidentesRelatorio({ carteira }: GraficoEvoluti
       <CardContent>
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={dados} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+            <LineChart data={dadosCarteira} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
               <XAxis 
                 dataKey="mes" 
@@ -76,39 +92,39 @@ export function GraficoEvolutivoIncidentesRelatorio({ carteira }: GraficoEvoluti
                 axisLine={{ stroke: '#6B7280' }}
               />
               
-              {/* Linha do total de incidentes */}
+              {/* Linha do estoque atual */}
               <Line 
                 type="monotone" 
-                dataKey="total" 
+                dataKey="estoqueAtual" 
                 stroke="#1B365D" 
                 strokeWidth={3}
-                dot={<CustomDot dataKey="total" />}
-                name="Total"
+                dot={<CustomDot dataKey="estoqueAtual" />}
+                name="Estoque Atual"
               />
               
-              {/* Linha de novos incidentes */}
+              {/* Linha de entradas */}
               <Line 
                 type="monotone" 
-                dataKey="novos" 
+                dataKey="entradas" 
                 stroke="#10B981" 
                 strokeWidth={2}
-                dot={<CustomDot dataKey="novos" />}
+                dot={<CustomDot dataKey="entradas" />}
                 strokeDasharray="5 5"
-                name="Novos"
+                name="Entradas"
               />
               
-              {/* Linha de incidentes resolvidos */}
+              {/* Linha de saídas */}
               <Line 
                 type="monotone" 
-                dataKey="resolvidos" 
+                dataKey="saidas" 
                 stroke="#2E5984" 
                 strokeWidth={2}
-                dot={<CustomDot dataKey="resolvidos" />}
+                dot={<CustomDot dataKey="saidas" />}
                 strokeDasharray="5 5"
-                name="Resolvidos"
+                name="Saídas"
               />
               
-              {/* Linha de incidentes críticos */}
+              {/* Linha de críticos */}
               <Line 
                 type="monotone" 
                 dataKey="criticos" 
@@ -125,15 +141,15 @@ export function GraficoEvolutivoIncidentesRelatorio({ carteira }: GraficoEvoluti
         <div className="flex flex-wrap justify-center gap-6 mt-4 text-sm">
           <div className="flex items-center gap-2">
             <div className="w-4 h-0.5 bg-[#1B365D]"></div>
-            <span className="text-[#1B365D] font-medium">Total</span>
+            <span className="text-[#1B365D] font-medium">Estoque Atual</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-0.5 bg-[#10B981] border-dashed border-t-2"></div>
-            <span className="text-[#10B981] font-medium">Novos</span>
+            <span className="text-[#10B981] font-medium">Entradas</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-0.5 bg-[#2E5984] border-dashed border-t-2"></div>
-            <span className="text-[#2E5984] font-medium">Resolvidos</span>
+            <span className="text-[#2E5984] font-medium">Saídas</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-0.5 bg-[#EF4444]"></div>

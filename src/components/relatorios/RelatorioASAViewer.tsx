@@ -351,57 +351,87 @@ export function RelatorioASAViewer({ isOpen, onClose, dados }: RelatorioASAViewe
           </div>
         </DialogHeader>
 
-        <div className="space-y-8 print:space-y-6 bg-[#F8FAFC]" id="relatorio-content" style={{ fontFamily: 'Inter, sans-serif' }}>
-          {/* Header do Relatório */}
-          <div className="text-center border-b border-[#1B365D] pb-6 bg-white p-6 rounded-lg shadow-sm break-inside-avoid">
-            <div className="flex items-center justify-center gap-6 mb-6">
-              <img 
-                src="/lovable-uploads/e42353b2-fcfd-4457-bbd8-066545973f48.png" 
-                alt="ASA Logo" 
-                className="h-16 w-auto"
-              />
-              <div>
-                <h1 className="text-4xl font-bold text-[#1B365D] mb-2">Status Report Gerencial</h1>
-                <p className="text-[#6B7280] text-lg">Carteira: {dados.carteira}</p>
-                <p className="text-sm text-[#6B7280]">Data: {dados.dataRelatorio}</p>
+        <div className="space-y-8 print:space-y-6 bg-gradient-to-br from-[#F8FAFC] to-[#F1F5F9]" id="relatorio-content" style={{ fontFamily: 'Inter, sans-serif' }}>
+          {/* Header do Relatório - Design mais sofisticado */}
+          <div className="text-center border-b-4 border-[#A6926B] pb-8 bg-white p-8 rounded-xl shadow-lg break-inside-avoid relative overflow-hidden">
+            {/* Background decorativo */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#A6926B]/10 to-transparent rounded-full transform translate-x-16 -translate-y-16"></div>
+            <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-[#1B365D]/10 to-transparent rounded-full transform -translate-x-12 translate-y-12"></div>
+            
+            <div className="relative z-10">
+              <div className="flex items-center justify-center gap-8 mb-8">
+                <img 
+                  src="/lovable-uploads/e42353b2-fcfd-4457-bbd8-066545973f48.png" 
+                  alt="ASA Logo" 
+                  className="h-32 w-auto drop-shadow-lg"
+                />
+                <div className="text-left">
+                  <h1 className="text-5xl font-bold text-[#1B365D] mb-3 tracking-tight">Status Report</h1>
+                  <h2 className="text-3xl font-semibold text-[#A6926B] mb-4">Gerencial</h2>
+                  <div className="bg-gradient-to-r from-[#1B365D] to-[#2E5984] text-white px-6 py-3 rounded-lg">
+                    <p className="text-xl font-medium">Carteira: {dados.carteira}</p>
+                    <p className="text-sm opacity-90">Referência: {dados.dataRelatorio}</p>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Linha decorativa */}
+              <div className="flex items-center justify-center gap-4 mt-6">
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#A6926B] to-transparent"></div>
+                <div className="w-3 h-3 bg-[#A6926B] rounded-full"></div>
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#A6926B] to-transparent"></div>
               </div>
             </div>
           </div>
 
           {/* Gráficos de Status dos Projetos */}
-          <div className="bg-white p-6 rounded-lg shadow-sm break-inside-avoid">
+          <div className="bg-white p-8 rounded-xl shadow-lg break-inside-avoid border-l-4 border-[#1B365D]">
             <GraficoStatusProjeto projetos={dados.projetos} />
           </div>
 
           {/* Overview de Projetos Ativos */}
-          <div className="bg-white p-6 rounded-lg shadow-sm break-inside-avoid">
+          <div className="bg-white p-8 rounded-xl shadow-lg break-inside-avoid border-l-4 border-[#A6926B]">
             <ProjetosOverview projetos={dados.projetos} />
           </div>
 
           {/* Detalhes dos Projetos */}
           {projetosAtivos.map((projeto, index) => (
-            <div key={`detail-${projeto.id}`} className={`bg-white p-6 rounded-lg shadow-sm break-inside-avoid ${index > 0 ? 'page-break-after' : ''}`}>
+            <div key={`detail-${projeto.id}`} className={`bg-white p-8 rounded-xl shadow-lg break-inside-avoid border-l-4 border-[#2E5984] ${index > 0 ? 'page-break-after' : ''}`}>
               <ProjetoDetalhes projeto={projeto} />
             </div>
           ))}
 
           {/* Tabela de Incidentes */}
-          <div className="bg-white p-6 rounded-lg shadow-sm break-inside-avoid page-break-after">
+          <div className="bg-white p-8 rounded-xl shadow-lg break-inside-avoid page-break-after border-l-4 border-[#EF4444]">
             <TabelaIncidentes incidentes={dados.incidentes} carteira={dados.carteira} />
           </div>
 
-          {/* Footer */}
-          <div className="text-center text-sm text-[#6B7280] border-t border-[#1B365D] pt-6 bg-white p-6 rounded-lg shadow-sm break-inside-avoid">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-[#1B365D]">ASA Investments - Gestão de Projetos de TI</p>
-                <p>Relatório gerado em {dados.dataRelatorio}</p>
+          {/* Footer - Design mais elegante */}
+          <div className="text-center text-sm text-[#6B7280] border-t-4 border-[#A6926B] pt-8 bg-white p-8 rounded-xl shadow-lg break-inside-avoid relative overflow-hidden">
+            {/* Background decorativo */}
+            <div className="absolute top-0 left-0 w-20 h-20 bg-gradient-to-br from-[#A6926B]/10 to-transparent rounded-full transform -translate-x-10 -translate-y-10"></div>
+            
+            <div className="relative z-10">
+              <div className="flex items-center justify-between">
+                <div className="text-left">
+                  <p className="font-bold text-lg text-[#1B365D] mb-2">ASA Investments</p>
+                  <p className="font-medium text-[#A6926B] mb-1">Gestão de Projetos de TI</p>
+                  <p className="text-[#6B7280]">Relatório gerado em {dados.dataRelatorio}</p>
+                  <div className="mt-3 text-xs text-[#9CA3AF]">
+                    <p>Documento confidencial - Uso interno</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <img 
+                    src="/lovable-uploads/e42353b2-fcfd-4457-bbd8-066545973f48.png" 
+                    alt="ASA Logo" 
+                    className="h-16 w-auto opacity-75 mb-2"
+                  />
+                  <div className="text-xs text-[#9CA3AF]">
+                    <p>© 2024 ASA Investments</p>
+                  </div>
+                </div>
               </div>
-              <img 
-                src="/lovable-uploads/e42353b2-fcfd-4457-bbd8-066545973f48.png" 
-                alt="ASA Logo" 
-                className="h-10 w-auto opacity-75"
-              />
             </div>
           </div>
         </div>

@@ -81,20 +81,17 @@ export default function Licoes() {
       <div className="space-y-6">
         <LicoesHeader onNovaLicao={handleNovaLicao} />
         
-        <div className="flex flex-col lg:flex-row gap-4">
-          <div className="flex-1">
-            <LicoesSearchBar 
-              termoBusca={busca}
-              onTermoBuscaChange={setBusca}
-              totalResults={licoesTransformed.length}
-            />
-          </div>
-          <div className="lg:w-80">
-            <LicoesFilters 
-              filters={filtros}
-              onFiltersChange={atualizarFiltros}
-            />
-          </div>
+        <div className="space-y-4">
+          <LicoesSearchBar 
+            termoBusca={busca}
+            onTermoBuscaChange={setBusca}
+            totalResults={licoesTransformed.length}
+          />
+          
+          <LicoesFilters 
+            filters={filtros}
+            onFiltersChange={atualizarFiltros}
+          />
         </div>
 
         <LicoesList 
