@@ -6,14 +6,14 @@ import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, BookOpen, User, Calendar, Building } from 'lucide-react';
+import { ArrowLeft, BookOpen, User, Calendar, Building, Edit } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
 export default function LicaoDetalhes() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { usuario, isLoading: authLoading } = useAuth();
+  const { usuario, isLoading: authLoading, isAdmin } = useAuth();
 
   const { data: licao, isLoading, error } = useQuery({
     queryKey: ['licao', id],
@@ -105,19 +105,34 @@ export default function LicaoDetalhes() {
   return (
     <Layout>
       <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <Button 
-            onClick={() => navigate('/licoes')} 
-            variant="outline"
-            size="sm"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Voltar
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold text-pmo-primary">Detalhes da Lição</h1>
-            <p className="text-pmo-gray mt-2">Informações completas da lição aprendida</p>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button 
+              onClick={() => navigate('/licoes')} 
+              variant="outline"
+              size="sm"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Voltar
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold text-pmo-primary">Detalhes da Lição</h1>
+              <p className="text-pmo-gray mt-2">Informações completas da lição aprendida</p>
+            </div>
           </div>
+          
+          {isAdmin() && (
+            <Button 
+              onClick={() => {
+                // TODO: Implementar edição de lição
+                console.log('Editar lição:', licao.id);
+              }}
+              className="bg-pmo-primary hover:bg-pmo-secondary text-white"
+            >
+              <Edit className="h-4 w-4 mr-2" />
+              Editar
+            </Button>
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -207,7 +222,7 @@ export default function LicaoDetalhes() {
                 <CardContent>
                   <div className="flex flex-wrap gap-2">
                     {licao.tags_busca.split(',').map((tag: string, index: number) => (
-                      <Badge key={index} variant="outline" className="text-xs">
+                      <Badge key={index} variant="secondary" className="text-xs">
                         {tag.trim()}
                       </Badge>
                     ))}

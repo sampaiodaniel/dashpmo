@@ -12,15 +12,15 @@ export function MudancasSearchBar({ termoBusca, onTermoBuscaChange, totalResults
   return (
     <div className="flex gap-4 items-center">
       <div className="relative flex-1 max-w-md">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-pmo-gray" />
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
         <Input 
           placeholder="Buscar mudanças..." 
-          className="pl-10 bg-white border-gray-300 text-gray-900 placeholder:text-gray-500"
+          className="pl-10 bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-pmo-primary focus:ring-pmo-primary"
           value={termoBusca}
           onChange={(e) => onTermoBuscaChange(e.target.value)}
         />
       </div>
-      <div className="text-sm text-pmo-gray">
+      <div className="text-sm text-gray-600">
         {totalResults} mudanças encontradas
       </div>
     </div>

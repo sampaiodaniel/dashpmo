@@ -33,13 +33,13 @@ export function MudancasFilters({ filtros, onFiltroChange, responsaveis }: Mudan
         value={filtros.carteira || 'todas'}
         onValueChange={(value) => onFiltroChange({ ...filtros, carteira: value === 'todas' ? undefined : value })}
       >
-        <SelectTrigger className="w-48 bg-white border-gray-300 text-gray-900">
+        <SelectTrigger className="w-48 bg-white border-gray-300 text-gray-900 focus:border-pmo-primary focus:ring-pmo-primary">
           <SelectValue placeholder="Todas as carteiras" />
         </SelectTrigger>
         <SelectContent className="bg-white border-gray-300">
-          <SelectItem value="todas" className="text-gray-900">Todas as carteiras</SelectItem>
+          <SelectItem value="todas" className="text-gray-900 hover:bg-gray-100">Todas as carteiras</SelectItem>
           {carteiras.map((carteira) => (
-            <SelectItem key={carteira} value={carteira} className="text-gray-900">
+            <SelectItem key={carteira} value={carteira} className="text-gray-900 hover:bg-gray-100">
               {carteira}
             </SelectItem>
           ))}
@@ -50,14 +50,14 @@ export function MudancasFilters({ filtros, onFiltroChange, responsaveis }: Mudan
         value={filtros.statusAprovacao || 'todos'}
         onValueChange={(value) => onFiltroChange({ ...filtros, statusAprovacao: value === 'todos' ? undefined : value })}
       >
-        <SelectTrigger className="w-48 bg-white border-gray-300 text-gray-900">
+        <SelectTrigger className="w-48 bg-white border-gray-300 text-gray-900 focus:border-pmo-primary focus:ring-pmo-primary">
           <SelectValue placeholder="Todos os status" />
         </SelectTrigger>
         <SelectContent className="bg-white border-gray-300">
-          <SelectItem value="todos" className="text-gray-900">Todos os status</SelectItem>
-          <SelectItem value="Pendente" className="text-gray-900">Pendente</SelectItem>
-          <SelectItem value="Aprovado" className="text-gray-900">Aprovado</SelectItem>
-          <SelectItem value="Rejeitado" className="text-gray-900">Rejeitado</SelectItem>
+          <SelectItem value="todos" className="text-gray-900 hover:bg-gray-100">Todos os status</SelectItem>
+          <SelectItem value="Pendente" className="text-gray-900 hover:bg-gray-100">Pendente</SelectItem>
+          <SelectItem value="Aprovado" className="text-gray-900 hover:bg-gray-100">Aprovado</SelectItem>
+          <SelectItem value="Rejeitado" className="text-gray-900 hover:bg-gray-100">Rejeitado</SelectItem>
         </SelectContent>
       </Select>
 
@@ -65,14 +65,14 @@ export function MudancasFilters({ filtros, onFiltroChange, responsaveis }: Mudan
         value={filtros.tipoMudanca || 'todos'}
         onValueChange={(value) => onFiltroChange({ ...filtros, tipoMudanca: value === 'todos' ? undefined : value })}
       >
-        <SelectTrigger className="w-48 bg-white border-gray-300 text-gray-900">
+        <SelectTrigger className="w-48 bg-white border-gray-300 text-gray-900 focus:border-pmo-primary focus:ring-pmo-primary">
           <SelectValue placeholder="Todos os tipos" />
         </SelectTrigger>
         <SelectContent className="bg-white border-gray-300">
-          <SelectItem value="todos" className="text-gray-900">Todos os tipos</SelectItem>
-          <SelectItem value="Mudança de Escopo" className="text-gray-900">Mudança de Escopo</SelectItem>
-          <SelectItem value="Mudança de Prazo" className="text-gray-900">Mudança de Prazo</SelectItem>
-          <SelectItem value="Mudança de Recursos" className="text-gray-900">Mudança de Recursos</SelectItem>
+          <SelectItem value="todos" className="text-gray-900 hover:bg-gray-100">Todos os tipos</SelectItem>
+          <SelectItem value="Mudança de Escopo" className="text-gray-900 hover:bg-gray-100">Mudança de Escopo</SelectItem>
+          <SelectItem value="Mudança de Prazo" className="text-gray-900 hover:bg-gray-100">Mudança de Prazo</SelectItem>
+          <SelectItem value="Mudança de Recursos" className="text-gray-900 hover:bg-gray-100">Mudança de Recursos</SelectItem>
         </SelectContent>
       </Select>
 
@@ -80,13 +80,13 @@ export function MudancasFilters({ filtros, onFiltroChange, responsaveis }: Mudan
         value={filtros.responsavel || 'todos'}
         onValueChange={(value) => onFiltroChange({ ...filtros, responsavel: value === 'todos' ? undefined : value })}
       >
-        <SelectTrigger className="w-48 bg-white border-gray-300 text-gray-900">
+        <SelectTrigger className="w-48 bg-white border-gray-300 text-gray-900 focus:border-pmo-primary focus:ring-pmo-primary">
           <SelectValue placeholder="Todos os responsáveis" />
         </SelectTrigger>
         <SelectContent className="bg-white border-gray-300">
-          <SelectItem value="todos" className="text-gray-900">Todos os responsáveis</SelectItem>
+          <SelectItem value="todos" className="text-gray-900 hover:bg-gray-100">Todos os responsáveis</SelectItem>
           {responsaveis.map((responsavel) => (
-            <SelectItem key={responsavel} value={responsavel} className="text-gray-900">
+            <SelectItem key={responsavel} value={responsavel} className="text-gray-900 hover:bg-gray-100">
               {responsavel}
             </SelectItem>
           ))}
