@@ -60,16 +60,16 @@ export default function Licoes() {
         <div className="flex flex-col lg:flex-row gap-4">
           <div className="flex-1">
             <LicoesSearchBar 
-              busca={busca}
-              setBusca={setBusca}
-              ordenacao={ordenacao}
-              setOrdenacao={setOrdenacao}
+              searchTerm={busca}
+              onSearchChange={setBusca}
+              sortBy={ordenacao}
+              onSortChange={setOrdenacao}
             />
           </div>
           <div className="lg:w-80">
             <LicoesFilters 
-              filtros={filtros}
-              onFiltrosChange={atualizarFiltros}
+              filters={filtros}
+              onFiltersChange={atualizarFiltros}
             />
           </div>
         </div>
@@ -77,10 +77,14 @@ export default function Licoes() {
         <LicoesList 
           licoes={licoesFiltradas}
           isLoading={isLoadingLicoes}
+          error={null}
+          termoBusca={busca}
+          filtrosAplicados={filtros}
+          onLicaoClick={() => {}}
         />
 
         <NovaLicaoModal 
-          aberto={novaLicaoModalAberto}
+          isOpen={novaLicaoModalAberto}
           onClose={handleFecharModal}
         />
       </div>

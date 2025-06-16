@@ -3,9 +3,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { X, Download, Printer } from 'lucide-react';
 import { DadosRelatorioASA } from '@/hooks/useRelatorioASA';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { ProjetosOverview } from './asa/ProjetosOverview';
+import { ProjetoDetalhes } from './asa/ProjetoDetalhes';
+import { TabelaIncidentes } from './asa/TabelaIncidentes';
 
 interface RelatorioASAViewerProps {
   isOpen: boolean;
@@ -22,24 +22,6 @@ export function RelatorioASAViewer({ isOpen, onClose, dados }: RelatorioASAViewe
 
   const handleDownload = () => {
     handlePrint();
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Verde': return 'bg-green-500';
-      case 'Amarelo': return 'bg-yellow-500';
-      case 'Vermelho': return 'bg-red-500';
-      default: return 'bg-gray-500';
-    }
-  };
-
-  const getStatusBadgeVariant = (status: string) => {
-    switch (status) {
-      case 'Verde': return 'default';
-      case 'Amarelo': return 'secondary';
-      case 'Vermelho': return 'destructive';
-      default: return 'outline';
-    }
   };
 
   // Filtrar apenas projetos com último status aprovado
@@ -87,252 +69,15 @@ export function RelatorioASAViewer({ isOpen, onClose, dados }: RelatorioASAViewe
           </div>
 
           {/* Overview de Projetos Ativos */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-pmo-primary rounded"></div>
-                Overview - Projetos Ativos ({projetosAtivos.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {projetosAtivos.length > 0 ? (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Projeto</TableHead>
-                      <TableHead>Equipe/GP</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Progresso</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {projetosAtivos.map((projeto) => (
-                      <TableRow key={projeto.id}>
-                        <TableCell className="font-medium">
-                          {projeto.nome_projeto}
-                        </TableCell>
-                        <TableCell>
-                          {projeto.gp_responsavel || projeto.equipe || 'Não informado'}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <div className={`w-3 h-3 rounded-full ${getStatusColor(projeto.ultimoStatus?.status_visao_gp || 'Cinza')}`}></div>
-                            <Badge variant={getStatusBadgeVariant(projeto.ultimoStatus?.status_visao_gp || 'Cinza')}>
-                              {projeto.ultimoStatus?.status_visao_gp || 'Sem status'}
-                            </Badge>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <div className="w-20 bg-gray-200 rounded-full h-2">
-                              <div 
-                                className="bg-pmo-primary h-2 rounded-full" 
-                                style={{ width: `${projeto.ultimoStatus?.progresso_estimado || 0}%` }}
-                              ></div>
-                            </div>
-                            <span className="text-sm">{projeto.ultimoStatus?.progresso_estimado || 0}%</span>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              ) : (
-                <div className="text-center py-8 text-gray-500">
-                  <p>Nenhum projeto ativo com status reportado</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <ProjetosOverview projetos={dados.projetos} />
 
           {/* Detalhes dos Projetos */}
           {projetosAtivos.map((projeto) => (
-            <Card key={`detail-${projeto.id}`} className="break-inside-avoid">
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span>{projeto.nome_projeto}</span>
-                  <div className="flex items-center gap-2">
-                    <div className={`w-3 h-3 rounded-full ${getStatusColor(projeto.ultimoStatus?.status_visao_gp || 'Cinza')}`}></div>
-                    <Badge variant={getStatusBadgeVariant(projeto.ultimoStatus?.status_visao_gp || 'Cinza')}>
-                      {projeto.ultimoStatus?.status_visao_gp}
-                    </Badge>
-                  </div>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Descrição e Informações Básicas */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <h4 className="font-semibold text-pmo-primary mb-2">Descrição do Projeto</h4>
-                    <p className="text-sm text-gray-700">
-                      {projeto.descricao_projeto || projeto.descricao || 'Descrição não informada'}
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-pmo-primary mb-2">Informações</h4>
-                    <div className="space-y-1 text-sm">
-                      <p><strong>GP Responsável:</strong> {projeto.gp_responsavel}</p>
-                      <p><strong>Responsável Interno:</strong> {projeto.responsavel_interno}</p>
-                      <p><strong>Status Geral:</strong> {projeto.ultimoStatus?.status_geral}</p>
-                      <p><strong>Progresso:</strong> {projeto.ultimoStatus?.progresso_estimado || 0}%</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Marcos e Entregas */}
-                {(projeto.ultimoStatus?.data_marco1 || projeto.ultimoStatus?.data_marco2 || projeto.ultimoStatus?.data_marco3) && (
-                  <div>
-                    <h4 className="font-semibold text-pmo-primary mb-3">Próximas Entregas</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {projeto.ultimoStatus?.data_marco1 && (
-                        <div className="bg-blue-50 p-3 rounded-lg">
-                          <h5 className="font-medium text-blue-800 mb-1">
-                            {projeto.ultimoStatus.entrega1 || 'Entrega 1'}
-                          </h5>
-                          <p className="text-sm text-blue-600 mb-2">
-                            {new Date(projeto.ultimoStatus.data_marco1).toLocaleDateString('pt-BR')}
-                          </p>
-                          {projeto.ultimoStatus.entregaveis1 && (
-                            <div className="text-xs text-blue-700">
-                              {projeto.ultimoStatus.entregaveis1.split('\n').map((item, i) => (
-                                <div key={i}>• {item}</div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                      {projeto.ultimoStatus?.data_marco2 && (
-                        <div className="bg-green-50 p-3 rounded-lg">
-                          <h5 className="font-medium text-green-800 mb-1">
-                            {projeto.ultimoStatus.entrega2 || 'Entrega 2'}
-                          </h5>
-                          <p className="text-sm text-green-600 mb-2">
-                            {new Date(projeto.ultimoStatus.data_marco2).toLocaleDateString('pt-BR')}
-                          </p>
-                          {projeto.ultimoStatus.entregaveis2 && (
-                            <div className="text-xs text-green-700">
-                              {projeto.ultimoStatus.entregaveis2.split('\n').map((item, i) => (
-                                <div key={i}>• {item}</div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                      {projeto.ultimoStatus?.data_marco3 && (
-                        <div className="bg-purple-50 p-3 rounded-lg">
-                          <h5 className="font-medium text-purple-800 mb-1">
-                            {projeto.ultimoStatus.entrega3 || 'Entrega 3'}
-                          </h5>
-                          <p className="text-sm text-purple-600 mb-2">
-                            {new Date(projeto.ultimoStatus.data_marco3).toLocaleDateString('pt-BR')}
-                          </p>
-                          {projeto.ultimoStatus.entregaveis3 && (
-                            <div className="text-xs text-purple-700">
-                              {projeto.ultimoStatus.entregaveis3.split('\n').map((item, i) => (
-                                <div key={i}>• {item}</div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Atividades e Atenções */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <h4 className="font-semibold text-pmo-primary mb-2">Itens Trabalhados na Semana</h4>
-                    <div className="bg-gray-50 p-3 rounded-lg min-h-[100px]">
-                      {projeto.ultimoStatus?.realizado_semana_atual ? (
-                        projeto.ultimoStatus.realizado_semana_atual.split('\n').map((item, i) => (
-                          <div key={i} className="text-sm mb-1">• {item}</div>
-                        ))
-                      ) : (
-                        <p className="text-sm text-gray-500">Nenhum item informado</p>
-                      )}
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-pmo-primary mb-2">Pontos de Atenção</h4>
-                    <div className="bg-yellow-50 p-3 rounded-lg min-h-[100px]">
-                      {projeto.ultimoStatus?.observacoes_pontos_atencao ? (
-                        projeto.ultimoStatus.observacoes_pontos_atencao.split('\n').map((item, i) => (
-                          <div key={i} className="text-sm mb-1">• {item}</div>
-                        ))
-                      ) : (
-                        <p className="text-sm text-gray-500">Nenhum ponto de atenção</p>
-                      )}
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-pmo-primary mb-2">Backlog</h4>
-                    <div className="bg-blue-50 p-3 rounded-lg min-h-[100px]">
-                      {projeto.ultimoStatus?.backlog ? (
-                        projeto.ultimoStatus.backlog.split('\n').map((item, i) => (
-                          <div key={i} className="text-sm mb-1">• {item}</div>
-                        ))
-                      ) : (
-                        <p className="text-sm text-gray-500">Nenhum item no backlog</p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Bloqueios */}
-                {projeto.ultimoStatus?.bloqueios_atuais && (
-                  <div>
-                    <h4 className="font-semibold text-red-600 mb-2">Bloqueios Atuais</h4>
-                    <div className="bg-red-50 p-3 rounded-lg border border-red-200">
-                      {projeto.ultimoStatus.bloqueios_atuais.split('\n').map((item, i) => (
-                        <div key={i} className="text-sm mb-1 text-red-700">⚠️ {item}</div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            <ProjetoDetalhes key={`detail-${projeto.id}`} projeto={projeto} />
           ))}
 
           {/* Tabela de Incidentes */}
-          {dados.incidentes && dados.incidentes.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-red-500 rounded"></div>
-                  Controle de Incidentes - {dados.carteira}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Carteira</TableHead>
-                      <TableHead>Estoque Anterior</TableHead>
-                      <TableHead>Entrada</TableHead>
-                      <TableHead>Saída</TableHead>
-                      <TableHead>Estoque Atual</TableHead>
-                      <TableHead>&gt; 15 dias</TableHead>
-                      <TableHead>Críticos</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {dados.incidentes.map((incidente, index) => (
-                      <TableRow key={index}>
-                        <TableCell className="font-medium">{incidente.carteira}</TableCell>
-                        <TableCell className="text-center">{incidente.anterior}</TableCell>
-                        <TableCell className="text-center text-green-600">+{incidente.entrada}</TableCell>
-                        <TableCell className="text-center text-blue-600">-{incidente.saida}</TableCell>
-                        <TableCell className="text-center font-bold">{incidente.atual}</TableCell>
-                        <TableCell className="text-center text-orange-600">{incidente.mais_15_dias}</TableCell>
-                        <TableCell className="text-center text-red-600 font-bold">{incidente.criticos}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          )}
+          <TabelaIncidentes incidentes={dados.incidentes} carteira={dados.carteira} />
 
           {/* Footer */}
           <div className="text-center text-sm text-gray-500 border-t pt-4">
