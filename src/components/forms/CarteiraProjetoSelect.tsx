@@ -34,7 +34,7 @@ export function CarteiraProjetoSelect({
     onCarteiraChange(value);
     // Limpar projeto quando carteira mudar
     if (projeto) {
-      onProjetoChange('');
+      onProjetoChange('none');
     }
   };
 

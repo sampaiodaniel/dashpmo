@@ -58,9 +58,9 @@ export function CriarProjetoModal({ onProjetoCriado }: CriarProjetoModalProps) {
       nome_projeto: nome,
       descricao_projeto: descricaoProjeto || null,
       area_responsavel: area as typeof CARTEIRAS[number],
-      carteira_primaria: carteiraPrimaria || null,
-      carteira_secundaria: carteiraSecundaria || null,
-      carteira_terciaria: carteiraTerciaria || null,
+      carteira_primaria: carteiraPrimaria === 'none' ? null : carteiraPrimaria || null,
+      carteira_secundaria: carteiraSecundaria === 'none' ? null : carteiraSecundaria || null,
+      carteira_terciaria: carteiraTerciaria === 'none' ? null : carteiraTerciaria || null,
       responsavel_interno: responsavelInterno,
       gp_responsavel: gpResponsavel,
       finalizacao_prevista: finalizacaoPrevista || null,
@@ -154,7 +154,7 @@ export function CriarProjetoModal({ onProjetoCriado }: CriarProjetoModalProps) {
                   <SelectValue placeholder="Primária..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Nenhuma</SelectItem>
+                  <SelectItem value="none">Nenhuma</SelectItem>
                   {CARTEIRAS.map((carteira) => (
                     <SelectItem key={carteira} value={carteira}>
                       {carteira}
@@ -171,7 +171,7 @@ export function CriarProjetoModal({ onProjetoCriado }: CriarProjetoModalProps) {
                   <SelectValue placeholder="Secundária..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Nenhuma</SelectItem>
+                  <SelectItem value="none">Nenhuma</SelectItem>
                   {CARTEIRAS.map((carteira) => (
                     <SelectItem key={carteira} value={carteira}>
                       {carteira}
@@ -188,7 +188,7 @@ export function CriarProjetoModal({ onProjetoCriado }: CriarProjetoModalProps) {
                   <SelectValue placeholder="Terciária..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Nenhuma</SelectItem>
+                  <SelectItem value="none">Nenhuma</SelectItem>
                   {CARTEIRAS.map((carteira) => (
                     <SelectItem key={carteira} value={carteira}>
                       {carteira}
