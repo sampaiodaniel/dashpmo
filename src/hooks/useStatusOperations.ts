@@ -53,6 +53,7 @@ export function useStatusOperations() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['status-projetos'] });
       queryClient.invalidateQueries({ queryKey: ['status-pendentes'] });
+      queryClient.invalidateQueries({ queryKey: ['status-list'] });
       toast({
         title: "Sucesso",
         description: "Status aprovado com sucesso!",
@@ -107,6 +108,7 @@ export function useStatusOperations() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['status-projetos'] });
       queryClient.invalidateQueries({ queryKey: ['status-pendentes'] });
+      queryClient.invalidateQueries({ queryKey: ['status-list'] });
       toast({
         title: "Sucesso",
         description: "Status rejeitado com sucesso!",
@@ -123,7 +125,8 @@ export function useStatusOperations() {
   });
 
   return {
-    aprovarStatus,
-    rejeitarStatus,
+    aprovarStatus: aprovarStatus.mutate,
+    rejeitarStatus: rejeitarStatus.mutate,
+    isLoading: aprovarStatus.isPending || rejeitarStatus.isPending,
   };
 }
