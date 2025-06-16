@@ -1,113 +1,28 @@
 
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { useAutoLog } from './useLogsAlteracoes';
+import { useAuth } from './useAuth';
 
 export function useStatusOperations() {
-  const criarStatusTeste = useMutation({
-    mutationFn: async () => {
-      console.log('🔧 Criando status de teste...');
-      
-      // Buscar um projeto para associar ao status
-      const { data: projetos, error: projetosError } = await supabase
-        .from('projetos')
-        .select('id')
-        .limit(1)
-        .single();
-
-      if (projetosError || !projetos) {
-        console.error('Erro ao buscar projeto:', projetosError);
-        throw new Error('Nenhum projeto encontrado para criar status');
-      }
-
-      const statusData = {
-        projeto_id: projetos.id,
-        status_geral: 'Em Andamento' as const,
-        status_visao_gp: 'Verde' as const,
-        impacto_riscos: 'Baixo' as const,
-        probabilidade_riscos: 'Baixo' as const,
-        realizado_semana_atual: 'Status de teste criado automaticamente',
-        criado_por: 'Sistema',
-        data_atualizacao: new Date().toISOString().split('T')[0],
-      };
-
-      const { data, error } = await supabase
-        .from('status_projeto')
-        .insert(statusData)
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Erro ao criar status:', error);
-        throw error;
-      }
-
-      console.log('✅ Status criado:', data);
-      return data;
-    },
-    onSuccess: () => {
-      toast({
-        title: "Sucesso",
-        description: "Status de teste criado com sucesso!",
-      });
-    },
-    onError: (error) => {
-      console.error('Erro ao criar status:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao criar status de teste",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const salvarStatus = useMutation({
-    mutationFn: async (statusData: any) => {
-      console.log('💾 Salvando status...', statusData);
-      
-      const { data, error } = await supabase
-        .from('status_projeto')
-        .insert(statusData)
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Erro ao salvar status:', error);
-        throw error;
-      }
-
-      console.log('✅ Status salvo:', data);
-      return data;
-    },
-    onSuccess: () => {
-      toast({
-        title: "Sucesso",
-        description: "Status salvo com sucesso!",
-      });
-    },
-    onError: (error) => {
-      console.error('Erro ao salvar status:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao salvar status",
-        variant: "destructive",
-      });
-    },
-  });
+  const queryClient = useQueryClient();
+  const { logAction } = useAutoLog();
+  const { usuario } = useAuth();
 
   const aprovarStatus = useMutation({
-    mutationFn: async (statusId: number) => {
-      console.log('✅ Aprovando status:', statusId);
+    mutationFn: async ({ statusId, aprovadoPor }: { statusId: number; aprovadoPor: string }) => {
+      console.log('Aprovando status:', statusId);
       
       const { data, error } = await supabase
         .from('status_projeto')
         .update({
           aprovado: true,
-          aprovado_por: 'Sistema',
-          data_aprovacao: new Date().toISOString(),
+          aprovado_por: aprovadoPor,
+          data_aprovacao: new Date().toISOString()
         })
         .eq('id', statusId)
-        .select()
+        .select('*, projeto:projetos(*)')
         .single();
 
       if (error) {
@@ -115,10 +30,29 @@ export function useStatusOperations() {
         throw error;
       }
 
-      console.log('✅ Status aprovado:', data);
+      // Registrar log da aprovação
+      if (usuario && data) {
+        logAction(
+          'status',
+          'aprovacao',
+          'status_projeto',
+          statusId,
+          `Status do projeto ${data.projeto?.nome_projeto || 'N/A'}`,
+          {
+            status_geral: data.status_geral,
+            status_visao_gp: data.status_visao_gp,
+            aprovado_por: aprovadoPor
+          },
+          usuario.id,
+          usuario.nome
+        );
+      }
+
       return data;
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['status-projetos'] });
+      queryClient.invalidateQueries({ queryKey: ['status-pendentes'] });
       toast({
         title: "Sucesso",
         description: "Status aprovado com sucesso!",
@@ -128,16 +62,68 @@ export function useStatusOperations() {
       console.error('Erro ao aprovar status:', error);
       toast({
         title: "Erro",
-        description: "Erro ao aprovar status",
+        description: "Erro ao aprovar status. Tente novamente.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const rejeitarStatus = useMutation({
+    mutationFn: async ({ statusId }: { statusId: number }) => {
+      console.log('Rejeitando status:', statusId);
+      
+      const { data, error } = await supabase
+        .from('status_projeto')
+        .delete()
+        .eq('id', statusId)
+        .select('*, projeto:projetos(*)')
+        .single();
+
+      if (error) {
+        console.error('Erro ao rejeitar status:', error);
+        throw error;
+      }
+
+      // Registrar log da rejeição
+      if (usuario && data) {
+        logAction(
+          'status',
+          'exclusao',
+          'status_projeto',
+          statusId,
+          `Status do projeto ${data.projeto?.nome_projeto || 'N/A'} rejeitado`,
+          {
+            status_geral: data.status_geral,
+            status_visao_gp: data.status_visao_gp,
+            motivo: 'Status rejeitado'
+          },
+          usuario.id,
+          usuario.nome
+        );
+      }
+
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['status-projetos'] });
+      queryClient.invalidateQueries({ queryKey: ['status-pendentes'] });
+      toast({
+        title: "Sucesso",
+        description: "Status rejeitado com sucesso!",
+      });
+    },
+    onError: (error) => {
+      console.error('Erro ao rejeitar status:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao rejeitar status. Tente novamente.",
         variant: "destructive",
       });
     },
   });
 
   return {
-    criarStatusTeste: criarStatusTeste.mutate,
-    salvarStatus: salvarStatus.mutateAsync,
-    aprovarStatus: aprovarStatus.mutateAsync,
-    isLoading: criarStatusTeste.isPending || salvarStatus.isPending || aprovarStatus.isPending,
+    aprovarStatus,
+    rejeitarStatus,
   };
 }

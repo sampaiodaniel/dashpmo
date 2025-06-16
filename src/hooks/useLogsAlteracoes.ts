@@ -54,7 +54,7 @@ export function useRegistrarLog() {
       usuario_id: number;
       usuario_nome: string;
     }) => {
-      console.log('📝 Registrando log de alteração:', { modulo, acao, entidade_tipo });
+      console.log('📝 Registrando log de alteração:', { modulo, acao, entidade_tipo, entidade_id, entidade_nome });
 
       // Capturar informações do navegador
       const ip_usuario = null; // Não é possível capturar IP no frontend
@@ -93,6 +93,38 @@ export function useRegistrarLog() {
       });
     },
   });
+}
+
+// Hook para registrar log automaticamente
+export function useAutoLog() {
+  const { mutate: registrarLog } = useRegistrarLog();
+
+  const logAction = (
+    modulo: ModuloSistema,
+    acao: AcaoSistema,
+    entidade_tipo: string,
+    entidade_id?: number,
+    entidade_nome?: string,
+    detalhes_alteracao?: any,
+    usuario_id?: number,
+    usuario_nome?: string
+  ) => {
+    // Se não tiver dados do usuário, tentar obter do contexto
+    if (usuario_id && usuario_nome) {
+      registrarLog({
+        modulo,
+        acao,
+        entidade_tipo,
+        entidade_id,
+        entidade_nome,
+        detalhes_alteracao,
+        usuario_id,
+        usuario_nome
+      });
+    }
+  };
+
+  return { logAction };
 }
 
 // Hook para filtrar logs por módulo
