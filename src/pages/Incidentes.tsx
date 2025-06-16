@@ -6,11 +6,13 @@ import { IncidentesHeader } from '@/components/incidentes/IncidentesHeader';
 import { IncidentesMetricas } from '@/components/incidentes/IncidentesMetricas';
 import { TabelaIncidentesRecentes } from '@/components/incidentes/TabelaIncidentesRecentes';
 import { GraficoEvolutivoIncidentes } from '@/components/incidentes/GraficoEvolutivoIncidentes';
+import { useIncidentes } from '@/hooks/useIncidentes';
 import { useEffect } from 'react';
 import { seedIncidentesCanais } from '@/utils/seedIncidentesCanais';
 
 export default function Incidentes() {
   const { usuario, isLoading } = useAuth();
+  const { data: incidentes, isLoading: isLoadingIncidentes } = useIncidentes();
 
   useEffect(() => {
     // Inserir dados históricos se necessário
@@ -36,11 +38,33 @@ export default function Incidentes() {
     return <LoginForm />;
   }
 
+  // Calcular métricas dos incidentes
+  const calcularMetricas = () => {
+    if (!incidentes || incidentes.length === 0) {
+      return { criticos: 0, emAndamento: 0, resolvidos: 0, total: 0 };
+    }
+
+    // Somar os valores de todos os registros mais recentes por carteira
+    const criticos = incidentes.reduce((sum, inc) => sum + (inc.criticos || 0), 0);
+    const emAndamento = incidentes.reduce((sum, inc) => sum + (inc.atual || 0), 0);
+    const resolvidos = incidentes.reduce((sum, inc) => sum + (inc.saida || 0), 0);
+    const total = incidentes.reduce((sum, inc) => sum + (inc.atual || 0) + (inc.saida || 0), 0);
+
+    return { criticos, emAndamento, resolvidos, total };
+  };
+
+  const metricas = calcularMetricas();
+
   return (
     <Layout>
       <div className="space-y-6">
         <IncidentesHeader />
-        <IncidentesMetricas />
+        <IncidentesMetricas 
+          criticos={metricas.criticos}
+          emAndamento={metricas.emAndamento}
+          resolvidos={metricas.resolvidos}
+          total={metricas.total}
+        />
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <TabelaIncidentesRecentes />
           <GraficoEvolutivoIncidentes />
