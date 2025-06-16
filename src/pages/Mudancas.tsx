@@ -1,47 +1,42 @@
 
+import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
-import { useMudancasList } from '@/hooks/useMudancasList';
-import { useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 import { MudancasHeader } from '@/components/mudancas/MudancasHeader';
-import { MudancasMetricas } from '@/components/mudancas/MudancasMetricas';
-import { MudancasFilters, MudancasFilters as MudancasFiltersType } from '@/components/mudancas/MudancasFilters';
+import { MudancasSearchBar } from '@/components/mudancas/MudancasSearchBar';
+import { MudancasFilters } from '@/components/mudancas/MudancasFilters';
 import { MudancasList } from '@/components/mudancas/MudancasList';
+import { useMudancasList } from '@/hooks/useMudancasList';
 import { useMudancasFiltradas } from '@/hooks/useMudancasFiltradas';
+import { useNavigate } from 'react-router-dom';
+
+interface MudancasFiltersType {
+  statusAprovacao?: string;
+  tipoMudanca?: string;
+  responsavel?: string;
+  carteira?: string;
+}
 
 export default function Mudancas() {
   const { usuario, isLoading } = useAuth();
-  const { data: mudancas, isLoading: mudancasLoading, error: mudancasError } = useMudancasList();
+  const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState('');
   const [filtros, setFiltros] = useState<MudancasFiltersType>({});
-  const queryClient = useQueryClient();
+  
+  const { data: mudancas, isLoading: isLoadingMudancas, error } = useMudancasList();
+  const mudancasFiltradas = useMudancasFiltradas(mudancas, filtros, searchTerm);
 
-  const handleMudancaCriada = () => {
-    queryClient.invalidateQueries({ queryKey: ['mudancas-list'] });
+  // Extrair responsáveis únicos para o filtro
+  const responsaveis = Array.from(new Set(mudancas?.map(m => m.solicitante) || [])).sort();
+
+  const handleNovaMudanca = () => {
+    console.log('Nova mudança');
   };
 
-  const mudancasFiltradas = useMudancasFiltradas(mudancas, filtros, '');
-
-  const responsaveis = Array.from(new Set(mudancas?.map(m => m.solicitante) || []));
-
-  const handleFiltrarPendentes = () => {
-    setFiltros({ statusAprovacao: 'Pendente' });
+  const handleMudancaClick = (mudancaId: number) => {
+    navigate(`/mudancas/${mudancaId}`);
   };
-
-  const handleFiltrarEmAnalise = () => {
-    setFiltros({ statusAprovacao: 'Em Análise' });
-  };
-
-  const handleFiltrarAprovadas = () => {
-    setFiltros({ statusAprovacao: 'Aprovada' });
-  };
-
-  const handleFiltrarRejeitadas = () => {
-    setFiltros({ statusAprovacao: 'Rejeitada' });
-  };
-
-  const filtrosAplicados = Object.keys(filtros).length > 0;
 
   if (isLoading) {
     return (
@@ -63,27 +58,29 @@ export default function Mudancas() {
   return (
     <Layout>
       <div className="space-y-6">
-        <MudancasHeader onMudancaCriada={handleMudancaCriada} />
+        <MudancasHeader onNovaMudanca={handleNovaMudanca} />
+        
+        <div className="space-y-4">
+          <MudancasSearchBar 
+            termoBusca={searchTerm}
+            onTermoBuscaChange={setSearchTerm}
+            totalResults={mudancasFiltradas?.length || 0}
+          />
+          
+          <MudancasFilters 
+            filtros={filtros}
+            onFiltroChange={setFiltros}
+            responsaveis={responsaveis}
+          />
+        </div>
 
-        <MudancasMetricas 
-          mudancas={mudancas}
-          onFiltrarPendentes={handleFiltrarPendentes}
-          onFiltrarEmAnalise={handleFiltrarEmAnalise}
-          onFiltrarAprovadas={handleFiltrarAprovadas}
-          onFiltrarRejeitadas={handleFiltrarRejeitadas}
-        />
-
-        <MudancasFilters 
-          filtros={filtros}
-          onFiltroChange={setFiltros}
-          responsaveis={responsaveis}
-        />
-
-        <MudancasList
-          mudancasList={mudancasFiltradas}
-          isLoading={mudancasLoading}
-          error={mudancasError}
-          filtrosAplicados={filtrosAplicados}
+        <MudancasList 
+          mudancas={mudancasFiltradas}
+          isLoading={isLoadingMudancas}
+          error={error}
+          termoBusca={searchTerm}
+          filtrosAplicados={Object.keys(filtros).some(key => filtros[key as keyof MudancasFiltersType])}
+          onMudancaClick={handleMudancaClick}
         />
       </div>
     </Layout>

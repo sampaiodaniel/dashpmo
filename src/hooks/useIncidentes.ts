@@ -69,12 +69,24 @@ export function useIncidenteOperations() {
       if (existente) {
         throw new Error(`Já existe um registro para a carteira ${data.carteira} na data ${dataRegistro}`);
       }
+
+      // Buscar o último registro dessa carteira para calcular o valor "anterior"
+      const { data: ultimoRegistro } = await supabase
+        .from('incidentes')
+        .select('atual')
+        .eq('carteira', data.carteira)
+        .order('data_registro', { ascending: false })
+        .limit(1)
+        .single();
+
+      // O valor "anterior" deve ser o "atual" do último registro, ou 0 se for o primeiro
+      const anterior = ultimoRegistro?.atual || 0;
       
       const { data: result, error } = await supabase
         .from('incidentes')
         .insert([{
           carteira: data.carteira,
-          anterior: data.anterior,
+          anterior: anterior,
           entrada: data.entrada,
           saida: data.saida,
           atual: data.atual,

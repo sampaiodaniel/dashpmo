@@ -1,203 +1,210 @@
 
-import { Search, ChevronRight, Star, CheckCircle, Clock, XCircle, BookOpen, User } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { usePagination } from '@/hooks/usePagination';
-import { PaginationFooter } from '@/components/common/PaginationFooter';
+import { Calendar, User, Target, Lightbulb, FileText, BookOpen } from 'lucide-react';
 import { LicaoContextMenu } from './LicaoContextMenu';
-import { useLicaoActions } from '@/hooks/useLicaoActions';
+
+interface LicaoItem {
+  id: number;
+  projeto_id?: number;
+  categoria_licao: string;
+  responsavel_registro: string;
+  data_registro: string;
+  situacao_ocorrida: string;
+  licao_aprendida: string;
+  acao_recomendada: string;
+  impacto_gerado: string;
+  status_aplicacao?: string;
+  tags_busca?: string;
+}
 
 interface LicoesListProps {
-  licoes: any[];
+  licoes: LicaoItem[] | undefined;
   isLoading: boolean;
-  error: Error | null;
+  error: any;
   termoBusca: string;
   filtrosAplicados: boolean;
   onLicaoClick: (licaoId: number) => void;
 }
-
-const getStatusIcon = (status: string) => {
-  switch (status) {
-    case 'Aplicada':
-      return <CheckCircle className="h-3 w-3" />;
-    case 'Em andamento':
-      return <Clock className="h-3 w-3" />;
-    case 'Não aplicada':
-      return <XCircle className="h-3 w-3" />;
-    default:
-      return <XCircle className="h-3 w-3" />;
-  }
-};
-
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case 'Aplicada':
-      return 'bg-green-100 text-green-700 border-green-200';
-    case 'Em andamento':
-      return 'bg-yellow-100 text-yellow-700 border-yellow-200';
-    case 'Não aplicada':
-      return 'bg-red-100 text-red-700 border-red-200';
-    default:
-      return 'bg-gray-100 text-gray-700 border-gray-200';
-  }
-};
 
 export function LicoesList({ 
   licoes, 
   isLoading, 
   error, 
   termoBusca, 
-  filtrosAplicados, 
+  filtrosAplicados,
   onLicaoClick 
 }: LicoesListProps) {
-  const {
-    handleVisualizar,
-    handleEditar,
-    handleCardClick
-  } = useLicaoActions(onLicaoClick);
-
-  const {
-    paginatedData,
-    currentPage,
-    totalPages,
-    hasNextPage,
-    hasPreviousPage,
-    goToPage,
-    goToNextPage,
-    goToPreviousPage,
-    startItem,
-    endItem,
-    totalItems
-  } = usePagination({ data: licoes || [], itemsPerPage: 10 });
-
-  if (error) {
+  if (isLoading) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border">
-        <div className="text-center py-8 text-red-600">
-          <p>Erro ao carregar lições: {error.message}</p>
-        </div>
+      <div className="text-center py-8">
+        <div className="text-pmo-gray">Carregando lições aprendidas...</div>
       </div>
     );
   }
 
-  if (isLoading) {
+  if (error) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border">
-        <div className="text-center py-8 text-pmo-gray">
-          <div>Carregando lições...</div>
-        </div>
+      <div className="text-center py-8">
+        <div className="text-red-600 mb-2">Erro ao carregar lições aprendidas</div>
+        <div className="text-sm text-pmo-gray">Tente recarregar a página</div>
       </div>
     );
   }
 
   if (!licoes || licoes.length === 0) {
+    if (termoBusca || filtrosAplicados) {
+      return (
+        <Card className="bg-white">
+          <CardContent className="py-12 text-center">
+            <BookOpen className="h-12 w-12 mx-auto text-pmo-gray mb-4 opacity-50" />
+            <h3 className="text-lg font-medium text-pmo-gray mb-2">
+              Nenhuma lição encontrada
+            </h3>
+            <p className="text-sm text-pmo-gray max-w-md mx-auto">
+              Não foi possível encontrar lições com os filtros aplicados. 
+              Tente ajustar os critérios de busca.
+            </p>
+          </CardContent>
+        </Card>
+      );
+    }
+
     return (
-      <div className="bg-white rounded-lg shadow-sm border">
-        <div className="text-center py-12 text-pmo-gray">
-          <BookOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
-          <p className="text-lg mb-2">
-            {termoBusca || filtrosAplicados ? 'Nenhuma lição encontrada para os filtros aplicados' : 'Nenhuma lição encontrada'}
+      <Card className="bg-white">
+        <CardContent className="py-12 text-center">
+          <BookOpen className="h-12 w-12 mx-auto text-pmo-gray mb-4 opacity-50" />
+          <h3 className="text-lg font-medium text-pmo-gray mb-2">
+            Nenhuma lição cadastrada
+          </h3>
+          <p className="text-sm text-pmo-gray max-w-md mx-auto">
+            Comece criando a primeira lição aprendida do sistema.
           </p>
-          <p className="text-sm">
-            {termoBusca || filtrosAplicados ? 'Tente alterar os filtros ou termos da busca' : 'Comece compartilhando conhecimentos e experiências'}
-          </p>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     );
   }
 
+  const getCategoriaColor = (categoria: string) => {
+    const colors: Record<string, string> = {
+      'Técnica': 'bg-blue-100 text-blue-800',
+      'Processo': 'bg-green-100 text-green-800',
+      'Comunicação': 'bg-purple-100 text-purple-800',
+      'Recursos': 'bg-orange-100 text-orange-800',
+      'Planejamento': 'bg-yellow-100 text-yellow-800',
+      'Qualidade': 'bg-red-100 text-red-800',
+      'Fornecedores': 'bg-indigo-100 text-indigo-800',
+      'Riscos': 'bg-pink-100 text-pink-800',
+      'Mudanças': 'bg-cyan-100 text-cyan-800',
+      'Conhecimento': 'bg-emerald-100 text-emerald-800'
+    };
+    return colors[categoria] || 'bg-gray-100 text-gray-800';
+  };
+
+  const getStatusColor = (status?: string) => {
+    if (!status) return 'bg-gray-100 text-gray-800';
+    
+    const colors: Record<string, string> = {
+      'Aplicada': 'bg-green-100 text-green-800',
+      'Não aplicada': 'bg-yellow-100 text-yellow-800'
+    };
+    return colors[status] || 'bg-gray-100 text-gray-800';
+  };
+
+  const truncateText = (text: string, maxLength: number = 150) => {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
+  };
+
   return (
     <div className="space-y-4">
-      <div className="bg-white rounded-lg shadow-sm border">
-        <div className="divide-y">
-          {paginatedData.map((licao) => (
-            <div 
-              key={licao.id} 
-              className="relative p-6 hover:bg-gray-50 transition-colors cursor-pointer group"
-              onClick={() => handleCardClick(licao.id)}
-            >
+      {licoes.map((licao) => (
+        <LicaoContextMenu 
+          key={licao.id} 
+          licao={licao}
+          onEdit={() => onLicaoClick(licao.id)}
+          onView={() => onLicaoClick(licao.id)}
+        >
+          <Card 
+            className="bg-white hover:shadow-md transition-shadow cursor-pointer"
+            onClick={() => onLicaoClick(licao.id)}
+          >
+            <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-3 mb-3">
-                    <BookOpen className="h-4 w-4 text-blue-600" />
-                    <h3 className="font-semibold text-xl text-pmo-primary group-hover:text-pmo-secondary transition-colors">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Badge className={getCategoriaColor(licao.categoria_licao)}>
                       {licao.categoria_licao}
-                    </h3>
-                    <Badge className={`flex items-center gap-1 ${getStatusColor(licao.status_aplicacao)}`}>
-                      {getStatusIcon(licao.status_aplicacao)}
-                      {licao.status_aplicacao}
                     </Badge>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm mb-3">
-                    <div>
-                      <span className="text-pmo-gray">Data Registro:</span>
-                      <div className="font-medium">
-                        {licao.data_registro.toLocaleDateString('pt-BR')}
-                      </div>
-                    </div>
-                    <div>
-                      <span className="text-pmo-gray">Responsável:</span>
-                      <div className="font-medium flex items-center gap-1">
-                        <User className="h-3 w-3" />
-                        {licao.responsavel_registro}
-                      </div>
-                    </div>
-                    {licao.projeto && (
-                      <div>
-                        <span className="text-pmo-gray">Projeto:</span>
-                        <div className="font-medium">{licao.projeto.nome_projeto}</div>
-                      </div>
+                    {licao.status_aplicacao && (
+                      <Badge variant="outline" className={getStatusColor(licao.status_aplicacao)}>
+                        {licao.status_aplicacao}
+                      </Badge>
                     )}
                   </div>
-
-                  <div className="space-y-3">
-                    <div className="p-3 bg-blue-50 rounded-lg">
-                      <div className="flex items-center gap-2 mb-2">
-                        <BookOpen className="h-4 w-4 text-blue-600" />
-                        <span className="text-sm font-medium text-blue-700">Lição Aprendida:</span>
-                      </div>
-                      <p className="text-sm text-blue-800">
-                        {licao.licao_aprendida}
-                      </p>
+                  
+                  <div className="flex items-center gap-4 text-sm text-pmo-gray">
+                    <div className="flex items-center gap-1">
+                      <Calendar className="h-4 w-4" />
+                      {new Date(licao.data_registro).toLocaleDateString('pt-BR')}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <User className="h-4 w-4" />
+                      {licao.responsavel_registro}
                     </div>
                   </div>
-
-                  {licao.tags_busca && (
-                    <div className="mt-3 flex flex-wrap gap-1">
-                      {licao.tags_busca.split(',').map((tag: string, index: number) => (
-                        <Badge key={index} variant="outline" className="text-xs">
-                          {tag.trim()}
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                <div className="flex items-center gap-2 ml-4">
-                  <LicaoContextMenu
-                    licaoId={licao.id}
-                    onVisualizar={handleVisualizar}
-                    onEditar={handleEditar}
-                  />
-                  <ChevronRight className="h-5 w-5 text-pmo-gray group-hover:text-pmo-primary transition-colors flex-shrink-0" />
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <PaginationFooter
-        currentPage={currentPage}
-        totalPages={totalPages}
-        hasNextPage={hasNextPage}
-        hasPreviousPage={hasPreviousPage}
-        goToPage={goToPage}
-        goToNextPage={goToNextPage}
-        goToPreviousPage={goToPreviousPage}
-        startItem={startItem}
-        endItem={endItem}
-        totalItems={totalItems}
-      />
+            </CardHeader>
+            
+            <CardContent className="pt-0">
+              <div className="space-y-3">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <FileText className="h-4 w-4 text-pmo-gray" />
+                    <span className="text-sm font-medium text-pmo-gray">Situação Ocorrida</span>
+                  </div>
+                  <p className="text-sm text-gray-700 pl-6">
+                    {truncateText(licao.situacao_ocorrida)}
+                  </p>
+                </div>
+                
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <Lightbulb className="h-4 w-4 text-pmo-gray" />
+                    <span className="text-sm font-medium text-pmo-gray">Lição Aprendida</span>
+                  </div>
+                  <p className="text-sm text-gray-700 pl-6">
+                    {truncateText(licao.licao_aprendida)}
+                  </p>
+                </div>
+                
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <Target className="h-4 w-4 text-pmo-gray" />
+                    <span className="text-sm font-medium text-pmo-gray">Ação Recomendada</span>
+                  </div>
+                  <p className="text-sm text-gray-700 pl-6">
+                    {truncateText(licao.acao_recomendada)}
+                  </p>
+                </div>
+              </div>
+              
+              {licao.tags_busca && (
+                <div className="mt-4 pt-3 border-t">
+                  <div className="flex flex-wrap gap-1">
+                    {licao.tags_busca.split(',').map((tag, index) => (
+                      <Badge key={index} variant="secondary" className="text-xs">
+                        {tag.trim()}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </LicaoContextMenu>
+      ))}
     </div>
   );
 }
