@@ -1,7 +1,6 @@
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 
 interface ProjetosOverviewProps {
   projetos: any[];
@@ -17,15 +16,6 @@ export function ProjetosOverview({ projetos }: ProjetosOverviewProps) {
     }
   };
 
-  const getStatusBadgeVariant = (status: string) => {
-    switch (status) {
-      case 'Verde': return 'default';
-      case 'Amarelo': return 'secondary';
-      case 'Vermelho': return 'destructive';
-      default: return 'outline';
-    }
-  };
-
   // Filtrar apenas projetos com último status aprovado
   const projetosAtivos = projetos.filter(projeto => projeto.ultimoStatus);
 
@@ -33,7 +23,7 @@ export function ProjetosOverview({ projetos }: ProjetosOverviewProps) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <div className="w-4 h-4 bg-pmo-primary rounded"></div>
+          <div className="w-4 h-4 bg-[#1B365D] rounded"></div>
           Overview - Projetos Ativos ({projetosAtivos.length})
         </CardTitle>
       </CardHeader>
@@ -59,17 +49,14 @@ export function ProjetosOverview({ projetos }: ProjetosOverviewProps) {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      <div className={`w-3 h-3 rounded-full ${getStatusColor(projeto.ultimoStatus?.status_visao_gp || 'Cinza')}`}></div>
-                      <Badge variant={getStatusBadgeVariant(projeto.ultimoStatus?.status_visao_gp || 'Cinza')}>
-                        {projeto.ultimoStatus?.status_visao_gp || 'Sem status'}
-                      </Badge>
+                      <div className={`w-4 h-4 rounded-full ${getStatusColor(projeto.ultimoStatus?.status_visao_gp || 'Cinza')}`}></div>
                     </div>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <div className="w-20 bg-gray-200 rounded-full h-2">
                         <div 
-                          className="bg-pmo-primary h-2 rounded-full" 
+                          className="bg-[#1B365D] h-2 rounded-full" 
                           style={{ width: `${projeto.ultimoStatus?.progresso_estimado || 0}%` }}
                         ></div>
                       </div>

@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ProjetoMilestones } from './ProjetoMilestones';
+import { ProjetoTimeline } from './ProjetoTimeline';
 import { ProjetoAtividades } from './ProjetoAtividades';
 
 interface ProjetoDetalhesProps {
@@ -11,9 +11,9 @@ interface ProjetoDetalhesProps {
 export function ProjetoDetalhes({ projeto }: ProjetoDetalhesProps) {
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Verde': return 'bg-green-500';
-      case 'Amarelo': return 'bg-yellow-500';
-      case 'Vermelho': return 'bg-red-500';
+      case 'Verde': return 'bg-[#10B981]';
+      case 'Amarelo': return 'bg-[#F59E0B]';
+      case 'Vermelho': return 'bg-[#EF4444]';
       default: return 'bg-gray-500';
     }
   };
@@ -31,7 +31,7 @@ export function ProjetoDetalhes({ projeto }: ProjetoDetalhesProps) {
     <Card className="break-inside-avoid">
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          <span>{projeto.nome_projeto}</span>
+          <span className="text-[#1B365D]">{projeto.nome_projeto}</span>
           <div className="flex items-center gap-2">
             <div className={`w-3 h-3 rounded-full ${getStatusColor(projeto.ultimoStatus?.status_visao_gp || 'Cinza')}`}></div>
             <Badge variant={getStatusBadgeVariant(projeto.ultimoStatus?.status_visao_gp || 'Cinza')}>
@@ -40,18 +40,18 @@ export function ProjetoDetalhes({ projeto }: ProjetoDetalhesProps) {
           </div>
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-8">
         {/* Descrição e Informações Básicas */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <h4 className="font-semibold text-pmo-primary mb-2">Descrição do Projeto</h4>
-            <p className="text-sm text-gray-700">
+            <h4 className="font-semibold text-[#1B365D] mb-3">Descrição do Projeto</h4>
+            <p className="text-sm text-gray-700 leading-relaxed">
               {projeto.descricao_projeto || projeto.descricao || 'Descrição não informada'}
             </p>
           </div>
           <div>
-            <h4 className="font-semibold text-pmo-primary mb-2">Informações</h4>
-            <div className="space-y-1 text-sm">
+            <h4 className="font-semibold text-[#1B365D] mb-3">Informações</h4>
+            <div className="space-y-2 text-sm">
               <p><strong>GP Responsável:</strong> {projeto.gp_responsavel}</p>
               <p><strong>Responsável Interno:</strong> {projeto.responsavel_interno}</p>
               <p><strong>Status Geral:</strong> {projeto.ultimoStatus?.status_geral}</p>
@@ -60,8 +60,8 @@ export function ProjetoDetalhes({ projeto }: ProjetoDetalhesProps) {
           </div>
         </div>
 
-        {/* Marcos e Entregas */}
-        <ProjetoMilestones ultimoStatus={projeto.ultimoStatus} />
+        {/* Timeline de Entregas */}
+        <ProjetoTimeline ultimoStatus={projeto.ultimoStatus} />
 
         {/* Atividades e Atenções */}
         <ProjetoAtividades ultimoStatus={projeto.ultimoStatus} />
@@ -69,11 +69,16 @@ export function ProjetoDetalhes({ projeto }: ProjetoDetalhesProps) {
         {/* Bloqueios */}
         {projeto.ultimoStatus?.bloqueios_atuais && (
           <div>
-            <h4 className="font-semibold text-red-600 mb-2">Bloqueios Atuais</h4>
-            <div className="bg-red-50 p-3 rounded-lg border border-red-200">
-              {projeto.ultimoStatus.bloqueios_atuais.split('\n').map((item: string, i: number) => (
-                <div key={i} className="text-sm mb-1 text-red-700">⚠️ {item}</div>
-              ))}
+            <h4 className="font-semibold text-[#EF4444] mb-3">Bloqueios Atuais</h4>
+            <div className="bg-red-50 border border-red-200 p-4 rounded-lg">
+              <div className="space-y-2">
+                {projeto.ultimoStatus.bloqueios_atuais.split('\n').map((item: string, i: number) => (
+                  <div key={i} className="text-sm text-red-700 leading-relaxed">
+                    <span className="font-medium text-[#EF4444] mr-2">⚠️</span>
+                    <span>{item.trim()}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}

@@ -25,6 +25,20 @@ export default function Licoes() {
     isLoading: isLoadingLicoes
   } = useLicoesFiltradas();
 
+  // Categorias disponíveis para lições aprendidas
+  const categorias = [
+    'Técnica',
+    'Processo', 
+    'Comunicação',
+    'Recursos',
+    'Planejamento',
+    'Qualidade',
+    'Fornecedores',
+    'Riscos',
+    'Mudanças',
+    'Conhecimento'
+  ];
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-pmo-background flex items-center justify-center">
@@ -100,6 +114,7 @@ export default function Licoes() {
         <NovaLicaoModal 
           isOpen={novaLicaoModalAberto}
           onClose={handleFecharModal}
+          categorias={categorias}
         />
       </div>
     </Layout>

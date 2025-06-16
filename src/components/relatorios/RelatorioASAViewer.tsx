@@ -32,15 +32,15 @@ export function RelatorioASAViewer({ isOpen, onClose, dados }: RelatorioASAViewe
       <DialogContent className="max-w-7xl max-h-[95vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center justify-between">
-            <DialogTitle className="text-2xl font-bold text-pmo-primary">
+            <DialogTitle className="text-2xl font-bold text-[#1B365D]">
               Relatório ASA - {dados.carteira}
             </DialogTitle>
             <div className="flex gap-2 no-print">
-              <Button variant="outline" size="sm" onClick={handlePrint}>
+              <Button variant="outline" size="sm" onClick={handlePrint} className="border-[#2E5984] text-[#2E5984] hover:bg-[#2E5984] hover:text-white">
                 <Printer className="h-4 w-4 mr-2" />
                 Imprimir
               </Button>
-              <Button variant="outline" size="sm" onClick={handleDownload}>
+              <Button variant="outline" size="sm" onClick={handleDownload} className="border-[#2E5984] text-[#2E5984] hover:bg-[#2E5984] hover:text-white">
                 <Download className="h-4 w-4 mr-2" />
                 Download
               </Button>
@@ -51,45 +51,51 @@ export function RelatorioASAViewer({ isOpen, onClose, dados }: RelatorioASAViewe
           </div>
         </DialogHeader>
 
-        <div className="space-y-8 print:space-y-6" id="relatorio-content">
+        <div className="space-y-8 print:space-y-6 bg-[#F8FAFC]" id="relatorio-content">
           {/* Header do Relatório */}
-          <div className="text-center border-b pb-4">
-            <div className="flex items-center justify-center gap-4 mb-4">
+          <div className="text-center border-b border-[#1B365D] pb-6 bg-white p-6 rounded-lg shadow-sm">
+            <div className="flex items-center justify-center gap-6 mb-6">
               <img 
-                src="/lovable-uploads/48bf655c-460e-490c-9118-e222b43f0c9d.png" 
-                alt="DashPMO" 
-                className="h-12 w-auto"
+                src="/lovable-uploads/e42353b2-fcfd-4457-bbd8-066545973f48.png" 
+                alt="ASA Logo" 
+                className="h-16 w-auto"
               />
               <div>
-                <h1 className="text-3xl font-bold text-pmo-primary">Status Report Gerencial</h1>
-                <p className="text-pmo-gray">Carteira: {dados.carteira}</p>
-                <p className="text-sm text-pmo-gray">Data: {dados.dataRelatorio}</p>
+                <h1 className="text-4xl font-bold text-[#1B365D] mb-2">Status Report Gerencial</h1>
+                <p className="text-[#6B7280] text-lg">Carteira: {dados.carteira}</p>
+                <p className="text-sm text-[#6B7280]">Data: {dados.dataRelatorio}</p>
               </div>
             </div>
           </div>
 
           {/* Overview de Projetos Ativos */}
-          <ProjetosOverview projetos={dados.projetos} />
+          <div className="bg-white p-6 rounded-lg shadow-sm">
+            <ProjetosOverview projetos={dados.projetos} />
+          </div>
 
           {/* Detalhes dos Projetos */}
           {projetosAtivos.map((projeto) => (
-            <ProjetoDetalhes key={`detail-${projeto.id}`} projeto={projeto} />
+            <div key={`detail-${projeto.id}`} className="bg-white p-6 rounded-lg shadow-sm">
+              <ProjetoDetalhes projeto={projeto} />
+            </div>
           ))}
 
           {/* Tabela de Incidentes */}
-          <TabelaIncidentes incidentes={dados.incidentes} carteira={dados.carteira} />
+          <div className="bg-white p-6 rounded-lg shadow-sm">
+            <TabelaIncidentes incidentes={dados.incidentes} carteira={dados.carteira} />
+          </div>
 
           {/* Footer */}
-          <div className="text-center text-sm text-gray-500 border-t pt-4">
+          <div className="text-center text-sm text-[#6B7280] border-t border-[#1B365D] pt-6 bg-white p-6 rounded-lg shadow-sm">
             <div className="flex items-center justify-between">
               <div>
-                <p>ASA Investments - Gestão de Projetos de TI</p>
+                <p className="font-medium text-[#1B365D]">ASA Investments - Gestão de Projetos de TI</p>
                 <p>Relatório gerado em {dados.dataRelatorio}</p>
               </div>
               <img 
                 src="/lovable-uploads/e42353b2-fcfd-4457-bbd8-066545973f48.png" 
                 alt="ASA Logo" 
-                className="h-8 w-auto opacity-50"
+                className="h-10 w-auto opacity-75"
               />
             </div>
           </div>
