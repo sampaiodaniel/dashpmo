@@ -15,7 +15,7 @@ export function LicoesSearchBar({ termoBusca, onTermoBuscaChange, totalResults }
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-pmo-gray" />
         <Input 
           placeholder="Buscar lições..." 
-          className="pl-10"
+          className="pl-10 bg-white border-gray-300 text-gray-900 placeholder:text-gray-500"
           value={termoBusca}
           onChange={(e) => onTermoBuscaChange(e.target.value)}
         />
