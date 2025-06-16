@@ -1,147 +1,133 @@
 
-import { Card, CardContent } from "@/components/ui/card";
-import { Filter, X } from 'lucide-react';
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { LicoesFilters as LicoesFiltersType } from '@/hooks/useLicoesFiltradas';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { LicoesFilters } from '@/hooks/useLicoesFiltradas';
 
-const CATEGORIAS = [
-  'Gestão de Requisitos',
-  'Qualidade e Testes', 
-  'Comunicação',
-  'DevOps',
-  'Infraestrutura',
-  'Gestão de Mudanças',
-  'UX/UI',
-  'Planejamento',
-  'Desenvolvimento',
-  'Documentação'
-];
-
-const STATUS_APLICACAO = [
-  'Aplicada',
-  'Em andamento',
-  'Não aplicada'
-];
-
-interface LicoesFiltersProps {
-  filtros: LicoesFiltersType;
-  onFiltroChange: (filtros: LicoesFiltersType) => void;
+interface LicoesFiltersComponentProps {
+  filtros: LicoesFilters;
+  onFiltroChange: (filtros: LicoesFilters) => void;
   responsaveis: string[];
   projetos: string[];
 }
 
-export function LicoesFilters({ filtros, onFiltroChange, responsaveis, projetos }: LicoesFiltersProps) {
-  const handleLimparFiltros = () => {
-    onFiltroChange({});
-  };
+const statusOptions = ['Aplicada', 'Em andamento', 'Não aplicada'];
 
-  const temFiltrosAplicados = Object.keys(filtros).length > 0;
-
-  const updateFilter = (key: keyof LicoesFiltersType, value: string) => {
+export function LicoesFilters({ 
+  filtros, 
+  onFiltroChange, 
+  responsaveis, 
+  projetos 
+}: LicoesFiltersComponentProps) {
+  const handleFilterChange = (key: keyof LicoesFilters, value: string) => {
     const novosFiltros = { ...filtros };
-    if (value === 'todos' || value === 'todas') {
+    
+    if (value === 'todas' || value === 'todos') {
       delete novosFiltros[key];
     } else {
-      (novosFiltros as any)[key] = value;
+      novosFiltros[key] = value;
     }
+    
     onFiltroChange(novosFiltros);
   };
 
+  // Categorias das lições - devem ser as mesmas do sistema
+  const categorias = [
+    'Técnica',
+    'Processo', 
+    'Comunicação',
+    'Recursos',
+    'Planejamento',
+    'Qualidade',
+    'Fornecedores',
+    'Riscos',
+    'Mudanças',
+    'Conhecimento'
+  ];
+
   return (
-    <Card className="bg-white shadow-sm">
-      <CardContent className="p-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4 flex-wrap">
-            <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-pmo-gray" />
-              <span className="text-sm font-medium text-pmo-gray">Filtros:</span>
-            </div>
-            
-            <div className="flex gap-6 flex-wrap items-center">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-pmo-gray">Categoria:</span>
-                <Select value={filtros.categoria || 'todas'} onValueChange={(value) => updateFilter('categoria', value)}>
-                  <SelectTrigger className="w-40">
-                    <SelectValue placeholder="Todas" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="todas">Todas</SelectItem>
-                    {CATEGORIAS.map((categoria) => (
-                      <SelectItem key={categoria} value={categoria}>
-                        {categoria}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-pmo-gray">Status:</span>
-                <Select value={filtros.status || 'todos'} onValueChange={(value) => updateFilter('status', value)}>
-                  <SelectTrigger className="w-32">
-                    <SelectValue placeholder="Todos" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="todos">Todos</SelectItem>
-                    {STATUS_APLICACAO.map((status) => (
-                      <SelectItem key={status} value={status}>
-                        {status}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-pmo-gray">Responsável:</span>
-                <Select value={filtros.responsavel || 'todos'} onValueChange={(value) => updateFilter('responsavel', value)}>
-                  <SelectTrigger className="w-32">
-                    <SelectValue placeholder="Todos" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="todos">Todos</SelectItem>
-                    {responsaveis.map((responsavel) => (
-                      <SelectItem key={responsavel} value={responsavel}>
-                        {responsavel}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-pmo-gray">Projeto:</span>
-                <Select value={filtros.projeto || 'todos'} onValueChange={(value) => updateFilter('projeto', value)}>
-                  <SelectTrigger className="w-48">
-                    <SelectValue placeholder="Todos" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="todos">Todos</SelectItem>
-                    {projetos.map((projeto) => (
-                      <SelectItem key={projeto} value={projeto}>
-                        {projeto}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-
-          {temFiltrosAplicados && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleLimparFiltros}
-              className="flex items-center gap-2 text-pmo-gray hover:text-pmo-primary"
-            >
-              <X className="h-4 w-4" />
-              Limpar
-            </Button>
-          )}
+    <div className="bg-white p-4 rounded-lg shadow-sm border">
+      <h3 className="text-lg font-semibold text-pmo-primary mb-4">Filtros</h3>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Categoria</label>
+          <Select 
+            value={filtros.categoria || 'todas'} 
+            onValueChange={(value) => handleFilterChange('categoria', value)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Todas as categorias" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todas">Todas as categorias</SelectItem>
+              {categorias.map((categoria) => (
+                <SelectItem key={categoria} value={categoria}>
+                  {categoria}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
-      </CardContent>
-    </Card>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+          <Select 
+            value={filtros.status || 'todos'} 
+            onValueChange={(value) => handleFilterChange('status', value)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Todos os status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todos">Todos os status</SelectItem>
+              {statusOptions.map((status) => (
+                <SelectItem key={status} value={status}>
+                  {status}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Responsável</label>
+          <Select 
+            value={filtros.responsavel || 'todos'} 
+            onValueChange={(value) => handleFilterChange('responsavel', value)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Todos os responsáveis" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todos">Todos os responsáveis</SelectItem>
+              {responsaveis.map((responsavel) => (
+                <SelectItem key={responsavel} value={responsavel}>
+                  {responsavel}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Projeto</label>
+          <Select 
+            value={filtros.projeto || 'todos'} 
+            onValueChange={(value) => handleFilterChange('projeto', value)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Todos os projetos" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todos">Todos os projetos</SelectItem>
+              {projetos.map((projeto) => (
+                <SelectItem key={projeto} value={projeto}>
+                  {projeto}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+    </div>
   );
 }

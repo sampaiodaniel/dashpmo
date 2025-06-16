@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { Database } from '@/integrations/supabase/types';
 
@@ -29,15 +29,18 @@ export function useMudancasOperations() {
         console.error('Erro ao criar mudança:', error);
         toast({
           title: "Erro",
-          description: "Erro ao criar solicitação de mudança",
+          description: "Erro ao criar mudança",
           variant: "destructive",
         });
         return null;
       }
 
+      // Invalidar cache para recarregar a lista
+      queryClient.invalidateQueries({ queryKey: ['mudancas'] });
+
       toast({
         title: "Sucesso",
-        description: "Solicitação de mudança criada com sucesso!",
+        description: "Mudança criada com sucesso!",
       });
 
       return data;
@@ -54,22 +57,20 @@ export function useMudancasOperations() {
     }
   };
 
-  const atualizarMudanca = async (id: number, mudanca: Omit<MudancaUpdate, 'id'>) => {
+  const atualizarMudanca = async (mudancaId: number, updates: MudancaUpdate) => {
     setIsLoading(true);
     
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('mudancas_replanejamento')
-        .update(mudanca)
-        .eq('id', id)
-        .select()
-        .single();
+        .update(updates)
+        .eq('id', mudancaId);
 
       if (error) {
         console.error('Erro ao atualizar mudança:', error);
         toast({
           title: "Erro",
-          description: "Erro ao atualizar solicitação de mudança",
+          description: "Erro ao atualizar mudança",
           variant: "destructive",
         });
         return false;
@@ -77,11 +78,7 @@ export function useMudancasOperations() {
 
       // Invalidar cache para recarregar a lista
       queryClient.invalidateQueries({ queryKey: ['mudancas'] });
-
-      toast({
-        title: "Sucesso",
-        description: "Solicitação de mudança atualizada com sucesso!",
-      });
+      queryClient.invalidateQueries({ queryKey: ['mudanca', mudancaId] });
 
       return true;
     } catch (error) {
@@ -97,98 +94,45 @@ export function useMudancasOperations() {
     }
   };
 
-  const aprovarMudanca = async (id: number, responsavelAprovacao: string) => {
-    setIsLoading(true);
+  const aprovarMudanca = async (mudancaId: number, responsavelAprovacao: string) => {
+    console.log('🔄 Iniciando aprovação da mudança:', mudancaId);
     
-    try {
-      const { data, error } = await supabase
-        .from('mudancas_replanejamento')
-        .update({
-          status_aprovacao: 'Aprovada',
-          data_aprovacao: new Date().toISOString().split('T')[0],
-          responsavel_aprovacao: responsavelAprovacao
-        })
-        .eq('id', id)
-        .select()
-        .single();
+    const sucesso = await atualizarMudanca(mudancaId, {
+      status_aprovacao: 'Aprovada',
+      responsavel_aprovacao: responsavelAprovacao,
+      data_aprovacao: new Date().toISOString().split('T')[0]
+    });
 
-      if (error) {
-        console.error('Erro ao aprovar mudança:', error);
-        toast({
-          title: "Erro",
-          description: "Erro ao aprovar solicitação de mudança",
-          variant: "destructive",
-        });
-        return false;
-      }
-
-      // Invalidar cache para recarregar a lista
-      queryClient.invalidateQueries({ queryKey: ['mudancas'] });
-
+    if (sucesso) {
+      console.log('✅ Mudança aprovada com sucesso');
       toast({
-        title: "Sucesso",
-        description: "Solicitação de mudança aprovada com sucesso!",
+        title: "Mudança aprovada",
+        description: "A mudança foi aprovada com sucesso!",
       });
-
-      return true;
-    } catch (error) {
-      console.error('Erro inesperado:', error);
-      toast({
-        title: "Erro",
-        description: "Erro inesperado ao aprovar mudança",
-        variant: "destructive",
-      });
-      return false;
-    } finally {
-      setIsLoading(false);
     }
+
+    return sucesso;
   };
 
-  const rejeitarMudanca = async (id: number, responsavelAprovacao: string) => {
-    setIsLoading(true);
+  const rejeitarMudanca = async (mudancaId: number, responsavelAprovacao: string) => {
+    console.log('🔄 Iniciando rejeição da mudança:', mudancaId);
     
-    try {
-      const { data, error } = await supabase
-        .from('mudancas_replanejamento')
-        .update({
-          status_aprovacao: 'Rejeitada',
-          data_aprovacao: new Date().toISOString().split('T')[0],
-          responsavel_aprovacao: responsavelAprovacao
-        })
-        .eq('id', id)
-        .select()
-        .single();
+    const sucesso = await atualizarMudanca(mudancaId, {
+      status_aprovacao: 'Rejeitada',
+      responsavel_aprovacao: responsavelAprovacao,
+      data_aprovacao: new Date().toISOString().split('T')[0]
+    });
 
-      if (error) {
-        console.error('Erro ao rejeitar mudança:', error);
-        toast({
-          title: "Erro",
-          description: "Erro ao rejeitar solicitação de mudança",
-          variant: "destructive",
-        });
-        return false;
-      }
-
-      // Invalidar cache para recarregar a lista
-      queryClient.invalidateQueries({ queryKey: ['mudancas'] });
-
+    if (sucesso) {
+      console.log('✅ Mudança rejeitada com sucesso');
       toast({
-        title: "Sucesso",
-        description: "Solicitação de mudança rejeitada!",
-      });
-
-      return true;
-    } catch (error) {
-      console.error('Erro inesperado:', error);
-      toast({
-        title: "Erro",
-        description: "Erro inesperado ao rejeitar mudança",
+        title: "Mudança rejeitada",
+        description: "A mudança foi rejeitada.",
         variant: "destructive",
       });
-      return false;
-    } finally {
-      setIsLoading(false);
     }
+
+    return sucesso;
   };
 
   return {

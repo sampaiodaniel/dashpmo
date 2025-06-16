@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -13,6 +14,8 @@ export function useProjetosOperations() {
     setIsLoading(true);
     
     try {
+      console.log('🚀 Criando projeto:', projeto);
+      
       const { data, error } = await supabase
         .from('projetos')
         .insert([{
@@ -23,7 +26,7 @@ export function useProjetosOperations() {
         .single();
 
       if (error) {
-        console.error('Erro ao criar projeto:', error);
+        console.error('❌ Erro ao criar projeto:', error);
         toast({
           title: "Erro",
           description: "Erro ao criar projeto",
@@ -32,6 +35,7 @@ export function useProjetosOperations() {
         return null;
       }
 
+      console.log('✅ Projeto criado com sucesso:', data);
       toast({
         title: "Sucesso",
         description: "Projeto criado com sucesso!",
@@ -39,7 +43,7 @@ export function useProjetosOperations() {
 
       return data;
     } catch (error) {
-      console.error('Erro inesperado:', error);
+      console.error('💥 Erro inesperado:', error);
       toast({
         title: "Erro",
         description: "Erro inesperado ao criar projeto",

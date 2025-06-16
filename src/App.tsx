@@ -1,10 +1,8 @@
 
-import './index.css'
-
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
-import { AuthProvider } from '@/hooks/useAuth';
+import { ThemeProvider } from '@/components/theme-provider';
 
 import Index from '@/pages/Index';
 import Dashboard from '@/pages/Dashboard';
@@ -18,10 +16,12 @@ import Mudancas from '@/pages/Mudancas';
 import MudancaDetalhes from '@/pages/MudancaDetalhes';
 import EditarMudanca from '@/pages/EditarMudanca';
 import Licoes from '@/pages/Licoes';
+import LicaoDetalhes from '@/pages/LicaoDetalhes';
 import Incidentes from '@/pages/Incidentes';
 import Relatorios from '@/pages/Relatorios';
-import Administracao from '@/pages/Administracao';
+import Aprovacoes from '@/pages/Aprovacoes';
 import Configuracoes from '@/pages/Configuracoes';
+import Administracao from '@/pages/Administracao';
 import NotFound from '@/pages/NotFound';
 
 const queryClient = new QueryClient();
@@ -29,36 +29,32 @@ const queryClient = new QueryClient();
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
+      <ThemeProvider defaultTheme="light" storageKey="pmo-theme">
         <Router>
           <Routes>
-            {/* Rota inicial que inclui verificação de autenticação */}
             <Route path="/" element={<Index />} />
-            
-            {/* Redirecionamento da rota de aprovações removida */}
-            <Route path="/aprovacoes" element={<Navigate to="/status" replace />} />
-            
-            {/* Todas as outras rotas - cada página já tem seu próprio Layout */}
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/projetos" element={<Projetos />} />
             <Route path="/projetos/:id" element={<ProjetoDetalhes />} />
             <Route path="/status" element={<Status />} />
             <Route path="/status/:id" element={<StatusDetalhes />} />
-            <Route path="/status/:id/editar" element={<EditarStatus />} />
             <Route path="/status/novo" element={<NovoStatus />} />
+            <Route path="/status/:id/editar" element={<EditarStatus />} />
             <Route path="/mudancas" element={<Mudancas />} />
             <Route path="/mudancas/:id" element={<MudancaDetalhes />} />
             <Route path="/mudancas/:id/editar" element={<EditarMudanca />} />
             <Route path="/licoes" element={<Licoes />} />
+            <Route path="/licoes/:id" element={<LicaoDetalhes />} />
             <Route path="/incidentes" element={<Incidentes />} />
             <Route path="/relatorios" element={<Relatorios />} />
-            <Route path="/admin" element={<Administracao />} />
+            <Route path="/aprovacoes" element={<Aprovacoes />} />
             <Route path="/configuracoes" element={<Configuracoes />} />
+            <Route path="/administracao" element={<Administracao />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Router>
-      </AuthProvider>
-      <Toaster />
+        <Toaster />
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

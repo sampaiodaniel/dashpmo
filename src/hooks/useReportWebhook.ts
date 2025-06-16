@@ -74,7 +74,49 @@ export function useReportWebhook() {
         return false;
       }
 
-      // Tentar diferentes métodos se POST falhar
+      // Tentar primeiro GET com query parameters
+      try {
+        console.log('🌐 Tentando GET com query parameters...');
+        
+        const queryParams = new URLSearchParams({
+          carteira,
+          timestamp: reportData.timestamp,
+          ultimo_status: JSON.stringify(reportData.ultimo_status),
+          ultimos_incidentes: JSON.stringify(reportData.ultimos_incidentes),
+          enviado_de: reportData.enviado_de
+        });
+
+        const getUrl = `${webhookUrl}?${queryParams.toString()}`;
+        console.log('📡 URL GET:', getUrl);
+
+        const getResponse = await fetch(getUrl, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+          },
+        });
+
+        console.log('📡 Resposta GET recebida:', {
+          status: getResponse.status,
+          statusText: getResponse.statusText,
+          ok: getResponse.ok,
+          type: getResponse.type,
+          url: getResponse.url
+        });
+
+        if (getResponse.ok) {
+          console.log('✅ Webhook chamado com sucesso usando GET!');
+          toast({
+            title: "Report enviado",
+            description: `Dados da carteira ${carteira} enviados para o webhook com sucesso!`,
+          });
+          return true;
+        }
+      } catch (getError) {
+        console.log('❌ GET falhou, tentando métodos POST:', getError);
+      }
+
+      // Se GET falhar, tentar diferentes métodos POST
       const methods = ['POST', 'PUT', 'PATCH'];
       let lastError = null;
       

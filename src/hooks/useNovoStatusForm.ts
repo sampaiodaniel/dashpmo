@@ -1,146 +1,138 @@
 
-import { useState, useMemo } from 'react';
-import { useCarteiras } from '@/hooks/useListaValores';
-import { useProjetos } from '@/hooks/useProjetos';
+import { useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
 
 export function useNovoStatusForm() {
-  // Campos básicos - declarar carteiraSelecionada primeiro
-  const [carteiraSelecionada, setCarteiraSelecionada] = useState('');
+  const queryClient = useQueryClient();
+  const [carregando, setCarregando] = useState(false);
   
-  // Agora posso usar carteiraSelecionada no hook
-  const { data: todosProjetos } = useProjetos({ incluirFechados: true, area: carteiraSelecionada || undefined });
-  
-  const [projetoId, setProjetoId] = useState<number | null>(null);
-  const [progressoEstimado, setProgressoEstimado] = useState<number>(0);
-  const [responsavelCwi, setResponsavelCwi] = useState('');
-  const [gpResponsavelCwi, setGpResponsavelCwi] = useState('');
-  const [responsavelAsa, setResponsavelAsa] = useState('');
-  
-  // Status e riscos
-  const [statusGeral, setStatusGeral] = useState<string>('');
-  const [statusVisaoGp, setStatusVisaoGp] = useState<string>('');
-  const [impactoRiscos, setImpactoRiscos] = useState<string>('');
-  const [probabilidadeRiscos, setProbabilidadeRiscos] = useState<string>('');
-  
-  // Realizado e planejamento
-  const [realizadoSemana, setRealizadoSemana] = useState('');
-  
-  // Próximas entregas
-  const [nomeEntrega1, setNomeEntrega1] = useState('');
-  const [escopoEntrega1, setEscopoEntrega1] = useState('');
-  const [dataEntrega1, setDataEntrega1] = useState('');
-  const [nomeEntrega2, setNomeEntrega2] = useState('');
-  const [escopoEntrega2, setEscopoEntrega2] = useState('');
-  const [dataEntrega2, setDataEntrega2] = useState('');
-  const [nomeEntrega3, setNomeEntrega3] = useState('');
-  const [escopoEntrega3, setEscopoEntrega3] = useState('');
-  const [dataEntrega3, setDataEntrega3] = useState('');
-  
-  // Outros campos
-  const [backlog, setBacklog] = useState('');
-  const [bloqueios, setBloqueios] = useState('');
-  const [observacoesPontosAtencao, setObservacoesPontosAtencao] = useState('');
-
-  // Filtrar projetos pela carteira selecionada não é mais necessário pois já vem filtrado do hook
-  const projetosFiltrados = useMemo(() => {
-    return todosProjetos || [];
-  }, [todosProjetos]);
-
-  // Resetar projeto quando carteira muda
-  const handleCarteiraChange = (novaCarteira: string) => {
-    setCarteiraSelecionada(novaCarteira);
-    setProjetoId(null); // Limpar projeto selecionado
-  };
-
-  const getFormData = () => ({
-    projeto_id: projetoId,
-    progresso_estimado: progressoEstimado || null,
-    responsavel_cwi: responsavelCwi || null,
-    gp_responsavel_cwi: gpResponsavelCwi || null,
-    responsavel_asa: responsavelAsa || null,
-    carteira_primaria: null,
-    carteira_secundaria: null,
-    carteira_terciaria: null,
-    status_geral: statusGeral as any,
-    status_visao_gp: statusVisaoGp as any,
-    impacto_riscos: impactoRiscos as any,
-    probabilidade_riscos: probabilidadeRiscos as any,
-    realizado_semana_atual: realizadoSemana || null,
-    entregaveis1: escopoEntrega1 || null,
-    entrega1: nomeEntrega1 || null,
-    data_marco1: dataEntrega1 || null,
-    entregaveis2: escopoEntrega2 || null,
-    entrega2: nomeEntrega2 || null,
-    data_marco2: dataEntrega2 || null,
-    entregaveis3: escopoEntrega3 || null,
-    entrega3: nomeEntrega3 || null,
-    data_marco3: dataEntrega3 || null,
-    backlog: backlog || null,
-    bloqueios_atuais: bloqueios || null,
-    observacoes_pontos_atencao: observacoesPontosAtencao || null,
+  const [formData, setFormData] = useState({
+    carteira: '',
+    projeto_id: '',
+    status_geral: '',
+    status_visao_gp: '',
+    impacto_riscos: '',
+    probabilidade_riscos: '',
+    realizado_semana_atual: '',
+    backlog: '',
+    bloqueios_atuais: '',
+    observacoes_pontos_atencao: '',
+    entregaveis1: '',
+    entrega1: '',
+    data_marco1: '',
+    entregaveis2: '',
+    entrega2: '',
+    data_marco2: '',
+    entregaveis3: '',
+    entrega3: '',
+    data_marco3: '',
+    progresso_estimado: 0
   });
 
-  const isFormValid = () => {
-    return projetoId && statusGeral && statusVisaoGp && impactoRiscos && probabilidadeRiscos;
+  const updateField = (field: string, value: string | number) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const validarFormulario = () => {
+    const erros = [];
+
+    if (!formData.carteira) erros.push('Carteira é obrigatória');
+    if (!formData.projeto_id) erros.push('Projeto é obrigatório');
+    if (!formData.status_geral) erros.push('Status geral é obrigatório');
+    if (!formData.status_visao_gp) erros.push('Visão GP é obrigatória');
+    if (!formData.impacto_riscos) erros.push('Impacto dos riscos é obrigatório');
+    if (!formData.probabilidade_riscos) erros.push('Probabilidade dos riscos é obrigatória');
+    
+    // Marco 1 obrigatório
+    if (!formData.entregaveis1) erros.push('Entregáveis do Marco 1 são obrigatórios');
+    if (!formData.entrega1) erros.push('Entrega do Marco 1 é obrigatória');
+    if (!formData.data_marco1) erros.push('Data do Marco 1 é obrigatória');
+
+    return erros;
+  };
+
+  const salvarStatus = async () => {
+    const erros = validarFormulario();
+    
+    if (erros.length > 0) {
+      toast({
+        title: "Campos obrigatórios",
+        description: erros.join(', '),
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    setCarregando(true);
+
+    try {
+      const statusData = {
+        projeto_id: parseInt(formData.projeto_id),
+        status_geral: formData.status_geral,
+        status_visao_gp: formData.status_visao_gp,
+        impacto_riscos: formData.impacto_riscos,
+        probabilidade_riscos: formData.probabilidade_riscos,
+        realizado_semana_atual: formData.realizado_semana_atual || null,
+        backlog: formData.backlog || null,
+        bloqueios_atuais: formData.bloqueios_atuais || null,
+        observacoes_pontos_atencao: formData.observacoes_pontos_atencao || null,
+        entregaveis1: formData.entregaveis1,
+        entrega1: formData.entrega1,
+        data_marco1: formData.data_marco1,
+        entregaveis2: formData.entregaveis2 || null,
+        entrega2: formData.entrega2 || null,
+        data_marco2: formData.data_marco2 || null,
+        entregaveis3: formData.entregaveis3 || null,
+        entrega3: formData.entrega3 || null,
+        data_marco3: formData.data_marco3 || null,
+        progresso_estimado: formData.progresso_estimado,
+        criado_por: 'Sistema',
+        data_atualizacao: new Date().toISOString().split('T')[0]
+      };
+
+      console.log('📝 Salvando status:', statusData);
+
+      const { error } = await supabase
+        .from('status_projeto')
+        .insert(statusData);
+
+      if (error) {
+        console.error('❌ Erro ao salvar status:', error);
+        toast({
+          title: "Erro",
+          description: "Erro ao salvar status",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      toast({
+        title: "Sucesso",
+        description: "Status criado com sucesso!",
+      });
+
+      queryClient.invalidateQueries({ queryKey: ['status-list'] });
+      return true;
+
+    } catch (error) {
+      console.error('💥 Erro inesperado:', error);
+      toast({
+        title: "Erro",
+        description: "Erro inesperado ao salvar status",
+        variant: "destructive",
+      });
+      return false;
+    } finally {
+      setCarregando(false);
+    }
   };
 
   return {
-    // States
-    carteiraSelecionada,
-    projetoId,
-    progressoEstimado,
-    responsavelCwi,
-    gpResponsavelCwi,
-    responsavelAsa,
-    statusGeral,
-    statusVisaoGp,
-    impactoRiscos,
-    probabilidadeRiscos,
-    realizadoSemana,
-    nomeEntrega1,
-    escopoEntrega1,
-    dataEntrega1,
-    nomeEntrega2,
-    escopoEntrega2,
-    dataEntrega2,
-    nomeEntrega3,
-    escopoEntrega3,
-    dataEntrega3,
-    backlog,
-    bloqueios,
-    observacoesPontosAtencao,
-    
-    // Setters
-    setCarteiraSelecionada,
-    setProjetoId,
-    setProgressoEstimado,
-    setResponsavelCwi,
-    setGpResponsavelCwi,
-    setResponsavelAsa,
-    setStatusGeral,
-    setStatusVisaoGp,
-    setImpactoRiscos,
-    setProbabilidadeRiscos,
-    setRealizadoSemana,
-    setNomeEntrega1,
-    setEscopoEntrega1,
-    setDataEntrega1,
-    setNomeEntrega2,
-    setEscopoEntrega2,
-    setDataEntrega2,
-    setNomeEntrega3,
-    setEscopoEntrega3,
-    setDataEntrega3,
-    setBacklog,
-    setBloqueios,
-    setObservacoesPontosAtencao,
-    
-    // Computed values
-    projetosFiltrados,
-    
-    // Methods
-    handleCarteiraChange,
-    getFormData,
-    isFormValid,
+    formData,
+    updateField,
+    salvarStatus,
+    carregando
   };
 }
