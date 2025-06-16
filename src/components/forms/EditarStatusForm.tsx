@@ -236,186 +236,201 @@ export function EditarStatusForm({ status, onSuccess }: EditarStatusFormProps) {
       </Card>
 
       {/* Atividades */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Atividades</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <Label htmlFor="realizado_semana_atual">Realizado na Semana Atual</Label>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Realizado na Semana</CardTitle>
+          </CardHeader>
+          <CardContent>
             <Textarea
-              id="realizado_semana_atual"
               value={formData.realizado_semana_atual}
               onChange={(e) => handleInputChange('realizado_semana_atual', e.target.value)}
-              rows={3}
+              rows={4}
+              placeholder="Descreva as atividades realizadas na semana atual..."
             />
-          </div>
+          </CardContent>
+        </Card>
 
-          <div>
-            <Label htmlFor="backlog">Backlog</Label>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Backlog</CardTitle>
+          </CardHeader>
+          <CardContent>
             <Textarea
-              id="backlog"
               value={formData.backlog}
               onChange={(e) => handleInputChange('backlog', e.target.value)}
-              rows={3}
+              rows={4}
+              placeholder="Descreva o backlog..."
             />
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
 
-      {/* Marcos - Layout ajustado conforme solicitado */}
+      {/* Entregáveis e Marcos - Layout como no detalhe */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Entregáveis e Marcos</CardTitle>
+          <CardTitle className="text-lg">📅 Entregáveis e Marcos</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Marco 1 */}
           <div className="border rounded-lg p-4">
-            <h4 className="font-medium text-pmo-primary mb-4">Marco 1</h4>
-            <div className="grid grid-cols-12 gap-4">
-              <div className="col-span-8">
-                <Label htmlFor="entregaveis1">Entregáveis</Label>
-                <Textarea
-                  id="entregaveis1"
-                  value={formData.entregaveis1}
-                  onChange={(e) => handleInputChange('entregaveis1', e.target.value)}
-                  rows={4}
-                  className="h-[120px]"
+            <h4 className="font-medium text-pmo-primary mb-4">Marco 1 (Obrigatório)</h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <Label htmlFor="entrega1">Nome do Marco *</Label>
+                <Input
+                  id="entrega1"
+                  value={formData.entrega1}
+                  onChange={(e) => handleInputChange('entrega1', e.target.value)}
+                  placeholder="Nome do marco"
                 />
               </div>
-              <div className="col-span-4 flex flex-col">
-                <div className="flex-1">
-                  <Label htmlFor="entrega1">Nome da Entrega</Label>
-                  <Input
-                    id="entrega1"
-                    value={formData.entrega1}
-                    onChange={(e) => handleInputChange('entrega1', e.target.value)}
-                    className="h-[56px]"
-                  />
-                </div>
-                <div className="flex-1 mt-2">
-                  <Label htmlFor="data_marco1">Data de Entrega</Label>
-                  <Input
-                    id="data_marco1"
-                    type="date"
-                    value={formData.data_marco1}
-                    onChange={(e) => handleInputChange('data_marco1', e.target.value)}
-                    className="h-[56px]"
-                  />
-                </div>
+              <div>
+                <Label htmlFor="data_marco1">Data *</Label>
+                <Input
+                  id="data_marco1"
+                  type="date"
+                  value={formData.data_marco1}
+                  onChange={(e) => handleInputChange('data_marco1', e.target.value)}
+                />
               </div>
+              <div>
+                <Label>Responsável *</Label>
+                <Input
+                  placeholder="Nome do responsável"
+                />
+              </div>
+            </div>
+            <div className="mt-4">
+              <Label htmlFor="entregaveis1">Entregáveis:</Label>
+              <Textarea
+                id="entregaveis1"
+                value={formData.entregaveis1}
+                onChange={(e) => handleInputChange('entregaveis1', e.target.value)}
+                rows={3}
+                placeholder="Descreva os entregáveis..."
+              />
             </div>
           </div>
 
           {/* Marco 2 */}
           <div className="border rounded-lg p-4">
-            <h4 className="font-medium text-pmo-primary mb-4">Marco 2</h4>
-            <div className="grid grid-cols-12 gap-4">
-              <div className="col-span-8">
-                <Label htmlFor="entregaveis2">Entregáveis</Label>
-                <Textarea
-                  id="entregaveis2"
-                  value={formData.entregaveis2}
-                  onChange={(e) => handleInputChange('entregaveis2', e.target.value)}
-                  rows={4}
-                  className="h-[120px]"
+            <h4 className="font-medium text-pmo-primary mb-4">Marco 2 (Opcional)</h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <Label htmlFor="entrega2">Nome do Marco</Label>
+                <Input
+                  id="entrega2"
+                  value={formData.entrega2}
+                  onChange={(e) => handleInputChange('entrega2', e.target.value)}
+                  placeholder="Nome do marco"
                 />
               </div>
-              <div className="col-span-4 flex flex-col">
-                <div className="flex-1">
-                  <Label htmlFor="entrega2">Nome da Entrega</Label>
-                  <Input
-                    id="entrega2"
-                    value={formData.entrega2}
-                    onChange={(e) => handleInputChange('entrega2', e.target.value)}
-                    className="h-[56px]"
-                  />
-                </div>
-                <div className="flex-1 mt-2">
-                  <Label htmlFor="data_marco2">Data de Entrega</Label>
-                  <Input
-                    id="data_marco2"
-                    type="date"
-                    value={formData.data_marco2}
-                    onChange={(e) => handleInputChange('data_marco2', e.target.value)}
-                    className="h-[56px]"
-                  />
-                </div>
+              <div>
+                <Label htmlFor="data_marco2">Data</Label>
+                <Input
+                  id="data_marco2"
+                  type="date"
+                  value={formData.data_marco2}
+                  onChange={(e) => handleInputChange('data_marco2', e.target.value)}
+                />
               </div>
+              <div>
+                <Label>Responsável</Label>
+                <Input
+                  placeholder="Nome do responsável"
+                />
+              </div>
+            </div>
+            <div className="mt-4">
+              <Label htmlFor="entregaveis2">Entregáveis:</Label>
+              <Textarea
+                id="entregaveis2"
+                value={formData.entregaveis2}
+                onChange={(e) => handleInputChange('entregaveis2', e.target.value)}
+                rows={3}
+                placeholder="Descreva os entregáveis..."
+              />
             </div>
           </div>
 
           {/* Marco 3 */}
           <div className="border rounded-lg p-4">
-            <h4 className="font-medium text-pmo-primary mb-4">Marco 3</h4>
-            <div className="grid grid-cols-12 gap-4">
-              <div className="col-span-8">
-                <Label htmlFor="entregaveis3">Entregáveis</Label>
-                <Textarea
-                  id="entregaveis3"
-                  value={formData.entregaveis3}
-                  onChange={(e) => handleInputChange('entregaveis3', e.target.value)}
-                  rows={4}
-                  className="h-[120px]"
+            <h4 className="font-medium text-pmo-primary mb-4">Marco 3 (Opcional)</h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <Label htmlFor="entrega3">Nome do Marco</Label>
+                <Input
+                  id="entrega3"
+                  value={formData.entrega3}
+                  onChange={(e) => handleInputChange('entrega3', e.target.value)}
+                  placeholder="Nome do marco"
                 />
               </div>
-              <div className="col-span-4 flex flex-col">
-                <div className="flex-1">
-                  <Label htmlFor="entrega3">Nome da Entrega</Label>
-                  <Input
-                    id="entrega3"
-                    value={formData.entrega3}
-                    onChange={(e) => handleInputChange('entrega3', e.target.value)}
-                    className="h-[56px]"
-                  />
-                </div>
-                <div className="flex-1 mt-2">
-                  <Label htmlFor="data_marco3">Data de Entrega</Label>
-                  <Input
-                    id="data_marco3"
-                    type="date"
-                    value={formData.data_marco3}
-                    onChange={(e) => handleInputChange('data_marco3', e.target.value)}
-                    className="h-[56px]"
-                  />
-                </div>
+              <div>
+                <Label htmlFor="data_marco3">Data</Label>
+                <Input
+                  id="data_marco3"
+                  type="date"
+                  value={formData.data_marco3}
+                  onChange={(e) => handleInputChange('data_marco3', e.target.value)}
+                />
               </div>
+              <div>
+                <Label>Responsável</Label>
+                <Input
+                  placeholder="Nome do responsável"
+                />
+              </div>
+            </div>
+            <div className="mt-4">
+              <Label htmlFor="entregaveis3">Entregáveis:</Label>
+              <Textarea
+                id="entregaveis3"
+                value={formData.entregaveis3}
+                onChange={(e) => handleInputChange('entregaveis3', e.target.value)}
+                rows={3}
+                placeholder="Descreva os entregáveis..."
+              />
             </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Observações */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Observações e Bloqueios</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <Label htmlFor="bloqueios_atuais">Bloqueios Atuais</Label>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-red-600">Bloqueios Atuais</CardTitle>
+          </CardHeader>
+          <CardContent>
             <Textarea
-              id="bloqueios_atuais"
               value={formData.bloqueios_atuais}
               onChange={(e) => handleInputChange('bloqueios_atuais', e.target.value)}
-              rows={3}
+              rows={4}
+              placeholder="Descreva os bloqueios atuais..."
             />
-          </div>
+          </CardContent>
+        </Card>
 
-          <div>
-            <Label htmlFor="observacoes_pontos_atencao">Pontos de Atenção</Label>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-yellow-600">Pontos de Atenção</CardTitle>
+          </CardHeader>
+          <CardContent>
             <Textarea
-              id="observacoes_pontos_atencao"
               value={formData.observacoes_pontos_atencao}
               onChange={(e) => handleInputChange('observacoes_pontos_atencao', e.target.value)}
-              rows={3}
+              rows={4}
+              placeholder="Descreva os pontos de atenção..."
             />
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
 
       <div className="flex justify-end gap-2">
         <Button type="submit" disabled={carregando}>
-          {carregando ? 'Salvando...' : 'Salvar Alterações'}
+          {carregando ? 'Salvando...' : 'Salvar Status'}
         </Button>
       </div>
     </form>

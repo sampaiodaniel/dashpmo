@@ -9,16 +9,32 @@ import { EditarStatusForm } from '@/components/forms/EditarStatusForm';
 export default function EditarStatus() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { data: statusList, isLoading } = useStatusList();
+  const { data: statusList, isLoading, error } = useStatusList();
 
   console.log('EditarStatus - ID:', id);
   console.log('EditarStatus - StatusList:', statusList);
+  console.log('EditarStatus - Loading:', isLoading);
+  console.log('EditarStatus - Error:', error);
 
-  const status = statusList?.find(s => s.id === Number(id));
-
-  console.log('EditarStatus - Status encontrado:', status);
+  // Validar se o ID existe e é um número válido
+  if (!id || isNaN(Number(id))) {
+    console.log('EditarStatus - ID inválido:', id);
+    return (
+      <Layout>
+        <div className="text-center py-8">
+          <h1 className="text-2xl font-bold text-pmo-primary mb-4">ID inválido</h1>
+          <p className="text-pmo-gray mb-4">O ID do status não é válido.</p>
+          <Button onClick={() => navigate('/status')}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Voltar para Status
+          </Button>
+        </div>
+      </Layout>
+    );
+  }
 
   if (isLoading) {
+    console.log('EditarStatus - Carregando...');
     return (
       <Layout>
         <div className="text-center py-8 text-pmo-gray">
@@ -28,7 +44,27 @@ export default function EditarStatus() {
     );
   }
 
-  if (!status && !isLoading) {
+  if (error) {
+    console.error('EditarStatus - Erro ao carregar dados:', error);
+    return (
+      <Layout>
+        <div className="text-center py-8">
+          <h1 className="text-2xl font-bold text-pmo-primary mb-4">Erro ao carregar dados</h1>
+          <p className="text-pmo-gray mb-4">Ocorreu um erro ao carregar os dados do status.</p>
+          <Button onClick={() => navigate('/status')}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Voltar para Status
+          </Button>
+        </div>
+      </Layout>
+    );
+  }
+
+  const status = statusList?.find(s => s.id === Number(id));
+  console.log('EditarStatus - Status encontrado:', status);
+
+  if (!status) {
+    console.log('EditarStatus - Status não encontrado para ID:', id);
     return (
       <Layout>
         <div className="text-center py-8">
@@ -43,7 +79,7 @@ export default function EditarStatus() {
     );
   }
 
-  if (status && status.aprovado) {
+  if (status.aprovado) {
     return (
       <Layout>
         <div className="text-center py-8">
@@ -59,19 +95,8 @@ export default function EditarStatus() {
   }
 
   const handleSuccess = () => {
-    navigate(`/status/${status?.id}`);
+    navigate(`/status/${status.id}`);
   };
-
-  // Se ainda está carregando ou não encontrou o status, não renderiza o formulário
-  if (!status) {
-    return (
-      <Layout>
-        <div className="text-center py-8 text-pmo-gray">
-          <div>Carregando dados do status...</div>
-        </div>
-      </Layout>
-    );
-  }
 
   return (
     <Layout>
