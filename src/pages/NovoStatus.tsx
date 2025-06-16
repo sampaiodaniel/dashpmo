@@ -1,3 +1,4 @@
+
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
@@ -8,10 +9,30 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Save } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useNovoStatusForm } from '@/hooks/useNovoStatusForm';
 import { CarteiraProjetoSelect } from '@/components/forms/CarteiraProjetoSelect';
+
+// Função para calcular o risco baseado na fórmula do Excel
+function calcularFarolRisco(impacto: string, probabilidade: string): { nivel: string; cor: string } {
+  if (!impacto || !probabilidade) {
+    return { nivel: '', cor: '' };
+  }
+
+  const impactoValor = impacto === 'Baixo' ? 1 : impacto === 'Médio' ? 2 : 3;
+  const probabilidadeValor = probabilidade === 'Baixo' ? 1 : probabilidade === 'Médio' ? 2 : 3;
+  const risco = impactoValor * probabilidadeValor;
+
+  if (risco <= 2) {
+    return { nivel: 'Baixo', cor: 'bg-green-100 text-green-700 border-green-200' };
+  } else if (risco <= 4) {
+    return { nivel: 'Médio', cor: 'bg-yellow-100 text-yellow-700 border-yellow-200' };
+  } else {
+    return { nivel: 'Alto', cor: 'bg-red-100 text-red-700 border-red-200' };
+  }
+}
 
 export default function NovoStatus() {
   const { usuario, isLoading } = useAuth();
@@ -24,6 +45,11 @@ export default function NovoStatus() {
     handleCarteiraChange,
     handleProjetoChange
   } = useNovoStatusForm();
+
+  // Valores atuais dos campos de risco para calcular o farol
+  const impactoAtual = form.watch('impacto_riscos');
+  const probabilidadeAtual = form.watch('probabilidade_riscos');
+  const farolRisco = calcularFarolRisco(impactoAtual, probabilidadeAtual);
 
   if (isLoading) {
     return (
@@ -135,7 +161,7 @@ export default function NovoStatus() {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <FormField
                     control={form.control}
                     name="probabilidade_riscos"
@@ -181,16 +207,39 @@ export default function NovoStatus() {
                       </FormItem>
                     )}
                   />
+
+                  {farolRisco.nivel && (
+                    <div>
+                      <Label>Farol de Risco (Prob x Impacto)</Label>
+                      <Badge className={`${farolRisco.cor} mt-2 block w-fit`}>
+                        {farolRisco.nivel}
+                      </Badge>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
 
-            {/* Text Areas */}
+            {/* Detalhes do Status */}
             <Card>
               <CardHeader>
-                <CardTitle>Detalhes do Projeto</CardTitle>
+                <CardTitle>Detalhes do Status</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="entregas_realizadas"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Itens Trabalhados na Semana</FormLabel>
+                      <FormControl>
+                        <Textarea {...field} placeholder="Descreva os itens trabalhados na semana" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 <FormField
                   control={form.control}
                   name="backlog"
@@ -221,82 +270,12 @@ export default function NovoStatus() {
 
                 <FormField
                   control={form.control}
-                  name="entregas_realizadas"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Entregas Realizadas</FormLabel>
-                      <FormControl>
-                        <Textarea {...field} placeholder="Lista de entregas realizadas" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="proximas_entregas"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Próximas Entregas</FormLabel>
-                      <FormControl>
-                        <Textarea {...field} placeholder="Próximas entregas planejadas" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="marcos_projeto"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Marcos do Projeto</FormLabel>
-                      <FormControl>
-                        <Textarea {...field} placeholder="Marcos importantes do projeto" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="riscos_identificados"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Riscos Identificados</FormLabel>
-                      <FormControl>
-                        <Textarea {...field} placeholder="Riscos identificados no projeto" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="mudancas_solicitadas"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Mudanças Solicitadas</FormLabel>
-                      <FormControl>
-                        <Textarea {...field} placeholder="Mudanças solicitadas no projeto" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
                   name="observacoes_gerais"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Observações Gerais</FormLabel>
+                      <FormLabel>Observações ou Pontos de Atenção</FormLabel>
                       <FormControl>
-                        <Textarea {...field} placeholder="Observações gerais sobre o projeto" />
+                        <Textarea {...field} placeholder="Observações ou pontos de atenção sobre o projeto" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
