@@ -9,7 +9,15 @@ import { useRelatorioASA, DadosRelatorioASA } from '@/hooks/useRelatorioASA';
 import { ReportWebhookModal } from '@/components/relatorios/ReportWebhookModal';
 import { RelatorioASAViewer } from '@/components/relatorios/RelatorioASAViewer';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
+interface RelatorioRecente {
+  id: string;
+  carteira: string;
+  data: Date;
+  tipo: string;
+  dados?: DadosRelatorioASA | null;
+}
 
 export default function Relatorios() {
   const { usuario, isLoading } = useAuth();
@@ -18,12 +26,29 @@ export default function Relatorios() {
   const [showRelatorioViewer, setShowRelatorioViewer] = useState(false);
   const [dadosRelatorio, setDadosRelatorio] = useState<DadosRelatorioASA | null>(null);
   const [carteiraSelecionada, setCarteiraSelecionada] = useState<string>('');
-  const [relatoriosRecentes, setRelatoriosRecentes] = useState<Array<{
-    id: string;
-    carteira: string;
-    data: Date;
-    tipo: string;
-  }>>([]);
+  const [relatoriosRecentes, setRelatoriosRecentes] = useState<RelatorioRecente[]>([]);
+
+  // Carregar relatórios recentes do localStorage
+  useEffect(() => {
+    const relatoriossalvos = localStorage.getItem('relatorios-recentes');
+    if (relatoriossalvos) {
+      try {
+        const relatorios = JSON.parse(relatoriossalvos).map((rel: any) => ({
+          ...rel,
+          data: new Date(rel.data)
+        }));
+        setRelatoriosRecentes(relatorios);
+      } catch (error) {
+        console.error('Erro ao carregar relatórios recentes:', error);
+      }
+    }
+  }, []);
+
+  // Salvar relatórios recentes no localStorage
+  const salvarRelatoriosRecentes = (relatorios: RelatorioRecente[]) => {
+    localStorage.setItem('relatorios-recentes', JSON.stringify(relatorios));
+    setRelatoriosRecentes(relatorios);
+  };
 
   if (isLoading) {
     return (
@@ -51,13 +76,23 @@ export default function Relatorios() {
       setShowRelatorioViewer(true);
       
       // Adicionar aos relatórios recentes
-      const novoRelatorio = {
+      const novoRelatorio: RelatorioRecente = {
         id: Date.now().toString(),
         carteira: carteiraSelecionada,
         data: new Date(),
-        tipo: 'Carteira'
+        tipo: 'Carteira',
+        dados: dados
       };
-      setRelatoriosRecentes(prev => [novoRelatorio, ...prev.slice(0, 4)]);
+      
+      const novosRelatorios = [novoRelatorio, ...relatoriosRecentes.slice(0, 4)];
+      salvarRelatoriosRecentes(novosRelatorios);
+    }
+  };
+
+  const handleVisualizarRelatorio = (relatorio: RelatorioRecente) => {
+    if (relatorio.dados) {
+      setDadosRelatorio(relatorio.dados);
+      setShowRelatorioViewer(true);
     }
   };
 
@@ -150,7 +185,12 @@ export default function Relatorios() {
                         </p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleVisualizarRelatorio(relatorio)}
+                      disabled={!relatorio.dados}
+                    >
                       Visualizar
                     </Button>
                   </div>

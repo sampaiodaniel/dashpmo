@@ -54,7 +54,6 @@ export default function Mudancas() {
             <MudancasFilters 
               filtros={filtros}
               onFiltrosChange={setFiltros}
-              mudancas={mudancas || []}
             />
           </div>
           

@@ -71,7 +71,7 @@ export function ProjetoAtividades({ ultimoStatus }: ProjetoAtividadesProps) {
 
       {/* Bloqueios - apenas uma vez e apenas se existir */}
       {ultimoStatus.bloqueios_atuais && (
-        <div className="mt-6">
+        <div>
           <h4 className="font-semibold text-[#EF4444] mb-3">Bloqueios Atuais</h4>
           <div className="bg-red-50 border border-red-200 p-4 rounded-lg">
             <div className="space-y-1">

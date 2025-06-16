@@ -1,38 +1,65 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, User, FileText, AlertCircle } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Calendar, User, Building2, FileText } from 'lucide-react';
 import { MudancaReplanejamento } from '@/types/pmo';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { useMudancaActions } from '@/hooks/useMudancaActions';
 
 interface MudancaCardProps {
   mudanca: MudancaReplanejamento;
-  onMudancaClick?: (mudancaId: number) => void;
 }
 
-export function MudancaCard({ mudanca, onMudancaClick }: MudancaCardProps) {
-  const { handleCardClick } = useMudancaActions(onMudancaClick);
+export function MudancaCard({ mudanca }: MudancaCardProps) {
+  const getStatusColor = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case 'aprovada':
+        return 'default';
+      case 'pendente':
+        return 'secondary';
+      case 'rejeitada':
+        return 'destructive';
+      default:
+        return 'secondary';
+    }
+  };
+
+  const getTipoColor = (tipo: string) => {
+    switch (tipo?.toLowerCase()) {
+      case 'escopo':
+        return 'bg-blue-100 text-blue-800';
+      case 'prazo':
+        return 'bg-orange-100 text-orange-800';
+      case 'recurso':
+        return 'bg-purple-100 text-purple-800';
+      case 'orçamento':
+        return 'bg-green-100 text-green-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
 
   return (
-    <Card 
-      className="hover:shadow-md transition-shadow cursor-pointer"
-      onClick={() => handleCardClick(mudanca.id)}
-    >
-      <CardHeader>
+    <Card className="hover:shadow-md transition-shadow cursor-pointer border-l-4 border-l-pmo-primary">
+      <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex-1">
+            <div className="flex items-center gap-2 mb-2">
+              <Badge className={getTipoColor(mudanca.tipo_mudanca)}>
+                {mudanca.tipo_mudanca}
+              </Badge>
+            </div>
             <CardTitle className="text-lg text-pmo-primary mb-2">
-              {mudanca.projeto?.nome_projeto}
+              {mudanca.projeto?.nome_projeto || 'Projeto não encontrado'}
             </CardTitle>
             <div className="flex items-center gap-4 text-sm text-pmo-gray">
               <div className="flex items-center gap-1">
-                <FileText className="h-4 w-4" />
-                <span>{mudanca.tipo_mudanca}</span>
+                <Building2 className="h-4 w-4" />
+                <span className="font-medium">{mudanca.projeto?.area_responsavel}</span>
               </div>
               <div className="flex items-center gap-1">
                 <Calendar className="h-4 w-4" />
-                <span>{format(mudanca.data_solicitacao, 'dd/MM/yyyy', { locale: ptBR })}</span>
+                <span>{format(new Date(mudanca.data_solicitacao), 'dd/MM/yyyy', { locale: ptBR })}</span>
               </div>
               <div className="flex items-center gap-1">
                 <User className="h-4 w-4" />
@@ -43,28 +70,19 @@ export function MudancaCard({ mudanca, onMudancaClick }: MudancaCardProps) {
         </div>
       </CardHeader>
       
-      <CardContent className="space-y-4">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium">Impacto:</span>
-            <span className="text-sm">{mudanca.impacto_prazo_dias} dias</span>
+      <CardContent className="pt-0">
+        <div className="space-y-3">
+          <div>
+            <span className="text-sm font-medium text-pmo-gray">Descrição:</span>
+            <p className="text-sm text-gray-700 line-clamp-2 mt-1">{mudanca.descricao}</p>
           </div>
-          {mudanca.impacto_prazo_dias > 15 && (
-            <div className="flex items-center gap-1 text-orange-600">
-              <AlertCircle className="h-4 w-4" />
-              <span className="text-sm">Alto impacto</span>
+          
+          <div className="flex items-center justify-between">
+            <div className="text-sm">
+              <span className="font-medium text-pmo-gray">Impacto no Prazo: </span>
+              <span className="text-pmo-danger font-medium">{mudanca.impacto_prazo_dias} dias</span>
             </div>
-          )}
-        </div>
-
-        <div>
-          <h4 className="text-sm font-medium mb-1">Descrição:</h4>
-          <p className="text-sm text-pmo-gray line-clamp-2">{mudanca.descricao}</p>
-        </div>
-
-        <div>
-          <h4 className="text-sm font-medium mb-1">Justificativa:</h4>
-          <p className="text-sm text-pmo-gray line-clamp-2">{mudanca.justificativa_negocio}</p>
+          </div>
         </div>
       </CardContent>
     </Card>

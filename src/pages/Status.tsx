@@ -119,7 +119,7 @@ function StatusContent() {
             currentPage={paginaAtual}
             totalPages={totalPaginas}
             totalItems={totalItens}
-            onPageChange={setPaginaAtual}
+            onPageChange={(page: number) => setPaginaAtual(page)}
           />
         </>
       )}
