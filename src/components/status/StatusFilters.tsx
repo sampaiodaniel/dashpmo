@@ -1,13 +1,8 @@
 
-import { Card, CardContent } from "@/components/ui/card";
-import { Filter, X } from 'lucide-react';
-import { Button } from "@/components/ui/button";
-import { CompactCarteiraProjetoFilter } from './filters/CompactCarteiraProjetoFilter';
-import { CompactResponsavelFilter } from './filters/CompactResponsavelFilter';
-import { ApprovalStatusFilter } from './filters/ApprovalStatusFilter';
-import { CheckboxFilter } from './filters/CheckboxFilter';
-import { DateFilter } from './filters/DateFilter';
-import { StatusFilters as StatusFiltersType, hasFiltersApplied, clearAllFilters } from './filters/FilterUtils';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useCarteirasDropdown } from '@/hooks/useCarteiraOverview';
+import { StatusFilters as StatusFiltersType } from './filters/FilterUtils';
 
 interface StatusFiltersProps {
   filtros: StatusFiltersType;
@@ -16,65 +11,77 @@ interface StatusFiltersProps {
 }
 
 export function StatusFilters({ filtros, onFiltroChange, responsaveis }: StatusFiltersProps) {
-  const handleLimparFiltros = () => {
-    onFiltroChange(clearAllFilters());
+  const { data: carteiras } = useCarteirasDropdown();
+
+  const handleFiltroChange = (campo: keyof StatusFiltersType, valor: string) => {
+    onFiltroChange({
+      ...filtros,
+      [campo]: valor === 'todos' || valor === 'Todas' ? undefined : valor
+    });
   };
 
-  const temFiltrosAplicados = hasFiltersApplied(filtros);
-
   return (
-    <Card className="bg-white shadow-sm">
-      <CardContent className="p-3">
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4 flex-wrap">
-              <div className="flex items-center gap-2">
-                <Filter className="h-4 w-4 text-pmo-gray" />
-                <span className="text-sm font-medium text-pmo-gray">Filtros:</span>
-              </div>
-              
-              <div className="flex gap-6 flex-wrap items-center">
-                <CompactCarteiraProjetoFilter 
-                  filtros={filtros}
-                  onFiltroChange={onFiltroChange}
-                />
-
-                <CompactResponsavelFilter 
-                  filtros={filtros}
-                  onFiltroChange={onFiltroChange}
-                  responsaveis={responsaveis}
-                />
-
-                <ApprovalStatusFilter 
-                  filtros={filtros}
-                  onFiltroChange={onFiltroChange}
-                />
-              </div>
-            </div>
-
-            {temFiltrosAplicados && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleLimparFiltros}
-                className="flex items-center gap-2 text-pmo-gray hover:text-pmo-primary"
-              >
-                <X className="h-4 w-4" />
-                Limpar
-              </Button>
-            )}
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-lg text-pmo-primary">Filtros</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label className="text-sm font-medium text-pmo-gray mb-2 block">Carteira</label>
+            <Select
+              value={filtros.carteira || 'Todas'}
+              onValueChange={(value) => handleFiltroChange('carteira', value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Todas as carteiras" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Todas">Todas as carteiras</SelectItem>
+                {carteiras?.map((carteira) => (
+                  <SelectItem key={carteira} value={carteira}>
+                    {carteira}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
-          <div className="flex gap-6 flex-wrap items-center">
-            <CheckboxFilter 
-              filtros={filtros}
-              onFiltroChange={onFiltroChange}
-            />
+          <div>
+            <label className="text-sm font-medium text-pmo-gray mb-2 block">Responsável</label>
+            <Select
+              value={filtros.responsavel || 'todos'}
+              onValueChange={(value) => handleFiltroChange('responsavel', value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Todos os responsáveis" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todos">Todos os responsáveis</SelectItem>
+                {responsaveis.map((responsavel) => (
+                  <SelectItem key={responsavel} value={responsavel}>
+                    {responsavel}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-            <DateFilter 
-              filtros={filtros}
-              onFiltroChange={onFiltroChange}
-            />
+          <div>
+            <label className="text-sm font-medium text-pmo-gray mb-2 block">Status de Revisão</label>
+            <Select
+              value={filtros.statusAprovacao || 'todos'}
+              onValueChange={(value) => handleFiltroChange('statusAprovacao', value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Todos os status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todos">Todos os status</SelectItem>
+                <SelectItem value="Em Revisão">Em Revisão</SelectItem>
+                <SelectItem value="Revisado">Revisado</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </CardContent>

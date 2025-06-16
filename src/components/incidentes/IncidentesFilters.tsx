@@ -17,27 +17,25 @@ export function IncidentesFilters({ responsavelSelecionado, onResponsavelChange 
         <CardTitle className="text-lg text-pmo-primary">Filtros</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="flex gap-4">
-          <div className="flex-1">
-            <label className="text-sm font-medium text-pmo-gray mb-2 block">Responsável ASA</label>
-            <Select value={responsavelSelecionado} onValueChange={onResponsavelChange}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione um responsável" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="todos">Todos os responsáveis</SelectItem>
-                {isLoading ? (
-                  <SelectItem value="loading" disabled>Carregando...</SelectItem>
-                ) : (
-                  responsaveisASA?.filter(responsavel => responsavel && responsavel.trim() !== '').map((responsavel) => (
-                    <SelectItem key={responsavel} value={responsavel}>
-                      {responsavel}
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
-          </div>
+        <div className="flex-1">
+          <label className="text-sm font-medium text-pmo-gray mb-2 block">Responsável ASA</label>
+          <Select value={responsavelSelecionado} onValueChange={onResponsavelChange}>
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione um responsável" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todos">Todos os responsáveis</SelectItem>
+              {isLoading ? (
+                <SelectItem value="loading" disabled>Carregando...</SelectItem>
+              ) : (
+                responsaveisASA?.filter(responsavel => responsavel && responsavel.trim() !== '').map((responsavel) => (
+                  <SelectItem key={responsavel} value={responsavel}>
+                    {responsavel}
+                  </SelectItem>
+                ))
+              )}
+            </SelectContent>
+          </Select>
         </div>
       </CardContent>
     </Card>

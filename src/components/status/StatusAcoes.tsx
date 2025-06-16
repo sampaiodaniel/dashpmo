@@ -20,7 +20,7 @@ export function StatusAcoes({ status, onUpdate }: StatusAcoesProps) {
     
     if (!usuario) return;
     
-    revisar({
+    await revisar({
       statusId: status.id,
       revisadoPor: usuario.nome,
     });
@@ -30,19 +30,21 @@ export function StatusAcoes({ status, onUpdate }: StatusAcoesProps) {
   const isRevisado = status.aprovado !== null && status.aprovado;
   const isEmRevisao = status.aprovado === null;
 
+  if (!isEmRevisao) {
+    return null;
+  }
+
   return (
     <div className="flex items-center gap-2">
-      {isEmRevisao && (
-        <Button
-          size="sm"
-          onClick={handleRevisar}
-          disabled={isLoading}
-          className="bg-green-600 hover:bg-green-700"
-        >
-          <CheckCircle className="h-4 w-4 mr-1" />
-          Revisado OK
-        </Button>
-      )}
+      <Button
+        size="sm"
+        onClick={handleRevisar}
+        disabled={isLoading}
+        className="bg-green-600 hover:bg-green-700 text-xs px-2 py-1 h-6"
+      >
+        <CheckCircle className="h-3 w-3 mr-1" />
+        Revisado OK
+      </Button>
     </div>
   );
 }

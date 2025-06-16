@@ -1,142 +1,51 @@
 
-import { 
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+import { Button } from '@/components/ui/button';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface PaginationFooterProps {
   currentPage: number;
   totalPages: number;
-  hasNextPage: boolean;
-  hasPreviousPage: boolean;
-  goToPage: (page: number) => void;
-  goToNextPage: () => void;
-  goToPreviousPage: () => void;
-  startItem: number;
-  endItem: number;
   totalItems: number;
+  onPageChange: (page: number) => void;
 }
 
-export function PaginationFooter({
-  currentPage,
-  totalPages,
-  hasNextPage,
-  hasPreviousPage,
-  goToPage,
-  goToNextPage,
-  goToPreviousPage,
-  startItem,
-  endItem,
-  totalItems
+export function PaginationFooter({ 
+  currentPage, 
+  totalPages, 
+  totalItems, 
+  onPageChange 
 }: PaginationFooterProps) {
-  if (totalPages <= 1) return null;
-
-  const renderPageNumbers = () => {
-    const pages = [];
-    const maxVisiblePages = 5;
-    
-    if (totalPages <= maxVisiblePages) {
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(
-          <PaginationItem key={i}>
-            <PaginationLink
-              onClick={() => goToPage(i)}
-              isActive={currentPage === i}
-            >
-              {i}
-            </PaginationLink>
-          </PaginationItem>
-        );
-      }
-    } else {
-      pages.push(
-        <PaginationItem key={1}>
-          <PaginationLink
-            onClick={() => goToPage(1)}
-            isActive={currentPage === 1}
-          >
-            1
-          </PaginationLink>
-        </PaginationItem>
-      );
-
-      if (currentPage > 3) {
-        pages.push(
-          <PaginationItem key="ellipsis1">
-            <PaginationEllipsis />
-          </PaginationItem>
-        );
-      }
-
-      const start = Math.max(2, currentPage - 1);
-      const end = Math.min(totalPages - 1, currentPage + 1);
-
-      for (let i = start; i <= end; i++) {
-        pages.push(
-          <PaginationItem key={i}>
-            <PaginationLink
-              onClick={() => goToPage(i)}
-              isActive={currentPage === i}
-            >
-              {i}
-            </PaginationLink>
-          </PaginationItem>
-        );
-      }
-
-      if (currentPage < totalPages - 2) {
-        pages.push(
-          <PaginationItem key="ellipsis2">
-            <PaginationEllipsis />
-          </PaginationItem>
-        );
-      }
-
-      pages.push(
-        <PaginationItem key={totalPages}>
-          <PaginationLink
-            onClick={() => goToPage(totalPages)}
-            isActive={currentPage === totalPages}
-          >
-            {totalPages}
-          </PaginationLink>
-        </PaginationItem>
-      );
-    }
-
-    return pages;
-  };
-
   return (
-    <div className="mt-6 flex items-center justify-between">
+    <div className="flex items-center justify-between">
       <div className="text-sm text-pmo-gray">
-        Mostrando {startItem} a {endItem} de {totalItems} registros
+        Total: {totalItems} itens
       </div>
       
-      <Pagination>
-        <PaginationContent>
-          <PaginationItem>
-            <PaginationPrevious 
-              onClick={goToPreviousPage}
-              className={!hasPreviousPage ? "pointer-events-none opacity-50" : "cursor-pointer"}
-            />
-          </PaginationItem>
-          
-          {renderPageNumbers()}
-          
-          <PaginationItem>
-            <PaginationNext 
-              onClick={goToNextPage}
-              className={!hasNextPage ? "pointer-events-none opacity-50" : "cursor-pointer"}
-            />
-          </PaginationItem>
-        </PaginationContent>
-      </Pagination>
+      <div className="flex items-center gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage <= 1}
+        >
+          <ChevronLeft className="h-4 w-4" />
+          Anterior
+        </Button>
+        
+        <span className="text-sm text-pmo-gray">
+          Página {currentPage} de {totalPages}
+        </span>
+        
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage >= totalPages}
+        >
+          Próxima
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
     </div>
   );
 }

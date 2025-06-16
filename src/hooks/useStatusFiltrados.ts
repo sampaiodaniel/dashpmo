@@ -47,8 +47,8 @@ export function useStatusFiltrados({
     // Filtro por status de aprovação
     if (filtros.statusAprovacao) {
       statusFiltrados = statusFiltrados.filter(status => {
-        const statusRevisao = status.aprovado === null ? 'Pendente Revisão' : 
-                            status.aprovado ? 'Revisado' : 'Rejeitado';
+        const statusRevisao = status.aprovado === null ? 'Em Revisão' : 
+                            status.aprovado ? 'Revisado' : 'Em Revisão';
         return statusRevisao === filtros.statusAprovacao;
       });
     }

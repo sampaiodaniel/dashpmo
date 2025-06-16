@@ -100,85 +100,6 @@ export default function StatusDetalhes() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
-            {/* Informações Básicas */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Informações do Projeto</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <span className="text-sm font-medium text-pmo-gray">Carteira:</span>
-                    <p className="text-gray-700">{status.projeto?.area_responsavel}</p>
-                  </div>
-                  {status.carteira_secundaria && (
-                    <div>
-                      <span className="text-sm font-medium text-pmo-gray">Carteira Secundária:</span>
-                      <p className="text-gray-700">{status.carteira_secundaria}</p>
-                    </div>
-                  )}
-                  {status.carteira_terciaria && (
-                    <div>
-                      <span className="text-sm font-medium text-pmo-gray">Carteira Terciária:</span>
-                      <p className="text-gray-700">{status.carteira_terciaria}</p>
-                    </div>
-                  )}
-                  <div>
-                    <span className="text-sm font-medium text-pmo-gray">Responsável Interno:</span>
-                    <p className="text-gray-700">{status.projeto?.responsavel_interno}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm font-medium text-pmo-gray">GP Responsável:</span>
-                    <p className="text-gray-700">{status.projeto?.gp_responsavel}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm font-medium text-pmo-gray">Criado por:</span>
-                    <p className="text-gray-700">{status.criado_por}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm font-medium text-pmo-gray">Data de Criação:</span>
-                    <p className="text-gray-700">
-                      {format(new Date(status.data_criacao), 'dd/MM/yyyy', { locale: ptBR })}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Status Atual */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Status Atual</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <span className="text-sm font-medium text-pmo-gray">Status Geral:</span>
-                    <p className="text-gray-700">{status.status_geral}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm font-medium text-pmo-gray">Visão GP:</span>
-                    <div className="flex items-center gap-2">
-                      <div className={`w-3 h-3 rounded-full ${getStatusVisaoColor(status.status_visao_gp)}`}></div>
-                      <span>{status.status_visao_gp}</span>
-                    </div>
-                  </div>
-                  <div>
-                    <span className="text-sm font-medium text-pmo-gray">Status de Revisão:</span>
-                    <Badge variant={status.aprovado === null ? "destructive" : "default"}>
-                      {statusRevisao}
-                    </Badge>
-                  </div>
-                  {status.progresso_estimado !== null && (
-                    <div>
-                      <span className="text-sm font-medium text-pmo-gray">Progresso:</span>
-                      <p className="text-gray-700">{status.progresso_estimado}%</p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
             {/* Detalhes */}
             {(status.realizado_semana_atual || status.backlog || status.bloqueios_atuais || status.observacoes_pontos_atencao) && (
               <Card>
@@ -216,6 +137,83 @@ export default function StatusDetalhes() {
                 </CardContent>
               </Card>
             )}
+          </div>
+
+          <div className="space-y-6">
+            {/* Informações do Projeto */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Informações do Projeto</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <span className="text-sm font-medium text-pmo-gray">Carteira:</span>
+                  <p className="text-gray-700">{status.projeto?.area_responsavel}</p>
+                </div>
+                {status.carteira_secundaria && (
+                  <div>
+                    <span className="text-sm font-medium text-pmo-gray">Carteira Secundária:</span>
+                    <p className="text-gray-700">{status.carteira_secundaria}</p>
+                  </div>
+                )}
+                {status.carteira_terciaria && (
+                  <div>
+                    <span className="text-sm font-medium text-pmo-gray">Carteira Terciária:</span>
+                    <p className="text-gray-700">{status.carteira_terciaria}</p>
+                  </div>
+                )}
+                <div>
+                  <span className="text-sm font-medium text-pmo-gray">Responsável Interno:</span>
+                  <p className="text-gray-700">{status.projeto?.responsavel_interno}</p>
+                </div>
+                <div>
+                  <span className="text-sm font-medium text-pmo-gray">GP Responsável:</span>
+                  <p className="text-gray-700">{status.projeto?.gp_responsavel}</p>
+                </div>
+                <div>
+                  <span className="text-sm font-medium text-pmo-gray">Criado por:</span>
+                  <p className="text-gray-700">{status.criado_por}</p>
+                </div>
+                <div>
+                  <span className="text-sm font-medium text-pmo-gray">Data de Criação:</span>
+                  <p className="text-gray-700">
+                    {format(new Date(status.data_criacao), 'dd/MM/yyyy', { locale: ptBR })}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Status Atual */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Status Atual</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <span className="text-sm font-medium text-pmo-gray">Status Geral:</span>
+                  <p className="text-gray-700">{status.status_geral}</p>
+                </div>
+                <div>
+                  <span className="text-sm font-medium text-pmo-gray">Visão GP:</span>
+                  <div className="flex items-center gap-2">
+                    <div className={`w-3 h-3 rounded-full ${getStatusVisaoColor(status.status_visao_gp)}`}></div>
+                    <span>{status.status_visao_gp}</span>
+                  </div>
+                </div>
+                <div>
+                  <span className="text-sm font-medium text-pmo-gray">Status de Revisão:</span>
+                  <Badge variant={status.aprovado === null ? "destructive" : "default"}>
+                    {statusRevisao}
+                  </Badge>
+                </div>
+                {status.progresso_estimado !== null && (
+                  <div>
+                    <span className="text-sm font-medium text-pmo-gray">Progresso:</span>
+                    <p className="text-gray-700">{status.progresso_estimado}%</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>

@@ -43,62 +43,64 @@ export function StatusCard({ status, onStatusUpdate }: StatusCardProps) {
   const statusRevisao = status.aprovado === null ? 'Em Revisão' : 
                        status.aprovado ? 'Revisado' : 'Em Revisão';
 
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Permitir que os botões de ação sejam clicáveis sem redirecionar
+    if ((e.target as HTMLElement).closest('.status-actions')) {
+      e.preventDefault();
+      return;
+    }
+  };
+
   return (
-    <Link to={`/status/${status.id}`} className="block">
+    <Link to={`/status/${status.id}`} className="block" onClick={handleCardClick}>
       <Card className="hover:shadow-md transition-shadow cursor-pointer border-l-4 border-l-pmo-primary">
-        <CardHeader className="pb-3">
+        <CardHeader className="pb-2">
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <CardTitle className="text-lg text-pmo-primary mb-2">
-                {status.projeto?.nome_projeto}
-              </CardTitle>
-              <div className="flex items-center gap-4 text-sm text-pmo-gray mb-2">
+              <div className="flex items-center gap-2 mb-2">
                 <div className="flex items-center gap-1">
-                  <Building2 className="h-4 w-4" />
-                  <span className="font-medium">{status.projeto?.area_responsavel}</span>
+                  <Building2 className="h-3 w-3 text-pmo-primary" />
+                  <span className="text-xs font-semibold text-pmo-primary bg-blue-50 px-2 py-1 rounded">
+                    {status.projeto?.area_responsavel}
+                  </span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <Calendar className="h-4 w-4" />
-                  <span>{format(new Date(status.data_criacao), 'dd/MM/yyyy', { locale: ptBR })}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <User className="h-4 w-4" />
-                  <span>{status.criado_por}</span>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
                 <Badge variant={getStatusVariant(statusRevisao)} className="text-xs">
                   {statusRevisao}
                 </Badge>
+              </div>
+              <CardTitle className="text-base text-pmo-primary mb-1">
+                {status.projeto?.nome_projeto}
+              </CardTitle>
+              <div className="flex items-center gap-3 text-xs text-pmo-gray">
                 <div className="flex items-center gap-1">
-                  <div className={`w-3 h-3 rounded-full ${getStatusVisaoColor(status.status_visao_gp)}`}></div>
-                  <span className="text-xs">{status.status_visao_gp}</span>
+                  <Calendar className="h-3 w-3" />
+                  <span>{format(new Date(status.data_criacao), 'dd/MM/yyyy', { locale: ptBR })}</span>
                 </div>
+                <div className="flex items-center gap-1">
+                  <User className="h-3 w-3" />
+                  <span>{status.criado_por}</span>
+                </div>
+              </div>
+            </div>
+            <div className="flex flex-col items-end gap-2">
+              <div className="flex items-center gap-1">
+                <div className={`w-2 h-2 rounded-full ${getStatusVisaoColor(status.status_visao_gp)}`}></div>
+                <span className="text-xs">{status.status_visao_gp}</span>
+              </div>
+              <div className="status-actions" onClick={(e) => e.preventDefault()}>
+                <StatusAcoes 
+                  status={status} 
+                  onUpdate={onStatusUpdate}
+                />
               </div>
             </div>
           </div>
         </CardHeader>
         
-        <CardContent className="pt-0">
-          <div className="space-y-3">
-            <div className="text-sm">
-              <span className="font-medium text-pmo-gray">Status: </span>
-              <span>{status.status_geral}</span>
-            </div>
-
-            {status.realizado_semana_atual && (
-              <div>
-                <span className="text-sm font-medium text-pmo-gray">Realizado na Semana:</span>
-                <p className="text-sm text-pmo-gray line-clamp-2 mt-1">{status.realizado_semana_atual}</p>
-              </div>
-            )}
-
-            <div className="flex items-center justify-end pt-2" onClick={(e) => e.preventDefault()}>
-              <StatusAcoes 
-                status={status} 
-                onUpdate={onStatusUpdate}
-              />
-            </div>
+        <CardContent className="pt-0 pb-3">
+          <div className="text-xs">
+            <span className="font-medium text-pmo-gray">Status: </span>
+            <span>{status.status_geral}</span>
           </div>
         </CardContent>
       </Card>

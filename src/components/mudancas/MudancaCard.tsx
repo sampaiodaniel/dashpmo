@@ -11,19 +11,6 @@ interface MudancaCardProps {
 }
 
 export function MudancaCard({ mudanca }: MudancaCardProps) {
-  const getStatusColor = (status: string) => {
-    switch (status?.toLowerCase()) {
-      case 'aprovada':
-        return 'default';
-      case 'pendente':
-        return 'secondary';
-      case 'rejeitada':
-        return 'destructive';
-      default:
-        return 'secondary';
-    }
-  };
-
   const getTipoColor = (tipo: string) => {
     switch (tipo?.toLowerCase()) {
       case 'escopo':
