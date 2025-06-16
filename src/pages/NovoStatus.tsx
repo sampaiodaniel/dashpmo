@@ -42,14 +42,19 @@ export default function NovoStatus() {
     onSubmit,
     projetoSelecionado,
     carteiraSelecionada,
+    progressoEstimado,
     handleCarteiraChange,
-    handleProjetoChange
+    handleProjetoChange,
+    handleProgressoChange
   } = useNovoStatusForm();
 
   // Valores atuais dos campos de risco para calcular o farol
   const impactoAtual = form.watch('impacto_riscos');
   const probabilidadeAtual = form.watch('probabilidade_riscos');
   const farolRisco = calcularFarolRisco(impactoAtual, probabilidadeAtual);
+
+  // Gerar opções de progresso de 5 em 5%
+  const progressoOptions = Array.from({ length: 21 }, (_, i) => i * 5);
 
   if (isLoading) {
     return (
@@ -108,7 +113,7 @@ export default function NovoStatus() {
                 <CardTitle>Status do Projeto</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <FormField
                     control={form.control}
                     name="status_geral"
@@ -159,6 +164,22 @@ export default function NovoStatus() {
                       </FormItem>
                     )}
                   />
+
+                  <div>
+                    <Label htmlFor="progresso">Progresso Estimado (%)</Label>
+                    <Select value={progressoEstimado.toString()} onValueChange={(value) => handleProgressoChange(Number(value))}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione o progresso" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {progressoOptions.map((progress) => (
+                          <SelectItem key={progress} value={progress.toString()}>
+                            {progress}%
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

@@ -162,7 +162,7 @@ export default function Projetos() {
                           <div className="font-medium">{projeto.responsavel_interno}</div>
                         </div>
                         <div>
-                          <span className="text-pmo-gray">GP Responsável:</span>
+                          <span className="text-pmo-gray">Chefe do Projeto:</span>
                           <div className="font-medium">{projeto.gp_responsavel}</div>
                         </div>
                         <div>

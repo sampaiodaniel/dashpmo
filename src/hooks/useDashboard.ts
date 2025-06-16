@@ -8,6 +8,35 @@ export function useDashboardMetricas(filtros?: FiltrosDashboard) {
     queryFn: async (): Promise<DashboardMetricas> => {
       console.log('📊 Buscando métricas do dashboard com filtros:', filtros);
 
+      // Se há filtro de responsável ASA, buscar a hierarquia
+      let responsaveisHierarquia: string[] = [];
+      if (filtros?.responsavel_asa) {
+        // Buscar responsáveis ASA para entender a hierarquia
+        const { data: responsavelSelecionado } = await supabase
+          .from('responsaveis_asa')
+          .select('*')
+          .eq('nome', filtros.responsavel_asa)
+          .eq('ativo', true)
+          .single();
+
+        if (responsavelSelecionado) {
+          responsaveisHierarquia = [responsavelSelecionado.nome];
+          
+          // Se é um Head, incluir todos os superintendentes abaixo dele
+          if (responsavelSelecionado.nivel === 'Head') {
+            const { data: superintendentes } = await supabase
+              .from('responsaveis_asa')
+              .select('nome')
+              .eq('head_id', responsavelSelecionado.id)
+              .eq('ativo', true);
+            
+            if (superintendentes) {
+              responsaveisHierarquia.push(...superintendentes.map(s => s.nome));
+            }
+          }
+        }
+      }
+
       // Buscar projetos ativos com filtros
       let query = supabase
         .from('projetos')
@@ -16,7 +45,6 @@ export function useDashboardMetricas(filtros?: FiltrosDashboard) {
 
       // Aplicar filtros
       if (filtros?.carteira && filtros.carteira !== 'Todas') {
-        // Check if the carteira is valid by finding it in the CARTEIRAS array
         const carteiraValida = CARTEIRAS.find(c => c === filtros.carteira);
         if (carteiraValida) {
           query = query.eq('area_responsavel', carteiraValida);
@@ -24,9 +52,9 @@ export function useDashboardMetricas(filtros?: FiltrosDashboard) {
         }
       }
 
-      if (filtros?.responsavel_asa) {
-        query = query.eq('responsavel_asa', filtros.responsavel_asa);
-        console.log('👤 Filtro de responsável ASA aplicado:', filtros.responsavel_asa);
+      if (filtros?.responsavel_asa && responsaveisHierarquia.length > 0) {
+        query = query.in('responsavel_asa', responsaveisHierarquia);
+        console.log('👤 Filtro de responsável ASA com hierarquia aplicado:', responsaveisHierarquia);
       }
 
       const { data: projetos, error: projetosError } = await query;
@@ -145,7 +173,7 @@ export function useDashboardMetricas(filtros?: FiltrosDashboard) {
 
       const projetosCriticos = projetos?.filter((projeto: any) => {
         const status = statusPorProjeto.get(projeto.id);
-        return status?.status_visao_gp === 'Vermelho';
+        return status?.prob_x_impact === 'Alto';
       }).length || 0;
 
       const mudancasAtivas = mudancas?.length || 0;

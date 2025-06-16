@@ -71,7 +71,7 @@ function DashboardContent() {
           className="border-l-4 border-l-pmo-primary"
         />
         <MetricCard
-          title="Projetos Críticos"
+          title="Matriz de Risco Alta"
           value={metricas.projetosCriticos}
           icon={<AlertTriangle className="h-6 w-6" />}
           trend={{ value: 0, isPositive: false }}
