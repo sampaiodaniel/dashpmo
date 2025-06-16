@@ -16,6 +16,18 @@ export function IncidentesFilters({ responsavelSelecionado, onResponsavelChange 
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
+          <label className="text-sm font-medium text-pmo-gray">Carteira</label>
+          <Select value="todas" disabled>
+            <SelectTrigger>
+              <SelectValue placeholder="Todas as carteiras" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todas">Todas as carteiras</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <div className="space-y-2">
           <label className="text-sm font-medium text-pmo-gray">Responsável ASA</label>
           <Select value={responsavelSelecionado} onValueChange={onResponsavelChange}>
             <SelectTrigger>

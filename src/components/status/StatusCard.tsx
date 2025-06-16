@@ -87,7 +87,7 @@ export function StatusCard({ status, onStatusUpdate }: StatusCardProps) {
               <span className="text-sm">{status.status_visao_gp}</span>
             </div>
           </div>
-          {status.progresso_estimado !== null && (
+          {status.progresso_estimado !== null && status.progresso_estimado !== undefined && (
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium">Progresso:</span>
               <span className="text-sm">{status.progresso_estimado}%</span>

@@ -25,7 +25,7 @@ export function ProjetoInfoGerais({ projeto }: ProjetoInfoGeraisProps) {
           </div>
           
           <div>
-            <label className="text-sm font-medium text-pmo-gray">Área Responsável</label>
+            <label className="text-sm font-medium text-pmo-gray">Carteira Primária</label>
             <div className="flex items-center gap-2 mt-1">
               <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
                 {projeto.area_responsavel}
@@ -34,7 +34,7 @@ export function ProjetoInfoGerais({ projeto }: ProjetoInfoGeraisProps) {
           </div>
           
           <div>
-            <label className="text-sm font-medium text-pmo-gray">Responsável Interno</label>
+            <label className="text-sm font-medium text-pmo-gray">Responsável ASA</label>
             <div className="flex items-center gap-2 mt-1">
               <User className="h-4 w-4 text-pmo-gray" />
               <span>{projeto.responsavel_interno}</span>

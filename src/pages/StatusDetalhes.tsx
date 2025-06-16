@@ -1,3 +1,4 @@
+
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -35,7 +36,19 @@ export default function StatusDetalhes() {
         .single();
 
       if (error) throw error;
-      return data as StatusProjeto;
+      
+      // Convert dates properly
+      const statusData = {
+        ...data,
+        data_criacao: new Date(data.data_criacao),
+        data_atualizacao: new Date(data.data_atualizacao),
+        data_aprovacao: data.data_aprovacao ? new Date(data.data_aprovacao) : null,
+        data_marco1: data.data_marco1 ? new Date(data.data_marco1) : null,
+        data_marco2: data.data_marco2 ? new Date(data.data_marco2) : null,
+        data_marco3: data.data_marco3 ? new Date(data.data_marco3) : null,
+      } as StatusProjeto;
+      
+      return statusData;
     },
     enabled: !!id
   });
@@ -69,7 +82,7 @@ export default function StatusDetalhes() {
   const handleApprove = async () => {
     if (!status || !usuario) return;
     
-    revisar({
+    await revisar({
       statusId: status.id,
       revisadoPor: usuario.nome,
     });
@@ -79,7 +92,7 @@ export default function StatusDetalhes() {
   const handleReject = async () => {
     if (!status) return;
     
-    rejeitarStatus({
+    await rejeitarStatus({
       statusId: status.id,
     });
     navigate('/status');
@@ -188,7 +201,7 @@ export default function StatusDetalhes() {
                       <span className="text-sm">{status.status_visao_gp}</span>
                     </div>
                   </div>
-                  {status.progresso_estimado !== null && (
+                  {status.progresso_estimado !== null && status.progresso_estimado !== undefined && (
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium">Progresso:</span>
                       <span className="text-sm">{status.progresso_estimado}%</span>
@@ -235,13 +248,13 @@ export default function StatusDetalhes() {
             )}
 
             {/* Observações Gerais */}
-            {status.observacoes_gerais && (
+            {status.observacoes_pontos_atencao && (
               <Card>
                 <CardHeader>
-                  <CardTitle>Observações Gerais</CardTitle>
+                  <CardTitle>Observações e Pontos de Atenção</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-pmo-gray whitespace-pre-wrap">{status.observacoes_gerais}</p>
+                  <p className="text-sm text-pmo-gray whitespace-pre-wrap">{status.observacoes_pontos_atencao}</p>
                 </CardContent>
               </Card>
             )}
@@ -286,10 +299,10 @@ export default function StatusDetalhes() {
                   <span className="font-medium">Nome:</span> {status.projeto?.nome_projeto}
                 </div>
                 <div className="text-sm text-pmo-gray">
-                  <span className="font-medium">Área Responsável:</span> {status.projeto?.area_responsavel}
+                  <span className="font-medium">Carteira Primária:</span> {status.projeto?.area_responsavel}
                 </div>
                 <div className="text-sm text-pmo-gray">
-                  <span className="font-medium">Gerente do Projeto:</span> {status.projeto?.gerente_projeto}
+                  <span className="font-medium">Chefe do Projeto:</span> {status.projeto?.gp_responsavel}
                 </div>
               </CardContent>
             </Card>

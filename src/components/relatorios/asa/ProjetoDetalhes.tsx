@@ -33,8 +33,8 @@ export function ProjetoDetalhes({ projeto }: ProjetoDetalhesProps) {
         <CardTitle className="flex items-center justify-between">
           <span className="text-[#1B365D]">{projeto.nome_projeto}</span>
           <div className="flex items-center gap-2">
-            <span className="text-sm text-[#6B7280] font-medium">Status:</span>
-            <div className={`w-2 h-2 rounded-full ${getStatusColor(projeto.ultimoStatus?.status_visao_gp || 'Cinza')}`}></div>
+            <span className="text-sm text-[#6B7280] font-medium">Matriz de Risco:</span>
+            <div className={`w-4 h-4 rounded-full ${getStatusColor(projeto.ultimoStatus?.status_visao_gp || 'Cinza')}`}></div>
           </div>
         </CardTitle>
       </CardHeader>
@@ -50,8 +50,8 @@ export function ProjetoDetalhes({ projeto }: ProjetoDetalhesProps) {
           <div>
             <h4 className="font-semibold text-[#1B365D] mb-3">Informações</h4>
             <div className="space-y-2 text-sm">
-              <p><strong>GP Responsável:</strong> {projeto.gp_responsavel}</p>
-              <p><strong>Responsável Interno:</strong> {projeto.responsavel_interno}</p>
+              <p><strong>Responsável ASA:</strong> {projeto.responsavel_asa || projeto.responsavel_interno}</p>
+              <p><strong>Chefe do Projeto:</strong> {projeto.gp_responsavel}</p>
               <p><strong>Status Geral:</strong> {projeto.ultimoStatus?.status_geral}</p>
               <p><strong>Progresso:</strong> {projeto.ultimoStatus?.progresso_estimado || 0}%</p>
             </div>

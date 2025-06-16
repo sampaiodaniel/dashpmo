@@ -20,12 +20,7 @@ function StatusContent() {
   const [paginaAtual, setPaginaAtual] = useState(1);
   const itensPorPagina = 10;
 
-  const {
-    data: statusData,
-    isLoading,
-    error,
-    refetch
-  } = useStatusFiltrados({
+  const statusFiltradosResult = useStatusFiltrados({
     filtros,
     termoBusca,
     paginaAtual,
@@ -46,10 +41,10 @@ function StatusContent() {
   };
 
   const handleStatusUpdate = () => {
-    refetch();
+    statusFiltradosResult.refetch();
   };
 
-  if (isLoading) {
+  if (statusFiltradosResult.isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
@@ -62,7 +57,7 @@ function StatusContent() {
     );
   }
 
-  if (error) {
+  if (statusFiltradosResult.error) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
@@ -73,7 +68,7 @@ function StatusContent() {
     );
   }
 
-  const { status, totalItens, totalPaginas } = statusData || { 
+  const { status, totalItens, totalPaginas } = statusFiltradosResult.data || { 
     status: [], 
     totalItens: 0, 
     totalPaginas: 0 
@@ -85,9 +80,9 @@ function StatusContent() {
 
       {metricas && (
         <StatusAprovacaoMetricas
-          totalStatus={metricas.totalStatus}
-          statusPendentes={metricas.statusPendentes}
-          statusRevisados={metricas.statusRevisados}
+          totalStatus={metricas.totalStatus || 0}
+          statusPendentes={metricas.statusPendentes || 0}
+          statusRevisados={metricas.statusRevisados || 0}
         />
       )}
 

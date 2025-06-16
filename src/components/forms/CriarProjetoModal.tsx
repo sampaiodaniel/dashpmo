@@ -17,20 +17,19 @@ export function CriarProjetoModal({ onProjetoCriado }: CriarProjetoModalProps) {
   const [open, setOpen] = useState(false);
   const [nome, setNome] = useState('');
   const [descricaoProjeto, setDescricaoProjeto] = useState('');
-  const [area, setArea] = useState<string>('');
   const [carteiraPrimaria, setCarteiraPrimaria] = useState<string>('');
   const [carteiraSecundaria, setCarteiraSecundaria] = useState<string>('');
   const [carteiraTerciaria, setCarteiraTerciaria] = useState<string>('');
-  const [responsavelInterno, setResponsavelInterno] = useState('');
-  const [gpResponsavel, setGpResponsavel] = useState('');
+  const [responsavelASA, setResponsavelASA] = useState('');
+  const [chefeResponsavel, setChefeResponsavel] = useState('');
   const [finalizacaoPrevista, setFinalizacaoPrevista] = useState('');
   const [equipeInput, setEquipeInput] = useState('');
   const [equipeMembros, setEquipeMembros] = useState<string[]>([]);
   
   const { criarProjeto, isLoading } = useProjetosOperations();
 
-  const responsaveisInternos = ['Dapper', 'Pitta', 'Judice', 'Thadeus', 'André Simões', 'Júlio', 'Mello', 'Rebonatto', 'Mickey', 'Armelin'];
-  const gpsResponsaveis = ['Camila', 'Elias', 'Fabiano', 'Fred', 'Marco', 'Rafael', 'Jefferson'];
+  const responsaveisASA = ['Dapper', 'Pitta', 'Judice', 'Thadeus', 'André Simões', 'Júlio', 'Mello', 'Rebonatto', 'Mickey', 'Armelin'];
+  const chefesResponsaveis = ['Camila', 'Elias', 'Fabiano', 'Fred', 'Marco', 'Rafael', 'Jefferson'];
 
   const handleEquipeKeyDown = (e: React.KeyboardEvent) => {
     if ((e.key === ',' || e.key === ';' || e.key === 'Enter') && equipeInput.trim()) {
@@ -50,19 +49,19 @@ export function CriarProjetoModal({ onProjetoCriado }: CriarProjetoModalProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!nome || !area || !responsavelInterno || !gpResponsavel) {
+    if (!nome || !carteiraPrimaria || !responsavelASA || !chefeResponsavel) {
       return;
     }
 
     const projeto = await criarProjeto({
       nome_projeto: nome,
       descricao_projeto: descricaoProjeto || null,
-      area_responsavel: area as typeof CARTEIRAS[number],
+      area_responsavel: carteiraPrimaria as typeof CARTEIRAS[number],
       carteira_primaria: carteiraPrimaria === 'none' ? null : carteiraPrimaria || null,
       carteira_secundaria: carteiraSecundaria === 'none' ? null : carteiraSecundaria || null,
       carteira_terciaria: carteiraTerciaria === 'none' ? null : carteiraTerciaria || null,
-      responsavel_interno: responsavelInterno,
-      gp_responsavel: gpResponsavel,
+      responsavel_interno: responsavelASA,
+      gp_responsavel: chefeResponsavel,
       finalizacao_prevista: finalizacaoPrevista || null,
       equipe: equipeMembros.join(', ') || null,
     });
@@ -71,12 +70,11 @@ export function CriarProjetoModal({ onProjetoCriado }: CriarProjetoModalProps) {
       setOpen(false);
       setNome('');
       setDescricaoProjeto('');
-      setArea('');
       setCarteiraPrimaria('');
       setCarteiraSecundaria('');
       setCarteiraTerciaria('');
-      setResponsavelInterno('');
-      setGpResponsavel('');
+      setResponsavelASA('');
+      setChefeResponsavel('');
       setFinalizacaoPrevista('');
       setEquipeInput('');
       setEquipeMembros([]);
@@ -120,10 +118,10 @@ export function CriarProjetoModal({ onProjetoCriado }: CriarProjetoModalProps) {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="area">Carteira Principal *</Label>
-              <Select value={area} onValueChange={setArea}>
+              <Label htmlFor="carteira-primaria">Carteira Primária *</Label>
+              <Select value={carteiraPrimaria} onValueChange={setCarteiraPrimaria}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecione a carteira principal..." />
+                  <SelectValue placeholder="Selecione a carteira primária..." />
                 </SelectTrigger>
                 <SelectContent>
                   {CARTEIRAS.map((carteira) => (
@@ -146,24 +144,7 @@ export function CriarProjetoModal({ onProjetoCriado }: CriarProjetoModalProps) {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="carteira-primaria">Carteira Primária</Label>
-              <Select value={carteiraPrimaria} onValueChange={setCarteiraPrimaria}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Primária..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Nenhuma</SelectItem>
-                  {CARTEIRAS.map((carteira) => (
-                    <SelectItem key={carteira} value={carteira}>
-                      {carteira}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="carteira-secundaria">Carteira Secundária</Label>
               <Select value={carteiraSecundaria} onValueChange={setCarteiraSecundaria}>
@@ -201,13 +182,13 @@ export function CriarProjetoModal({ onProjetoCriado }: CriarProjetoModalProps) {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="responsavel">Responsável Interno *</Label>
-              <Select value={responsavelInterno} onValueChange={setResponsavelInterno}>
+              <Label htmlFor="responsavel">Responsável ASA *</Label>
+              <Select value={responsavelASA} onValueChange={setResponsavelASA}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecione o responsável..." />
+                  <SelectValue placeholder="Selecione o responsável ASA..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {responsaveisInternos.map((responsavel) => (
+                  {responsaveisASA.map((responsavel) => (
                     <SelectItem key={responsavel} value={responsavel}>
                       {responsavel}
                     </SelectItem>
@@ -217,15 +198,15 @@ export function CriarProjetoModal({ onProjetoCriado }: CriarProjetoModalProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="gp">GP Responsável *</Label>
-              <Select value={gpResponsavel} onValueChange={setGpResponsavel}>
+              <Label htmlFor="chefe">Chefe do Projeto *</Label>
+              <Select value={chefeResponsavel} onValueChange={setChefeResponsavel}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecione o GP..." />
+                  <SelectValue placeholder="Selecione o chefe do projeto..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {gpsResponsaveis.map((gp) => (
-                    <SelectItem key={gp} value={gp}>
-                      {gp}
+                  {chefesResponsaveis.map((chefe) => (
+                    <SelectItem key={chefe} value={chefe}>
+                      {chefe}
                     </SelectItem>
                   ))}
                 </SelectContent>
