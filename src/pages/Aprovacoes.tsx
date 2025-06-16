@@ -1,4 +1,3 @@
-
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
@@ -34,11 +33,16 @@ export default function Aprovacoes() {
   } = usePagination({ data: statusPendentes || [] });
 
   const handleAprovarStatus = async (statusId: number) => {
-    const sucesso = await aprovarStatus(statusId);
-    if (sucesso) {
-      queryClient.invalidateQueries({ queryKey: ['status-pendentes'] });
-      queryClient.invalidateQueries({ queryKey: ['status-list'] });
-    }
+    if (!usuario) return;
+    
+    aprovarStatus({ 
+      statusId, 
+      aprovadoPor: usuario.nome 
+    });
+    
+    // Invalidate queries after approval
+    queryClient.invalidateQueries({ queryKey: ['status-pendentes'] });
+    queryClient.invalidateQueries({ queryKey: ['status-list'] });
   };
 
   if (isLoading) {

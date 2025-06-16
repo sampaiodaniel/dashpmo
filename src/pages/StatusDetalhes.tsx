@@ -2,6 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { useStatusList } from '@/hooks/useStatusList';
 import { useStatusOperations } from '@/hooks/useStatusOperations';
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -31,22 +32,25 @@ function calcularRisco(impacto: string, probabilidade: string): { nivel: string;
 export default function StatusDetalhes() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { usuario } = useAuth();
   const { data: statusList, isLoading, refetch } = useStatusList();
   const { aprovarStatus, isLoading: operationLoading } = useStatusOperations();
 
   const status = statusList?.find(s => s.id === Number(id));
 
   const handleAprovar = async () => {
-    if (!status) return;
+    if (!status || !usuario) return;
     
-    const success = await aprovarStatus(status.id);
-    if (success) {
-      refetch();
-      toast({
-        title: "Sucesso",
-        description: "Status aprovado com sucesso!",
-      });
-    }
+    aprovarStatus({ 
+      statusId: status.id, 
+      aprovadoPor: usuario.nome 
+    });
+    
+    refetch();
+    toast({
+      title: "Sucesso",
+      description: "Status aprovado com sucesso!",
+    });
   };
 
   const handleArquivar = () => {
