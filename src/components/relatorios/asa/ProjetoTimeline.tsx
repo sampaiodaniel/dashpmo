@@ -29,7 +29,7 @@ export function ProjetoTimeline({ ultimoStatus }: ProjetoTimelineProps) {
       data: ultimoStatus.data_marco3,
       titulo: ultimoStatus.entrega3 || 'Entrega 3',
       entregaveis: ultimoStatus.entregaveis3,
-      cor: 'secondary'
+      cor: 'beige'
     });
   }
 
@@ -55,13 +55,6 @@ export function ProjetoTimeline({ ultimoStatus }: ProjetoTimelineProps) {
           border: 'border-[#1B365D]',
           text: 'text-[#1B365D]',
           dot: 'bg-[#1B365D]'
-        };
-      case 'secondary':
-        return {
-          bg: 'bg-blue-50',
-          border: 'border-[#2E5984]',
-          text: 'text-[#2E5984]',
-          dot: 'bg-[#2E5984]'
         };
       default:
         return {

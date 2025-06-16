@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, ReferenceLine, Dot } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Dot } from 'recharts';
 
 interface GraficoEvolutivoIncidentesRelatorioProps {
   carteira: string;
@@ -104,9 +104,6 @@ export function GraficoEvolutivoIncidentesRelatorio({ carteira }: GraficoEvoluti
                 dot={<CustomDot dataKey="criticos" />}
                 name="Críticos"
               />
-              
-              {/* Linha de referência para meta */}
-              <ReferenceLine y={40} stroke="#F59E0B" strokeDasharray="8 8" />
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -128,10 +125,6 @@ export function GraficoEvolutivoIncidentesRelatorio({ carteira }: GraficoEvoluti
           <div className="flex items-center gap-2">
             <div className="w-4 h-0.5 bg-[#EF4444]"></div>
             <span className="text-[#EF4444] font-medium">Críticos</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-0.5 bg-[#F59E0B] border-dashed border-t-2"></div>
-            <span className="text-[#F59E0B] font-medium">Meta (40)</span>
           </div>
         </div>
       </CardContent>
