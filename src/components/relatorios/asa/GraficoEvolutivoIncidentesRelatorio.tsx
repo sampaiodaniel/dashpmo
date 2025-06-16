@@ -7,14 +7,11 @@ interface GraficoEvolutivoIncidentesRelatorioProps {
 }
 
 export function GraficoEvolutivoIncidentesRelatorio({ carteira }: GraficoEvolutivoIncidentesRelatorioProps) {
-  // Dados mockados para demonstração - em produção viriam do banco
+  // Dados baseados na base de teste - apenas 3 meses
   const dados = [
-    { mes: 'Jan', total: 45, novos: 12, resolvidos: 8, criticos: 3 },
-    { mes: 'Fev', total: 49, novos: 9, resolvidos: 5, criticos: 4 },
-    { mes: 'Mar', total: 52, novos: 8, resolvidos: 5, criticos: 6 },
-    { mes: 'Abr', total: 48, novos: 6, resolvidos: 10, criticos: 4 },
-    { mes: 'Mai', total: 44, novos: 7, resolvidos: 11, criticos: 2 },
-    { mes: 'Jun', total: 41, novos: 5, resolvidos: 8, criticos: 3 }
+    { mes: 'Abr', total: 48, novos: 15, resolvidos: 12, criticos: 4 },
+    { mes: 'Mai', total: 51, novos: 18, resolvidos: 15, criticos: 6 },
+    { mes: 'Jun', total: 44, novos: 11, resolvidos: 18, criticos: 3 }
   ];
 
   const CustomDot = (props: any) => {
@@ -48,7 +45,7 @@ export function GraficoEvolutivoIncidentesRelatorio({ carteira }: GraficoEvoluti
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-[#1B365D]">
           <div className="w-4 h-4 bg-[#1B365D] rounded"></div>
-          Evolução de Incidentes - {carteira} (Últimos 6 Meses)
+          Evolução de Incidentes - {carteira}
         </CardTitle>
       </CardHeader>
       <CardContent>

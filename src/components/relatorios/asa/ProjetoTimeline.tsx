@@ -11,7 +11,7 @@ export function ProjetoTimeline({ ultimoStatus }: ProjetoTimelineProps) {
       data: ultimoStatus.data_marco1,
       titulo: ultimoStatus.entrega1 || 'Entrega 1',
       entregaveis: ultimoStatus.entregaveis1,
-      cor: 'primary'
+      cor: 'beige'
     });
   }
   
@@ -20,7 +20,7 @@ export function ProjetoTimeline({ ultimoStatus }: ProjetoTimelineProps) {
       data: ultimoStatus.data_marco2,
       titulo: ultimoStatus.entrega2 || 'Entrega 2',
       entregaveis: ultimoStatus.entregaveis2,
-      cor: 'secondary'
+      cor: 'primary'
     });
   }
   
@@ -29,7 +29,7 @@ export function ProjetoTimeline({ ultimoStatus }: ProjetoTimelineProps) {
       data: ultimoStatus.data_marco3,
       titulo: ultimoStatus.entrega3 || 'Entrega 3',
       entregaveis: ultimoStatus.entregaveis3,
-      cor: 'success'
+      cor: 'secondary'
     });
   }
 
@@ -42,6 +42,13 @@ export function ProjetoTimeline({ ultimoStatus }: ProjetoTimelineProps) {
 
   const getCorClasses = (cor: string) => {
     switch (cor) {
+      case 'beige':
+        return {
+          bg: 'bg-orange-50',
+          border: 'border-[#A6926B]',
+          text: 'text-[#A6926B]',
+          dot: 'bg-[#A6926B]'
+        };
       case 'primary':
         return {
           bg: 'bg-blue-50',
@@ -55,13 +62,6 @@ export function ProjetoTimeline({ ultimoStatus }: ProjetoTimelineProps) {
           border: 'border-[#2E5984]',
           text: 'text-[#2E5984]',
           dot: 'bg-[#2E5984]'
-        };
-      case 'success':
-        return {
-          bg: 'bg-green-50',
-          border: 'border-[#10B981]',
-          text: 'text-[#10B981]',
-          dot: 'bg-[#10B981]'
         };
       default:
         return {

@@ -34,7 +34,7 @@ export function ProjetosOverview({ projetos }: ProjetosOverviewProps) {
               <TableRow>
                 <TableHead className="text-[#1B365D] font-semibold">Projeto</TableHead>
                 <TableHead className="text-[#1B365D] font-semibold">Equipe/GP</TableHead>
-                <TableHead className="text-[#1B365D] font-semibold">Status</TableHead>
+                <TableHead className="text-[#1B365D] font-semibold text-center">Status</TableHead>
                 <TableHead className="text-[#1B365D] font-semibold">Progresso</TableHead>
               </TableRow>
             </TableHeader>

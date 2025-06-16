@@ -18,27 +18,47 @@ export function RelatorioASAViewer({ isOpen, onClose, dados }: RelatorioASAViewe
   if (!dados) return null;
 
   const handlePrint = () => {
-    // Criar CSS específico para impressão
     const printCSS = `
       @media print {
+        * { 
+          -webkit-print-color-adjust: exact !important;
+          color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
         body * { visibility: hidden; }
         #relatorio-content, #relatorio-content * { visibility: visible; }
         #relatorio-content { 
           position: absolute; 
           left: 0; 
           top: 0; 
-          width: 100%; 
+          width: 100% !important;
           background: white !important;
+          margin: 0 !important;
+          padding: 0 !important;
         }
         .no-print { display: none !important; }
         .print\\:block { display: block !important; }
         .print\\:space-y-6 > * + * { margin-top: 1.5rem !important; }
-        .break-inside-avoid { break-inside: avoid; }
-        .page-break-after { break-after: page; }
-        @page { 
-          margin: 15mm; 
-          size: A4;
+        .break-inside-avoid { 
+          break-inside: avoid !important;
+          page-break-inside: avoid !important;
         }
+        .page-break-after { 
+          break-after: page !important;
+          page-break-after: always !important;
+        }
+        @page { 
+          margin: 10mm !important; 
+          size: A4 !important;
+        }
+        .space-y-8 > * + * { margin-top: 2rem !important; }
+        .space-y-6 > * + * { margin-top: 1.5rem !important; }
+        .grid { display: grid !important; }
+        .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)) !important; }
+        .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+        .gap-6 { gap: 1.5rem !important; }
+        .shadow-sm { box-shadow: none !important; }
+        .rounded-lg { border: 1px solid #e5e7eb !important; }
       }
     `;
     
@@ -53,51 +73,69 @@ export function RelatorioASAViewer({ isOpen, onClose, dados }: RelatorioASAViewe
   };
 
   const handleDownload = () => {
-    // Para download, vamos gerar um PDF usando a API do navegador
-    const printWindow = window.open('', '_blank');
-    if (printWindow) {
-      const content = document.getElementById('relatorio-content')?.outerHTML || '';
-      printWindow.document.write(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <title>Relatório ASA - ${dados.carteira}</title>
-          <style>
-            body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 20px; }
-            .space-y-8 > * + * { margin-top: 2rem; }
-            .space-y-6 > * + * { margin-top: 1.5rem; }
-            .grid { display: grid; }
-            .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
-            .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-            .grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-            .gap-6 { gap: 1.5rem; }
-            .text-center { text-align: center; }
-            .font-bold { font-weight: bold; }
-            .text-4xl { font-size: 2.25rem; }
-            .text-lg { font-size: 1.125rem; }
-            .text-sm { font-size: 0.875rem; }
-            .mb-6 { margin-bottom: 1.5rem; }
-            .mb-4 { margin-bottom: 1rem; }
-            .mb-3 { margin-bottom: 0.75rem; }
-            .mb-2 { margin-bottom: 0.5rem; }
-            .p-6 { padding: 1.5rem; }
-            .p-4 { padding: 1rem; }
-            .bg-white { background-color: white; }
-            .rounded-lg { border-radius: 0.5rem; }
-            .shadow-sm { box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); }
-            .border-b { border-bottom-width: 1px; }
-            .border-gray-200 { border-color: #e5e7eb; }
-            .text-blue-900 { color: #1e3a8a; }
-            .text-gray-600 { color: #4b5563; }
-          </style>
-        </head>
-        <body>${content}</body>
-        </html>
-      `);
-      printWindow.document.close();
-      printWindow.print();
-      printWindow.close();
-    }
+    // Create a blob with the content and download it
+    const content = document.getElementById('relatorio-content')?.innerHTML || '';
+    const fullHTML = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Relatório ASA - ${dados.carteira}</title>
+        <meta charset="UTF-8">
+        <style>
+          body { 
+            font-family: system-ui, -apple-system, sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            background: #F8FAFC;
+            -webkit-print-color-adjust: exact;
+            color-adjust: exact;
+            print-color-adjust: exact;
+          }
+          .space-y-8 > * + * { margin-top: 2rem; }
+          .space-y-6 > * + * { margin-top: 1.5rem; }
+          .grid { display: grid; }
+          .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+          .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+          .grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+          .gap-6 { gap: 1.5rem; }
+          .text-center { text-align: center; }
+          .font-bold { font-weight: bold; }
+          .text-4xl { font-size: 2.25rem; }
+          .text-lg { font-size: 1.125rem; }
+          .text-sm { font-size: 0.875rem; }
+          .mb-6 { margin-bottom: 1.5rem; }
+          .mb-4 { margin-bottom: 1rem; }
+          .mb-3 { margin-bottom: 0.75rem; }
+          .mb-2 { margin-bottom: 0.5rem; }
+          .p-6 { padding: 1.5rem; }
+          .p-4 { padding: 1rem; }
+          .bg-white { background-color: white; }
+          .rounded-lg { border-radius: 0.5rem; border: 1px solid #e5e7eb; }
+          .shadow-sm { box-shadow: none; }
+          .border-b { border-bottom-width: 1px; }
+          .border-gray-200 { border-color: #e5e7eb; }
+          .text-blue-900 { color: #1e3a8a; }
+          .text-gray-600 { color: #4b5563; }
+          .break-inside-avoid { page-break-inside: avoid; }
+          .page-break-after { page-break-after: always; }
+          table { border-collapse: collapse; width: 100%; }
+          th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+          th { background-color: #f9fafb; }
+        </style>
+      </head>
+      <body>${content}</body>
+      </html>
+    `;
+
+    const blob = new Blob([fullHTML], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `relatorio-asa-${dados.carteira}-${dados.dataRelatorio}.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   // Filtrar apenas projetos com último status aprovado
@@ -118,7 +156,7 @@ export function RelatorioASAViewer({ isOpen, onClose, dados }: RelatorioASAViewe
               </Button>
               <Button variant="outline" size="sm" onClick={handleDownload} className="border-[#1B365D] text-[#1B365D] hover:bg-[#1B365D] hover:text-white">
                 <Download className="h-4 w-4 mr-2" />
-                Download PDF
+                Download HTML
               </Button>
               <Button variant="ghost" size="icon" onClick={onClose}>
                 <X className="h-4 w-4" />
@@ -129,7 +167,7 @@ export function RelatorioASAViewer({ isOpen, onClose, dados }: RelatorioASAViewe
 
         <div className="space-y-8 print:space-y-6 bg-[#F8FAFC]" id="relatorio-content">
           {/* Header do Relatório */}
-          <div className="text-center border-b border-[#1B365D] pb-6 bg-white p-6 rounded-lg shadow-sm">
+          <div className="text-center border-b border-[#1B365D] pb-6 bg-white p-6 rounded-lg shadow-sm break-inside-avoid">
             <div className="flex items-center justify-center gap-6 mb-6">
               <img 
                 src="/lovable-uploads/e42353b2-fcfd-4457-bbd8-066545973f48.png" 
@@ -167,7 +205,7 @@ export function RelatorioASAViewer({ isOpen, onClose, dados }: RelatorioASAViewe
           </div>
 
           {/* Footer */}
-          <div className="text-center text-sm text-[#6B7280] border-t border-[#1B365D] pt-6 bg-white p-6 rounded-lg shadow-sm">
+          <div className="text-center text-sm text-[#6B7280] border-t border-[#1B365D] pt-6 bg-white p-6 rounded-lg shadow-sm break-inside-avoid">
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium text-[#1B365D]">ASA Investments - Gestão de Projetos de TI</p>
