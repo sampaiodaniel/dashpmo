@@ -3,6 +3,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { X, Download, Printer } from 'lucide-react';
 import { DadosRelatorioASA } from '@/hooks/useRelatorioASA';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 interface RelatorioASAViewerProps {
   isOpen: boolean;
@@ -14,267 +17,42 @@ export function RelatorioASAViewer({ isOpen, onClose, dados }: RelatorioASAViewe
   if (!dados) return null;
 
   const handlePrint = () => {
-    const printContent = document.getElementById('relatorio-content');
-    if (printContent) {
-      const printWindow = window.open('', '_blank');
-      if (printWindow) {
-        printWindow.document.write(`
-          <html>
-            <head>
-              <title>Relatório ASA - ${dados.carteira}</title>
-              <style>
-                * { margin: 0; padding: 0; box-sizing: border-box; }
-                body { font-family: Arial, sans-serif; font-size: 12px; }
-                .page-break { page-break-after: always; }
-                .no-print { display: none !important; }
-                @page { margin: 20mm; }
-                .slide { 
-                  width: 100%; 
-                  height: 95vh;
-                  display: flex;
-                  flex-direction: column;
-                  padding: 0;
-                  margin: 0;
-                }
-                .cover-slide {
-                  background-image: url('${window.location.origin}/lovable-uploads/143a98ee-b076-497b-af41-3ed323f10eea.png');
-                  background-size: cover;
-                  background-position: center;
-                  background-repeat: no-repeat;
-                  position: relative;
-                  justify-content: center;
-                  align-items: center;
-                  text-align: center;
-                }
-                .cover-overlay {
-                  position: absolute;
-                  inset: 0;
-                  background: rgba(0, 0, 0, 0.3);
-                }
-                .cover-content {
-                  position: relative;
-                  z-index: 10;
-                  color: white;
-                }
-                .title-1 { font-size: 48px; font-weight: bold; margin-bottom: 20px; }
-                .title-2 { font-size: 32px; font-weight: 300; margin-bottom: 30px; }
-                .date { font-size: 24px; }
-                .subcover-slide {
-                  justify-content: center;
-                  align-items: center;
-                  text-align: center;
-                }
-                .subcover-title {
-                  font-size: 56px;
-                  font-weight: bold;
-                  color: #B8A082;
-                  border-left: 8px solid #B8A082;
-                  padding-left: 30px;
-                }
-                .content-slide {
-                  padding: 40px;
-                }
-                .slide-title {
-                  font-size: 28px;
-                  font-weight: bold;
-                  color: #333;
-                  border-left: 8px solid #B8A082;
-                  padding-left: 30px;
-                  margin-bottom: 30px;
-                }
-                .projeto-table {
-                  width: 100%;
-                  border-collapse: collapse;
-                  border: 2px solid #666;
-                }
-                .projeto-table th {
-                  background: #666;
-                  color: white;
-                  padding: 15px;
-                  font-size: 18px;
-                  font-weight: bold;
-                  border-right: 1px solid white;
-                }
-                .projeto-table td {
-                  padding: 15px;
-                  font-size: 16px;
-                  border-bottom: 1px solid #666;
-                  border-right: 1px solid #666;
-                }
-                .projeto-table tr:nth-child(even) {
-                  background: #f5f5f5;
-                }
-                .footer {
-                  position: absolute;
-                  bottom: 20px;
-                  left: 40px;
-                  right: 40px;
-                  display: flex;
-                  justify-content: space-between;
-                  align-items: center;
-                  font-size: 10px;
-                  color: #666;
-                }
-                .footer-logo {
-                  background: #B8A082;
-                  color: white;
-                  padding: 8px 12px;
-                  font-weight: bold;
-                  font-size: 14px;
-                }
-                .projeto-slide-title {
-                  font-size: 24px;
-                  font-weight: bold;
-                  color: #333;
-                  border-left: 8px solid #B8A082;
-                  padding-left: 30px;
-                  margin-bottom: 20px;
-                }
-                .status-circle {
-                  width: 30px;
-                  height: 30px;
-                  border-radius: 50%;
-                  display: inline-block;
-                  margin-right: 10px;
-                }
-                .status-verde { background: #22c55e; }
-                .status-amarelo { background: #eab308; }
-                .status-vermelho { background: #ef4444; }
-                .status-text {
-                  font-size: 20px;
-                  font-weight: bold;
-                  color: #333;
-                  margin-bottom: 20px;
-                }
-                .content-section {
-                  margin-bottom: 30px;
-                }
-                .section-title {
-                  font-size: 16px;
-                  font-weight: bold;
-                  text-decoration: underline;
-                  margin-bottom: 15px;
-                }
-                .content-grid {
-                  display: grid;
-                  grid-template-columns: 1fr 1fr;
-                  gap: 30px;
-                }
-                .content-box {
-                  background: #f8f9fa;
-                  padding: 20px;
-                  border-radius: 8px;
-                  min-height: 150px;
-                }
-                .timeline {
-                  position: relative;
-                  display: flex;
-                  justify-content: space-between;
-                  align-items: center;
-                  margin: 30px 0;
-                }
-                .timeline-line {
-                  position: absolute;
-                  top: 50%;
-                  left: 0;
-                  right: 0;
-                  height: 4px;
-                  background: #eab308;
-                  transform: translateY(-50%);
-                }
-                .timeline-item {
-                  position: relative;
-                  z-index: 10;
-                  text-align: center;
-                  background: white;
-                  padding: 0 15px;
-                }
-                .timeline-circle {
-                  width: 20px;
-                  height: 20px;
-                  background: #eab308;
-                  border-radius: 50%;
-                  margin: 0 auto 10px;
-                }
-                .timeline-title {
-                  font-weight: bold;
-                  font-size: 14px;
-                  margin-bottom: 5px;
-                }
-                .timeline-date {
-                  font-size: 12px;
-                  background: #f0f0f0;
-                  padding: 4px 8px;
-                  border-radius: 4px;
-                }
-                .entregaveis-grid {
-                  display: grid;
-                  grid-template-columns: 1fr 1fr 1fr;
-                  gap: 20px;
-                  margin-bottom: 30px;
-                }
-                .entregavel-item {
-                  font-size: 12px;
-                  line-height: 1.4;
-                }
-                .bottom-grid {
-                  display: grid;
-                  grid-template-columns: 1fr 1fr 1fr;
-                  gap: 20px;
-                }
-                .incidente-table {
-                  width: 100%;
-                  border-collapse: collapse;
-                  margin-top: 20px;
-                }
-                .incidente-header {
-                  background: #B8A082;
-                  color: white;
-                  text-align: center;
-                  font-weight: bold;
-                  font-size: 16px;
-                  padding: 15px;
-                }
-                .incidente-subheader {
-                  background: #D4C4A8;
-                  color: white;
-                  text-align: center;
-                  font-weight: bold;
-                  padding: 12px;
-                  border: 1px solid white;
-                }
-                .incidente-value {
-                  background: #E8DCC6;
-                  text-align: center;
-                  font-size: 32px;
-                  font-weight: bold;
-                  padding: 20px;
-                  border: 1px solid #D4C4A8;
-                }
-              </style>
-            </head>
-            <body>
-              ${printContent.innerHTML}
-            </body>
-          </html>
-        `);
-        printWindow.document.close();
-        printWindow.print();
-      }
-    }
+    window.print();
   };
 
   const handleDownload = () => {
-    // Implementar download PDF usando html2pdf ou similar
     handlePrint();
   };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'Verde': return 'bg-green-500';
+      case 'Amarelo': return 'bg-yellow-500';
+      case 'Vermelho': return 'bg-red-500';
+      default: return 'bg-gray-500';
+    }
+  };
+
+  const getStatusBadgeVariant = (status: string) => {
+    switch (status) {
+      case 'Verde': return 'default';
+      case 'Amarelo': return 'secondary';
+      case 'Vermelho': return 'destructive';
+      default: return 'outline';
+    }
+  };
+
+  // Filtrar apenas projetos com último status aprovado
+  const projetosAtivos = dados.projetos.filter(projeto => projeto.ultimoStatus);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-7xl max-h-[95vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center justify-between">
-            <DialogTitle>Relatório ASA - {dados.carteira}</DialogTitle>
+            <DialogTitle className="text-2xl font-bold text-pmo-primary">
+              Relatório ASA - {dados.carteira}
+            </DialogTitle>
             <div className="flex gap-2 no-print">
               <Button variant="outline" size="sm" onClick={handlePrint}>
                 <Printer className="h-4 w-4 mr-2" />
@@ -291,279 +69,285 @@ export function RelatorioASAViewer({ isOpen, onClose, dados }: RelatorioASAViewe
           </div>
         </DialogHeader>
 
-        <div className="print:p-0 space-y-0" id="relatorio-content">
-          {/* Capa usando a imagem como fundo */}
-          <div className="slide cover-slide page-break">
-            <div className="cover-overlay"></div>
-            <div className="cover-content">
-              <div className="title-1">PROJETOS/DEMANDAS</div>
-              <div className="title-2">STATUS REPORT GERENCIAL</div>
-              <div className="date">
-                {new Date().toLocaleDateString('pt-BR')}
-              </div>
-            </div>
-          </div>
-
-          {/* 2ª Página - Subcapa da Carteira */}
-          <div className="slide subcover-slide page-break">
-            <div className="subcover-title">
-              {dados.carteira === 'Geral' ? 'TODAS AS CARTEIRAS' : dados.carteira.toUpperCase()}
-            </div>
-          </div>
-
-          {/* 3ª Página - Tabela Overview */}
-          <div className="slide content-slide page-break">
-            <div className="slide-title">
-              PLANO DOS PROJETOS – {dados.carteira === 'Geral' ? 'TODAS AS CARTEIRAS' : dados.carteira.toUpperCase()}
-            </div>
-            
-            {dados.projetos.length > 0 && (
-              <table className="projeto-table">
-                <thead>
-                  <tr>
-                    <th style={{ width: '60%' }}>Projetos</th>
-                    <th style={{ width: '40%' }}>Equipe</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {dados.projetos.map((projeto, index) => (
-                    <tr key={projeto.id}>
-                      <td>{projeto.nome_projeto}</td>
-                      <td>{projeto.equipe || projeto.gp_responsavel || 'Não informado'}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-
-            <div className="footer">
+        <div className="space-y-8 print:space-y-6" id="relatorio-content">
+          {/* Header do Relatório */}
+          <div className="text-center border-b pb-4">
+            <div className="flex items-center justify-center gap-4 mb-4">
+              <img 
+                src="/lovable-uploads/48bf655c-460e-490c-9118-e222b43f0c9d.png" 
+                alt="DashPMO" 
+                className="h-12 w-auto"
+              />
               <div>
-                ASA. Todos os direitos reservados. Material confidencial é de propriedade da ASA, protegido por sigilo profissional.<br/>
-                O uso não autorizado do material é proibido e está sujeito às penalidades cabíveis.
+                <h1 className="text-3xl font-bold text-pmo-primary">Status Report Gerencial</h1>
+                <p className="text-pmo-gray">Carteira: {dados.carteira}</p>
+                <p className="text-sm text-pmo-gray">Data: {dados.dataRelatorio}</p>
               </div>
-              <div className="footer-logo">ASA</div>
             </div>
           </div>
 
-          {/* Páginas individuais por projeto */}
-          {dados.projetos.map((projeto) => (
-            <div key={`projeto-set-${projeto.id}`}>
-              {/* 1ª Página do Projeto */}
-              <div className="slide content-slide page-break">
-                <div className="projeto-slide-title">
-                  PLANO DO PROJETO – {projeto.nome_projeto}
+          {/* Overview de Projetos Ativos */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-pmo-primary rounded"></div>
+                Overview - Projetos Ativos ({projetosAtivos.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {projetosAtivos.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Projeto</TableHead>
+                      <TableHead>Equipe/GP</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Progresso</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {projetosAtivos.map((projeto) => (
+                      <TableRow key={projeto.id}>
+                        <TableCell className="font-medium">
+                          {projeto.nome_projeto}
+                        </TableCell>
+                        <TableCell>
+                          {projeto.gp_responsavel || projeto.equipe || 'Não informado'}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <div className={`w-3 h-3 rounded-full ${getStatusColor(projeto.ultimoStatus?.status_visao_gp || 'Cinza')}`}></div>
+                            <Badge variant={getStatusBadgeVariant(projeto.ultimoStatus?.status_visao_gp || 'Cinza')}>
+                              {projeto.ultimoStatus?.status_visao_gp || 'Sem status'}
+                            </Badge>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <div className="w-20 bg-gray-200 rounded-full h-2">
+                              <div 
+                                className="bg-pmo-primary h-2 rounded-full" 
+                                style={{ width: `${projeto.ultimoStatus?.progresso_estimado || 0}%` }}
+                              ></div>
+                            </div>
+                            <span className="text-sm">{projeto.ultimoStatus?.progresso_estimado || 0}%</span>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <p>Nenhum projeto ativo com status reportado</p>
                 </div>
-                
-                {projeto.ultimoStatus && (
-                  <>
-                    <div className="status-text">
-                      Status atual –
-                      <span className={`status-circle ${
-                        projeto.ultimoStatus.status_visao_gp === 'Verde' ? 'status-verde' :
-                        projeto.ultimoStatus.status_visao_gp === 'Amarelo' ? 'status-amarelo' : 'status-vermelho'
-                      }`}></span>
-                    </div>
+              )}
+            </CardContent>
+          </Card>
 
-                    <div className="content-grid">
-                      <div className="content-section">
-                        <div className="section-title">ITENS TRABALHADOS NA SEMANA</div>
-                        <div className="content-box">
-                          {projeto.ultimoStatus.realizado_semana_atual?.split('\n').map((line, i) => (
-                            <div key={i}>• {line}</div>
-                          )) || 'Nenhum item informado'}
-                        </div>
-                      </div>
-                      
-                      <div className="content-section">
-                        <div className="section-title">PONTOS DE ATENÇÃO</div>
-                        <div className="content-box">
-                          {projeto.ultimoStatus.observacoes_pontos_atencao?.split('\n').map((line, i) => (
-                            <div key={i}>• {line}</div>
-                          )) || 'Nenhum ponto de atenção'}
-                        </div>
-                      </div>
-                    </div>
-                  </>
-                )}
-                
-                <div className="footer">
-                  <div>
-                    ASA. Todos os direitos reservados. Material confidencial é de propriedade da ASA, protegido por sigilo profissional.<br/>
-                    O uso não autorizado do material é proibido e está sujeito às penalidades cabíveis.
+          {/* Detalhes dos Projetos */}
+          {projetosAtivos.map((projeto) => (
+            <Card key={`detail-${projeto.id}`} className="break-inside-avoid">
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <span>{projeto.nome_projeto}</span>
+                  <div className="flex items-center gap-2">
+                    <div className={`w-3 h-3 rounded-full ${getStatusColor(projeto.ultimoStatus?.status_visao_gp || 'Cinza')}`}></div>
+                    <Badge variant={getStatusBadgeVariant(projeto.ultimoStatus?.status_visao_gp || 'Cinza')}>
+                      {projeto.ultimoStatus?.status_visao_gp}
+                    </Badge>
                   </div>
-                  <div className="footer-logo">ASA</div>
-                </div>
-              </div>
-
-              {/* 2ª Página do Projeto - Marcos e Entregáveis */}
-              <div className="slide content-slide page-break">
-                <div className="projeto-slide-title">
-                  PLANO DO PROJETO – {projeto.nome_projeto}
-                </div>
-
-                {projeto.ultimoStatus && (
-                  <>
-                    {/* Timeline dos marcos */}
-                    {(projeto.ultimoStatus.data_marco1 || projeto.ultimoStatus.data_marco2 || projeto.ultimoStatus.data_marco3) && (
-                      <div className="timeline">
-                        <div className="timeline-line"></div>
-                        
-                        {projeto.ultimoStatus.data_marco1 && (
-                          <div className="timeline-item">
-                            <div className="timeline-title">{projeto.ultimoStatus.entrega1 || 'Entrega 1'}</div>
-                            <div className="timeline-circle"></div>
-                            <div className="timeline-date">
-                              {new Date(projeto.ultimoStatus.data_marco1).toLocaleDateString('pt-BR')}
-                            </div>
-                          </div>
-                        )}
-                        
-                        {projeto.ultimoStatus.data_marco2 && (
-                          <div className="timeline-item">
-                            <div className="timeline-title">{projeto.ultimoStatus.entrega2 || 'Entrega 2'}</div>
-                            <div className="timeline-circle"></div>
-                            <div className="timeline-date">
-                              {new Date(projeto.ultimoStatus.data_marco2).toLocaleDateString('pt-BR')}
-                            </div>
-                          </div>
-                        )}
-                        
-                        {projeto.ultimoStatus.data_marco3 && (
-                          <div className="timeline-item">
-                            <div className="timeline-title">{projeto.ultimoStatus.entrega3 || 'Entrega 3'}</div>
-                            <div className="timeline-circle"></div>
-                            <div className="timeline-date">
-                              {new Date(projeto.ultimoStatus.data_marco3).toLocaleDateString('pt-BR')}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Entregáveis dos marcos na mesma linha vertical */}
-                    <div className="entregaveis-grid">
-                      {projeto.ultimoStatus.entregaveis1 && (
-                        <div className="entregavel-item">
-                          {projeto.ultimoStatus.entregaveis1.split('\n').map((line, i) => (
-                            <div key={i}>• {line}</div>
-                          ))}
-                        </div>
-                      )}
-                      {projeto.ultimoStatus.entregaveis2 && (
-                        <div className="entregavel-item">
-                          {projeto.ultimoStatus.entregaveis2.split('\n').map((line, i) => (
-                            <div key={i}>• {line}</div>
-                          ))}
-                        </div>
-                      )}
-                      {projeto.ultimoStatus.entregaveis3 && (
-                        <div className="entregavel-item">
-                          {projeto.ultimoStatus.entregaveis3.split('\n').map((line, i) => (
-                            <div key={i}>• {line}</div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Seções inferiores */}
-                    <div className="bottom-grid">
-                      <div>
-                        <div className="section-title">ITENS TRABALHADOS NA SEMANA</div>
-                        <div>
-                          {projeto.ultimoStatus.realizado_semana_atual?.split('\n').map((line, i) => (
-                            <div key={i} className="entregavel-item">• {line}</div>
-                          )) || 'Nenhum item informado'}
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <div className="section-title">PONTOS DE ATENÇÃO</div>
-                        <div>
-                          {projeto.ultimoStatus.observacoes_pontos_atencao?.split('\n').map((line, i) => (
-                            <div key={i} className="entregavel-item">• {line}</div>
-                          )) || 'Nenhum ponto de atenção'}
-                        </div>
-                      </div>
-
-                      <div>
-                        <div className="section-title">BACKLOG</div>
-                        <div>
-                          {projeto.ultimoStatus.backlog?.split('\n').map((line, i) => (
-                            <div key={i} className="entregavel-item">• {line}</div>
-                          )) || 'Nenhum item no backlog'}
-                        </div>
-                      </div>
-                    </div>
-                  </>
-                )}
-                
-                <div className="footer">
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Descrição e Informações Básicas */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    ASA. Todos os direitos reservados. Material confidencial é de propriedade da ASA, protegido por sigilo profissional.<br/>
-                    O uso não autorizado do material é proibido e está sujeito às penalidades cabíveis.
+                    <h4 className="font-semibold text-pmo-primary mb-2">Descrição do Projeto</h4>
+                    <p className="text-sm text-gray-700">
+                      {projeto.descricao_projeto || projeto.descricao || 'Descrição não informada'}
+                    </p>
                   </div>
-                  <div className="footer-logo">ASA</div>
+                  <div>
+                    <h4 className="font-semibold text-pmo-primary mb-2">Informações</h4>
+                    <div className="space-y-1 text-sm">
+                      <p><strong>GP Responsável:</strong> {projeto.gp_responsavel}</p>
+                      <p><strong>Responsável Interno:</strong> {projeto.responsavel_interno}</p>
+                      <p><strong>Status Geral:</strong> {projeto.ultimoStatus?.status_geral}</p>
+                      <p><strong>Progresso:</strong> {projeto.ultimoStatus?.progresso_estimado || 0}%</p>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
+
+                {/* Marcos e Entregas */}
+                {(projeto.ultimoStatus?.data_marco1 || projeto.ultimoStatus?.data_marco2 || projeto.ultimoStatus?.data_marco3) && (
+                  <div>
+                    <h4 className="font-semibold text-pmo-primary mb-3">Próximas Entregas</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {projeto.ultimoStatus?.data_marco1 && (
+                        <div className="bg-blue-50 p-3 rounded-lg">
+                          <h5 className="font-medium text-blue-800 mb-1">
+                            {projeto.ultimoStatus.entrega1 || 'Entrega 1'}
+                          </h5>
+                          <p className="text-sm text-blue-600 mb-2">
+                            {new Date(projeto.ultimoStatus.data_marco1).toLocaleDateString('pt-BR')}
+                          </p>
+                          {projeto.ultimoStatus.entregaveis1 && (
+                            <div className="text-xs text-blue-700">
+                              {projeto.ultimoStatus.entregaveis1.split('\n').map((item, i) => (
+                                <div key={i}>• {item}</div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      {projeto.ultimoStatus?.data_marco2 && (
+                        <div className="bg-green-50 p-3 rounded-lg">
+                          <h5 className="font-medium text-green-800 mb-1">
+                            {projeto.ultimoStatus.entrega2 || 'Entrega 2'}
+                          </h5>
+                          <p className="text-sm text-green-600 mb-2">
+                            {new Date(projeto.ultimoStatus.data_marco2).toLocaleDateString('pt-BR')}
+                          </p>
+                          {projeto.ultimoStatus.entregaveis2 && (
+                            <div className="text-xs text-green-700">
+                              {projeto.ultimoStatus.entregaveis2.split('\n').map((item, i) => (
+                                <div key={i}>• {item}</div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      {projeto.ultimoStatus?.data_marco3 && (
+                        <div className="bg-purple-50 p-3 rounded-lg">
+                          <h5 className="font-medium text-purple-800 mb-1">
+                            {projeto.ultimoStatus.entrega3 || 'Entrega 3'}
+                          </h5>
+                          <p className="text-sm text-purple-600 mb-2">
+                            {new Date(projeto.ultimoStatus.data_marco3).toLocaleDateString('pt-BR')}
+                          </p>
+                          {projeto.ultimoStatus.entregaveis3 && (
+                            <div className="text-xs text-purple-700">
+                              {projeto.ultimoStatus.entregaveis3.split('\n').map((item, i) => (
+                                <div key={i}>• {item}</div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Atividades e Atenções */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <h4 className="font-semibold text-pmo-primary mb-2">Itens Trabalhados na Semana</h4>
+                    <div className="bg-gray-50 p-3 rounded-lg min-h-[100px]">
+                      {projeto.ultimoStatus?.realizado_semana_atual ? (
+                        projeto.ultimoStatus.realizado_semana_atual.split('\n').map((item, i) => (
+                          <div key={i} className="text-sm mb-1">• {item}</div>
+                        ))
+                      ) : (
+                        <p className="text-sm text-gray-500">Nenhum item informado</p>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-pmo-primary mb-2">Pontos de Atenção</h4>
+                    <div className="bg-yellow-50 p-3 rounded-lg min-h-[100px]">
+                      {projeto.ultimoStatus?.observacoes_pontos_atencao ? (
+                        projeto.ultimoStatus.observacoes_pontos_atencao.split('\n').map((item, i) => (
+                          <div key={i} className="text-sm mb-1">• {item}</div>
+                        ))
+                      ) : (
+                        <p className="text-sm text-gray-500">Nenhum ponto de atenção</p>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-pmo-primary mb-2">Backlog</h4>
+                    <div className="bg-blue-50 p-3 rounded-lg min-h-[100px]">
+                      {projeto.ultimoStatus?.backlog ? (
+                        projeto.ultimoStatus.backlog.split('\n').map((item, i) => (
+                          <div key={i} className="text-sm mb-1">• {item}</div>
+                        ))
+                      ) : (
+                        <p className="text-sm text-gray-500">Nenhum item no backlog</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bloqueios */}
+                {projeto.ultimoStatus?.bloqueios_atuais && (
+                  <div>
+                    <h4 className="font-semibold text-red-600 mb-2">Bloqueios Atuais</h4>
+                    <div className="bg-red-50 p-3 rounded-lg border border-red-200">
+                      {projeto.ultimoStatus.bloqueios_atuais.split('\n').map((item, i) => (
+                        <div key={i} className="text-sm mb-1 text-red-700">⚠️ {item}</div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           ))}
 
-          {/* Página de Incidentes */}
-          {dados.incidentes.length > 0 && (
-            <>
-              {/* Subcapa de Incidentes */}
-              <div className="slide subcover-slide page-break">
-                <div className="subcover-title">INCIDENTES</div>
-              </div>
-
-              {/* Dados de Incidentes */}
-              <div className="slide content-slide page-break">
-                <div className="slide-title">Controle de Incidentes</div>
-                <p style={{ fontSize: '16px', color: '#666', marginBottom: '20px' }}>
-                  *Detalhamento de itens na planilha de incidentes
-                </p>
-                
-                {dados.incidentes.map((incidente, index) => (
-                  <div key={index} style={{ marginBottom: '40px' }}>
-                    <div className="incidente-header">
-                      Atualização na última semana - {incidente.carteira}
-                    </div>
-                    
-                    <table className="incidente-table">
-                      <thead>
-                        <tr>
-                          <td className="incidente-subheader">Estoque Anterior</td>
-                          <td className="incidente-subheader">Entrada</td>
-                          <td className="incidente-subheader">Saída</td>
-                          <td className="incidente-subheader">Estoque Atual</td>
-                          <td className="incidente-subheader">&gt; 15 dias</td>
-                          <td className="incidente-subheader">Críticos</td>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td className="incidente-value">{incidente.anterior}</td>
-                          <td className="incidente-value">{incidente.entrada}</td>
-                          <td className="incidente-value">{incidente.saida}</td>
-                          <td className="incidente-value">{incidente.atual}</td>
-                          <td className="incidente-value">{incidente.mais_15_dias}</td>
-                          <td className="incidente-value">{incidente.criticos}</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                ))}
-                
-                <div className="footer">
-                  <div>
-                    ASA. Todos os direitos reservados. Material confidencial é de propriedade da ASA, protegido por sigilo profissional.<br/>
-                    O uso não autorizado do material é proibido e está sujeito às penalidades cabíveis.
-                  </div>
-                  <div className="footer-logo">ASA</div>
-                </div>
-              </div>
-            </>
+          {/* Tabela de Incidentes */}
+          {dados.incidentes && dados.incidentes.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <div className="w-4 h-4 bg-red-500 rounded"></div>
+                  Controle de Incidentes - {dados.carteira}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Carteira</TableHead>
+                      <TableHead>Estoque Anterior</TableHead>
+                      <TableHead>Entrada</TableHead>
+                      <TableHead>Saída</TableHead>
+                      <TableHead>Estoque Atual</TableHead>
+                      <TableHead>&gt; 15 dias</TableHead>
+                      <TableHead>Críticos</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {dados.incidentes.map((incidente, index) => (
+                      <TableRow key={index}>
+                        <TableCell className="font-medium">{incidente.carteira}</TableCell>
+                        <TableCell className="text-center">{incidente.anterior}</TableCell>
+                        <TableCell className="text-center text-green-600">+{incidente.entrada}</TableCell>
+                        <TableCell className="text-center text-blue-600">-{incidente.saida}</TableCell>
+                        <TableCell className="text-center font-bold">{incidente.atual}</TableCell>
+                        <TableCell className="text-center text-orange-600">{incidente.mais_15_dias}</TableCell>
+                        <TableCell className="text-center text-red-600 font-bold">{incidente.criticos}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
           )}
+
+          {/* Footer */}
+          <div className="text-center text-sm text-gray-500 border-t pt-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p>ASA Investments - Gestão de Projetos de TI</p>
+                <p>Relatório gerado em {dados.dataRelatorio}</p>
+              </div>
+              <img 
+                src="/lovable-uploads/e42353b2-fcfd-4457-bbd8-066545973f48.png" 
+                alt="ASA Logo" 
+                className="h-8 w-auto opacity-50"
+              />
+            </div>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

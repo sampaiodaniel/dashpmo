@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { 
@@ -17,7 +18,7 @@ export function NotificationsDropdown() {
   const { usuario, canApprove } = useAuth();
   const { data: statusPendentes } = useStatusPendentes();
   const [notificacoesProcessadasLocalmente, setNotificacoesProcessadasLocalmente] = useState<number[]>([]);
-  const { notificacoesLidas, marcarVariasComoLidas } = useNotificacoesLidas(notificacoesProcessadasLocalmente);
+  const { notificacoesLidas, marcarVariasComoLidas } = useNotificacoesLidas();
   const navigate = useNavigate();
 
   // Carregar notificações processadas do localStorage ao inicializar
@@ -56,7 +57,7 @@ export function NotificationsDropdown() {
         console.log('Marcando notificações como lidas:', novasNotificacoes);
         
         // Marcar imediatamente no estado local e persistir por usuário
-        const novosIds = [...notificacoesProcessadasLocalmente, ...novasNotificacoes];
+        const novosIds = [...new Set([...notificacoesProcessadasLocalmente, ...novasNotificacoes])];
         setNotificacoesProcessadasLocalmente(novosIds);
         
         // Salvar no localStorage com chave específica do usuário
@@ -64,15 +65,12 @@ export function NotificationsDropdown() {
         localStorage.setItem(chaveStorage, JSON.stringify(novosIds));
         
         // Marcar no servidor em background
-        setTimeout(() => {
-          marcarVariasComoLidas.mutateAsync(statusIds)
-            .then(() => {
-              console.log('Notificações marcadas como lidas no servidor');
-            })
-            .catch((error) => {
-              console.error('Erro ao marcar notificações como lidas:', error);
-            });
-        }, 100);
+        try {
+          await marcarVariasComoLidas.mutateAsync(statusIds);
+          console.log('Notificações marcadas como lidas no servidor');
+        } catch (error) {
+          console.error('Erro ao marcar notificações como lidas no servidor:', error);
+        }
       }
     }
   };

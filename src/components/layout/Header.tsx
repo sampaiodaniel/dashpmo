@@ -33,8 +33,9 @@ export function Header({ onToggleSidebar }: HeaderProps) {
     navigate('/configuracoes');
   };
 
-  const displayName = perfil?.nome || usuario?.nome;
-  const displayInitials = displayName?.split(' ').map(n => n[0]).join('').toUpperCase() || 'U';
+  // Garantir que sempre temos um nome para exibir
+  const displayName = perfil?.nome || usuario?.nome || 'Usuário';
+  const displayInitials = displayName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
 
   return (
     <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 sticky top-0 z-30">
