@@ -2,7 +2,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { useStatusList } from '@/hooks/useStatusList';
-import { useStatusOperations } from '@/hooks/useStatusOperations';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { EditarStatusForm } from '@/components/forms/EditarStatusForm';
