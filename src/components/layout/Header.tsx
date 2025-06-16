@@ -82,7 +82,7 @@ export function Header({ onToggleSidebar }: HeaderProps) {
           <img 
             src="/lovable-uploads/f0e94f5b-d465-4cff-932b-0a29b68665fa.png" 
             alt="ASA" 
-            className="w-8 h-8"
+            className="h-10 w-auto"
           />
           <div>
             <h1 className="text-xl font-bold text-pmo-primary">DashPMO</h1>
