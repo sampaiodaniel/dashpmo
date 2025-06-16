@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { CheckCircle, XCircle, Eye } from 'lucide-react';
 import { useStatusOperations } from '@/hooks/useStatusOperations';
 import { StatusProjeto } from '@/types/pmo';
+import { useAuth } from '@/hooks/useAuth';
 
 interface StatusAcoesProps {
   status: StatusProjeto;
@@ -10,20 +11,22 @@ interface StatusAcoesProps {
 }
 
 export function StatusAcoes({ status, onUpdate }: StatusAcoesProps) {
-  const { revisar, rejeitarStatus } = useStatusOperations();
+  const { revisar, rejeitarStatus, isLoading } = useStatusOperations();
+  const { usuario } = useAuth();
 
   const handleRevisar = async () => {
-    await revisar.mutateAsync({
+    if (!usuario) return;
+    
+    revisar({
       statusId: status.id,
-      aprovado: true,
+      revisadoPor: usuario.nome,
     });
     onUpdate?.();
   };
 
   const handleRejeitar = async () => {
-    await revisar.mutateAsync({
+    rejeitarStatus({
       statusId: status.id,
-      aprovado: false,
     });
     onUpdate?.();
   };
@@ -37,7 +40,7 @@ export function StatusAcoes({ status, onUpdate }: StatusAcoesProps) {
           <Button
             size="sm"
             onClick={handleRevisar}
-            disabled={revisar.isPending}
+            disabled={isLoading}
             className="bg-green-600 hover:bg-green-700"
           >
             <CheckCircle className="h-4 w-4 mr-1" />
@@ -47,7 +50,7 @@ export function StatusAcoes({ status, onUpdate }: StatusAcoesProps) {
             size="sm"
             variant="destructive"
             onClick={handleRejeitar}
-            disabled={rejeitarStatus.isPending}
+            disabled={isLoading}
           >
             <XCircle className="h-4 w-4 mr-1" />
             Rejeitar

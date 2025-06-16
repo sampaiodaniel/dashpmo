@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -30,11 +31,11 @@ export function MudancaCard({
     switch (status.toLowerCase()) {
       case 'pendente':
         return 'destructive';
-      case 'em andamento':
+      case 'em análise':
         return 'secondary';
-      case 'concluída':
+      case 'aprovada':
         return 'default';
-      case 'cancelada':
+      case 'rejeitada':
         return 'outline';
       default:
         return 'secondary';
@@ -61,12 +62,12 @@ export function MudancaCard({
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <CardTitle className="text-lg text-pmo-primary mb-2">
-              {mudanca.titulo}
+              {mudanca.descricao}
             </CardTitle>
             <div className="flex items-center gap-4 text-sm text-pmo-gray">
               <div className="flex items-center gap-1">
                 <Building2 className="h-4 w-4" />
-                <span>{mudanca.projeto?.nome}</span>
+                <span>{mudanca.projeto?.nome_projeto}</span>
               </div>
               <div className="flex items-center gap-1">
                 <Calendar className="h-4 w-4" />
@@ -75,13 +76,15 @@ export function MudancaCard({
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Badge variant={getStatusVariant(mudanca.status)} className="text-xs">
-              {mudanca.status}
+            <Badge variant={getStatusVariant(mudanca.status_aprovacao)} className="text-xs">
+              {mudanca.status_aprovacao}
             </Badge>
             <MudancaContextMenu 
-              mudancaId={mudanca.id}
+              mudanca={mudanca}
+              canApprove={false}
               onEditar={handleEditClick}
-              onExcluir={handleDeleteClick}
+              onAprovar={() => {}}
+              onRejeitar={() => {}}
             />
           </div>
         </div>
@@ -91,7 +94,7 @@ export function MudancaCard({
         <div className="space-y-3">
           <div>
             <p className="text-sm text-pmo-gray line-clamp-3">
-              {mudanca.justificativa}
+              {mudanca.justificativa_negocio}
             </p>
           </div>
           
@@ -101,10 +104,10 @@ export function MudancaCard({
               <span>{mudanca.solicitante}</span>
             </div>
             
-            {mudanca.impacto && (
+            {mudanca.impacto_prazo_dias && (
               <div className="flex items-center gap-1">
                 <AlertCircle className="h-4 w-4 text-orange-500" />
-                <span className="text-orange-500 font-medium">{mudanca.impacto}</span>
+                <span className="text-orange-500 font-medium">{mudanca.impacto_prazo_dias} dias</span>
               </div>
             )}
           </div>

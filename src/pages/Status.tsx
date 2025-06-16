@@ -12,6 +12,7 @@ import { useStatusFiltrados } from '@/hooks/useStatusFiltrados';
 import { useStatusPendentes } from '@/hooks/useStatusPendentes';
 import { PaginationFooter } from '@/components/common/PaginationFooter';
 import { StatusFilters as StatusFiltersType } from '@/components/status/filters/FilterUtils';
+import { useResponsaveisASADropdown } from '@/hooks/useResponsaveisASADropdown';
 
 function StatusContent() {
   const [filtros, setFiltros] = useState<StatusFiltersType>({});
@@ -32,6 +33,7 @@ function StatusContent() {
   });
 
   const { data: metricas } = useStatusPendentes();
+  const { data: responsaveis } = useResponsaveisASADropdown();
 
   const handleFiltroChange = (novosFiltros: StatusFiltersType) => {
     setFiltros(novosFiltros);
@@ -52,13 +54,8 @@ function StatusContent() {
     setPaginaAtual(1);
   };
 
-  const filtrarEmAtraso = () => {
-    setFiltros({ ...filtros, emAtraso: true });
-    setPaginaAtual(1);
-  };
-
   const filtrarRevisadosHoje = () => {
-    setFiltros({ ...filtros, statusAprovacao: 'aprovado', dataAprovacao: new Date().toISOString().split('T')[0] });
+    setFiltros({ ...filtros, statusAprovacao: 'aprovado' });
     setPaginaAtual(1);
   };
 
@@ -106,13 +103,17 @@ function StatusContent() {
 
       <div className="flex flex-col lg:flex-row gap-6">
         <div className="lg:w-1/4">
-          <StatusFilters filtros={filtros} onFiltroChange={handleFiltroChange} />
+          <StatusFilters 
+            filtros={filtros} 
+            onFiltroChange={handleFiltroChange}
+            responsaveis={responsaveis || []}
+          />
         </div>
         
         <div className="lg:w-3/4 space-y-6">
           <StatusSearchBar
             termoBusca={termoBusca}
-            onBuscarChange={handleBuscarChange}
+            onTermoBuscaChange={handleBuscarChange}
           />
 
           {status.length === 0 ? (
@@ -130,10 +131,10 @@ function StatusContent() {
               />
               
               <PaginationFooter
-                paginaAtual={paginaAtual}
-                totalPaginas={totalPaginas}
-                totalItens={totalItens}
-                onPaginaChange={setPaginaAtual}
+                currentPage={paginaAtual}
+                totalPages={totalPaginas}
+                totalItems={totalItens}
+                onPageChange={setPaginaAtual}
               />
             </>
           )}

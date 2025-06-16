@@ -49,12 +49,12 @@ export function StatusCard({ status, onStatusUpdate }: StatusCardProps) {
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <CardTitle className="text-lg text-pmo-primary mb-2">
-              {status.projeto?.nome}
+              {status.projeto?.nome_projeto}
             </CardTitle>
             <div className="flex items-center gap-4 text-sm text-pmo-gray">
               <div className="flex items-center gap-1">
                 <Building2 className="h-4 w-4" />
-                <span>{status.projeto?.carteira}</span>
+                <span>{status.projeto?.area_responsavel}</span>
               </div>
               <div className="flex items-center gap-1">
                 <Calendar className="h-4 w-4" />
@@ -95,10 +95,10 @@ export function StatusCard({ status, onStatusUpdate }: StatusCardProps) {
           )}
         </div>
 
-        {status.entregas_realizadas && (
+        {status.realizado_semana_atual && (
           <div>
-            <h4 className="text-sm font-medium mb-1">Entregas Realizadas:</h4>
-            <p className="text-sm text-pmo-gray line-clamp-2">{status.entregas_realizadas}</p>
+            <h4 className="text-sm font-medium mb-1">Realizado na Semana:</h4>
+            <p className="text-sm text-pmo-gray line-clamp-2">{status.realizado_semana_atual}</p>
           </div>
         )}
 

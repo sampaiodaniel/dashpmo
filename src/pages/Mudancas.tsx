@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
@@ -93,10 +94,13 @@ export default function Mudancas() {
         </div>
 
         <MudancasList 
-          mudancasList={mudancas || []}
-          isLoading={isLoadingMudancas}
-          error={error}
-          filtrosAplicados={Object.keys(filtros).some(key => filtros[key as keyof MudancasFiltersType])}
+          mudancas={mudancas || []}
+          onCardClick={handleMudancaClick}
+          onEditar={(e, id) => navigate(`/mudancas/${id}`)}
+          onExcluir={async (e, id) => {
+            // Implement delete logic if needed
+            console.log('Delete mudanca:', id);
+          }}
         />
       </div>
     </Layout>
