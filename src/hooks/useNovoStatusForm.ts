@@ -1,5 +1,4 @@
 
-
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -27,7 +26,7 @@ const statusFormSchema = z.object({
   observacoes_gerais: z.string().optional(),
   marco1_nome: z.string().min(1, 'Nome do Marco 1 é obrigatório'),
   marco1_data: z.string().min(1, 'Data do Marco 1 é obrigatória'),
-  marco1_responsavel: z.string().min(1, 'Responsável do Marco 1 é obrigatório'),
+  marco1_responsavel: z.string().min(1, 'Entregáveis do Marco 1 são obrigatórios'),
   marco2_nome: z.string().optional(),
   marco2_data: z.string().optional(),
   marco2_responsavel: z.string().optional(),
@@ -112,21 +111,18 @@ export function useNovoStatusForm() {
         impacto_riscos: data.impacto_riscos,
         backlog: data.backlog || null,
         bloqueios_atuais: data.bloqueios_atuais || null,
-        entregas_realizadas: data.entregas_realizadas || null,
-        proximas_entregas: data.proximas_entregas || null,
-        marcos_projeto: data.marcos_projeto || null,
-        riscos_identificados: data.riscos_identificados || null,
-        mudancas_solicitadas: data.mudancas_solicitadas || null,
-        observacoes_gerais: data.observacoes_gerais || null,
-        marco1_nome: data.marco1_nome,
-        marco1_data: data.marco1_data,
-        marco1_responsavel: data.marco1_responsavel,
-        marco2_nome: data.marco2_nome || null,
-        marco2_data: data.marco2_data || null,
-        marco2_responsavel: data.marco2_responsavel || null,
-        marco3_nome: data.marco3_nome || null,
-        marco3_data: data.marco3_data || null,
-        marco3_responsavel: data.marco3_responsavel || null,
+        realizado_semana_atual: data.entregas_realizadas || null,
+        observacoes_pontos_atencao: data.observacoes_gerais || null,
+        // Mapeamento correto dos marcos para os campos de entregáveis
+        entregaveis1: data.marco1_responsavel, // Campo "responsável" agora é "entregáveis"
+        entrega1: data.marco1_nome,
+        data_marco1: data.marco1_data,
+        entregaveis2: data.marco2_responsavel || null,
+        entrega2: data.marco2_nome || null,
+        data_marco2: data.marco2_data || null,
+        entregaveis3: data.marco3_responsavel || null,
+        entrega3: data.marco3_nome || null,
+        data_marco3: data.marco3_data || null,
         criado_por: usuario.nome,
         data_criacao: new Date().toISOString(),
         data_atualizacao: new Date().toISOString().split('T')[0], // Only date part
@@ -177,4 +173,3 @@ export function useNovoStatusForm() {
     handleProjetoChange,
   };
 }
-

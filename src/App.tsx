@@ -8,16 +8,16 @@ import { ThemeProvider } from "next-themes";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Projetos from "./pages/Projetos";
-import ProjetoDetalhes from "./pages/ProjetoDetalhes";
 import Status from "./pages/Status";
-import StatusDetalhes from "./pages/StatusDetalhes";
 import NovoStatus from "./pages/NovoStatus";
 import EditarStatus from "./pages/EditarStatus";
+import StatusDetalhes from "./pages/StatusDetalhes";
+import ProjetoDetalhes from "./pages/ProjetoDetalhes";
+import Licoes from "./pages/Licoes";
+import LicaoDetalhes from "./pages/LicaoDetalhes";
 import Mudancas from "./pages/Mudancas";
 import MudancaDetalhes from "./pages/MudancaDetalhes";
 import EditarMudanca from "./pages/EditarMudanca";
-import Licoes from "./pages/Licoes";
-import LicaoDetalhes from "./pages/LicaoDetalhes";
 import Incidentes from "./pages/Incidentes";
 import Relatorios from "./pages/Relatorios";
 import Administracao from "./pages/Administracao";
@@ -29,7 +29,7 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <TooltipProvider>
         <Toaster />
         <Sonner />
@@ -40,17 +40,17 @@ const App = () => (
             <Route path="/projetos" element={<Projetos />} />
             <Route path="/projetos/:id" element={<ProjetoDetalhes />} />
             <Route path="/status" element={<Status />} />
-            <Route path="/status/:id" element={<StatusDetalhes />} />
             <Route path="/status/novo" element={<NovoStatus />} />
-            <Route path="/status/editar/:id" element={<EditarStatus />} />
-            <Route path="/mudancas" element={<Mudancas />} />
-            <Route path="/mudancas/:id" element={<MudancaDetalhes />} />
-            <Route path="/mudancas/editar/:id" element={<EditarMudanca />} />
+            <Route path="/status/:id" element={<StatusDetalhes />} />
+            <Route path="/status/:id/editar" element={<EditarStatus />} />
             <Route path="/licoes" element={<Licoes />} />
             <Route path="/licoes/:id" element={<LicaoDetalhes />} />
+            <Route path="/mudancas" element={<Mudancas />} />
+            <Route path="/mudancas/:id" element={<MudancaDetalhes />} />
+            <Route path="/mudancas/:id/editar" element={<EditarMudanca />} />
             <Route path="/incidentes" element={<Incidentes />} />
             <Route path="/relatorios" element={<Relatorios />} />
-            <Route path="/admin" element={<Administracao />} />
+            <Route path="/administracao" element={<Administracao />} />
             <Route path="/aprovacoes" element={<Aprovacoes />} />
             <Route path="/configuracoes" element={<Configuracoes />} />
             <Route path="*" element={<NotFound />} />

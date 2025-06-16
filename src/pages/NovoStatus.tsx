@@ -290,48 +290,56 @@ export default function NovoStatus() {
                 <CardTitle>Marco 1 (Obrigatório)</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="marco1_nome"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Nome do Marco *</FormLabel>
-                        <FormControl>
-                          <Input {...field} placeholder="Nome do marco" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="col-span-2">
+                    <FormField
+                      control={form.control}
+                      name="marco1_responsavel"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Entregáveis *</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              {...field} 
+                              placeholder="Descreva os entregáveis..."
+                              rows={4}
+                              className="min-h-[100px]"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <div className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="marco1_nome"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nome da Entrega *</FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="Nome da entrega" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                  <FormField
-                    control={form.control}
-                    name="marco1_data"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Data *</FormLabel>
-                        <FormControl>
-                          <Input type="date" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="marco1_responsavel"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Responsável *</FormLabel>
-                        <FormControl>
-                          <Input {...field} placeholder="Nome do responsável" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                    <FormField
+                      control={form.control}
+                      name="marco1_data"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Data de Entrega *</FormLabel>
+                          <FormControl>
+                            <Input type="date" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -342,48 +350,56 @@ export default function NovoStatus() {
                 <CardTitle>Marco 2 (Opcional)</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="marco2_nome"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Nome do Marco</FormLabel>
-                        <FormControl>
-                          <Input {...field} placeholder="Nome do marco" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="col-span-2">
+                    <FormField
+                      control={form.control}
+                      name="marco2_responsavel"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Entregáveis</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              {...field} 
+                              placeholder="Descreva os entregáveis..."
+                              rows={4}
+                              className="min-h-[100px]"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <div className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="marco2_nome"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nome da Entrega</FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="Nome da entrega" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                  <FormField
-                    control={form.control}
-                    name="marco2_data"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Data</FormLabel>
-                        <FormControl>
-                          <Input type="date" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="marco2_responsavel"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Responsável</FormLabel>
-                        <FormControl>
-                          <Input {...field} placeholder="Nome do responsável" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                    <FormField
+                      control={form.control}
+                      name="marco2_data"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Data de Entrega</FormLabel>
+                          <FormControl>
+                            <Input type="date" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -394,48 +410,56 @@ export default function NovoStatus() {
                 <CardTitle>Marco 3 (Opcional)</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="marco3_nome"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Nome do Marco</FormLabel>
-                        <FormControl>
-                          <Input {...field} placeholder="Nome do marco" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="col-span-2">
+                    <FormField
+                      control={form.control}
+                      name="marco3_responsavel"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Entregáveis</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              {...field} 
+                              placeholder="Descreva os entregáveis..."
+                              rows={4}
+                              className="min-h-[100px]"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <div className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="marco3_nome"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nome da Entrega</FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="Nome da entrega" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                  <FormField
-                    control={form.control}
-                    name="marco3_data"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Data</FormLabel>
-                        <FormControl>
-                          <Input type="date" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="marco3_responsavel"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Responsável</FormLabel>
-                        <FormControl>
-                          <Input {...field} placeholder="Nome do responsável" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                    <FormField
+                      control={form.control}
+                      name="marco3_data"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Data de Entrega</FormLabel>
+                          <FormControl>
+                            <Input type="date" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                 </div>
               </CardContent>
             </Card>
