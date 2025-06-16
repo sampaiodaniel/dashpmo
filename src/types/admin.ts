@@ -1,4 +1,3 @@
-
 export interface ResponsavelASA {
   id: number;
   nome: string;
@@ -31,3 +30,21 @@ export const TIPOS_CONFIGURACAO = [
 ] as const;
 
 export type TipoConfiguracao = typeof TIPOS_CONFIGURACAO[number];
+
+export interface LogAlteracao {
+  id: number;
+  usuario_id: number;
+  usuario_nome: string;
+  modulo: string;
+  acao: string;
+  entidade_tipo: string;
+  entidade_id?: number;
+  entidade_nome?: string;
+  detalhes_alteracao?: any;
+  ip_usuario?: string;
+  user_agent?: string;
+  data_criacao: Date;
+}
+
+export type ModuloSistema = 'projetos' | 'status' | 'mudancas' | 'licoes' | 'incidentes' | 'usuarios' | 'configuracoes';
+export type AcaoSistema = 'criacao' | 'edicao' | 'exclusao' | 'aprovacao' | 'login' | 'logout';

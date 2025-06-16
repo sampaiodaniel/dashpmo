@@ -59,12 +59,13 @@ export function Sidebar() {
   const location = useLocation();
 
   return (
-    <div className="w-64 bg-white border-r border-gray-200 px-4 py-6">
-      <div className="flex items-center justify-center mb-8 px-4">
+    <div className="w-64 bg-white border-r border-gray-200 px-4 py-6 h-full overflow-y-auto">
+      <div className="flex items-center justify-center mb-8 px-2">
         <img 
           src="/lovable-uploads/48bf655c-460e-490c-9118-e222b43f0c9d.png" 
           alt="DashPMO" 
-          className="h-16 w-auto max-w-full"
+          className="h-12 w-auto max-w-full"
+          style={{ objectFit: 'contain' }}
         />
       </div>
       

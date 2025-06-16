@@ -181,6 +181,51 @@ export type Database = {
           },
         ]
       }
+      logs_alteracoes: {
+        Row: {
+          acao: string
+          data_criacao: string
+          detalhes_alteracao: Json | null
+          entidade_id: number | null
+          entidade_nome: string | null
+          entidade_tipo: string
+          id: number
+          ip_usuario: unknown | null
+          modulo: string
+          user_agent: string | null
+          usuario_id: number
+          usuario_nome: string
+        }
+        Insert: {
+          acao: string
+          data_criacao?: string
+          detalhes_alteracao?: Json | null
+          entidade_id?: number | null
+          entidade_nome?: string | null
+          entidade_tipo: string
+          id?: number
+          ip_usuario?: unknown | null
+          modulo: string
+          user_agent?: string | null
+          usuario_id: number
+          usuario_nome: string
+        }
+        Update: {
+          acao?: string
+          data_criacao?: string
+          detalhes_alteracao?: Json | null
+          entidade_id?: number | null
+          entidade_nome?: string | null
+          entidade_tipo?: string
+          id?: number
+          ip_usuario?: unknown | null
+          modulo?: string
+          user_agent?: string | null
+          usuario_id?: number
+          usuario_nome?: string
+        }
+        Relationships: []
+      }
       mudancas_replanejamento: {
         Row: {
           criado_por: string
@@ -593,6 +638,21 @@ export type Database = {
           impacto: Database["public"]["Enums"]["nivel_risco"]
         }
         Returns: string
+      }
+      registrar_log_alteracao: {
+        Args: {
+          p_usuario_id: number
+          p_usuario_nome: string
+          p_modulo: string
+          p_acao: string
+          p_entidade_tipo: string
+          p_entidade_id?: number
+          p_entidade_nome?: string
+          p_detalhes_alteracao?: Json
+          p_ip_usuario?: unknown
+          p_user_agent?: string
+        }
+        Returns: undefined
       }
     }
     Enums: {

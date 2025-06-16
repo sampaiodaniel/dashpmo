@@ -23,9 +23,13 @@ export function Layout({ children }: LayoutProps) {
 
   return (
     <div className="min-h-screen bg-pmo-background flex">
-      <Sidebar />
+      {/* Sidebar fixo */}
+      <div className="fixed left-0 top-0 h-full z-40">
+        <Sidebar />
+      </div>
       
-      <div className="flex-1 flex flex-col">
+      {/* Content area com margem para compensar sidebar fixo */}
+      <div className="flex-1 flex flex-col ml-64">
         <Header onToggleSidebar={toggleSidebar} />
         
         <main className="flex-1">

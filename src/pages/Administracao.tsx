@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AdminUsuarios } from '@/components/admin/AdminUsuarios';
 import { AdminResponsaveisASA } from '@/components/admin/AdminResponsaveisASA';
 import { AdminConfiguracoes } from '@/components/admin/AdminConfiguracoes';
+import { AdminLogs } from '@/components/admin/AdminLogs';
 import { SeedTestData } from '@/components/admin/SeedTestData';
 
 export default function Administracao() {
@@ -48,10 +49,11 @@ export default function Administracao() {
         </div>
 
         <Tabs defaultValue="usuarios" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="usuarios">Usuários</TabsTrigger>
             <TabsTrigger value="responsaveis">Responsáveis ASA</TabsTrigger>
             <TabsTrigger value="configuracoes">Configurações</TabsTrigger>
+            <TabsTrigger value="logs">Logs do Sistema</TabsTrigger>
             <TabsTrigger value="dados-teste">Dados de Teste</TabsTrigger>
           </TabsList>
 
@@ -65,6 +67,10 @@ export default function Administracao() {
 
           <TabsContent value="configuracoes">
             <AdminConfiguracoes />
+          </TabsContent>
+
+          <TabsContent value="logs">
+            <AdminLogs />
           </TabsContent>
 
           <TabsContent value="dados-teste">
