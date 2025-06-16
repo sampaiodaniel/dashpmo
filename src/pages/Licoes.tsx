@@ -8,6 +8,7 @@ import { LicoesMetricas } from '@/components/licoes/LicoesMetricas';
 import { LicoesSearchBar } from '@/components/licoes/LicoesSearchBar';
 import { LicoesFilters } from '@/components/licoes/LicoesFilters';
 import { LicoesList } from '@/components/licoes/LicoesList';
+import { useLicoes } from '@/hooks/useLicoes';
 import { useLicoesFiltradas } from '@/hooks/useLicoesFiltradas';
 
 interface LicoesFiltersType {
@@ -22,10 +23,15 @@ export default function Licoes() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filtros, setFiltros] = useState<LicoesFiltersType>({});
   
-  const { licoesFiltradas, isLoading: isLoadingLicoes } = useLicoesFiltradas({
-    searchTerm,
-    filtros,
+  const { data: licoes, isLoading: isLoadingLicoes } = useLicoes();
+  const licoesFiltradas = useLicoesFiltradas(licoes, {
+    busca: searchTerm,
+    ...filtros,
   });
+
+  const handleNovaLicao = () => {
+    console.log('Nova lição');
+  };
 
   if (isLoading) {
     return (
@@ -47,13 +53,17 @@ export default function Licoes() {
   return (
     <Layout>
       <div className="space-y-6">
-        <LicoesHeader />
-        <LicoesMetricas />
+        <LicoesHeader onNovaLicao={handleNovaLicao} />
+        <LicoesMetricas 
+          totalLicoes={licoes?.length || 0}
+          boasPraticas={licoes?.filter(l => l.categoria_licao === 'Boas Práticas').length || 0}
+          pontosAtencao={licoes?.filter(l => l.status_aplicacao === 'Não aplicada').length || 0}
+        />
         
         <div className="space-y-4">
           <LicoesSearchBar 
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
+            value={searchTerm}
+            onChange={setSearchTerm}
           />
           
           <LicoesFilters 
@@ -65,6 +75,10 @@ export default function Licoes() {
         <LicoesList 
           licoes={licoesFiltradas}
           isLoading={isLoadingLicoes}
+          error={null}
+          termoBusca={searchTerm}
+          filtrosAplicados={filtros}
+          onLicaoClick={(id) => console.log('Clicked lesson:', id)}
         />
       </div>
     </Layout>

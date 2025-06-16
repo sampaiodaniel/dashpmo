@@ -1,9 +1,10 @@
+
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 
 const statusFormSchema = z.object({
@@ -107,7 +108,7 @@ export function useNovoStatusForm() {
       };
 
       const { error } = await supabase
-        .from('status_projetos')
+        .from('status_projeto')
         .insert(statusData);
 
       if (error) {

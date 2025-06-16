@@ -67,10 +67,11 @@ export default function NovoStatus() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <CarteiraProjetoSelect
-                  carteiraSelecionada={carteiraSelecionada}
-                  projetoSelecionado={projetoSelecionado?.toString() || ''}
+                  carteira={carteiraSelecionada}
+                  projeto={projetoSelecionado?.toString() || ''}
                   onCarteiraChange={handleCarteiraChange}
                   onProjetoChange={(value) => handleProjetoChange(Number(value))}
+                  required
                 />
               </CardContent>
             </Card>
