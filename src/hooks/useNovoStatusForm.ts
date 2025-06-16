@@ -33,6 +33,7 @@ const statusFormSchema = z.object({
   marco3_nome: z.string().optional(),
   marco3_data: z.string().optional(),
   marco3_responsavel: z.string().optional(),
+  progresso_estimado: z.number().min(0).max(100),
 });
 
 type StatusFormData = z.infer<typeof statusFormSchema>;
@@ -41,6 +42,7 @@ export function useNovoStatusForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [projetoSelecionado, setProjetoSelecionado] = useState<number | null>(null);
   const [carteiraSelecionada, setCarteiraSelecionada] = useState<string>('');
+  const [progressoEstimado, setProgressoEstimado] = useState<number>(0);
   const { usuario } = useAuth();
 
   const form = useForm<StatusFormData>({
@@ -71,6 +73,7 @@ export function useNovoStatusForm() {
       marco3_nome: '',
       marco3_data: '',
       marco3_responsavel: '',
+      progresso_estimado: 0,
     },
   });
 
@@ -85,6 +88,11 @@ export function useNovoStatusForm() {
   const handleProjetoChange = (projetoId: number) => {
     setProjetoSelecionado(projetoId);
     form.setValue('projeto_id', projetoId);
+  };
+
+  const handleProgressoChange = (progresso: number) => {
+    setProgressoEstimado(progresso);
+    form.setValue('progresso_estimado', progresso);
   };
 
   const onSubmit = async (data: StatusFormData) => {
@@ -123,6 +131,7 @@ export function useNovoStatusForm() {
         entregaveis3: data.marco3_responsavel || null,
         entrega3: data.marco3_nome || null,
         data_marco3: data.marco3_data || null,
+        progresso_estimado: data.progresso_estimado,
         criado_por: usuario.nome,
         data_criacao: new Date().toISOString(),
         data_atualizacao: new Date().toISOString().split('T')[0], // Only date part
@@ -150,6 +159,7 @@ export function useNovoStatusForm() {
       form.reset();
       setProjetoSelecionado(null);
       setCarteiraSelecionada('');
+      setProgressoEstimado(0);
       
     } catch (error) {
       console.error('Erro inesperado:', error);
@@ -169,7 +179,9 @@ export function useNovoStatusForm() {
     onSubmit,
     projetoSelecionado,
     carteiraSelecionada,
+    progressoEstimado,
     handleCarteiraChange,
     handleProjetoChange,
+    handleProgressoChange,
   };
 }

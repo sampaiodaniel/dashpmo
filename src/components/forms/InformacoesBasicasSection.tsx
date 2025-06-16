@@ -33,6 +33,9 @@ export function InformacoesBasicasSection({
   onProjetoChange,
   onProgressoChange,
 }: InformacoesBasicasSectionProps) {
+  // Gerar opções de progresso de 5 em 5%
+  const progressoOptions = Array.from({ length: 21 }, (_, i) => i * 5);
+
   return (
     <Card>
       <CardHeader>
@@ -76,14 +79,18 @@ export function InformacoesBasicasSection({
 
         <div>
           <Label htmlFor="progresso">Progresso Estimado (%)</Label>
-          <Input
-            id="progresso"
-            type="number"
-            min="0"
-            max="100"
-            value={progressoEstimado}
-            onChange={(e) => onProgressoChange(Number(e.target.value))}
-          />
+          <Select value={progressoEstimado.toString()} onValueChange={(value) => onProgressoChange(Number(value))}>
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione o progresso" />
+            </SelectTrigger>
+            <SelectContent>
+              {progressoOptions.map((progress) => (
+                <SelectItem key={progress} value={progress.toString()}>
+                  {progress}%
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </CardContent>
     </Card>

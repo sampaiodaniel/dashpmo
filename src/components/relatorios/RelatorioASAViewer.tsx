@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { X, Download, Printer } from 'lucide-react';
@@ -353,7 +352,7 @@ export function RelatorioASAViewer({ isOpen, onClose, dados }: RelatorioASAViewe
 
         <div className="space-y-8 print:space-y-6 bg-gradient-to-br from-[#F8FAFC] to-[#F1F5F9]" id="relatorio-content" style={{ fontFamily: 'Inter, sans-serif' }}>
           {/* Header do Relatório - Design mais sofisticado */}
-          <div className="text-center border-b-4 border-[#A6926B] pb-8 bg-white p-8 rounded-xl shadow-lg break-inside-avoid relative overflow-hidden">
+          <div className="text-center border-b-4 border-[#A6926B] pb-8 bg-white p-8 rounded-xl break-inside-avoid relative overflow-hidden">
             {/* Background decorativo */}
             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#A6926B]/10 to-transparent rounded-full transform translate-x-16 -translate-y-16"></div>
             <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-[#1B365D]/10 to-transparent rounded-full transform -translate-x-12 translate-y-12"></div>
@@ -363,7 +362,7 @@ export function RelatorioASAViewer({ isOpen, onClose, dados }: RelatorioASAViewe
                 <img 
                   src="/lovable-uploads/e42353b2-fcfd-4457-bbd8-066545973f48.png" 
                   alt="ASA Logo" 
-                  className="h-40 w-auto"
+                  className="h-48 w-auto"
                 />
                 <div className="text-left">
                   <h1 className="text-5xl font-bold text-[#1B365D] mb-3 tracking-tight">Status Report</h1>
@@ -385,41 +384,38 @@ export function RelatorioASAViewer({ isOpen, onClose, dados }: RelatorioASAViewe
           </div>
 
           {/* Gráficos de Status dos Projetos */}
-          <div className="bg-white p-8 rounded-xl shadow-lg break-inside-avoid border-l-4 border-[#1B365D]">
+          <div className="bg-white p-8 rounded-xl border-l-4 border-[#1B365D] break-inside-avoid">
             <GraficoStatusProjeto projetos={dados.projetos} />
           </div>
 
           {/* Overview de Projetos Ativos */}
-          <div className="bg-white p-8 rounded-xl shadow-lg break-inside-avoid border-l-4 border-[#A6926B]">
+          <div className="bg-white p-8 rounded-xl border-l-4 border-[#A6926B] break-inside-avoid">
             <ProjetosOverview projetos={dados.projetos} />
           </div>
 
           {/* Detalhes dos Projetos */}
           {projetosAtivos.map((projeto, index) => (
-            <div key={`detail-${projeto.id}`} className={`bg-white p-8 rounded-xl shadow-lg break-inside-avoid border-l-4 border-[#2E5984] ${index > 0 ? 'page-break-after' : ''}`}>
+            <div key={`detail-${projeto.id}`} className={`bg-white p-8 rounded-xl border-l-4 border-[#2E5984] break-inside-avoid ${index > 0 ? 'page-break-after' : ''}`}>
               <ProjetoDetalhes projeto={projeto} />
             </div>
           ))}
 
           {/* Tabela de Incidentes */}
-          <div className="bg-white p-8 rounded-xl shadow-lg break-inside-avoid page-break-after border-l-4 border-[#EF4444]">
+          <div className="bg-white p-8 rounded-xl border-l-4 border-[#EF4444] break-inside-avoid page-break-after">
             <TabelaIncidentes incidentes={dados.incidentes} carteira={dados.carteira} />
           </div>
 
           {/* Footer - Design mais elegante */}
-          <div className="text-center text-sm text-[#6B7280] border-t-4 border-[#A6926B] pt-8 bg-white p-8 rounded-xl shadow-lg break-inside-avoid relative overflow-hidden">
+          <div className="text-center text-sm text-[#6B7280] border-t-4 border-[#A6926B] pt-8 bg-white p-8 rounded-xl break-inside-avoid relative overflow-hidden">
             {/* Background decorativo */}
             <div className="absolute top-0 left-0 w-20 h-20 bg-gradient-to-br from-[#A6926B]/10 to-transparent rounded-full transform -translate-x-10 -translate-y-10"></div>
             
             <div className="relative z-10">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between mb-4">
                 <div className="text-left">
                   <p className="font-bold text-lg text-[#1B365D] mb-2">ASA Investments</p>
                   <p className="font-medium text-[#A6926B] mb-1">Gestão de Projetos de TI</p>
                   <p className="text-[#6B7280]">Relatório gerado em {dados.dataRelatorio}</p>
-                  <div className="mt-3 text-xs text-[#9CA3AF]">
-                    <p>Documento confidencial - Uso interno</p>
-                  </div>
                 </div>
                 <div className="text-right">
                   <img 
@@ -427,10 +423,12 @@ export function RelatorioASAViewer({ isOpen, onClose, dados }: RelatorioASAViewe
                     alt="ASA Logo" 
                     className="h-20 w-auto mb-2"
                   />
-                  <div className="text-xs text-[#9CA3AF]">
-                    <p>© 2024 ASA Investments</p>
-                  </div>
                 </div>
+              </div>
+              
+              <div className="border-t border-[#E5E7EB] pt-4 text-xs text-[#9CA3AF] leading-relaxed">
+                <p className="mb-2">© 2024 ASA. Todos os direitos reservados. Material confidencial e de propriedade da ASA, protegido por sigilo profissional.</p>
+                <p>O uso não autorizado do material é proibido e está sujeito às penalidades cabíveis.</p>
               </div>
             </div>
           </div>
