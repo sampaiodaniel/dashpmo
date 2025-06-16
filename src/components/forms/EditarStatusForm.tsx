@@ -1,43 +1,19 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { StatusProjeto } from '@/types/pmo';
 import { useQueryClient } from '@tanstack/react-query';
+import { StatusInformationSection } from './status/StatusInformationSection';
+import { RiskManagementSection } from './status/RiskManagementSection';
+import { ActivitiesSection } from './status/ActivitiesSection';
+import { MilestonesSection } from './status/MilestonesSection';
+import { ObservationsSection } from './status/ObservationsSection';
 
 interface EditarStatusFormProps {
   status: StatusProjeto;
   onSuccess: () => void;
-}
-
-const STATUS_GERAL_OPTIONS = ['Planejamento', 'Em Andamento', 'Concluído', 'Cancelado', 'Em Espera'] as const;
-const STATUS_VISAO_GP_OPTIONS = ['Verde', 'Amarelo', 'Vermelho'] as const;
-const NIVEL_RISCO_OPTIONS = ['Baixo', 'Médio', 'Alto'] as const;
-
-// Função para calcular o risco baseado na fórmula do Excel
-function calcularRisco(impacto: string, probabilidade: string): { nivel: string; cor: string } {
-  if (!impacto || !probabilidade) {
-    return { nivel: '', cor: '' };
-  }
-
-  const impactoValor = impacto === 'Baixo' ? 1 : impacto === 'Médio' ? 2 : 3;
-  const probabilidadeValor = probabilidade === 'Baixo' ? 1 : probabilidade === 'Médio' ? 2 : 3;
-  const risco = impactoValor * probabilidadeValor;
-
-  if (risco <= 2) {
-    return { nivel: 'Baixo', cor: 'bg-green-100 text-green-700 border-green-200' };
-  } else if (risco <= 4) {
-    return { nivel: 'Médio', cor: 'bg-yellow-100 text-yellow-700 border-yellow-200' };
-  } else {
-    return { nivel: 'Alto', cor: 'bg-red-100 text-red-700 border-red-200' };
-  }
 }
 
 export function EditarStatusForm({ status, onSuccess }: EditarStatusFormProps) {
@@ -64,8 +40,6 @@ export function EditarStatusForm({ status, onSuccess }: EditarStatusFormProps) {
     data_marco3: status.data_marco3 ? status.data_marco3.toISOString().split('T')[0] : '',
     progresso_estimado: (status as any).progresso_estimado || 0
   });
-
-  const risco = calcularRisco(formData.impacto_riscos, formData.probabilidade_riscos);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -134,299 +108,68 @@ export function EditarStatusForm({ status, onSuccess }: EditarStatusFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Status Geral */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Status do Projeto</CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <Label htmlFor="status_geral">Status Geral</Label>
-            <Select value={formData.status_geral} onValueChange={(value) => handleInputChange('status_geral', value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione o status geral" />
-              </SelectTrigger>
-              <SelectContent>
-                {STATUS_GERAL_OPTIONS.map((status) => (
-                  <SelectItem key={status} value={status}>
-                    {status}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+      <StatusInformationSection
+        statusGeral={formData.status_geral}
+        statusVisaoGp={formData.status_visao_gp}
+        progressoEstimado={formData.progresso_estimado}
+        onStatusGeralChange={(value) => handleInputChange('status_geral', value)}
+        onStatusVisaoGpChange={(value) => handleInputChange('status_visao_gp', value)}
+        onProgressoEstimadoChange={(value) => handleInputChange('progresso_estimado', value)}
+      />
 
-          <div>
-            <Label htmlFor="status_visao_gp">Visão GP</Label>
-            <Select value={formData.status_visao_gp} onValueChange={(value) => handleInputChange('status_visao_gp', value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione a visão GP" />
-              </SelectTrigger>
-              <SelectContent>
-                {STATUS_VISAO_GP_OPTIONS.map((status) => (
-                  <SelectItem key={status} value={status}>
-                    {status}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+      <RiskManagementSection
+        impactoRiscos={formData.impacto_riscos}
+        probabilidadeRiscos={formData.probabilidade_riscos}
+        onImpactoRiscosChange={(value) => handleInputChange('impacto_riscos', value)}
+        onProbabilidadeRiscosChange={(value) => handleInputChange('probabilidade_riscos', value)}
+      />
 
-          <div>
-            <Label htmlFor="progresso_estimado">Progresso Estimado (%)</Label>
-            <Input
-              id="progresso_estimado"
-              type="number"
-              min="0"
-              max="100"
-              value={formData.progresso_estimado}
-              onChange={(e) => handleInputChange('progresso_estimado', Number(e.target.value))}
-            />
-          </div>
-        </CardContent>
-      </Card>
+      <ActivitiesSection
+        realizadoSemanaAtual={formData.realizado_semana_atual}
+        backlog={formData.backlog}
+        onRealizadoSemanaAtualChange={(value) => handleInputChange('realizado_semana_atual', value)}
+        onBacklogChange={(value) => handleInputChange('backlog', value)}
+      />
 
-      {/* Gestão de Riscos */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Gestão de Riscos</CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <Label htmlFor="impacto_riscos">Impacto dos Riscos</Label>
-            <Select value={formData.impacto_riscos} onValueChange={(value) => handleInputChange('impacto_riscos', value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione o impacto" />
-              </SelectTrigger>
-              <SelectContent>
-                {NIVEL_RISCO_OPTIONS.map((nivel) => (
-                  <SelectItem key={nivel} value={nivel}>
-                    {nivel}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+      <MilestonesSection
+        marco1={{
+          entrega: formData.entrega1,
+          data: formData.data_marco1,
+          entregaveis: formData.entregaveis1,
+        }}
+        marco2={{
+          entrega: formData.entrega2,
+          data: formData.data_marco2,
+          entregaveis: formData.entregaveis2,
+        }}
+        marco3={{
+          entrega: formData.entrega3,
+          data: formData.data_marco3,
+          entregaveis: formData.entregaveis3,
+        }}
+        onMarco1Change={(field, value) => {
+          if (field === 'entrega') handleInputChange('entrega1', value);
+          else if (field === 'data') handleInputChange('data_marco1', value);
+          else if (field === 'entregaveis') handleInputChange('entregaveis1', value);
+        }}
+        onMarco2Change={(field, value) => {
+          if (field === 'entrega') handleInputChange('entrega2', value);
+          else if (field === 'data') handleInputChange('data_marco2', value);
+          else if (field === 'entregaveis') handleInputChange('entregaveis2', value);
+        }}
+        onMarco3Change={(field, value) => {
+          if (field === 'entrega') handleInputChange('entrega3', value);
+          else if (field === 'data') handleInputChange('data_marco3', value);
+          else if (field === 'entregaveis') handleInputChange('entregaveis3', value);
+        }}
+      />
 
-          <div>
-            <Label htmlFor="probabilidade_riscos">Probabilidade dos Riscos</Label>
-            <Select value={formData.probabilidade_riscos} onValueChange={(value) => handleInputChange('probabilidade_riscos', value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione a probabilidade" />
-              </SelectTrigger>
-              <SelectContent>
-                {NIVEL_RISCO_OPTIONS.map((nivel) => (
-                  <SelectItem key={nivel} value={nivel}>
-                    {nivel}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {risco.nivel && (
-            <div>
-              <Label>Farol de Risco</Label>
-              <Badge className={`${risco.cor} mt-2 block w-fit`}>
-                {risco.nivel}
-              </Badge>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Atividades */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Realizado na Semana</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Textarea
-              value={formData.realizado_semana_atual}
-              onChange={(e) => handleInputChange('realizado_semana_atual', e.target.value)}
-              rows={4}
-              placeholder="Descreva as atividades realizadas na semana atual..."
-            />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Backlog</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Textarea
-              value={formData.backlog}
-              onChange={(e) => handleInputChange('backlog', e.target.value)}
-              rows={4}
-              placeholder="Descreva o backlog..."
-            />
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Entregáveis e Marcos - Layout como no detalhe */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">📅 Entregáveis e Marcos</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Marco 1 */}
-          <div className="border rounded-lg p-4">
-            <h4 className="font-medium text-pmo-primary mb-4">Marco 1 (Obrigatório)</h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <Label htmlFor="entrega1">Nome do Marco *</Label>
-                <Input
-                  id="entrega1"
-                  value={formData.entrega1}
-                  onChange={(e) => handleInputChange('entrega1', e.target.value)}
-                  placeholder="Nome do marco"
-                />
-              </div>
-              <div>
-                <Label htmlFor="data_marco1">Data *</Label>
-                <Input
-                  id="data_marco1"
-                  type="date"
-                  value={formData.data_marco1}
-                  onChange={(e) => handleInputChange('data_marco1', e.target.value)}
-                />
-              </div>
-              <div>
-                <Label>Responsável *</Label>
-                <Input
-                  placeholder="Nome do responsável"
-                />
-              </div>
-            </div>
-            <div className="mt-4">
-              <Label htmlFor="entregaveis1">Entregáveis:</Label>
-              <Textarea
-                id="entregaveis1"
-                value={formData.entregaveis1}
-                onChange={(e) => handleInputChange('entregaveis1', e.target.value)}
-                rows={3}
-                placeholder="Descreva os entregáveis..."
-              />
-            </div>
-          </div>
-
-          {/* Marco 2 */}
-          <div className="border rounded-lg p-4">
-            <h4 className="font-medium text-pmo-primary mb-4">Marco 2 (Opcional)</h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <Label htmlFor="entrega2">Nome do Marco</Label>
-                <Input
-                  id="entrega2"
-                  value={formData.entrega2}
-                  onChange={(e) => handleInputChange('entrega2', e.target.value)}
-                  placeholder="Nome do marco"
-                />
-              </div>
-              <div>
-                <Label htmlFor="data_marco2">Data</Label>
-                <Input
-                  id="data_marco2"
-                  type="date"
-                  value={formData.data_marco2}
-                  onChange={(e) => handleInputChange('data_marco2', e.target.value)}
-                />
-              </div>
-              <div>
-                <Label>Responsável</Label>
-                <Input
-                  placeholder="Nome do responsável"
-                />
-              </div>
-            </div>
-            <div className="mt-4">
-              <Label htmlFor="entregaveis2">Entregáveis:</Label>
-              <Textarea
-                id="entregaveis2"
-                value={formData.entregaveis2}
-                onChange={(e) => handleInputChange('entregaveis2', e.target.value)}
-                rows={3}
-                placeholder="Descreva os entregáveis..."
-              />
-            </div>
-          </div>
-
-          {/* Marco 3 */}
-          <div className="border rounded-lg p-4">
-            <h4 className="font-medium text-pmo-primary mb-4">Marco 3 (Opcional)</h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <Label htmlFor="entrega3">Nome do Marco</Label>
-                <Input
-                  id="entrega3"
-                  value={formData.entrega3}
-                  onChange={(e) => handleInputChange('entrega3', e.target.value)}
-                  placeholder="Nome do marco"
-                />
-              </div>
-              <div>
-                <Label htmlFor="data_marco3">Data</Label>
-                <Input
-                  id="data_marco3"
-                  type="date"
-                  value={formData.data_marco3}
-                  onChange={(e) => handleInputChange('data_marco3', e.target.value)}
-                />
-              </div>
-              <div>
-                <Label>Responsável</Label>
-                <Input
-                  placeholder="Nome do responsável"
-                />
-              </div>
-            </div>
-            <div className="mt-4">
-              <Label htmlFor="entregaveis3">Entregáveis:</Label>
-              <Textarea
-                id="entregaveis3"
-                value={formData.entregaveis3}
-                onChange={(e) => handleInputChange('entregaveis3', e.target.value)}
-                rows={3}
-                placeholder="Descreva os entregáveis..."
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Observações */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-red-600">Bloqueios Atuais</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Textarea
-              value={formData.bloqueios_atuais}
-              onChange={(e) => handleInputChange('bloqueios_atuais', e.target.value)}
-              rows={4}
-              placeholder="Descreva os bloqueios atuais..."
-            />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-yellow-600">Pontos de Atenção</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Textarea
-              value={formData.observacoes_pontos_atencao}
-              onChange={(e) => handleInputChange('observacoes_pontos_atencao', e.target.value)}
-              rows={4}
-              placeholder="Descreva os pontos de atenção..."
-            />
-          </CardContent>
-        </Card>
-      </div>
+      <ObservationsSection
+        bloqueiosAtuais={formData.bloqueios_atuais}
+        observacoesPontosAtencao={formData.observacoes_pontos_atencao}
+        onBloqueiosAtuaisChange={(value) => handleInputChange('bloqueios_atuais', value)}
+        onObservacoesPontosAtencaoChange={(value) => handleInputChange('observacoes_pontos_atencao', value)}
+      />
 
       <div className="flex justify-end gap-2">
         <Button type="submit" disabled={carregando}>

@@ -1,0 +1,103 @@
+
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
+interface Milestone {
+  entrega: string;
+  data: string;
+  entregaveis: string;
+}
+
+interface MilestonesSectionProps {
+  marco1: Milestone;
+  marco2: Milestone;
+  marco3: Milestone;
+  onMarco1Change: (field: keyof Milestone, value: string) => void;
+  onMarco2Change: (field: keyof Milestone, value: string) => void;
+  onMarco3Change: (field: keyof Milestone, value: string) => void;
+}
+
+interface MilestoneCardProps {
+  title: string;
+  milestone: Milestone;
+  onChange: (field: keyof Milestone, value: string) => void;
+  required?: boolean;
+}
+
+function MilestoneCard({ title, milestone, onChange, required = false }: MilestoneCardProps) {
+  return (
+    <div className="border rounded-lg p-4">
+      <h4 className="font-medium text-pmo-primary mb-4">{title} {required && '(Obrigatório)'}</h4>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <Label>Nome do Marco {required && '*'}</Label>
+          <Input
+            value={milestone.entrega}
+            onChange={(e) => onChange('entrega', e.target.value)}
+            placeholder="Nome do marco"
+          />
+        </div>
+        <div>
+          <Label>Data {required && '*'}</Label>
+          <Input
+            type="date"
+            value={milestone.data}
+            onChange={(e) => onChange('data', e.target.value)}
+          />
+        </div>
+        <div>
+          <Label>Responsável {required && '*'}</Label>
+          <Input
+            placeholder="Nome do responsável"
+          />
+        </div>
+      </div>
+      <div className="mt-4">
+        <Label>Entregáveis:</Label>
+        <Textarea
+          value={milestone.entregaveis}
+          onChange={(e) => onChange('entregaveis', e.target.value)}
+          rows={3}
+          placeholder="Descreva os entregáveis..."
+        />
+      </div>
+    </div>
+  );
+}
+
+export function MilestonesSection({
+  marco1,
+  marco2,
+  marco3,
+  onMarco1Change,
+  onMarco2Change,
+  onMarco3Change,
+}: MilestonesSectionProps) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-lg">📅 Entregáveis e Marcos</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <MilestoneCard
+          title="Marco 1"
+          milestone={marco1}
+          onChange={onMarco1Change}
+          required
+        />
+        <MilestoneCard
+          title="Marco 2"
+          milestone={marco2}
+          onChange={onMarco2Change}
+        />
+        <MilestoneCard
+          title="Marco 3"
+          milestone={marco3}
+          onChange={onMarco3Change}
+        />
+      </CardContent>
+    </Card>
+  );
+}
