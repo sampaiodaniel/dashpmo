@@ -1,17 +1,30 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Dot } from 'recharts';
+import { useIncidentes } from '@/hooks/useIncidentes';
 
 interface GraficoEvolutivoIncidentesRelatorioProps {
   carteira: string;
 }
 
 export function GraficoEvolutivoIncidentesRelatorio({ carteira }: GraficoEvolutivoIncidentesRelatorioProps) {
-  // Dados baseados na base de teste - apenas 3 meses
-  const dados = [
-    { mes: 'Abr', total: 48, novos: 15, resolvidos: 12, criticos: 4 },
-    { mes: 'Mai', total: 51, novos: 18, resolvidos: 15, criticos: 6 },
-    { mes: 'Jun', total: 44, novos: 11, resolvidos: 18, criticos: 3 }
+  const { data: incidentesData } = useIncidentes();
+  
+  // Filtrar dados apenas para a carteira específica e ordenar por data
+  const dadosCarteira = incidentesData?.filter(item => item.carteira === carteira)
+    ?.sort((a, b) => new Date(a.data_registro || '').getTime() - new Date(b.data_registro || '').getTime())
+    ?.map(item => ({
+      mes: new Date(item.data_registro || '').toLocaleDateString('pt-BR', { month: 'short' }),
+      data: item.data_registro,
+      total: item.atual,
+      novos: item.entrada,
+      resolvidos: item.saida,
+      criticos: item.criticos
+    })) || [];
+
+  // Se não há dados, usar dados de exemplo mínimos
+  const dados = dadosCarteira.length > 0 ? dadosCarteira : [
+    { mes: 'Jun', total: 12, novos: 5, resolvidos: 8, criticos: 2 }
   ];
 
   const CustomDot = (props: any) => {

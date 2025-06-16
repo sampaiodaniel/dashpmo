@@ -3,7 +3,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
 import { LicoesHeader } from '@/components/licoes/LicoesHeader';
-import { LicoesMetricas } from '@/components/licoes/LicoesMetricas';
 import { LicoesFilters } from '@/components/licoes/LicoesFilters';
 import { LicoesSearchBar } from '@/components/licoes/LicoesSearchBar';
 import { LicoesList } from '@/components/licoes/LicoesList';
@@ -57,9 +56,8 @@ export default function Licoes() {
   }
 
   const handleNovaLicao = () => {
-    console.log('Abrindo modal de nova lição - estado atual:', novaLicaoModalAberto);
+    console.log('Abrindo modal de nova lição');
     setNovaLicaoModalAberto(true);
-    console.log('Modal deve estar aberto agora');
   };
 
   const handleFecharModal = () => {
@@ -67,35 +65,28 @@ export default function Licoes() {
     setNovaLicaoModalAberto(false);
   };
 
-  // Calculate metrics
-  const totalLicoes = licoesFiltradas?.length || 0;
-  const boasPraticas = licoesFiltradas?.filter(licao => licao.categoria_licao === 'Processo').length || 0;
-  const pontosAtencao = licoesFiltradas?.filter(licao => licao.status_aplicacao === 'Não aplicada').length || 0;
-
   // Transform data to match LicaoItem interface
   const licoesTransformed = licoesFiltradas?.map(licao => ({
     ...licao,
     data_registro: licao.data_registro.toISOString().split('T')[0]
   })) || [];
 
-  console.log('Estado do modal:', novaLicaoModalAberto);
+  const handleLicaoClick = (licaoId: number) => {
+    console.log('Clicou na lição:', licaoId);
+    // Implementar navegação para detalhes da lição quando necessário
+  };
 
   return (
     <Layout>
       <div className="space-y-6">
         <LicoesHeader onNovaLicao={handleNovaLicao} />
-        <LicoesMetricas 
-          totalLicoes={totalLicoes}
-          boasPraticas={boasPraticas}
-          pontosAtencao={pontosAtencao}
-        />
         
         <div className="flex flex-col lg:flex-row gap-4">
           <div className="flex-1">
             <LicoesSearchBar 
               termoBusca={busca}
               onTermoBuscaChange={setBusca}
-              totalResults={totalLicoes}
+              totalResults={licoesTransformed.length}
             />
           </div>
           <div className="lg:w-80">
@@ -111,8 +102,8 @@ export default function Licoes() {
           isLoading={isLoadingLicoes}
           error={null}
           termoBusca={busca}
-          filtrosAplicados={Object.keys(filtros).length > 0}
-          onLicaoClick={() => {}}
+          filtrosAplicados={Object.keys(filtros).some(key => filtros[key as keyof typeof filtros])}
+          onLicaoClick={handleLicaoClick}
         />
 
         <NovaLicaoModal 

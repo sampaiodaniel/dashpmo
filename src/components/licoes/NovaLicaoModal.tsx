@@ -137,7 +137,7 @@ export function NovaLicaoModal({ isOpen, onClose, categorias = [] }: NovaLicaoMo
                   <SelectValue placeholder="Selecione um projeto" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Nenhum projeto</SelectItem>
+                  <SelectItem value="">Nenhum projeto</SelectItem>
                   {projetos?.map((projeto) => (
                     <SelectItem key={projeto.id} value={projeto.id.toString()}>
                       {projeto.nome_projeto}

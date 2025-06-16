@@ -34,7 +34,7 @@ export function ProjetosOverview({ projetos }: ProjetosOverviewProps) {
               <TableRow>
                 <TableHead className="text-[#1B365D] font-semibold">Projeto</TableHead>
                 <TableHead className="text-[#1B365D] font-semibold">Equipe/GP</TableHead>
-                <TableHead className="text-[#1B365D] font-semibold text-center">Status</TableHead>
+                <TableHead className="text-[#1B365D] font-semibold text-right">Status</TableHead>
                 <TableHead className="text-[#1B365D] font-semibold">Progresso</TableHead>
               </TableRow>
             </TableHeader>
@@ -48,7 +48,8 @@ export function ProjetosOverview({ projetos }: ProjetosOverviewProps) {
                     {projeto.gp_responsavel || projeto.equipe || 'Não informado'}
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center justify-center">
+                    <div className="flex items-center justify-end gap-2">
+                      <span className="text-sm text-[#6B7280] font-medium">Status</span>
                       <div className={`w-6 h-6 rounded-full ${getStatusColor(projeto.ultimoStatus?.status_visao_gp || 'Cinza')}`}></div>
                     </div>
                   </TableCell>
