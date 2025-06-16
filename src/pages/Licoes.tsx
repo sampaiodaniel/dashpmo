@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
@@ -78,11 +77,10 @@ export default function Licoes() {
           isLoading={isLoadingLicoes}
           error={null}
           termoBusca={searchTerm}
-          filtrosAplicados={filtros}
+          filtrosAplicados={Object.keys(filtros).some(key => filtros[key as keyof LicoesFiltersType])}
           onLicaoClick={(id) => console.log('Clicked lesson:', id)}
         />
       </div>
     </Layout>
   );
 }
-
