@@ -51,19 +51,28 @@ export default function Licoes() {
     setNovaLicaoModalAberto(false);
   };
 
+  // Calculate metrics
+  const totalLicoes = licoesFiltradas?.length || 0;
+  const boasPraticas = licoesFiltradas?.filter(licao => licao.categoria_licao === 'Boas Práticas').length || 0;
+  const pontosAtencao = licoesFiltradas?.filter(licao => licao.status_aplicacao === 'Não aplicada').length || 0;
+
   return (
     <Layout>
       <div className="space-y-6">
         <LicoesHeader onNovaLicao={handleNovaLicao} />
-        <LicoesMetricas />
+        <LicoesMetricas 
+          totalLicoes={totalLicoes}
+          boasPraticas={boasPraticas}
+          pontosAtencao={pontosAtencao}
+        />
         
         <div className="flex flex-col lg:flex-row gap-4">
           <div className="flex-1">
             <LicoesSearchBar 
-              searchTerm={busca}
-              onSearchChange={setBusca}
-              sortBy={ordenacao}
-              onSortChange={setOrdenacao}
+              busca={busca}
+              onBuscaChange={setBusca}
+              ordenacao={ordenacao}
+              onOrdenacaoChange={setOrdenacao}
             />
           </div>
           <div className="lg:w-80">
@@ -79,7 +88,7 @@ export default function Licoes() {
           isLoading={isLoadingLicoes}
           error={null}
           termoBusca={busca}
-          filtrosAplicados={filtros}
+          filtrosAplicados={Object.keys(filtros).length > 0}
           onLicaoClick={() => {}}
         />
 

@@ -1,16 +1,21 @@
 
-import { useMemo } from 'react';
+import { useState, useMemo } from 'react';
+import { useLicoes } from './useLicoes';
 
 export interface LicoesFilters {
   categoria?: string;
   status?: string;
   responsavel?: string;
   projeto?: string;
-  busca?: string;
 }
 
-export function useLicoesFiltradas(licoes: any[] | undefined, filtros: LicoesFilters) {
-  return useMemo(() => {
+export function useLicoesFiltradas() {
+  const { data: licoes, isLoading } = useLicoes();
+  const [filtros, setFiltros] = useState<LicoesFilters>({});
+  const [busca, setBusca] = useState('');
+  const [ordenacao, setOrdenacao] = useState('data_criacao');
+
+  const licoesFiltradas = useMemo(() => {
     if (!licoes) return [];
 
     let filtradas = [...licoes];
@@ -44,8 +49,8 @@ export function useLicoesFiltradas(licoes: any[] | undefined, filtros: LicoesFil
     }
 
     // Filtrar por busca
-    if (filtros.busca) {
-      const termoBusca = filtros.busca.toLowerCase();
+    if (busca) {
+      const termoBusca = busca.toLowerCase();
       filtradas = filtradas.filter(licao =>
         licao.licao_aprendida?.toLowerCase().includes(termoBusca) ||
         licao.situacao_ocorrida?.toLowerCase().includes(termoBusca) ||
@@ -55,6 +60,32 @@ export function useLicoesFiltradas(licoes: any[] | undefined, filtros: LicoesFil
       );
     }
 
+    // Ordenar
+    filtradas.sort((a, b) => {
+      if (ordenacao === 'data_criacao') {
+        return new Date(b.data_criacao).getTime() - new Date(a.data_criacao).getTime();
+      }
+      if (ordenacao === 'categoria') {
+        return a.categoria_licao.localeCompare(b.categoria_licao);
+      }
+      return 0;
+    });
+
     return filtradas;
-  }, [licoes, filtros]);
+  }, [licoes, filtros, busca, ordenacao]);
+
+  const atualizarFiltros = (novosFiltros: LicoesFilters) => {
+    setFiltros(novosFiltros);
+  };
+
+  return {
+    licoesFiltradas,
+    filtros,
+    atualizarFiltros,
+    busca,
+    setBusca,
+    ordenacao,
+    setOrdenacao,
+    isLoading
+  };
 }
