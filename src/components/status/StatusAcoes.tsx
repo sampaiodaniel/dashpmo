@@ -1,196 +1,70 @@
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { MoreVertical, Edit, Archive, Trash2 } from 'lucide-react';
+import { MoreVertical, Eye, CheckCircle, XCircle } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { StatusProjeto } from '@/types/pmo';
+import { useStatusOperations } from '@/hooks/useStatusOperations';
+import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
-import { toast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 
 interface StatusAcoesProps {
   status: StatusProjeto;
-  onStatusUpdate: () => void;
 }
 
-export function StatusAcoes({ status, onStatusUpdate }: StatusAcoesProps) {
+export function StatusAcoes({ status }: StatusAcoesProps) {
+  const { revisar: revisarStatus, rejeitarStatus } = useStatusOperations();
+  const { canApprove } = useAuth();
   const navigate = useNavigate();
-  const [excluirDialogOpen, setExcluirDialogOpen] = useState(false);
-  const [arquivarDialogOpen, setArquivarDialogOpen] = useState(false);
-  const [excluindo, setExcluindo] = useState(false);
-  const [arquivando, setArquivando] = useState(false);
 
-  const handleEdit = () => {
-    navigate(`/status/${status.id}/editar`);
+  const handleRevisar = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Revisando status:', status.id);
+    revisarStatus({ statusId: status.id, revisadoPor: 'Administrador' });
   };
 
-  const handleArchive = async () => {
-    setArquivando(true);
-    try {
-      console.log('Arquivando status:', status.id);
-      
-      const { error } = await supabase
-        .from('status_projeto')
-        .update({ 
-          aprovado: false,
-          data_atualizacao: new Date().toISOString().split('T')[0]
-        })
-        .eq('id', status.id);
-
-      if (error) {
-        console.error('Erro ao arquivar status:', error);
-        toast({
-          title: "Erro",
-          description: "Erro ao arquivar status",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Sucesso",
-          description: "Status arquivado com sucesso",
-        });
-        onStatusUpdate();
-      }
-    } catch (error) {
-      console.error('Erro ao arquivar status:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao arquivar status",
-        variant: "destructive",
-      });
-    } finally {
-      setArquivando(false);
-      setArquivarDialogOpen(false);
+  const handleRejeitar = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (confirm('Tem certeza que deseja rejeitar este status?')) {
+      console.log('Rejeitando status:', status.id);
+      rejeitarStatus({ statusId: status.id });
     }
   };
 
-  const handleDelete = async () => {
-    setExcluindo(true);
-    try {
-      console.log('Excluindo status:', status.id);
-      
-      const { error } = await supabase
-        .from('status_projeto')
-        .delete()
-        .eq('id', status.id);
-
-      if (error) {
-        console.error('Erro ao excluir status:', error);
-        toast({
-          title: "Erro",
-          description: "Erro ao excluir status",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Sucesso",
-          description: "Status excluído com sucesso",
-        });
-        onStatusUpdate();
-      }
-    } catch (error) {
-      console.error('Erro ao excluir status:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao excluir status",
-        variant: "destructive",
-      });
-    } finally {
-      setExcluindo(false);
-      setExcluirDialogOpen(false);
-    }
+  const handleVerDetalhes = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigate(`/status/${status.id}`);
   };
 
   return (
-    <>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-            <MoreVertical className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          {!status.aprovado && (
-            <>
-              <DropdownMenuItem onClick={handleEdit}>
-                <Edit className="h-4 w-4 mr-2" />
-                Editar
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-            </>
-          )}
-          <DropdownMenuItem onClick={() => setArquivarDialogOpen(true)}>
-            <Archive className="h-4 w-4 mr-2" />
-            Arquivar
-          </DropdownMenuItem>
-          <DropdownMenuItem 
-            onClick={() => setExcluirDialogOpen(true)}
-            className="text-red-600 focus:text-red-600"
-          >
-            <Trash2 className="h-4 w-4 mr-2" />
-            Excluir
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-
-      {/* Dialog de confirmação para arquivar */}
-      <AlertDialog open={arquivarDialogOpen} onOpenChange={setArquivarDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Arquivar Status</AlertDialogTitle>
-            <AlertDialogDescription>
-              Tem certeza que deseja arquivar este status? Esta ação pode ser desfeita posteriormente.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleArchive}
-              disabled={arquivando}
-            >
-              {arquivando ? 'Arquivando...' : 'Arquivar'}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Dialog de confirmação para excluir */}
-      <AlertDialog open={excluirDialogOpen} onOpenChange={setExcluirDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Excluir Status</AlertDialogTitle>
-            <AlertDialogDescription>
-              Tem certeza que deseja excluir este status? Esta ação não pode ser desfeita.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleDelete} 
-              className="bg-red-600 hover:bg-red-700"
-              disabled={excluindo}
-            >
-              {excluindo ? 'Excluindo...' : 'Excluir'}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <div 
+          className="flex items-center gap-1 p-2 rounded hover:bg-gray-100 transition-colors cursor-pointer"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <MoreVertical className="h-4 w-4 text-pmo-gray" />
+        </div>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-48">
+        <DropdownMenuItem onClick={handleVerDetalhes}>
+          <Eye className="h-4 w-4 mr-2" />
+          Ver Detalhes
+        </DropdownMenuItem>
+        {canApprove && !status.aprovado && (
+          <>
+            <DropdownMenuItem onClick={handleRevisar}>
+              <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
+              Revisado
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleRejeitar}>
+              <XCircle className="h-4 w-4 mr-2 text-red-600" />
+              Rejeitar
+            </DropdownMenuItem>
+          </>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

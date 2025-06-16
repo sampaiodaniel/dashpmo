@@ -1,78 +1,52 @@
 
-import { Card, CardContent } from '@/components/ui/card';
-import { CheckSquare, Clock, AlertCircle } from 'lucide-react';
-import { useStatusPendentes } from '@/hooks/useStatusPendentes';
-import { useAuth } from '@/hooks/useAuth';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CheckCircle, Clock } from 'lucide-react';
 
 interface StatusAprovacaoMetricasProps {
-  onFiltrarAguardandoAprovacao?: () => void;
-  onFiltrarEmAtraso?: () => void;
-  onFiltrarAprovadosHoje?: () => void;
+  totalStatus: number;
+  statusPendentes: number;
+  statusRevisados: number;
 }
 
 export function StatusAprovacaoMetricas({ 
-  onFiltrarAguardandoAprovacao,
-  onFiltrarEmAtraso,
-  onFiltrarAprovadosHoje 
+  totalStatus, 
+  statusPendentes, 
+  statusRevisados 
 }: StatusAprovacaoMetricasProps) {
-  const { canApprove } = useAuth();
-  const { data: statusPendentes } = useStatusPendentes();
-
-  // Só mostra as métricas se o usuário pode aprovar
-  if (!canApprove()) {
-    return null;
-  }
-
-  const aguardandoAprovacao = statusPendentes?.length || 0;
-  const emAtraso = statusPendentes?.filter(s => {
-    const diasAtraso = Math.floor((new Date().getTime() - s.data_atualizacao.getTime()) / (1000 * 60 * 60 * 24));
-    return diasAtraso > 3;
-  }).length || 0;
-
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-      <Card 
-        className="border-l-4 border-l-pmo-warning cursor-pointer hover:shadow-md transition-shadow"
-        onClick={onFiltrarAguardandoAprovacao}
-      >
-        <CardContent className="p-4">
-          <div className="flex items-center gap-3">
-            <Clock className="h-5 w-5 text-pmo-warning" />
-            <div className="flex items-baseline gap-2">
-              <div className="text-xl font-bold text-pmo-warning">{aguardandoAprovacao}</div>
-              <span className="text-sm text-pmo-gray">Aguardando Aprovação</span>
-            </div>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Total de Status</CardTitle>
+          <div className="h-8 w-8 bg-blue-100 rounded-lg flex items-center justify-center">
+            <span className="text-blue-600 font-semibold text-sm">{totalStatus}</span>
           </div>
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{totalStatus}</div>
+          <p className="text-xs text-muted-foreground">Status registrados</p>
         </CardContent>
       </Card>
 
-      <Card 
-        className="border-l-4 border-l-pmo-danger cursor-pointer hover:shadow-md transition-shadow"
-        onClick={onFiltrarEmAtraso}
-      >
-        <CardContent className="p-4">
-          <div className="flex items-center gap-3">
-            <AlertCircle className="h-5 w-5 text-pmo-danger" />
-            <div className="flex items-baseline gap-2">
-              <div className="text-xl font-bold text-pmo-danger">{emAtraso}</div>
-              <span className="text-sm text-pmo-gray">Em Atraso (+3 dias)</span>
-            </div>
-          </div>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Pendente Revisão</CardTitle>
+          <Clock className="h-4 w-4 text-orange-600" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold text-orange-600">{statusPendentes}</div>
+          <p className="text-xs text-muted-foreground">Aguardando revisão</p>
         </CardContent>
       </Card>
 
-      <Card 
-        className="border-l-4 border-l-pmo-success cursor-pointer hover:shadow-md transition-shadow"
-        onClick={onFiltrarAprovadosHoje}
-      >
-        <CardContent className="p-4">
-          <div className="flex items-center gap-3">
-            <CheckSquare className="h-5 w-5 text-pmo-success" />
-            <div className="flex items-baseline gap-2">
-              <div className="text-xl font-bold text-pmo-success">0</div>
-              <span className="text-sm text-pmo-gray">Aprovadas Hoje</span>
-            </div>
-          </div>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Revisados</CardTitle>
+          <CheckCircle className="h-4 w-4 text-green-600" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold text-green-600">{statusRevisados}</div>
+          <p className="text-xs text-muted-foreground">Status revisados</p>
         </CardContent>
       </Card>
     </div>

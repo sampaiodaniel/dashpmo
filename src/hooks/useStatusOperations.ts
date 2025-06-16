@@ -10,15 +10,15 @@ export function useStatusOperations() {
   const { logAction } = useAutoLog();
   const { usuario } = useAuth();
 
-  const aprovarStatus = useMutation({
-    mutationFn: async ({ statusId, aprovadoPor }: { statusId: number; aprovadoPor: string }) => {
-      console.log('Aprovando status:', statusId);
+  const revisar = useMutation({
+    mutationFn: async ({ statusId, revisadoPor }: { statusId: number; revisadoPor: string }) => {
+      console.log('Revisando status:', statusId);
       
       const { data, error } = await supabase
         .from('status_projeto')
         .update({
           aprovado: true,
-          aprovado_por: aprovadoPor,
+          aprovado_por: revisadoPor,
           data_aprovacao: new Date().toISOString()
         })
         .eq('id', statusId)
@@ -26,11 +26,11 @@ export function useStatusOperations() {
         .single();
 
       if (error) {
-        console.error('Erro ao aprovar status:', error);
+        console.error('Erro ao revisar status:', error);
         throw error;
       }
 
-      // Registrar log da aprovação
+      // Registrar log da revisão
       if (usuario && data) {
         logAction(
           'status',
@@ -41,7 +41,7 @@ export function useStatusOperations() {
           {
             status_geral: data.status_geral,
             status_visao_gp: data.status_visao_gp,
-            aprovado_por: aprovadoPor
+            revisado_por: revisadoPor
           },
           usuario.id,
           usuario.nome
@@ -56,14 +56,14 @@ export function useStatusOperations() {
       queryClient.invalidateQueries({ queryKey: ['status-list'] });
       toast({
         title: "Sucesso",
-        description: "Status aprovado com sucesso!",
+        description: "Status revisado com sucesso!",
       });
     },
     onError: (error) => {
-      console.error('Erro ao aprovar status:', error);
+      console.error('Erro ao revisar status:', error);
       toast({
         title: "Erro",
-        description: "Erro ao aprovar status. Tente novamente.",
+        description: "Erro ao revisar status. Tente novamente.",
         variant: "destructive",
       });
     },
@@ -125,8 +125,8 @@ export function useStatusOperations() {
   });
 
   return {
-    aprovarStatus: aprovarStatus.mutate,
+    revisar: revisar.mutate,
     rejeitarStatus: rejeitarStatus.mutate,
-    isLoading: aprovarStatus.isPending || rejeitarStatus.isPending,
+    isLoading: revisar.isPending || rejeitarStatus.isPending,
   };
 }

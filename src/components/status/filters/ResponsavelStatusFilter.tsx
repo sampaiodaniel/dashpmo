@@ -14,7 +14,7 @@ export function ResponsavelStatusFilter({ filtros, onFiltroChange, responsaveis 
     onFiltroChange(novosFiltros);
   };
 
-  const handleStatusAprovacaoChange = (value: string) => {
+  const handleStatusRevisaoChange = (value: string) => {
     const novosFiltros = updateFilter(filtros, 'statusAprovacao', value, 'todos');
     onFiltroChange(novosFiltros);
   };
@@ -39,15 +39,15 @@ export function ResponsavelStatusFilter({ filtros, onFiltroChange, responsaveis 
       </div>
 
       <div className="flex items-center gap-2">
-        <label className="text-sm text-pmo-gray">Status Aprovação:</label>
-        <Select value={filtros.statusAprovacao || 'todos'} onValueChange={handleStatusAprovacaoChange}>
+        <label className="text-sm text-pmo-gray">Status Revisão:</label>
+        <Select value={filtros.statusAprovacao || 'todos'} onValueChange={handleStatusRevisaoChange}>
           <SelectTrigger className="w-48">
             <SelectValue placeholder="Todos" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="todos">Todos</SelectItem>
-            <SelectItem value="aguardando">Aguardando Aprovação</SelectItem>
-            <SelectItem value="aprovado">Aprovado</SelectItem>
+            <SelectItem value="aguardando">Pendente Revisão</SelectItem>
+            <SelectItem value="aprovado">Revisado</SelectItem>
           </SelectContent>
         </Select>
       </div>

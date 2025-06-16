@@ -6,13 +6,15 @@ import { IncidentesHeader } from '@/components/incidentes/IncidentesHeader';
 import { IncidentesMetricas } from '@/components/incidentes/IncidentesMetricas';
 import { TabelaIncidentesRecentes } from '@/components/incidentes/TabelaIncidentesRecentes';
 import { GraficoEvolutivoIncidentes } from '@/components/incidentes/GraficoEvolutivoIncidentes';
+import { IncidentesFilters } from '@/components/incidentes/IncidentesFilters';
 import { useIncidentes } from '@/hooks/useIncidentes';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { seedIncidentesCanais } from '@/utils/seedIncidentesCanais';
 
 export default function Incidentes() {
   const { usuario, isLoading } = useAuth();
   const { data: incidentes, isLoading: isLoadingIncidentes } = useIncidentes();
+  const [responsavelSelecionado, setResponsavelSelecionado] = useState('todos');
 
   useEffect(() => {
     // Inserir dados históricos se necessário
@@ -66,6 +68,10 @@ export default function Incidentes() {
           total={metricas.total}
         />
         <TabelaIncidentesRecentes />
+        <IncidentesFilters 
+          responsavelSelecionado={responsavelSelecionado}
+          onResponsavelChange={setResponsavelSelecionado}
+        />
         <GraficoEvolutivoIncidentes />
       </div>
     </Layout>
