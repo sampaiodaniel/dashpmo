@@ -73,7 +73,7 @@ export function ProjetoTimeline({ ultimoStatus }: ProjetoTimelineProps) {
         {/* Linha vertical */}
         <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-[#6B7280]"></div>
         
-        <div className="space-y-8">
+        <div className="space-y-6">
           {entregas.map((entrega, index) => {
             const cores = getCorClasses(entrega.cor);
             return (
@@ -82,23 +82,23 @@ export function ProjetoTimeline({ ultimoStatus }: ProjetoTimelineProps) {
                 <div className={`relative z-10 w-3 h-3 ${cores.dot} rounded-full mt-2`}></div>
                 
                 {/* Conteúdo */}
-                <div className={`ml-6 p-4 rounded-lg border-2 ${cores.bg} ${cores.border} flex-1 min-h-[120px]`}>
-                  <div className="flex justify-between items-start mb-3">
-                    <h5 className={`font-medium ${cores.text} text-lg`}>
+                <div className={`ml-6 p-3 rounded-lg border-2 ${cores.bg} ${cores.border} flex-1 min-h-[100px]`}>
+                  <div className="flex justify-between items-start mb-2">
+                    <h5 className={`font-medium ${cores.text} text-base`}>
                       {entrega.titulo}
                     </h5>
-                    <span className="text-sm font-medium text-[#6B7280] bg-white px-2 py-1 rounded">
+                    <span className="text-sm font-bold text-[#1B365D] bg-white px-2 py-1 rounded">
                       {new Date(entrega.data).toLocaleDateString('pt-BR')}
                     </span>
                   </div>
                   
                   {entrega.entregaveis && (
-                    <div className={`text-sm ${cores.text} space-y-2`}>
-                      <strong className="text-[#1B365D]">Entregáveis:</strong>
-                      <div className="ml-2 space-y-1">
+                    <div className={`text-xs ${cores.text} space-y-1`}>
+                      <strong className="text-[#1B365D] text-sm">Entregáveis:</strong>
+                      <div className="ml-2 space-y-0.5">
                         {entrega.entregaveis.split('\n').map((item: string, i: number) => (
-                          <div key={i} className="flex leading-relaxed">
-                            <span className="mr-2 font-bold">•</span>
+                          <div key={i} className="flex leading-snug">
+                            <span className="mr-1 font-bold">•</span>
                             <span className="flex-1">{item.trim()}</span>
                           </div>
                         ))}

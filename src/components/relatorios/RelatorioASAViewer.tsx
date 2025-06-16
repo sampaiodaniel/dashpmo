@@ -363,7 +363,7 @@ export function RelatorioASAViewer({ isOpen, onClose, dados }: RelatorioASAViewe
                 <img 
                   src="/lovable-uploads/e42353b2-fcfd-4457-bbd8-066545973f48.png" 
                   alt="ASA Logo" 
-                  className="h-32 w-auto drop-shadow-lg"
+                  className="h-40 w-auto"
                 />
                 <div className="text-left">
                   <h1 className="text-5xl font-bold text-[#1B365D] mb-3 tracking-tight">Status Report</h1>
@@ -425,7 +425,7 @@ export function RelatorioASAViewer({ isOpen, onClose, dados }: RelatorioASAViewe
                   <img 
                     src="/lovable-uploads/e42353b2-fcfd-4457-bbd8-066545973f48.png" 
                     alt="ASA Logo" 
-                    className="h-16 w-auto opacity-75 mb-2"
+                    className="h-20 w-auto mb-2"
                   />
                   <div className="text-xs text-[#9CA3AF]">
                     <p>© 2024 ASA Investments</p>

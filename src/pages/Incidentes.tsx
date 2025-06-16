@@ -6,9 +6,18 @@ import { IncidentesHeader } from '@/components/incidentes/IncidentesHeader';
 import { IncidentesMetricas } from '@/components/incidentes/IncidentesMetricas';
 import { TabelaIncidentesRecentes } from '@/components/incidentes/TabelaIncidentesRecentes';
 import { GraficoEvolutivoIncidentes } from '@/components/incidentes/GraficoEvolutivoIncidentes';
+import { useEffect } from 'react';
+import { seedIncidentesCanais } from '@/utils/seedIncidentesCanais';
 
 export default function Incidentes() {
   const { usuario, isLoading } = useAuth();
+
+  useEffect(() => {
+    // Inserir dados históricos se necessário
+    if (usuario) {
+      seedIncidentesCanais();
+    }
+  }, [usuario]);
 
   if (isLoading) {
     return (
@@ -27,29 +36,15 @@ export default function Incidentes() {
     return <LoginForm />;
   }
 
-  // Métricas fictícias - em uma implementação real, essas viriam de hooks/API
-  const metricas = {
-    criticos: 2,
-    emAndamento: 5,
-    resolvidos: 18,
-    total: 25
-  };
-
   return (
     <Layout>
       <div className="space-y-6">
         <IncidentesHeader />
-
-        <IncidentesMetricas 
-          criticos={metricas.criticos}
-          emAndamento={metricas.emAndamento}
-          resolvidos={metricas.resolvidos}
-          total={metricas.total}
-        />
-
-        <TabelaIncidentesRecentes />
-        
-        <GraficoEvolutivoIncidentes />
+        <IncidentesMetricas />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <TabelaIncidentesRecentes />
+          <GraficoEvolutivoIncidentes />
+        </div>
       </div>
     </Layout>
   );

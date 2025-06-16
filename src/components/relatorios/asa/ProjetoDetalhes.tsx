@@ -33,7 +33,7 @@ export function ProjetoDetalhes({ projeto }: ProjetoDetalhesProps) {
         <CardTitle className="flex items-center justify-between">
           <span className="text-[#1B365D]">{projeto.nome_projeto}</span>
           <div className="flex items-center gap-2">
-            <div className={`w-3 h-3 rounded-full ${getStatusColor(projeto.ultimoStatus?.status_visao_gp || 'Cinza')}`}></div>
+            <div className={`w-2 h-2 rounded-full ${getStatusColor(projeto.ultimoStatus?.status_visao_gp || 'Cinza')}`}></div>
             <Badge variant={getStatusBadgeVariant(projeto.ultimoStatus?.status_visao_gp || 'Cinza')}>
               {projeto.ultimoStatus?.status_visao_gp}
             </Badge>
