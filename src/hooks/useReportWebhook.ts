@@ -24,7 +24,8 @@ export function useReportWebhook() {
             area_responsavel,
             gp_responsavel,
             responsavel_interno,
-            equipe
+            equipe,
+            descricao_projeto
           )
         `)
         .eq('aprovado', true)
@@ -53,7 +54,7 @@ export function useReportWebhook() {
 
       console.log('🎯 Últimos incidentes encontrados:', ultimosIncidentes);
 
-      // Organizar dados por projeto
+      // Organizar dados detalhados por projeto
       const projetosPorId = new Map();
       
       statusAprovados?.forEach(status => {
@@ -62,19 +63,20 @@ export function useReportWebhook() {
         
         if (!projetosPorId.has(projetoId)) {
           projetosPorId.set(projetoId, {
-            id: projetoId,
+            projeto_id: projetoId,
             nome_projeto: status.projeto.nome_projeto,
             area_responsavel: status.projeto.area_responsavel,
             gp_responsavel: status.projeto.gp_responsavel,
             responsavel_interno: status.projeto.responsavel_interno,
             equipe: status.projeto.equipe,
-            status_list: []
+            descricao_projeto: status.projeto.descricao_projeto,
+            status_aprovados: []
           });
         }
         
         // Adicionar o status completo à lista do projeto
-        projetosPorId.get(projetoId).status_list.push({
-          id: status.id,
+        projetosPorId.get(projetoId).status_aprovados.push({
+          status_id: status.id,
           status_geral: status.status_geral,
           status_visao_gp: status.status_visao_gp,
           data_atualizacao: status.data_atualizacao,
@@ -109,7 +111,13 @@ export function useReportWebhook() {
         total_status_aprovados: statusAprovados?.length || 0,
         projetos: projetos,
         incidentes: ultimosIncidentes || null,
-        enviado_de: window.location.origin
+        enviado_de: window.location.origin,
+        resumo: {
+          projetos_com_status: projetos.length,
+          status_verde: statusAprovados?.filter(s => s.status_visao_gp === 'Verde').length || 0,
+          status_amarelo: statusAprovados?.filter(s => s.status_visao_gp === 'Amarelo').length || 0,
+          status_vermelho: statusAprovados?.filter(s => s.status_visao_gp === 'Vermelho').length || 0
+        }
       };
 
       console.log('📦 Dados preparados para envio:', JSON.stringify(reportData, null, 2));
@@ -138,7 +146,8 @@ export function useReportWebhook() {
           total_status_aprovados: reportData.total_status_aprovados.toString(),
           projetos: JSON.stringify(reportData.projetos),
           incidentes: JSON.stringify(reportData.incidentes),
-          enviado_de: reportData.enviado_de
+          enviado_de: reportData.enviado_de,
+          resumo: JSON.stringify(reportData.resumo)
         });
 
         const getUrl = `${webhookUrl}?${queryParams.toString()}`;

@@ -4,6 +4,7 @@ import { toast } from '@/hooks/use-toast';
 import { useProjetos } from './useProjetos';
 import { useIncidentes } from './useIncidentes';
 import { useCarteiraOverview } from './useCarteiraOverview';
+import { useStatusList } from './useStatusList';
 import { CARTEIRAS } from '@/types/pmo';
 
 export interface DadosRelatorioASA {
@@ -19,6 +20,7 @@ export function useRelatorioASA() {
   const { data: projetos } = useProjetos();
   const { data: incidentes } = useIncidentes();
   const { data: carteiraOverview } = useCarteiraOverview();
+  const { data: statusList } = useStatusList();
 
   const gerarRelatorioCarteira = async (carteira: string): Promise<DadosRelatorioASA | null> => {
     setIsLoading(true);
@@ -34,6 +36,24 @@ export function useRelatorioASA() {
         projeto.carteira_terciaria === carteira
       ) || [];
 
+      // Buscar status aprovados para cada projeto da carteira
+      const projetosComStatus = projetosCarteira.map(projeto => {
+        const statusAprovados = statusList?.filter(status => 
+          status.projeto?.id === projeto.id && status.aprovado
+        ) || [];
+        
+        // Pegar o último status aprovado
+        const ultimoStatus = statusAprovados.sort((a, b) => 
+          new Date(b.data_aprovacao).getTime() - new Date(a.data_aprovacao).getTime()
+        )[0];
+
+        return {
+          ...projeto,
+          statusAprovados,
+          ultimoStatus
+        };
+      });
+
       // Filtrar incidentes da carteira
       const incidentesCarteira = incidentes?.filter(incidente => 
         incidente.carteira === carteira
@@ -45,7 +65,7 @@ export function useRelatorioASA() {
       const dadosRelatorio: DadosRelatorioASA = {
         carteira,
         dataRelatorio: new Date().toLocaleDateString('pt-BR'),
-        projetos: projetosCarteira,
+        projetos: projetosComStatus,
         incidentes: incidentesCarteira,
         resumoCarteira: dadosCarteira
       };
@@ -78,10 +98,28 @@ export function useRelatorioASA() {
     try {
       console.log('Gerando relatório geral');
       
+      // Adicionar status aprovados para todos os projetos
+      const projetosComStatus = projetos?.map(projeto => {
+        const statusAprovados = statusList?.filter(status => 
+          status.projeto?.id === projeto.id && status.aprovado
+        ) || [];
+        
+        // Pegar o último status aprovado
+        const ultimoStatus = statusAprovados.sort((a, b) => 
+          new Date(b.data_aprovacao).getTime() - new Date(a.data_aprovacao).getTime()
+        )[0];
+
+        return {
+          ...projeto,
+          statusAprovados,
+          ultimoStatus
+        };
+      }) || [];
+
       const dadosRelatorio: DadosRelatorioASA = {
         carteira: 'Geral',
         dataRelatorio: new Date().toLocaleDateString('pt-BR'),
-        projetos: projetos || [],
+        projetos: projetosComStatus,
         incidentes: incidentes || [],
         resumoCarteira: carteiraOverview
       };
