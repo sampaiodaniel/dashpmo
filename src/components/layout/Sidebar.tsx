@@ -51,7 +51,7 @@ const menuItems = [
   { 
     title: "Administração", 
     icon: Settings, 
-    href: "/admin" 
+    href: "/administracao" 
   },
 ];
 
