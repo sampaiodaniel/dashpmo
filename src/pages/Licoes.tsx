@@ -1,59 +1,33 @@
 
+import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
-import { useLicoes } from '@/hooks/useLicoes';
-import { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useLicoesFiltradas, LicoesFilters } from '@/hooks/useLicoesFiltradas';
 import { LicoesHeader } from '@/components/licoes/LicoesHeader';
-import { LicoesFilters as LicoesFiltersComponent } from '@/components/licoes/LicoesFilters';
+import { LicoesMetricas } from '@/components/licoes/LicoesMetricas';
 import { LicoesSearchBar } from '@/components/licoes/LicoesSearchBar';
+import { LicoesFilters } from '@/components/licoes/LicoesFilters';
 import { LicoesList } from '@/components/licoes/LicoesList';
-import { NovaLicaoModal } from '@/components/licoes/NovaLicaoModal';
-import { useListaValores } from '@/hooks/useListaValores';
+import { useLicoesFiltradas } from '@/hooks/useLicoesFiltradas';
+
+interface LicoesFiltersType {
+  categoria?: string;
+  status?: string;
+  responsavel?: string;
+  projeto?: string;
+}
 
 export default function Licoes() {
-  const { usuario, isLoading: authLoading } = useAuth();
-  const navigate = useNavigate();
-  const { data: licoes, isLoading: licoesLoading, error: licoesError } = useLicoes();
-  const { data: categoriasLicao } = useListaValores('categoria_licao');
-  const [termoBusca, setTermoBusca] = useState('');
-  const [filtros, setFiltros] = useState<LicoesFilters>({});
-  const [modalNovaLicaoAberto, setModalNovaLicaoAberto] = useState(false);
+  const { usuario, isLoading } = useAuth();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filtros, setFiltros] = useState<LicoesFiltersType>({});
+  
+  const { licoesFiltradas, isLoading: isLoadingLicoes } = useLicoesFiltradas({
+    searchTerm,
+    filtros,
+  });
 
-  // Combinar filtros de busca com outros filtros
-  const filtrosCompletos = useMemo(() => ({
-    ...filtros,
-    busca: termoBusca
-  }), [filtros, termoBusca]);
-
-  const licoesFiltradas = useLicoesFiltradas(licoes, filtrosCompletos);
-
-  // Extrair listas únicas para os filtros
-  const responsaveis = useMemo(() => {
-    if (!licoes) return [];
-    const responsaveisUnicos = [...new Set(licoes.map(l => l.responsavel_registro))];
-    return responsaveisUnicos.sort();
-  }, [licoes]);
-
-  const projetos = useMemo(() => {
-    if (!licoes) return [];
-    const projetosUnicos = [...new Set(licoes.filter(l => l.projeto).map(l => l.projeto.nome_projeto))];
-    return projetosUnicos.sort();
-  }, [licoes]);
-
-  const handleLicaoClick = (licaoId: number) => {
-    console.log('Navegando para detalhes da lição:', licaoId);
-    navigate(`/licoes/${licaoId}`);
-  };
-
-  const handleNovaLicao = () => {
-    console.log('Abrindo modal de nova lição');
-    setModalNovaLicaoAberto(true);
-  };
-
-  if (authLoading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-pmo-background flex items-center justify-center">
         <div className="text-center">
@@ -70,39 +44,27 @@ export default function Licoes() {
     return <LoginForm />;
   }
 
-  const filtrosAplicados = Object.keys(filtros).length > 0 || termoBusca.length > 0;
-
   return (
     <Layout>
       <div className="space-y-6">
-        <LicoesHeader onNovaLicao={handleNovaLicao} />
-
-        <LicoesFiltersComponent 
-          filtros={filtros}
-          onFiltroChange={setFiltros}
-          responsaveis={responsaveis}
-          projetos={projetos}
-        />
-
-        <LicoesSearchBar 
-          termoBusca={termoBusca}
-          onTermoBuscaChange={setTermoBusca}
-          totalResults={licoesFiltradas.length}
-        />
+        <LicoesHeader />
+        <LicoesMetricas />
+        
+        <div className="space-y-4">
+          <LicoesSearchBar 
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+          />
+          
+          <LicoesFilters 
+            filters={filtros}
+            onFiltersChange={setFiltros}
+          />
+        </div>
 
         <LicoesList 
           licoes={licoesFiltradas}
-          isLoading={licoesLoading}
-          error={licoesError}
-          termoBusca={termoBusca}
-          filtrosAplicados={filtrosAplicados}
-          onLicaoClick={handleLicaoClick}
-        />
-
-        <NovaLicaoModal 
-          isOpen={modalNovaLicaoAberto}
-          onClose={() => setModalNovaLicaoAberto(false)}
-          categorias={categoriasLicao}
+          isLoading={isLoadingLicoes}
         />
       </div>
     </Layout>

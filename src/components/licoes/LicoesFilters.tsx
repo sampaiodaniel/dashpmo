@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { type LicoesFilters as LicoesFiltersType } from '@/types/pmo';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 
@@ -22,6 +21,13 @@ const STATUS_APLICACAO = [
   'Em andamento', 
   'Não aplicada'
 ] as const;
+
+interface LicoesFiltersType {
+  categoria?: string;
+  status?: string;
+  responsavel?: string;
+  projeto?: string;
+}
 
 interface LicoesFiltersProps {
   filters: LicoesFiltersType;
