@@ -126,10 +126,10 @@ export function HistoricoProjetoModal({ projetoId, nomeProjeto, aberto, onFechar
                   </div>
                 </div>
 
-                {status.entregas_realizadas && (
+                {status.realizado_semana_atual && (
                   <div className="mb-3">
                     <span className="text-sm font-medium text-pmo-gray">Itens Trabalhados na Semana:</span>
-                    <p className="text-sm text-gray-700 mt-1">{status.entregas_realizadas}</p>
+                    <p className="text-sm text-gray-700 mt-1">{status.realizado_semana_atual}</p>
                   </div>
                 )}
 
@@ -140,10 +140,10 @@ export function HistoricoProjetoModal({ projetoId, nomeProjeto, aberto, onFechar
                   </div>
                 )}
 
-                {status.observacoes_gerais && (
+                {status.observacoes_pontos_atencao && (
                   <div>
                     <span className="text-sm font-medium text-pmo-gray">Observações:</span>
-                    <p className="text-sm text-gray-700 mt-1">{status.observacoes_gerais}</p>
+                    <p className="text-sm text-gray-700 mt-1">{status.observacoes_pontos_atencao}</p>
                   </div>
                 )}
 
