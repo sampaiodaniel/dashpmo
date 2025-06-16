@@ -9,7 +9,7 @@ import { StatusList } from '@/components/status/StatusList';
 import { StatusSearchBar } from '@/components/status/StatusSearchBar';
 import { StatusAprovacaoMetricas } from '@/components/status/StatusAprovacaoMetricas';
 import { useStatusFiltrados } from '@/hooks/useStatusFiltrados';
-import { useStatusPendentes } from '@/hooks/useStatusPendentes';
+import { useStatusList } from '@/hooks/useStatusList';
 import { PaginationFooter } from '@/components/common/PaginationFooter';
 import { StatusFilters as StatusFiltersType } from '@/components/status/filters/FilterUtils';
 import { useResponsaveisASADropdown } from '@/hooks/useResponsaveisASADropdown';
@@ -27,7 +27,7 @@ function StatusContent() {
     itensPorPagina
   });
 
-  const { data: metricas } = useStatusPendentes();
+  const { data: statusList } = useStatusList();
   const { data: responsaveis } = useResponsaveisASADropdown();
 
   const handleFiltroChange = (novosFiltros: StatusFiltersType) => {
@@ -74,17 +74,20 @@ function StatusContent() {
     totalPaginas: 0 
   };
 
+  // Calcular métricas
+  const totalStatus = statusList?.length || 0;
+  const statusPendentes = statusList?.filter(s => s.aprovado === null).length || 0;
+  const statusRevisados = statusList?.filter(s => s.aprovado === true).length || 0;
+
   return (
     <div className="space-y-6">
       <StatusHeader />
 
-      {metricas && (
-        <StatusAprovacaoMetricas
-          totalStatus={metricas.totalStatus || 0}
-          statusPendentes={metricas.statusPendentes || 0}
-          statusRevisados={metricas.statusRevisados || 0}
-        />
-      )}
+      <StatusAprovacaoMetricas
+        totalStatus={totalStatus}
+        statusPendentes={statusPendentes}
+        statusRevisados={statusRevisados}
+      />
 
       <StatusFilters 
         filtros={filtros} 

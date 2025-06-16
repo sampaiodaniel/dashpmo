@@ -1,3 +1,4 @@
+
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -7,7 +8,7 @@ import { Layout } from '@/components/layout/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, User, Building2, CheckCircle, XCircle } from 'lucide-react';
+import { ArrowLeft, Calendar, User, Building2, CheckCircle } from 'lucide-react';
 import { StatusProjeto } from '@/types/pmo';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -17,7 +18,7 @@ import { useNavigate } from 'react-router-dom';
 export default function StatusDetalhes() {
   const { id } = useParams<{ id: string }>();
   const { usuario, isLoading: authLoading } = useAuth();
-  const { revisar, rejeitarStatus, isLoading: isOperationLoading } = useStatusOperations();
+  const { revisar, isLoading: isOperationLoading } = useStatusOperations();
   const navigate = useNavigate();
 
   const { data: status, isLoading, error } = useQuery({
@@ -60,7 +61,7 @@ export default function StatusDetalhes() {
     if (!statusValue) return 'secondary';
     
     switch (statusValue.toLowerCase()) {
-      case 'pendente revisão':
+      case 'em revisão':
         return 'destructive';
       case 'revisado':
         return 'default';
@@ -88,15 +89,6 @@ export default function StatusDetalhes() {
     await revisar({
       statusId: status.id,
       revisadoPor: usuario.nome,
-    });
-    navigate('/status');
-  };
-
-  const handleReject = async () => {
-    if (!status) return;
-    
-    await rejeitarStatus({
-      statusId: status.id,
     });
     navigate('/status');
   };
@@ -141,8 +133,8 @@ export default function StatusDetalhes() {
     );
   }
 
-  const statusRevisao = status.aprovado === null ? 'Pendente Revisão' : 
-                       status.aprovado ? 'Revisado' : 'Rejeitado';
+  const statusRevisao = status.aprovado === null ? 'Em Revisão' : 
+                       status.aprovado ? 'Revisado' : 'Em Revisão';
 
   return (
     <Layout>
@@ -192,7 +184,7 @@ export default function StatusDetalhes() {
               </CardHeader>
               
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium">Status:</span>
                     <span className="text-sm">{status.status_geral}</span>
@@ -204,12 +196,6 @@ export default function StatusDetalhes() {
                       <span className="text-sm">{status.status_visao_gp}</span>
                     </div>
                   </div>
-                  {status.progresso_estimado !== null && status.progresso_estimado !== undefined && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium">Progresso:</span>
-                      <span className="text-sm">{status.progresso_estimado}%</span>
-                    </div>
-                  )}
                 </div>
               </CardContent>
             </Card>
@@ -277,16 +263,7 @@ export default function StatusDetalhes() {
                     className="w-full bg-green-600 hover:bg-green-700"
                   >
                     <CheckCircle className="h-4 w-4 mr-2" />
-                    Revisar Status
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    onClick={handleReject}
-                    disabled={isOperationLoading}
-                    className="w-full"
-                  >
-                    <XCircle className="h-4 w-4 mr-2" />
-                    Rejeitar Status
+                    Revisado OK
                   </Button>
                 </CardContent>
               </Card>

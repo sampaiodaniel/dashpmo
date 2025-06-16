@@ -36,28 +36,24 @@ export default function Mudancas() {
     return <LoginForm />;
   }
 
-  const handleFiltrarPorStatus = (status: string) => {
-    setFiltros(prev => ({ ...prev, statusAprovacao: status }));
-  };
-
   return (
     <Layout>
       <div className="space-y-6">
-        <MudancasHeader />
+        <MudancasHeader onMudancaCriada={() => {}} />
         
         <MudancasMetricas 
           mudancas={mudancas}
-          onFiltrarPendentes={() => handleFiltrarPorStatus('Pendente')}
-          onFiltrarEmAnalise={() => handleFiltrarPorStatus('Em Análise')}
-          onFiltrarAprovadas={() => handleFiltrarPorStatus('Aprovada')}
-          onFiltrarRejeitadas={() => handleFiltrarPorStatus('Rejeitada')}
+          onFiltrarPendentes={() => {}}
+          onFiltrarEmAnalise={() => {}}
+          onFiltrarAprovadas={() => {}}
+          onFiltrarRejeitadas={() => {}}
         />
 
         <div className="flex flex-col lg:flex-row gap-6">
           <div className="lg:w-1/4">
             <MudancasFilters 
               filtros={filtros}
-              onFiltroChange={setFiltros}
+              onFiltrosChange={setFiltros}
               mudancas={mudancas || []}
             />
           </div>

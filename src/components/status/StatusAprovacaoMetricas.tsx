@@ -1,6 +1,6 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, Clock } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { FileText, Clock, CheckCircle } from 'lucide-react';
 
 interface StatusAprovacaoMetricasProps {
   totalStatus: number;
@@ -14,39 +14,40 @@ export function StatusAprovacaoMetricas({
   statusRevisados 
 }: StatusAprovacaoMetricasProps) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total de Status</CardTitle>
-          <div className="h-8 w-8 bg-blue-100 rounded-lg flex items-center justify-center">
-            <span className="text-blue-600 font-semibold text-sm">{totalStatus}</span>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+      <Card className="border-l-4 border-l-pmo-primary">
+        <CardContent className="p-4">
+          <div className="flex items-center gap-3">
+            <FileText className="h-5 w-5 text-pmo-primary" />
+            <div className="flex items-baseline gap-2">
+              <div className="text-xl font-bold text-pmo-primary">{totalStatus}</div>
+              <span className="text-sm text-pmo-gray">Total</span>
+            </div>
           </div>
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{totalStatus}</div>
-          <p className="text-xs text-muted-foreground">Status registrados</p>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Pendente Revisão</CardTitle>
-          <Clock className="h-4 w-4 text-orange-600" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-orange-600">{statusPendentes}</div>
-          <p className="text-xs text-muted-foreground">Aguardando revisão</p>
+      <Card className="border-l-4 border-l-pmo-warning">
+        <CardContent className="p-4">
+          <div className="flex items-center gap-3">
+            <Clock className="h-5 w-5 text-pmo-warning" />
+            <div className="flex items-baseline gap-2">
+              <div className="text-xl font-bold text-pmo-warning">{statusPendentes}</div>
+              <span className="text-sm text-pmo-gray">Em Revisão</span>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Revisados</CardTitle>
-          <CheckCircle className="h-4 w-4 text-green-600" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-green-600">{statusRevisados}</div>
-          <p className="text-xs text-muted-foreground">Status revisados</p>
+      <Card className="border-l-4 border-l-pmo-success">
+        <CardContent className="p-4">
+          <div className="flex items-center gap-3">
+            <CheckCircle className="h-5 w-5 text-pmo-success" />
+            <div className="flex items-baseline gap-2">
+              <div className="text-xl font-bold text-pmo-success">{statusRevisados}</div>
+              <span className="text-sm text-pmo-gray">Revisados</span>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>

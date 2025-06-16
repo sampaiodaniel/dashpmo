@@ -14,19 +14,7 @@ export function IncidentesFilters({ responsavelSelecionado, onResponsavelChange 
     <div className="bg-white p-4 rounded-lg shadow-sm border">
       <h3 className="text-lg font-semibold text-pmo-primary mb-4">Filtros</h3>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-pmo-gray">Carteira</label>
-          <Select value="todas" disabled>
-            <SelectTrigger>
-              <SelectValue placeholder="Todas as carteiras" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="todas">Todas as carteiras</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        
+      <div className="space-y-4">
         <div className="space-y-2">
           <label className="text-sm font-medium text-pmo-gray">Responsável ASA</label>
           <Select value={responsavelSelecionado} onValueChange={onResponsavelChange}>
