@@ -8,7 +8,7 @@ import { MudancasSearchBar } from '@/components/mudancas/MudancasSearchBar';
 import { MudancasFilters } from '@/components/mudancas/MudancasFilters';
 import { MudancasList } from '@/components/mudancas/MudancasList';
 import { useMudancasList } from '@/hooks/useMudancasList';
-import { useMudancasFiltradas } from '@/hooks/useMudancasFiltradas';
+import { useMudancasFiltradas, MudancaItem } from '@/hooks/useMudancasFiltradas';
 import { useNavigate } from 'react-router-dom';
 
 interface MudancasFiltersType {
@@ -24,14 +24,34 @@ export default function Mudancas() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filtros, setFiltros] = useState<MudancasFiltersType>({});
   
-  const { data: mudancas, isLoading: isLoadingMudancas, error } = useMudancasList();
-  const mudancasFiltradas = useMudancasFiltradas(mudancas, filtros, searchTerm);
+  const { data: mudancas, isLoading: isLoadingMudancas, error, refetch } = useMudancasList();
+  
+  // Convert MudancaReplanejamento to MudancaItem for filtering
+  const mudancasForFiltering: MudancaItem[] | undefined = mudancas?.map(mudanca => ({
+    id: mudanca.id,
+    projeto_id: mudanca.projeto_id,
+    tipo_mudanca: mudanca.tipo_mudanca,
+    descricao: mudanca.descricao,
+    justificativa_negocio: mudanca.justificativa_negocio,
+    impacto_prazo_dias: mudanca.impacto_prazo_dias,
+    status_aprovacao: mudanca.status_aprovacao,
+    solicitante: mudanca.solicitante,
+    data_solicitacao: mudanca.data_solicitacao,
+    data_aprovacao: mudanca.data_aprovacao,
+    responsavel_aprovacao: mudanca.responsavel_aprovacao,
+    observacoes: mudanca.observacoes,
+    data_criacao: mudanca.data_criacao,
+    criado_por: mudanca.criado_por,
+    carteira_primaria: mudanca.projeto?.area_responsavel
+  }));
+
+  const mudancasFiltradas = useMudancasFiltradas(mudancasForFiltering, filtros, searchTerm);
 
   // Extrair responsáveis únicos para o filtro
   const responsaveis = Array.from(new Set(mudancas?.map(m => m.solicitante) || [])).sort();
 
-  const handleNovaMudanca = () => {
-    console.log('Nova mudança');
+  const handleMudancaCriada = () => {
+    refetch();
   };
 
   const handleMudancaClick = (mudancaId: number) => {
@@ -58,7 +78,7 @@ export default function Mudancas() {
   return (
     <Layout>
       <div className="space-y-6">
-        <MudancasHeader onNovaMudanca={handleNovaMudanca} />
+        <MudancasHeader onMudancaCriada={handleMudancaCriada} />
         
         <div className="space-y-4">
           <MudancasSearchBar 
@@ -75,12 +95,10 @@ export default function Mudancas() {
         </div>
 
         <MudancasList 
-          mudancas={mudancasFiltradas}
+          mudancasList={mudancas || []}
           isLoading={isLoadingMudancas}
           error={error}
-          termoBusca={searchTerm}
           filtrosAplicados={Object.keys(filtros).some(key => filtros[key as keyof MudancasFiltersType])}
-          onMudancaClick={handleMudancaClick}
         />
       </div>
     </Layout>

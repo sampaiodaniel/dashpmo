@@ -126,7 +126,7 @@ export function LicoesList({
           onView={() => onLicaoClick(licao.id)}
         >
           <Card 
-            className="bg-white hover:shadow-md transition-shadow cursor-pointer"
+            className="bg-white hover:shadow-md transition-shadow cursor-pointer group"
             onClick={() => onLicaoClick(licao.id)}
           >
             <CardHeader className="pb-3">

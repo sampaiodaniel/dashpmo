@@ -10,11 +10,11 @@ export interface MudancaItem {
   impacto_prazo_dias: number;
   status_aprovacao: string;
   solicitante: string;
-  data_solicitacao: string;
-  data_aprovacao?: string;
+  data_solicitacao: Date;
+  data_aprovacao?: Date;
   responsavel_aprovacao?: string;
   observacoes?: string;
-  data_criacao: string;
+  data_criacao: Date;
   criado_por: string;
   carteira_primaria?: string;
 }
