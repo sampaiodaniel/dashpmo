@@ -18,6 +18,12 @@ export default function Relatorios() {
   const [showRelatorioViewer, setShowRelatorioViewer] = useState(false);
   const [dadosRelatorio, setDadosRelatorio] = useState<DadosRelatorioASA | null>(null);
   const [carteiraSelecionada, setCarteiraSelecionada] = useState<string>('');
+  const [relatoriosRecentes, setRelatoriosRecentes] = useState<Array<{
+    id: string;
+    carteira: string;
+    data: Date;
+    tipo: string;
+  }>>([]);
 
   if (isLoading) {
     return (
@@ -43,6 +49,15 @@ export default function Relatorios() {
     if (dados) {
       setDadosRelatorio(dados);
       setShowRelatorioViewer(true);
+      
+      // Adicionar aos relatórios recentes
+      const novoRelatorio = {
+        id: Date.now().toString(),
+        carteira: carteiraSelecionada,
+        data: new Date(),
+        tipo: 'Carteira'
+      };
+      setRelatoriosRecentes(prev => [novoRelatorio, ...prev.slice(0, 4)]);
     }
   };
 
@@ -116,11 +131,32 @@ export default function Relatorios() {
             <CardTitle>Relatórios Recentes</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-center py-8 text-pmo-gray">
-              <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p className="text-lg mb-2">Nenhum relatório gerado</p>
-              <p className="text-sm">Clique nos cards acima para gerar relatórios</p>
-            </div>
+            {relatoriosRecentes.length === 0 ? (
+              <div className="text-center py-8 text-pmo-gray">
+                <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p className="text-lg mb-2">Nenhum relatório gerado</p>
+                <p className="text-sm">Clique nos cards acima para gerar relatórios</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {relatoriosRecentes.map((relatorio) => (
+                  <div key={relatorio.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <FileText className="h-5 w-5 text-pmo-primary" />
+                      <div>
+                        <p className="font-medium">{relatorio.tipo} - {relatorio.carteira}</p>
+                        <p className="text-sm text-pmo-gray">
+                          {relatorio.data.toLocaleDateString('pt-BR')} às {relatorio.data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                      </div>
+                    </div>
+                    <Button variant="outline" size="sm">
+                      Visualizar
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 

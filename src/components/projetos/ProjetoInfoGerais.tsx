@@ -23,6 +23,11 @@ export function ProjetoInfoGerais({ projeto }: ProjetoInfoGeraisProps) {
             <label className="text-sm font-medium text-pmo-gray">Nome do Projeto</label>
             <p className="text-lg font-semibold text-pmo-primary">{projeto.nome_projeto}</p>
           </div>
+
+          <div>
+            <label className="text-sm font-medium text-pmo-gray">Carteira Primária</label>
+            <p className="text-lg font-semibold text-pmo-primary">{projeto.area_responsavel}</p>
+          </div>
           
           <div>
             <label className="text-sm font-medium text-pmo-gray">Responsável ASA</label>
@@ -52,7 +57,7 @@ export function ProjetoInfoGerais({ projeto }: ProjetoInfoGeraisProps) {
 
           {projeto.gp_responsavel_cwi && (
             <div>
-              <label className="text-sm font-medium text-pmo-gray">Chefe do Projeto</label>
+              <label className="text-sm font-medium text-pmo-gray">Chefe do Projeto CWI</label>
               <div className="flex items-center gap-2 mt-1">
                 <Users className="h-4 w-4 text-pmo-gray" />
                 <span>{projeto.gp_responsavel_cwi}</span>
@@ -62,7 +67,7 @@ export function ProjetoInfoGerais({ projeto }: ProjetoInfoGeraisProps) {
 
           {projeto.responsavel_asa && (
             <div>
-              <label className="text-sm font-medium text-pmo-gray">Responsável ASA</label>
+              <label className="text-sm font-medium text-pmo-gray">Responsável ASA (Adicional)</label>
               <div className="flex items-center gap-2 mt-1">
                 <User className="h-4 w-4 text-pmo-gray" />
                 <span>{projeto.responsavel_asa}</span>
@@ -97,7 +102,7 @@ export function ProjetoInfoGerais({ projeto }: ProjetoInfoGeraisProps) {
 
         {(projeto.carteira_secundaria || projeto.carteira_terciaria) && (
           <div>
-            <label className="text-sm font-medium text-pmo-gray">Carteiras</label>
+            <label className="text-sm font-medium text-pmo-gray">Carteiras Adicionais</label>
             <div className="flex flex-wrap gap-2 mt-1">
               {projeto.carteira_secundaria && (
                 <Badge variant="outline" className="bg-green-50 text-green-700">

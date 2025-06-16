@@ -1,6 +1,6 @@
 
 import { Card, CardContent } from '@/components/ui/card';
-import { AlertCircle, Clock, CheckCircle, FileText } from 'lucide-react';
+import { AlertCircle, Clock, CheckCircle } from 'lucide-react';
 
 interface IncidentesMetricasProps {
   criticos: number;
@@ -9,9 +9,9 @@ interface IncidentesMetricasProps {
   total: number;
 }
 
-export function IncidentesMetricas({ criticos, emAndamento, resolvidos, total }: IncidentesMetricasProps) {
+export function IncidentesMetricas({ criticos, emAndamento, resolvidos }: IncidentesMetricasProps) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
       <Card className="border-l-4 border-l-pmo-danger">
         <CardContent className="p-4">
           <div className="flex items-center gap-3">
@@ -43,18 +43,6 @@ export function IncidentesMetricas({ criticos, emAndamento, resolvidos, total }:
             <div className="flex items-baseline gap-2">
               <div className="text-xl font-bold text-pmo-success">{resolvidos}</div>
               <span className="text-sm text-pmo-gray">Resolvidos</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="border-l-4 border-l-blue-500">
-        <CardContent className="p-4">
-          <div className="flex items-center gap-3">
-            <FileText className="h-5 w-5 text-blue-600" />
-            <div className="flex items-baseline gap-2">
-              <div className="text-xl font-bold text-blue-600">{total}</div>
-              <span className="text-sm text-pmo-gray">Total</span>
             </div>
           </div>
         </CardContent>

@@ -1,4 +1,3 @@
-
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -46,6 +45,10 @@ export default function StatusDetalhes() {
         data_marco1: data.data_marco1 ? new Date(data.data_marco1) : null,
         data_marco2: data.data_marco2 ? new Date(data.data_marco2) : null,
         data_marco3: data.data_marco3 ? new Date(data.data_marco3) : null,
+        projeto: data.projeto ? {
+          ...data.projeto,
+          data_criacao: new Date(data.projeto.data_criacao)
+        } : null
       } as StatusProjeto;
       
       return statusData;

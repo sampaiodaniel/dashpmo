@@ -4,59 +4,20 @@ import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
 import { MudancasHeader } from '@/components/mudancas/MudancasHeader';
-import { MudancasSearchBar } from '@/components/mudancas/MudancasSearchBar';
-import { MudancasFilters } from '@/components/mudancas/MudancasFilters';
+import { MudancasMetricas } from '@/components/mudancas/MudancasMetricas';
 import { MudancasList } from '@/components/mudancas/MudancasList';
+import { MudancasFilters } from '@/components/mudancas/MudancasFilters';
+import { MudancasSearchBar } from '@/components/mudancas/MudancasSearchBar';
 import { useMudancasList } from '@/hooks/useMudancasList';
-import { useMudancasFiltradas, MudancaItem } from '@/hooks/useMudancasFiltradas';
-import { useNavigate } from 'react-router-dom';
-
-interface MudancasFiltersType {
-  statusAprovacao?: string;
-  tipoMudanca?: string;
-  responsavel?: string;
-  carteira?: string;
-}
+import { useMudancasFiltradas, MudancasFilters as MudancasFiltersType } from '@/hooks/useMudancasFiltradas';
 
 export default function Mudancas() {
   const { usuario, isLoading } = useAuth();
-  const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState('');
+  const { data: mudancas, isLoading: isLoadingMudancas } = useMudancasList();
   const [filtros, setFiltros] = useState<MudancasFiltersType>({});
+  const [termoBusca, setTermoBusca] = useState('');
   
-  const { data: mudancas, isLoading: isLoadingMudancas, error, refetch } = useMudancasList();
-  
-  // Convert MudancaReplanejamento to MudancaItem for filtering
-  const mudancasForFiltering: MudancaItem[] | undefined = mudancas?.map(mudanca => ({
-    id: mudanca.id,
-    projeto_id: mudanca.projeto_id,
-    tipo_mudanca: mudanca.tipo_mudanca,
-    descricao: mudanca.descricao,
-    justificativa_negocio: mudanca.justificativa_negocio,
-    impacto_prazo_dias: mudanca.impacto_prazo_dias,
-    status_aprovacao: mudanca.status_aprovacao,
-    solicitante: mudanca.solicitante,
-    data_solicitacao: mudanca.data_solicitacao,
-    data_aprovacao: mudanca.data_aprovacao,
-    responsavel_aprovacao: mudanca.responsavel_aprovacao,
-    observacoes: mudanca.observacoes,
-    data_criacao: mudanca.data_criacao,
-    criado_por: mudanca.criado_por,
-    carteira_primaria: mudanca.projeto?.area_responsavel
-  }));
-
-  const mudancasFiltradas = useMudancasFiltradas(mudancasForFiltering, filtros, searchTerm);
-
-  // Extrair responsáveis únicos para o filtro
-  const responsaveis = Array.from(new Set(mudancas?.map(m => m.solicitante) || [])).sort();
-
-  const handleMudancaCriada = () => {
-    refetch();
-  };
-
-  const handleMudancaClick = (mudancaId: number) => {
-    navigate(`/mudancas/${mudancaId}`);
-  };
+  const mudancasFiltradas = useMudancasFiltradas(mudancas, filtros, termoBusca);
 
   if (isLoading) {
     return (
@@ -75,33 +36,48 @@ export default function Mudancas() {
     return <LoginForm />;
   }
 
+  const handleFiltrarPorStatus = (status: string) => {
+    setFiltros(prev => ({ ...prev, statusAprovacao: status }));
+  };
+
   return (
     <Layout>
       <div className="space-y-6">
-        <MudancasHeader onMudancaCriada={handleMudancaCriada} />
+        <MudancasHeader />
         
-        <div className="space-y-4">
-          <MudancasSearchBar 
-            termoBusca={searchTerm}
-            onTermoBuscaChange={setSearchTerm}
-            totalResults={mudancasFiltradas?.length || 0}
-          />
-          
-          <MudancasFilters 
-            filtros={filtros}
-            onFiltrosChange={setFiltros}
-          />
-        </div>
-
-        <MudancasList 
-          mudancas={mudancas || []}
-          onCardClick={handleMudancaClick}
-          onEditar={(e, id) => navigate(`/mudancas/${id}`)}
-          onExcluir={async (e, id) => {
-            // Implement delete logic if needed
-            console.log('Delete mudanca:', id);
-          }}
+        <MudancasMetricas 
+          mudancas={mudancas}
+          onFiltrarPendentes={() => handleFiltrarPorStatus('Pendente')}
+          onFiltrarEmAnalise={() => handleFiltrarPorStatus('Em Análise')}
+          onFiltrarAprovadas={() => handleFiltrarPorStatus('Aprovada')}
+          onFiltrarRejeitadas={() => handleFiltrarPorStatus('Rejeitada')}
         />
+
+        <div className="flex flex-col lg:flex-row gap-6">
+          <div className="lg:w-1/4">
+            <MudancasFilters 
+              filtros={filtros}
+              onFiltroChange={setFiltros}
+              mudancas={mudancas || []}
+            />
+          </div>
+          
+          <div className="lg:w-3/4 space-y-6">
+            <MudancasSearchBar
+              termoBusca={termoBusca}
+              onTermoBuscaChange={setTermoBusca}
+              totalResults={mudancasFiltradas.length}
+            />
+
+            {isLoadingMudancas ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="text-pmo-gray">Carregando mudanças...</div>
+              </div>
+            ) : (
+              <MudancasList mudancas={mudancasFiltradas} />
+            )}
+          </div>
+        </div>
       </div>
     </Layout>
   );

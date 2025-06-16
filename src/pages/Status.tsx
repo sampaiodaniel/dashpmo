@@ -86,46 +86,40 @@ function StatusContent() {
         />
       )}
 
-      <div className="flex flex-col lg:flex-row gap-6">
-        <div className="lg:w-1/4">
-          <StatusFilters 
-            filtros={filtros} 
-            onFiltroChange={handleFiltroChange}
-            responsaveis={responsaveis || []}
-          />
-        </div>
-        
-        <div className="lg:w-3/4 space-y-6">
-          <StatusSearchBar
-            termoBusca={termoBusca}
-            onTermoBuscaChange={handleBuscarChange}
-            totalResults={status.length}
-          />
+      <StatusFilters 
+        filtros={filtros} 
+        onFiltroChange={handleFiltroChange}
+        responsaveis={responsaveis || []}
+      />
 
-          {status.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="text-pmo-gray text-lg">Nenhum status encontrado</div>
-              <div className="text-pmo-gray/70 text-sm mt-2">
-                Ajuste os filtros ou tente uma busca diferente
-              </div>
-            </div>
-          ) : (
-            <>
-              <StatusList 
-                status={status} 
-                onStatusUpdate={handleStatusUpdate}
-              />
-              
-              <PaginationFooter
-                currentPage={paginaAtual}
-                totalPages={totalPaginas}
-                totalItems={totalItens}
-                onPageChange={setPaginaAtual}
-              />
-            </>
-          )}
+      <StatusSearchBar
+        termoBusca={termoBusca}
+        onTermoBuscaChange={handleBuscarChange}
+        totalResults={status.length}
+      />
+
+      {status.length === 0 ? (
+        <div className="text-center py-12">
+          <div className="text-pmo-gray text-lg">Nenhum status encontrado</div>
+          <div className="text-pmo-gray/70 text-sm mt-2">
+            Ajuste os filtros ou tente uma busca diferente
+          </div>
         </div>
-      </div>
+      ) : (
+        <>
+          <StatusList 
+            status={status} 
+            onStatusUpdate={handleStatusUpdate}
+          />
+          
+          <PaginationFooter
+            currentPage={paginaAtual}
+            totalPages={totalPaginas}
+            totalItems={totalItens}
+            onPageChange={setPaginaAtual}
+          />
+        </>
+      )}
     </div>
   );
 }
