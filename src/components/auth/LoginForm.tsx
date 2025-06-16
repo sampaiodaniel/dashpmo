@@ -25,10 +25,14 @@ export function LoginForm() {
       <div className="min-h-screen bg-pmo-background flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <div className="w-16 h-16 bg-pmo-primary rounded-xl flex items-center justify-center mx-auto mb-4">
-              <span className="text-white font-bold text-xl">PMO</span>
+            <div className="flex items-center justify-center mb-4">
+              <img 
+                src="/lovable-uploads/48bf655c-460e-490c-9118-e222b43f0c9d.png" 
+                alt="DashPMO" 
+                className="h-16 w-auto max-w-full"
+                style={{ objectFit: 'contain' }}
+              />
             </div>
-            <CardTitle className="text-2xl font-bold text-pmo-primary">Sistema PMO</CardTitle>
             <CardDescription>
               Faça login para acessar o sistema de gestão de projetos
             </CardDescription>
