@@ -266,13 +266,13 @@ export function EditarStatusForm({ status, onSuccess }: EditarStatusFormProps) {
       {/* Marcos */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Marcos e Entregáveis</CardTitle>
+          <CardTitle className="text-lg">Entregáveis e Marcos</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Marco 1 */}
           <div className="border rounded-lg p-4">
             <h4 className="font-medium text-pmo-primary mb-4">Marco 1</h4>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="md:col-span-2">
                 <Label htmlFor="entregaveis1">Entregáveis</Label>
                 <Textarea
@@ -283,20 +283,24 @@ export function EditarStatusForm({ status, onSuccess }: EditarStatusFormProps) {
                   className="min-h-[120px]"
                 />
               </div>
-              <div>
-                <Label htmlFor="entrega1">Nome da Entrega</Label>
-                <Input
-                  id="entrega1"
-                  value={formData.entrega1}
-                  onChange={(e) => handleInputChange('entrega1', e.target.value)}
-                />
-                <Label htmlFor="data_marco1" className="mt-2 block">Data de Entrega</Label>
-                <Input
-                  id="data_marco1"
-                  type="date"
-                  value={formData.data_marco1}
-                  onChange={(e) => handleInputChange('data_marco1', e.target.value)}
-                />
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="entrega1">Nome da Entrega</Label>
+                  <Input
+                    id="entrega1"
+                    value={formData.entrega1}
+                    onChange={(e) => handleInputChange('entrega1', e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="data_marco1">Data de Entrega</Label>
+                  <Input
+                    id="data_marco1"
+                    type="date"
+                    value={formData.data_marco1}
+                    onChange={(e) => handleInputChange('data_marco1', e.target.value)}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -304,7 +308,7 @@ export function EditarStatusForm({ status, onSuccess }: EditarStatusFormProps) {
           {/* Marco 2 */}
           <div className="border rounded-lg p-4">
             <h4 className="font-medium text-pmo-primary mb-4">Marco 2</h4>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="md:col-span-2">
                 <Label htmlFor="entregaveis2">Entregáveis</Label>
                 <Textarea
@@ -315,20 +319,24 @@ export function EditarStatusForm({ status, onSuccess }: EditarStatusFormProps) {
                   className="min-h-[120px]"
                 />
               </div>
-              <div>
-                <Label htmlFor="entrega2">Nome da Entrega</Label>
-                <Input
-                  id="entrega2"
-                  value={formData.entrega2}
-                  onChange={(e) => handleInputChange('entrega2', e.target.value)}
-                />
-                <Label htmlFor="data_marco2" className="mt-2 block">Data de Entrega</Label>
-                <Input
-                  id="data_marco2"
-                  type="date"
-                  value={formData.data_marco2}
-                  onChange={(e) => handleInputChange('data_marco2', e.target.value)}
-                />
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="entrega2">Nome da Entrega</Label>
+                  <Input
+                    id="entrega2"
+                    value={formData.entrega2}
+                    onChange={(e) => handleInputChange('entrega2', e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="data_marco2">Data de Entrega</Label>
+                  <Input
+                    id="data_marco2"
+                    type="date"
+                    value={formData.data_marco2}
+                    onChange={(e) => handleInputChange('data_marco2', e.target.value)}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -336,7 +344,7 @@ export function EditarStatusForm({ status, onSuccess }: EditarStatusFormProps) {
           {/* Marco 3 */}
           <div className="border rounded-lg p-4">
             <h4 className="font-medium text-pmo-primary mb-4">Marco 3</h4>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="md:col-span-2">
                 <Label htmlFor="entregaveis3">Entregáveis</Label>
                 <Textarea
@@ -347,20 +355,24 @@ export function EditarStatusForm({ status, onSuccess }: EditarStatusFormProps) {
                   className="min-h-[120px]"
                 />
               </div>
-              <div>
-                <Label htmlFor="entrega3">Nome da Entrega</Label>
-                <Input
-                  id="entrega3"
-                  value={formData.entrega3}
-                  onChange={(e) => handleInputChange('entrega3', e.target.value)}
-                />
-                <Label htmlFor="data_marco3" className="mt-2 block">Data de Entrega</Label>
-                <Input
-                  id="data_marco3"
-                  type="date"
-                  value={formData.data_marco3}
-                  onChange={(e) => handleInputChange('data_marco3', e.target.value)}
-                />
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="entrega3">Nome da Entrega</Label>
+                  <Input
+                    id="entrega3"
+                    value={formData.entrega3}
+                    onChange={(e) => handleInputChange('entrega3', e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="data_marco3">Data de Entrega</Label>
+                  <Input
+                    id="data_marco3"
+                    type="date"
+                    value={formData.data_marco3}
+                    onChange={(e) => handleInputChange('data_marco3', e.target.value)}
+                  />
+                </div>
               </div>
             </div>
           </div>

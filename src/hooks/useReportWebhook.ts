@@ -13,27 +13,30 @@ export function useReportWebhook() {
       console.log('🚀 Iniciando envio de report para carteira:', carteira);
       console.log('🔗 URL do webhook:', webhookUrl);
       
-      // Buscar último status aprovado da carteira
-      const { data: ultimoStatus, error: statusError } = await supabase
+      // Buscar TODOS os status aprovados da carteira com dados dos projetos
+      const { data: statusAprovados, error: statusError } = await supabase
         .from('status_projeto')
         .select(`
           *,
           projeto:projetos!inner (
+            id,
             nome_projeto,
-            area_responsavel
+            area_responsavel,
+            gp_responsavel,
+            responsavel_interno,
+            equipe
           )
         `)
         .eq('aprovado', true)
         .eq('projeto.area_responsavel', carteira)
-        .order('data_aprovacao', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+        .order('data_aprovacao', { ascending: false });
 
       if (statusError) {
         console.error('❌ Erro ao buscar status:', statusError);
+        throw statusError;
       }
 
-      console.log('📊 Último status encontrado:', ultimoStatus);
+      console.log('📊 Status aprovados encontrados:', statusAprovados?.length || 0);
 
       // Buscar último registro de incidentes da carteira
       const { data: ultimosIncidentes, error: incidentesError } = await supabase
@@ -50,12 +53,62 @@ export function useReportWebhook() {
 
       console.log('🎯 Últimos incidentes encontrados:', ultimosIncidentes);
 
+      // Organizar dados por projeto
+      const projetosPorId = new Map();
+      
+      statusAprovados?.forEach(status => {
+        const projetoId = status.projeto?.id;
+        if (!projetoId) return;
+        
+        if (!projetosPorId.has(projetoId)) {
+          projetosPorId.set(projetoId, {
+            id: projetoId,
+            nome_projeto: status.projeto.nome_projeto,
+            area_responsavel: status.projeto.area_responsavel,
+            gp_responsavel: status.projeto.gp_responsavel,
+            responsavel_interno: status.projeto.responsavel_interno,
+            equipe: status.projeto.equipe,
+            status_list: []
+          });
+        }
+        
+        // Adicionar o status completo à lista do projeto
+        projetosPorId.get(projetoId).status_list.push({
+          id: status.id,
+          status_geral: status.status_geral,
+          status_visao_gp: status.status_visao_gp,
+          data_atualizacao: status.data_atualizacao,
+          data_aprovacao: status.data_aprovacao,
+          aprovado_por: status.aprovado_por,
+          realizado_semana_atual: status.realizado_semana_atual,
+          backlog: status.backlog,
+          bloqueios_atuais: status.bloqueios_atuais,
+          observacoes_pontos_atencao: status.observacoes_pontos_atencao,
+          entregaveis1: status.entregaveis1,
+          entrega1: status.entrega1,
+          data_marco1: status.data_marco1,
+          entregaveis2: status.entregaveis2,
+          entrega2: status.entrega2,
+          data_marco2: status.data_marco2,
+          entregaveis3: status.entregaveis3,
+          entrega3: status.entrega3,
+          data_marco3: status.data_marco3,
+          probabilidade_riscos: status.probabilidade_riscos,
+          impacto_riscos: status.impacto_riscos,
+          progresso_estimado: status.progresso_estimado
+        });
+      });
+
+      const projetos = Array.from(projetosPorId.values());
+
       // Preparar dados para envio
       const reportData = {
         carteira,
         timestamp: new Date().toISOString(),
-        ultimo_status: ultimoStatus || null,
-        ultimos_incidentes: ultimosIncidentes || null,
+        total_projetos: projetos.length,
+        total_status_aprovados: statusAprovados?.length || 0,
+        projetos: projetos,
+        incidentes: ultimosIncidentes || null,
         enviado_de: window.location.origin
       };
 
@@ -81,8 +134,10 @@ export function useReportWebhook() {
         const queryParams = new URLSearchParams({
           carteira,
           timestamp: reportData.timestamp,
-          ultimo_status: JSON.stringify(reportData.ultimo_status),
-          ultimos_incidentes: JSON.stringify(reportData.ultimos_incidentes),
+          total_projetos: reportData.total_projetos.toString(),
+          total_status_aprovados: reportData.total_status_aprovados.toString(),
+          projetos: JSON.stringify(reportData.projetos),
+          incidentes: JSON.stringify(reportData.incidentes),
           enviado_de: reportData.enviado_de
         });
 
@@ -108,7 +163,7 @@ export function useReportWebhook() {
           console.log('✅ Webhook chamado com sucesso usando GET!');
           toast({
             title: "Report enviado",
-            description: `Dados da carteira ${carteira} enviados para o webhook com sucesso!`,
+            description: `Dados da carteira ${carteira} enviados para o webhook com sucesso! ${projetos.length} projetos e ${statusAprovados?.length || 0} status enviados.`,
           });
           return true;
         }
@@ -145,7 +200,7 @@ export function useReportWebhook() {
             console.log(`✅ Webhook chamado com sucesso usando ${method}!`);
             toast({
               title: "Report enviado",
-              description: `Dados da carteira ${carteira} enviados para o webhook com sucesso!`,
+              description: `Dados da carteira ${carteira} enviados para o webhook com sucesso! ${projetos.length} projetos e ${statusAprovados?.length || 0} status enviados.`,
             });
             return true;
           } else if (response.status !== 404 && response.status !== 405) {
@@ -163,7 +218,7 @@ export function useReportWebhook() {
             console.log('🌐 Possível erro de CORS detectado - requisição pode ter sido enviada mesmo assim');
             toast({
               title: "Requisição enviada",
-              description: `Dados enviados para ${webhookUrl}. Verifique o histórico do seu webhook para confirmar o recebimento.`,
+              description: `Dados enviados para ${webhookUrl}. ${projetos.length} projetos e ${statusAprovados?.length || 0} status foram processados. Verifique o histórico do seu webhook para confirmar o recebimento.`,
             });
             return true;
           }
