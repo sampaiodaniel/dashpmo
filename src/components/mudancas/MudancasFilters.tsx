@@ -1,97 +1,111 @@
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent } from "@/components/ui/card";
+import { Filter } from 'lucide-react';
+import { CARTEIRAS, RESPONSAVEIS_ASA } from '@/types/pmo';
 
 interface MudancasFiltersProps {
   filtros: {
-    statusAprovacao?: string;
-    tipoMudanca?: string;
-    responsavel?: string;
+    status?: string;
     carteira?: string;
+    responsavel_asa?: string;
   };
-  onFiltroChange: (filtros: any) => void;
-  responsaveis: string[];
+  onFiltrosChange: (filtros: any) => void;
 }
 
-export function MudancasFilters({ filtros, onFiltroChange, responsaveis }: MudancasFiltersProps) {
-  const carteiras = [
-    'Cadastro',
-    'Canais',
-    'Core Bancário',
-    'Crédito',
-    'Cripto',
-    'Empréstimos',
-    'Fila Rápida',
-    'Investimentos 1',
-    'Investimentos 2',
-    'Onboarding',
-    'Open Finance'
-  ];
+export function MudancasFilters({ filtros, onFiltrosChange }: MudancasFiltersProps) {
+  const handleStatusChange = (value: string) => {
+    const novosFiltros = { ...filtros };
+    if (value === 'todos') {
+      delete novosFiltros.status;
+    } else {
+      novosFiltros.status = value;
+    }
+    onFiltrosChange(novosFiltros);
+  };
+
+  const handleCarteiraChange = (value: string) => {
+    const novosFiltros = { ...filtros };
+    if (value === 'todas') {
+      delete novosFiltros.carteira;
+    } else {
+      novosFiltros.carteira = value;
+    }
+    onFiltrosChange(novosFiltros);
+  };
+
+  const handleResponsavelChange = (value: string) => {
+    const novosFiltros = { ...filtros };
+    if (value === 'todos') {
+      delete novosFiltros.responsavel_asa;
+    } else {
+      novosFiltros.responsavel_asa = value;
+    }
+    onFiltrosChange(novosFiltros);
+  };
 
   return (
-    <div className="flex gap-4 flex-wrap">
-      <Select
-        value={filtros.carteira || 'todas'}
-        onValueChange={(value) => onFiltroChange({ ...filtros, carteira: value === 'todas' ? undefined : value })}
-      >
-        <SelectTrigger className="w-48 bg-white border-gray-300 text-gray-900 focus:border-pmo-primary focus:ring-pmo-primary">
-          <SelectValue placeholder="Todas as carteiras" />
-        </SelectTrigger>
-        <SelectContent className="bg-white border-gray-300">
-          <SelectItem value="todas" className="text-gray-900 hover:bg-gray-100">Todas as carteiras</SelectItem>
-          {carteiras.map((carteira) => (
-            <SelectItem key={carteira} value={carteira} className="text-gray-900 hover:bg-gray-100">
-              {carteira}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+    <Card>
+      <CardContent className="p-4">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <Filter className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm font-medium text-muted-foreground">Filtros:</span>
+          </div>
+          
+          <div className="flex gap-4">
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-muted-foreground">Status:</label>
+              <Select value={filtros.status || 'todos'} onValueChange={handleStatusChange}>
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Todos" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Todos</SelectItem>
+                  <SelectItem value="Pendente">Pendente</SelectItem>
+                  <SelectItem value="Em Análise">Em Análise</SelectItem>
+                  <SelectItem value="Aprovada">Aprovada</SelectItem>
+                  <SelectItem value="Reprovada">Reprovada</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-      <Select
-        value={filtros.statusAprovacao || 'todos'}
-        onValueChange={(value) => onFiltroChange({ ...filtros, statusAprovacao: value === 'todos' ? undefined : value })}
-      >
-        <SelectTrigger className="w-48 bg-white border-gray-300 text-gray-900 focus:border-pmo-primary focus:ring-pmo-primary">
-          <SelectValue placeholder="Todos os status" />
-        </SelectTrigger>
-        <SelectContent className="bg-white border-gray-300">
-          <SelectItem value="todos" className="text-gray-900 hover:bg-gray-100">Todos os status</SelectItem>
-          <SelectItem value="Pendente" className="text-gray-900 hover:bg-gray-100">Pendente</SelectItem>
-          <SelectItem value="Aprovado" className="text-gray-900 hover:bg-gray-100">Aprovado</SelectItem>
-          <SelectItem value="Rejeitado" className="text-gray-900 hover:bg-gray-100">Rejeitado</SelectItem>
-        </SelectContent>
-      </Select>
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-muted-foreground">Carteira:</label>
+              <Select value={filtros.carteira || 'todas'} onValueChange={handleCarteiraChange}>
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Todas" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todas">Todas</SelectItem>
+                  {CARTEIRAS.map((carteira) => (
+                    <SelectItem key={carteira} value={carteira}>
+                      {carteira}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-      <Select
-        value={filtros.tipoMudanca || 'todos'}
-        onValueChange={(value) => onFiltroChange({ ...filtros, tipoMudanca: value === 'todos' ? undefined : value })}
-      >
-        <SelectTrigger className="w-48 bg-white border-gray-300 text-gray-900 focus:border-pmo-primary focus:ring-pmo-primary">
-          <SelectValue placeholder="Todos os tipos" />
-        </SelectTrigger>
-        <SelectContent className="bg-white border-gray-300">
-          <SelectItem value="todos" className="text-gray-900 hover:bg-gray-100">Todos os tipos</SelectItem>
-          <SelectItem value="Mudança de Escopo" className="text-gray-900 hover:bg-gray-100">Mudança de Escopo</SelectItem>
-          <SelectItem value="Mudança de Prazo" className="text-gray-900 hover:bg-gray-100">Mudança de Prazo</SelectItem>
-          <SelectItem value="Mudança de Recursos" className="text-gray-900 hover:bg-gray-100">Mudança de Recursos</SelectItem>
-        </SelectContent>
-      </Select>
-
-      <Select
-        value={filtros.responsavel || 'todos'}
-        onValueChange={(value) => onFiltroChange({ ...filtros, responsavel: value === 'todos' ? undefined : value })}
-      >
-        <SelectTrigger className="w-48 bg-white border-gray-300 text-gray-900 focus:border-pmo-primary focus:ring-pmo-primary">
-          <SelectValue placeholder="Todos os responsáveis" />
-        </SelectTrigger>
-        <SelectContent className="bg-white border-gray-300">
-          <SelectItem value="todos" className="text-gray-900 hover:bg-gray-100">Todos os responsáveis</SelectItem>
-          {responsaveis.map((responsavel) => (
-            <SelectItem key={responsavel} value={responsavel} className="text-gray-900 hover:bg-gray-100">
-              {responsavel}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-muted-foreground">Responsável:</label>
+              <Select value={filtros.responsavel_asa || 'todos'} onValueChange={handleResponsavelChange}>
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Todos" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Todos</SelectItem>
+                  {RESPONSAVEIS_ASA.map((responsavel) => (
+                    <SelectItem key={responsavel} value={responsavel}>
+                      {responsavel}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
