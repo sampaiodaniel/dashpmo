@@ -53,8 +53,14 @@ export default function Licoes() {
 
   // Calculate metrics
   const totalLicoes = licoesFiltradas?.length || 0;
-  const boasPraticas = licoesFiltradas?.filter(licao => licao.categoria_licao === 'Boas Práticas').length || 0;
+  const boasPraticas = licoesFiltradas?.filter(licao => licao.categoria_licao === 'Processo').length || 0;
   const pontosAtencao = licoesFiltradas?.filter(licao => licao.status_aplicacao === 'Não aplicada').length || 0;
+
+  // Transform data to match LicaoItem interface
+  const licoesTransformed = licoesFiltradas?.map(licao => ({
+    ...licao,
+    data_registro: licao.data_registro.toISOString().split('T')[0]
+  })) || [];
 
   return (
     <Layout>
@@ -69,10 +75,9 @@ export default function Licoes() {
         <div className="flex flex-col lg:flex-row gap-4">
           <div className="flex-1">
             <LicoesSearchBar 
-              busca={busca}
-              onBuscaChange={setBusca}
-              ordenacao={ordenacao}
-              onOrdenacaoChange={setOrdenacao}
+              termoBusca={busca}
+              onTermoBuscaChange={setBusca}
+              totalResults={totalLicoes}
             />
           </div>
           <div className="lg:w-80">
@@ -84,7 +89,7 @@ export default function Licoes() {
         </div>
 
         <LicoesList 
-          licoes={licoesFiltradas}
+          licoes={licoesTransformed}
           isLoading={isLoadingLicoes}
           error={null}
           termoBusca={busca}
