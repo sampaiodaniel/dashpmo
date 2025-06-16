@@ -57,11 +57,13 @@ export default function Licoes() {
   }
 
   const handleNovaLicao = () => {
-    console.log('Abrindo modal de nova lição');
+    console.log('Abrindo modal de nova lição - estado atual:', novaLicaoModalAberto);
     setNovaLicaoModalAberto(true);
+    console.log('Modal deve estar aberto agora');
   };
 
   const handleFecharModal = () => {
+    console.log('Fechando modal de nova lição');
     setNovaLicaoModalAberto(false);
   };
 
@@ -75,6 +77,8 @@ export default function Licoes() {
     ...licao,
     data_registro: licao.data_registro.toISOString().split('T')[0]
   })) || [];
+
+  console.log('Estado do modal:', novaLicaoModalAberto);
 
   return (
     <Layout>

@@ -1,7 +1,7 @@
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { GraficoEvolutivoIncidentes } from '@/components/incidentes/GraficoEvolutivoIncidentes';
+import { GraficoEvolutivoIncidentesRelatorio } from './GraficoEvolutivoIncidentesRelatorio';
 
 interface TabelaIncidentesProps {
   incidentes: any[];
@@ -20,14 +20,11 @@ export function TabelaIncidentes({ incidentes, carteira }: TabelaIncidentesProps
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-center py-8 text-gray-500">Nenhum incidente registrado</p>
+            <p className="text-center py-8 text-[#6B7280]">Nenhum incidente registrado</p>
           </CardContent>
         </Card>
         
-        {/* Gráfico de Evolução */}
-        <div className="print:hidden">
-          <GraficoEvolutivoIncidentes />
-        </div>
+        <GraficoEvolutivoIncidentesRelatorio carteira={carteira} />
       </div>
     );
   }
@@ -57,11 +54,11 @@ export function TabelaIncidentes({ incidentes, carteira }: TabelaIncidentesProps
             <TableBody>
               {incidentes.map((incidente, index) => (
                 <TableRow key={index}>
-                  <TableCell className="font-medium">{incidente.carteira}</TableCell>
-                  <TableCell className="text-center">{incidente.anterior}</TableCell>
+                  <TableCell className="font-medium text-[#1B365D]">{incidente.carteira}</TableCell>
+                  <TableCell className="text-center text-[#6B7280]">{incidente.anterior}</TableCell>
                   <TableCell className="text-center text-[#10B981] font-medium">+{incidente.entrada}</TableCell>
                   <TableCell className="text-center text-[#2E5984] font-medium">-{incidente.saida}</TableCell>
-                  <TableCell className="text-center font-bold">{incidente.atual}</TableCell>
+                  <TableCell className="text-center font-bold text-[#1B365D]">{incidente.atual}</TableCell>
                   <TableCell className="text-center text-[#F59E0B] font-medium">{incidente.mais_15_dias}</TableCell>
                   <TableCell className="text-center text-[#EF4444] font-bold">{incidente.criticos}</TableCell>
                 </TableRow>
@@ -71,10 +68,7 @@ export function TabelaIncidentes({ incidentes, carteira }: TabelaIncidentesProps
         </CardContent>
       </Card>
       
-      {/* Gráfico de Evolução - só aparece na tela, não na impressão */}
-      <div className="print:hidden">
-        <GraficoEvolutivoIncidentes />
-      </div>
+      <GraficoEvolutivoIncidentesRelatorio carteira={carteira} />
     </div>
   );
 }

@@ -11,7 +11,7 @@ export function ProjetoTimeline({ ultimoStatus }: ProjetoTimelineProps) {
       data: ultimoStatus.data_marco1,
       titulo: ultimoStatus.entrega1 || 'Entrega 1',
       entregaveis: ultimoStatus.entregaveis1,
-      cor: 'blue'
+      cor: 'primary'
     });
   }
   
@@ -20,7 +20,7 @@ export function ProjetoTimeline({ ultimoStatus }: ProjetoTimelineProps) {
       data: ultimoStatus.data_marco2,
       titulo: ultimoStatus.entrega2 || 'Entrega 2',
       entregaveis: ultimoStatus.entregaveis2,
-      cor: 'green'
+      cor: 'secondary'
     });
   }
   
@@ -29,7 +29,7 @@ export function ProjetoTimeline({ ultimoStatus }: ProjetoTimelineProps) {
       data: ultimoStatus.data_marco3,
       titulo: ultimoStatus.entrega3 || 'Entrega 3',
       entregaveis: ultimoStatus.entregaveis3,
-      cor: 'purple'
+      cor: 'success'
     });
   }
 
@@ -42,33 +42,33 @@ export function ProjetoTimeline({ ultimoStatus }: ProjetoTimelineProps) {
 
   const getCorClasses = (cor: string) => {
     switch (cor) {
-      case 'blue':
+      case 'primary':
         return {
-          bg: 'bg-blue-100',
-          border: 'border-blue-300',
-          text: 'text-blue-800',
-          dot: 'bg-blue-500'
+          bg: 'bg-blue-50',
+          border: 'border-[#1B365D]',
+          text: 'text-[#1B365D]',
+          dot: 'bg-[#1B365D]'
         };
-      case 'green':
+      case 'secondary':
         return {
-          bg: 'bg-green-100',
-          border: 'border-green-300',
-          text: 'text-green-800',
-          dot: 'bg-green-500'
+          bg: 'bg-blue-50',
+          border: 'border-[#2E5984]',
+          text: 'text-[#2E5984]',
+          dot: 'bg-[#2E5984]'
         };
-      case 'purple':
+      case 'success':
         return {
-          bg: 'bg-purple-100',
-          border: 'border-purple-300',
-          text: 'text-purple-800',
-          dot: 'bg-purple-500'
+          bg: 'bg-green-50',
+          border: 'border-[#10B981]',
+          text: 'text-[#10B981]',
+          dot: 'bg-[#10B981]'
         };
       default:
         return {
-          bg: 'bg-gray-100',
-          border: 'border-gray-300',
-          text: 'text-gray-800',
-          dot: 'bg-gray-500'
+          bg: 'bg-gray-50',
+          border: 'border-[#6B7280]',
+          text: 'text-[#6B7280]',
+          dot: 'bg-[#6B7280]'
         };
     }
   };
@@ -78,9 +78,9 @@ export function ProjetoTimeline({ ultimoStatus }: ProjetoTimelineProps) {
       <h4 className="font-semibold text-[#1B365D] mb-4">Timeline - Próximas Entregas</h4>
       <div className="relative">
         {/* Linha vertical */}
-        <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gray-300"></div>
+        <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-[#6B7280]"></div>
         
-        <div className="space-y-6">
+        <div className="space-y-8">
           {entregas.map((entrega, index) => {
             const cores = getCorClasses(entrega.cor);
             return (
@@ -89,23 +89,23 @@ export function ProjetoTimeline({ ultimoStatus }: ProjetoTimelineProps) {
                 <div className={`relative z-10 w-3 h-3 ${cores.dot} rounded-full mt-2`}></div>
                 
                 {/* Conteúdo */}
-                <div className={`ml-6 p-4 rounded-lg border-2 ${cores.bg} ${cores.border} flex-1`}>
-                  <div className="flex justify-between items-start mb-2">
-                    <h5 className={`font-medium ${cores.text}`}>
+                <div className={`ml-6 p-4 rounded-lg border-2 ${cores.bg} ${cores.border} flex-1 min-h-[120px]`}>
+                  <div className="flex justify-between items-start mb-3">
+                    <h5 className={`font-medium ${cores.text} text-lg`}>
                       {entrega.titulo}
                     </h5>
-                    <span className="text-sm font-medium text-gray-600">
+                    <span className="text-sm font-medium text-[#6B7280] bg-white px-2 py-1 rounded">
                       {new Date(entrega.data).toLocaleDateString('pt-BR')}
                     </span>
                   </div>
                   
                   {entrega.entregaveis && (
-                    <div className={`text-sm ${cores.text} space-y-1`}>
-                      <strong>Entregáveis:</strong>
-                      <div className="ml-2 space-y-0.5">
+                    <div className={`text-sm ${cores.text} space-y-2`}>
+                      <strong className="text-[#1B365D]">Entregáveis:</strong>
+                      <div className="ml-2 space-y-1">
                         {entrega.entregaveis.split('\n').map((item: string, i: number) => (
-                          <div key={i} className="flex">
-                            <span className="mr-2">•</span>
+                          <div key={i} className="flex leading-relaxed">
+                            <span className="mr-2 font-bold">•</span>
                             <span className="flex-1">{item.trim()}</span>
                           </div>
                         ))}

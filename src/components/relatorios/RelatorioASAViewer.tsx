@@ -6,6 +6,7 @@ import { DadosRelatorioASA } from '@/hooks/useRelatorioASA';
 import { ProjetosOverview } from './asa/ProjetosOverview';
 import { ProjetoDetalhes } from './asa/ProjetoDetalhes';
 import { TabelaIncidentes } from './asa/TabelaIncidentes';
+import { GraficoStatusProjeto } from './asa/GraficoStatusProjeto';
 
 interface RelatorioASAViewerProps {
   isOpen: boolean;
@@ -17,11 +18,86 @@ export function RelatorioASAViewer({ isOpen, onClose, dados }: RelatorioASAViewe
   if (!dados) return null;
 
   const handlePrint = () => {
-    window.print();
+    // Criar CSS específico para impressão
+    const printCSS = `
+      @media print {
+        body * { visibility: hidden; }
+        #relatorio-content, #relatorio-content * { visibility: visible; }
+        #relatorio-content { 
+          position: absolute; 
+          left: 0; 
+          top: 0; 
+          width: 100%; 
+          background: white !important;
+        }
+        .no-print { display: none !important; }
+        .print\\:block { display: block !important; }
+        .print\\:space-y-6 > * + * { margin-top: 1.5rem !important; }
+        .break-inside-avoid { break-inside: avoid; }
+        .page-break-after { break-after: page; }
+        @page { 
+          margin: 15mm; 
+          size: A4;
+        }
+      }
+    `;
+    
+    const style = document.createElement('style');
+    style.textContent = printCSS;
+    document.head.appendChild(style);
+    
+    setTimeout(() => {
+      window.print();
+      document.head.removeChild(style);
+    }, 500);
   };
 
   const handleDownload = () => {
-    handlePrint();
+    // Para download, vamos gerar um PDF usando a API do navegador
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      const content = document.getElementById('relatorio-content')?.outerHTML || '';
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Relatório ASA - ${dados.carteira}</title>
+          <style>
+            body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 20px; }
+            .space-y-8 > * + * { margin-top: 2rem; }
+            .space-y-6 > * + * { margin-top: 1.5rem; }
+            .grid { display: grid; }
+            .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+            .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+            .gap-6 { gap: 1.5rem; }
+            .text-center { text-align: center; }
+            .font-bold { font-weight: bold; }
+            .text-4xl { font-size: 2.25rem; }
+            .text-lg { font-size: 1.125rem; }
+            .text-sm { font-size: 0.875rem; }
+            .mb-6 { margin-bottom: 1.5rem; }
+            .mb-4 { margin-bottom: 1rem; }
+            .mb-3 { margin-bottom: 0.75rem; }
+            .mb-2 { margin-bottom: 0.5rem; }
+            .p-6 { padding: 1.5rem; }
+            .p-4 { padding: 1rem; }
+            .bg-white { background-color: white; }
+            .rounded-lg { border-radius: 0.5rem; }
+            .shadow-sm { box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); }
+            .border-b { border-bottom-width: 1px; }
+            .border-gray-200 { border-color: #e5e7eb; }
+            .text-blue-900 { color: #1e3a8a; }
+            .text-gray-600 { color: #4b5563; }
+          </style>
+        </head>
+        <body>${content}</body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.print();
+      printWindow.close();
+    }
   };
 
   // Filtrar apenas projetos com último status aprovado
@@ -36,13 +112,13 @@ export function RelatorioASAViewer({ isOpen, onClose, dados }: RelatorioASAViewe
               Relatório ASA - {dados.carteira}
             </DialogTitle>
             <div className="flex gap-2 no-print">
-              <Button variant="outline" size="sm" onClick={handlePrint} className="border-[#2E5984] text-[#2E5984] hover:bg-[#2E5984] hover:text-white">
+              <Button variant="outline" size="sm" onClick={handlePrint} className="border-[#1B365D] text-[#1B365D] hover:bg-[#1B365D] hover:text-white">
                 <Printer className="h-4 w-4 mr-2" />
                 Imprimir
               </Button>
-              <Button variant="outline" size="sm" onClick={handleDownload} className="border-[#2E5984] text-[#2E5984] hover:bg-[#2E5984] hover:text-white">
+              <Button variant="outline" size="sm" onClick={handleDownload} className="border-[#1B365D] text-[#1B365D] hover:bg-[#1B365D] hover:text-white">
                 <Download className="h-4 w-4 mr-2" />
-                Download
+                Download PDF
               </Button>
               <Button variant="ghost" size="icon" onClick={onClose}>
                 <X className="h-4 w-4" />
@@ -68,20 +144,25 @@ export function RelatorioASAViewer({ isOpen, onClose, dados }: RelatorioASAViewe
             </div>
           </div>
 
+          {/* Gráficos de Status dos Projetos */}
+          <div className="bg-white p-6 rounded-lg shadow-sm break-inside-avoid">
+            <GraficoStatusProjeto projetos={dados.projetos} />
+          </div>
+
           {/* Overview de Projetos Ativos */}
-          <div className="bg-white p-6 rounded-lg shadow-sm">
+          <div className="bg-white p-6 rounded-lg shadow-sm break-inside-avoid">
             <ProjetosOverview projetos={dados.projetos} />
           </div>
 
           {/* Detalhes dos Projetos */}
-          {projetosAtivos.map((projeto) => (
-            <div key={`detail-${projeto.id}`} className="bg-white p-6 rounded-lg shadow-sm">
+          {projetosAtivos.map((projeto, index) => (
+            <div key={`detail-${projeto.id}`} className={`bg-white p-6 rounded-lg shadow-sm break-inside-avoid ${index > 0 ? 'page-break-after' : ''}`}>
               <ProjetoDetalhes projeto={projeto} />
             </div>
           ))}
 
           {/* Tabela de Incidentes */}
-          <div className="bg-white p-6 rounded-lg shadow-sm">
+          <div className="bg-white p-6 rounded-lg shadow-sm break-inside-avoid page-break-after">
             <TabelaIncidentes incidentes={dados.incidentes} carteira={dados.carteira} />
           </div>
 

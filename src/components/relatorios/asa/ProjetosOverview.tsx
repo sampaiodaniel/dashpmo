@@ -9,10 +9,10 @@ interface ProjetosOverviewProps {
 export function ProjetosOverview({ projetos }: ProjetosOverviewProps) {
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Verde': return 'bg-green-500';
-      case 'Amarelo': return 'bg-yellow-500';
-      case 'Vermelho': return 'bg-red-500';
-      default: return 'bg-gray-500';
+      case 'Verde': return 'bg-[#10B981]';
+      case 'Amarelo': return 'bg-[#F59E0B]';
+      case 'Vermelho': return 'bg-[#EF4444]';
+      default: return 'bg-[#6B7280]';
     }
   };
 
@@ -32,24 +32,24 @@ export function ProjetosOverview({ projetos }: ProjetosOverviewProps) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Projeto</TableHead>
-                <TableHead>Equipe/GP</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Progresso</TableHead>
+                <TableHead className="text-[#1B365D] font-semibold">Projeto</TableHead>
+                <TableHead className="text-[#1B365D] font-semibold">Equipe/GP</TableHead>
+                <TableHead className="text-[#1B365D] font-semibold">Status</TableHead>
+                <TableHead className="text-[#1B365D] font-semibold">Progresso</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {projetosAtivos.map((projeto) => (
                 <TableRow key={projeto.id}>
-                  <TableCell className="font-medium">
+                  <TableCell className="font-medium text-[#1B365D]">
                     {projeto.nome_projeto}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="text-[#6B7280]">
                     {projeto.gp_responsavel || projeto.equipe || 'Não informado'}
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">
-                      <div className={`w-4 h-4 rounded-full ${getStatusColor(projeto.ultimoStatus?.status_visao_gp || 'Cinza')}`}></div>
+                    <div className="flex items-center justify-center">
+                      <div className={`w-6 h-6 rounded-full ${getStatusColor(projeto.ultimoStatus?.status_visao_gp || 'Cinza')}`}></div>
                     </div>
                   </TableCell>
                   <TableCell>
@@ -60,7 +60,7 @@ export function ProjetosOverview({ projetos }: ProjetosOverviewProps) {
                           style={{ width: `${projeto.ultimoStatus?.progresso_estimado || 0}%` }}
                         ></div>
                       </div>
-                      <span className="text-sm">{projeto.ultimoStatus?.progresso_estimado || 0}%</span>
+                      <span className="text-sm text-[#6B7280]">{projeto.ultimoStatus?.progresso_estimado || 0}%</span>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -68,7 +68,7 @@ export function ProjetosOverview({ projetos }: ProjetosOverviewProps) {
             </TableBody>
           </Table>
         ) : (
-          <div className="text-center py-8 text-gray-500">
+          <div className="text-center py-8 text-[#6B7280]">
             <p>Nenhum projeto ativo com status reportado</p>
           </div>
         )}
