@@ -60,7 +60,19 @@ export default function EditarStatus() {
     );
   }
 
-  const status = statusList?.find(s => s.id === Number(id));
+  // Aguardar o carregamento dos dados antes de procurar o status
+  if (!statusList || statusList.length === 0) {
+    console.log('EditarStatus - Aguardando dados...');
+    return (
+      <Layout>
+        <div className="text-center py-8 text-pmo-gray">
+          <div>Carregando dados...</div>
+        </div>
+      </Layout>
+    );
+  }
+
+  const status = statusList.find(s => s.id === Number(id));
   console.log('EditarStatus - Status encontrado:', status);
 
   if (!status) {

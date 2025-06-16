@@ -30,38 +30,35 @@ function MilestoneCard({ title, milestone, onChange, required = false }: Milesto
   return (
     <div className="border rounded-lg p-4">
       <h4 className="font-medium text-pmo-primary mb-4">{title} {required && '(Obrigatório)'}</h4>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div>
-          <Label>Nome do Marco {required && '*'}</Label>
-          <Input
-            value={milestone.entrega}
-            onChange={(e) => onChange('entrega', e.target.value)}
-            placeholder="Nome do marco"
+      <div className="grid grid-cols-3 gap-4">
+        <div className="col-span-2">
+          <Label>Entregáveis {required && '*'}</Label>
+          <Textarea
+            value={milestone.entregaveis}
+            onChange={(e) => onChange('entregaveis', e.target.value)}
+            rows={4}
+            placeholder="Descreva os entregáveis..."
+            className="min-h-[100px]"
           />
         </div>
-        <div>
-          <Label>Data {required && '*'}</Label>
-          <Input
-            type="date"
-            value={milestone.data}
-            onChange={(e) => onChange('data', e.target.value)}
-          />
+        <div className="space-y-4">
+          <div>
+            <Label>Nome da Entrega {required && '*'}</Label>
+            <Input
+              value={milestone.entrega}
+              onChange={(e) => onChange('entrega', e.target.value)}
+              placeholder="Nome da entrega"
+            />
+          </div>
+          <div>
+            <Label>Data de Entrega {required && '*'}</Label>
+            <Input
+              type="date"
+              value={milestone.data}
+              onChange={(e) => onChange('data', e.target.value)}
+            />
+          </div>
         </div>
-        <div>
-          <Label>Responsável {required && '*'}</Label>
-          <Input
-            placeholder="Nome do responsável"
-          />
-        </div>
-      </div>
-      <div className="mt-4">
-        <Label>Entregáveis:</Label>
-        <Textarea
-          value={milestone.entregaveis}
-          onChange={(e) => onChange('entregaveis', e.target.value)}
-          rows={3}
-          placeholder="Descreva os entregáveis..."
-        />
       </div>
     </div>
   );
