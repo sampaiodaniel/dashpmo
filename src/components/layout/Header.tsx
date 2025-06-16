@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { NotificationsDropdown } from './NotificationsDropdown';
+import { usePerfilUsuario } from '@/hooks/usePerfilUsuario';
 
 interface HeaderProps {
   onToggleSidebar: () => void;
@@ -21,6 +22,7 @@ interface HeaderProps {
 export function Header({ onToggleSidebar }: HeaderProps) {
   const { usuario, logout } = useAuth();
   const navigate = useNavigate();
+  const { data: perfil } = usePerfilUsuario(usuario?.id || 0);
 
   const handleLogout = () => {
     logout();
@@ -30,6 +32,9 @@ export function Header({ onToggleSidebar }: HeaderProps) {
   const handlePerfil = () => {
     navigate('/configuracoes');
   };
+
+  const displayName = perfil?.nome || usuario?.nome;
+  const displayInitials = displayName?.split(' ').map(n => n[0]).join('').toUpperCase() || 'U';
 
   return (
     <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 sticky top-0 z-30">
@@ -65,9 +70,9 @@ export function Header({ onToggleSidebar }: HeaderProps) {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-8 w-8 rounded-full">
               <Avatar className="h-8 w-8">
-                <AvatarImage src="/placeholder.svg" alt="@usuario" />
+                <AvatarImage src={perfil?.foto_url || "/placeholder.svg"} alt="@usuario" />
                 <AvatarFallback>
-                  {usuario?.nome?.split(' ').map(n => n[0]).join('').toUpperCase() || 'U'}
+                  {displayInitials}
                 </AvatarFallback>
               </Avatar>
             </Button>
@@ -75,7 +80,7 @@ export function Header({ onToggleSidebar }: HeaderProps) {
           <DropdownMenuContent className="w-56" align="end" forceMount>
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">{usuario?.nome}</p>
+                <p className="text-sm font-medium leading-none">{displayName}</p>
                 <p className="text-xs leading-none text-muted-foreground">
                   {usuario?.email}
                 </p>

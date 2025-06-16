@@ -3,11 +3,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Filter, X } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CARTEIRAS } from '@/types/pmo';
 
 export interface MudancasFilters {
   statusAprovacao?: string;
   tipoMudanca?: string;
   responsavel?: string;
+  carteira?: string;
 }
 
 interface MudancasFiltersProps {
@@ -47,6 +49,16 @@ export function MudancasFilters({ filtros, onFiltroChange, responsaveis }: Mudan
     onFiltroChange(novosFiltros);
   };
 
+  const handleCarteiraChange = (value: string) => {
+    const novosFiltros = { ...filtros };
+    if (value === 'todas') {
+      delete novosFiltros.carteira;
+    } else {
+      novosFiltros.carteira = value;
+    }
+    onFiltroChange(novosFiltros);
+  };
+
   const handleLimparFiltros = () => {
     onFiltroChange({});
   };
@@ -64,6 +76,23 @@ export function MudancasFilters({ filtros, onFiltroChange, responsaveis }: Mudan
             </div>
             
             <div className="flex gap-6 flex-wrap items-center">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-pmo-gray">Carteira:</span>
+                <Select value={filtros.carteira || 'todas'} onValueChange={handleCarteiraChange}>
+                  <SelectTrigger className="w-32">
+                    <SelectValue placeholder="Todas" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todas">Todas</SelectItem>
+                    {CARTEIRAS.map((carteira) => (
+                      <SelectItem key={carteira} value={carteira}>
+                        {carteira}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div className="flex items-center gap-2">
                 <span className="text-sm text-pmo-gray">Status:</span>
                 <Select value={filtros.statusAprovacao || 'todos'} onValueChange={handleStatusChange}>
