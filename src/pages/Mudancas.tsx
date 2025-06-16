@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
@@ -89,8 +88,7 @@ export default function Mudancas() {
           
           <MudancasFilters 
             filtros={filtros}
-            onFiltroChange={setFiltros}
-            responsaveis={responsaveis}
+            onFiltrosChange={setFiltros}
           />
         </div>
 
