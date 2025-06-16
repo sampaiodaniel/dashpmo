@@ -25,15 +25,6 @@ export function ProjetoInfoGerais({ projeto }: ProjetoInfoGeraisProps) {
           </div>
           
           <div>
-            <label className="text-sm font-medium text-pmo-gray">Carteira Primária</label>
-            <div className="flex items-center gap-2 mt-1">
-              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                {projeto.area_responsavel}
-              </Badge>
-            </div>
-          </div>
-          
-          <div>
             <label className="text-sm font-medium text-pmo-gray">Responsável ASA</label>
             <div className="flex items-center gap-2 mt-1">
               <User className="h-4 w-4 text-pmo-gray" />
@@ -61,7 +52,7 @@ export function ProjetoInfoGerais({ projeto }: ProjetoInfoGeraisProps) {
 
           {projeto.gp_responsavel_cwi && (
             <div>
-              <label className="text-sm font-medium text-pmo-gray">Chefe do Projeto CWI</label>
+              <label className="text-sm font-medium text-pmo-gray">Chefe do Projeto</label>
               <div className="flex items-center gap-2 mt-1">
                 <Users className="h-4 w-4 text-pmo-gray" />
                 <span>{projeto.gp_responsavel_cwi}</span>
@@ -104,15 +95,10 @@ export function ProjetoInfoGerais({ projeto }: ProjetoInfoGeraisProps) {
           </div>
         )}
 
-        {(projeto.carteira_primaria || projeto.carteira_secundaria || projeto.carteira_terciaria) && (
+        {(projeto.carteira_secundaria || projeto.carteira_terciaria) && (
           <div>
             <label className="text-sm font-medium text-pmo-gray">Carteiras</label>
             <div className="flex flex-wrap gap-2 mt-1">
-              {projeto.carteira_primaria && (
-                <Badge variant="outline" className="bg-blue-50 text-blue-700">
-                  Primária: {projeto.carteira_primaria}
-                </Badge>
-              )}
               {projeto.carteira_secundaria && (
                 <Badge variant="outline" className="bg-green-50 text-green-700">
                   Secundária: {projeto.carteira_secundaria}

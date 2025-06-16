@@ -8,8 +8,14 @@ interface ProjetoAtividadesProps {
 export function ProjetoAtividades({ ultimoStatus }: ProjetoAtividadesProps) {
   if (!ultimoStatus) return null;
 
+  const hasActivities = ultimoStatus.realizado_semana_atual || 
+                       ultimoStatus.observacoes_pontos_atencao || 
+                       ultimoStatus.backlog;
+
+  if (!hasActivities) return null;
+
   return (
-    <div className="space-y-6">
+    <div className="grid grid-cols-3 gap-6">
       {/* Itens Trabalhados na Semana */}
       {ultimoStatus.realizado_semana_atual && (
         <div>
@@ -53,6 +59,23 @@ export function ProjetoAtividades({ ultimoStatus }: ProjetoAtividadesProps) {
               {ultimoStatus.backlog.split('\n').map((item: string, i: number) => (
                 <div key={i} className="text-gray-700">
                   <span className="font-medium text-[#6B7280] mr-2">→</span>
+                  <span>{item.trim()}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bloqueios - sempre em linha separada quando existir */}
+      {ultimoStatus.bloqueios_atuais && (
+        <div className="col-span-3 mt-6">
+          <h4 className="font-semibold text-[#EF4444] mb-3">Bloqueios Atuais</h4>
+          <div className="bg-red-50 border border-red-200 p-4 rounded-lg">
+            <div className="space-y-2">
+              {ultimoStatus.bloqueios_atuais.split('\n').map((item: string, i: number) => (
+                <div key={i} className="text-sm text-red-700 leading-relaxed">
+                  <span className="font-medium text-[#EF4444] mr-2">⚠️</span>
                   <span>{item.trim()}</span>
                 </div>
               ))}

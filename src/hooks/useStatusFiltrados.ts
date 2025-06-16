@@ -1,81 +1,85 @@
+
 import { useMemo } from 'react';
-import { StatusProjeto } from '@/types/pmo';
+import { useStatusList } from './useStatusList';
 import { StatusFilters } from '@/components/status/filters/FilterUtils';
 
-interface FiltrosStatusExtended extends StatusFilters {
-  busca?: string;
+interface UseStatusFiltradosParams {
+  filtros: StatusFilters;
+  termoBusca: string;
+  paginaAtual: number;
+  itensPorPagina: number;
 }
 
-export function useStatusFiltrados(statusList: StatusProjeto[] | undefined, filtros: FiltrosStatusExtended) {
-  return useMemo(() => {
-    if (!statusList) return [];
+export function useStatusFiltrados({
+  filtros,
+  termoBusca,
+  paginaAtual,
+  itensPorPagina
+}: UseStatusFiltradosParams) {
+  const { data: statusList, isLoading, error, refetch } = useStatusList();
 
-    let filtrados = [...statusList];
-
-    // Filtrar por status arquivado (apenas ocultar se explicitamente arquivado)
-    // Status pendentes de aprovação (aprovado === false) devem aparecer na lista principal
-    // Apenas status com aprovado === null ou com algum campo específico de arquivamento devem ser filtrados
-    if (!filtros.incluirArquivados) {
-      // Por enquanto, vamos mostrar todos os status na lista principal
-      // Futuramente, podemos implementar um campo específico "arquivado" no banco
-      // filtrados = filtrados.filter(status => status.aprovado !== null);
+  const dados = useMemo(() => {
+    if (!statusList || !Array.isArray(statusList)) {
+      return {
+        status: [],
+        totalItens: 0,
+        totalPaginas: 0
+      };
     }
 
-    // Filtrar por carteira
-    if (filtros.carteira && filtros.carteira !== 'todas') {
-      filtrados = filtrados.filter(status => 
+    // Aplicar filtros
+    let statusFiltrados = [...statusList];
+
+    // Filtro por carteira
+    if (filtros.carteira && filtros.carteira !== 'Todas') {
+      statusFiltrados = statusFiltrados.filter(status => 
         status.projeto?.area_responsavel === filtros.carteira
       );
     }
 
-    // Filtrar por projeto
-    if (filtros.projeto && filtros.projeto !== 'todos') {
-      filtrados = filtrados.filter(status => 
-        status.projeto?.nome_projeto === filtros.projeto
+    // Filtro por responsável
+    if (filtros.responsavel) {
+      statusFiltrados = statusFiltrados.filter(status => 
+        status.projeto?.responsavel_interno === filtros.responsavel
       );
     }
 
-    // Filtrar por responsável
-    if (filtros.responsavel && filtros.responsavel !== 'todos') {
-      filtrados = filtrados.filter(status => 
-        status.criado_por === filtros.responsavel
+    // Filtro por status de aprovação
+    if (filtros.statusAprovacao) {
+      statusFiltrados = statusFiltrados.filter(status => {
+        const statusRevisao = status.aprovado === null ? 'Pendente Revisão' : 
+                            status.aprovado ? 'Revisado' : 'Rejeitado';
+        return statusRevisao === filtros.statusAprovacao;
+      });
+    }
+
+    // Filtro por busca
+    if (termoBusca) {
+      const termo = termoBusca.toLowerCase();
+      statusFiltrados = statusFiltrados.filter(status =>
+        status.projeto?.nome_projeto?.toLowerCase().includes(termo) ||
+        status.status_geral?.toLowerCase().includes(termo) ||
+        status.realizado_semana_atual?.toLowerCase().includes(termo)
       );
     }
 
-    // Filtrar por status de aprovação
-    if (filtros.statusAprovacao && filtros.statusAprovacao !== 'todos') {
-      if (filtros.statusAprovacao === 'aguardando') {
-        filtrados = filtrados.filter(status => status.aprovado === false);
-      } else if (filtros.statusAprovacao === 'aprovado') {
-        filtrados = filtrados.filter(status => status.aprovado === true);
-      }
-    }
+    // Paginação
+    const totalItens = statusFiltrados.length;
+    const totalPaginas = Math.ceil(totalItens / itensPorPagina);
+    const inicio = (paginaAtual - 1) * itensPorPagina;
+    const statusPaginados = statusFiltrados.slice(inicio, inicio + itensPorPagina);
 
-    // Filtrar por data de início
-    if (filtros.dataInicio) {
-      filtrados = filtrados.filter(status => 
-        status.data_atualizacao >= filtros.dataInicio!
-      );
-    }
+    return {
+      status: statusPaginados,
+      totalItens,
+      totalPaginas
+    };
+  }, [statusList, filtros, termoBusca, paginaAtual, itensPorPagina]);
 
-    // Filtrar por data de fim
-    if (filtros.dataFim) {
-      filtrados = filtrados.filter(status => 
-        status.data_atualizacao <= filtros.dataFim!
-      );
-    }
-
-    // Filtrar por busca
-    if (filtros.busca) {
-      const termoBusca = filtros.busca.toLowerCase();
-      filtrados = filtrados.filter(status =>
-        status.projeto?.nome_projeto.toLowerCase().includes(termoBusca) ||
-        status.projeto?.area_responsavel.toLowerCase().includes(termoBusca) ||
-        status.criado_por.toLowerCase().includes(termoBusca) ||
-        status.realizado_semana_atual?.toLowerCase().includes(termoBusca)
-      );
-    }
-
-    return filtrados;
-  }, [statusList, filtros]);
+  return {
+    data: dados,
+    isLoading,
+    error,
+    refetch
+  };
 }

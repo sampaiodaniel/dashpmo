@@ -170,7 +170,7 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <Label htmlFor="responsavel_asa">Responsável ASA (Superintendente)</Label>
+            <Label htmlFor="responsavel_asa">Responsável ASA</Label>
             <Select value={formData.responsavel_asa} onValueChange={(value) => handleInputChange('responsavel_asa', value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione um responsável ASA" />
@@ -187,10 +187,10 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
           </div>
 
           <div>
-            <Label htmlFor="gp_responsavel_cwi">GP Responsável CWI</Label>
+            <Label htmlFor="gp_responsavel_cwi">Chefe do Projeto</Label>
             <Select value={formData.gp_responsavel_cwi} onValueChange={(value) => handleInputChange('gp_responsavel_cwi', value)}>
               <SelectTrigger>
-                <SelectValue placeholder="Selecione um GP responsável CWI" />
+                <SelectValue placeholder="Selecione um chefe do projeto" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">Nenhum</SelectItem>
@@ -204,10 +204,10 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
           </div>
 
           <div>
-            <Label htmlFor="responsavel_cwi">Responsável CWI</Label>
+            <Label htmlFor="responsavel_cwi">Responsável</Label>
             <Select value={formData.responsavel_cwi} onValueChange={(value) => handleInputChange('responsavel_cwi', value)}>
               <SelectTrigger>
-                <SelectValue placeholder="Selecione um responsável CWI" />
+                <SelectValue placeholder="Selecione um responsável" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">Nenhum</SelectItem>
