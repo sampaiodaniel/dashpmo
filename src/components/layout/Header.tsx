@@ -79,12 +79,14 @@ export function Header({ onToggleSidebar }: HeaderProps) {
         </Button>
         
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-pmo-primary rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-sm">PMO</span>
-          </div>
+          <img 
+            src="/lovable-uploads/f0e94f5b-d465-4cff-932b-0a29b68665fa.png" 
+            alt="ASA" 
+            className="w-8 h-8"
+          />
           <div>
-            <h1 className="text-xl font-bold text-pmo-primary">Sistema PMO</h1>
-            <p className="text-xs text-pmo-gray">Gestão de Projetos Corporativo</p>
+            <h1 className="text-xl font-bold text-pmo-primary">DashPMO</h1>
+            <p className="text-xs text-pmo-gray">Gestão de Projetos de TI</p>
           </div>
         </div>
       </div>

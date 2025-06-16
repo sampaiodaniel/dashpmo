@@ -14,9 +14,11 @@ interface HistoricoProjetoModalProps {
 }
 
 export function HistoricoProjetoModal({ projetoId, nomeProjeto, aberto, onFechar }: HistoricoProjetoModalProps) {
-  const { data: historico, isLoading } = useQuery({
+  const { data: historico, isLoading, error } = useQuery({
     queryKey: ['historico-projeto', projetoId],
     queryFn: async (): Promise<StatusProjeto[]> => {
+      console.log('Buscando histórico para projeto:', projetoId);
+      
       const { data, error } = await supabase
         .from('status_projeto')
         .select('*')
@@ -28,6 +30,8 @@ export function HistoricoProjetoModal({ projetoId, nomeProjeto, aberto, onFechar
         throw error;
       }
 
+      console.log('Histórico encontrado:', data?.length || 0, 'registros');
+
       return data?.map(status => ({
         ...status,
         data_atualizacao: new Date(status.data_atualizacao),
@@ -38,8 +42,12 @@ export function HistoricoProjetoModal({ projetoId, nomeProjeto, aberto, onFechar
         data_aprovacao: status.data_aprovacao ? new Date(status.data_aprovacao) : undefined
       })) || [];
     },
-    enabled: aberto
+    enabled: aberto && !!projetoId
   });
+
+  if (error) {
+    console.error('Erro na query do histórico:', error);
+  }
 
   return (
     <Dialog open={aberto} onOpenChange={onFechar}>
@@ -51,6 +59,10 @@ export function HistoricoProjetoModal({ projetoId, nomeProjeto, aberto, onFechar
         {isLoading ? (
           <div className="text-center py-8 text-pmo-gray">
             Carregando histórico...
+          </div>
+        ) : error ? (
+          <div className="text-center py-8 text-red-600">
+            Erro ao carregar histórico: {error.message}
           </div>
         ) : historico && historico.length > 0 ? (
           <div className="space-y-4">
@@ -114,10 +126,10 @@ export function HistoricoProjetoModal({ projetoId, nomeProjeto, aberto, onFechar
                   </div>
                 </div>
 
-                {status.realizado_semana_atual && (
+                {status.entregas_realizadas && (
                   <div className="mb-3">
-                    <span className="text-sm font-medium text-pmo-gray">Realizado na Semana:</span>
-                    <p className="text-sm text-gray-700 mt-1">{status.realizado_semana_atual}</p>
+                    <span className="text-sm font-medium text-pmo-gray">Itens Trabalhados na Semana:</span>
+                    <p className="text-sm text-gray-700 mt-1">{status.entregas_realizadas}</p>
                   </div>
                 )}
 
@@ -128,10 +140,10 @@ export function HistoricoProjetoModal({ projetoId, nomeProjeto, aberto, onFechar
                   </div>
                 )}
 
-                {status.observacoes_pontos_atencao && (
+                {status.observacoes_gerais && (
                   <div>
                     <span className="text-sm font-medium text-pmo-gray">Observações:</span>
-                    <p className="text-sm text-gray-700 mt-1">{status.observacoes_pontos_atencao}</p>
+                    <p className="text-sm text-gray-700 mt-1">{status.observacoes_gerais}</p>
                   </div>
                 )}
 

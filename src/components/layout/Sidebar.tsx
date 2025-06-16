@@ -1,3 +1,4 @@
+
 import { cn } from "@/lib/utils";
 import { 
   LayoutDashboard, 
@@ -60,10 +61,12 @@ export function Sidebar() {
   return (
     <div className="w-64 bg-white border-r border-gray-200 px-4 py-6">
       <div className="flex items-center gap-2 mb-8">
-        <div className="w-8 h-8 bg-pmo-primary rounded-lg flex items-center justify-center">
-          <span className="text-white font-bold text-sm">PMO</span>
-        </div>
-        <h1 className="text-xl font-bold text-pmo-primary">Sistema PMO</h1>
+        <img 
+          src="/lovable-uploads/3f5604a8-d619-401e-b7fe-5e07879367d1.png" 
+          alt="DashPMO" 
+          className="w-8 h-8"
+        />
+        <h1 className="text-xl font-bold text-pmo-primary">DashPMO</h1>
       </div>
       
       <nav className="space-y-2">
