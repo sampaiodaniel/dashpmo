@@ -56,14 +56,15 @@ export default function Licoes() {
         <LicoesHeader onNovaLicao={handleNovaLicao} />
         <LicoesMetricas 
           totalLicoes={licoes?.length || 0}
-          boasPraticas={licoes?.filter(l => l.categoria_licao === 'Boas Práticas').length || 0}
+          boasPraticas={licoes?.filter(l => l.categoria_licao === 'Planejamento').length || 0}
           pontosAtencao={licoes?.filter(l => l.status_aplicacao === 'Não aplicada').length || 0}
         />
         
         <div className="space-y-4">
           <LicoesSearchBar 
-            value={searchTerm}
-            onChange={setSearchTerm}
+            termoBusca={searchTerm}
+            onTermoBuscaChange={setSearchTerm}
+            totalResults={licoesFiltradas?.length || 0}
           />
           
           <LicoesFilters 
@@ -84,3 +85,4 @@ export default function Licoes() {
     </Layout>
   );
 }
+

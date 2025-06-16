@@ -1,4 +1,5 @@
 
+
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -101,10 +102,34 @@ export function useNovoStatusForm() {
     
     try {
       const statusData = {
-        ...data,
+        projeto_id: data.projeto_id,
+        carteira_primaria: data.carteira_primaria,
+        carteira_secundaria: data.carteira_secundaria || null,
+        carteira_terciaria: data.carteira_terciaria || null,
+        status_geral: data.status_geral,
+        status_visao_gp: data.status_visao_gp,
+        probabilidade_riscos: data.probabilidade_riscos,
+        impacto_riscos: data.impacto_riscos,
+        backlog: data.backlog || null,
+        bloqueios_atuais: data.bloqueios_atuais || null,
+        entregas_realizadas: data.entregas_realizadas || null,
+        proximas_entregas: data.proximas_entregas || null,
+        marcos_projeto: data.marcos_projeto || null,
+        riscos_identificados: data.riscos_identificados || null,
+        mudancas_solicitadas: data.mudancas_solicitadas || null,
+        observacoes_gerais: data.observacoes_gerais || null,
+        marco1_nome: data.marco1_nome,
+        marco1_data: data.marco1_data,
+        marco1_responsavel: data.marco1_responsavel,
+        marco2_nome: data.marco2_nome || null,
+        marco2_data: data.marco2_data || null,
+        marco2_responsavel: data.marco2_responsavel || null,
+        marco3_nome: data.marco3_nome || null,
+        marco3_data: data.marco3_data || null,
+        marco3_responsavel: data.marco3_responsavel || null,
         criado_por: usuario.nome,
         data_criacao: new Date().toISOString(),
-        data_atualizacao: new Date().toISOString(),
+        data_atualizacao: new Date().toISOString().split('T')[0], // Only date part
       };
 
       const { error } = await supabase
@@ -152,3 +177,4 @@ export function useNovoStatusForm() {
     handleProjetoChange,
   };
 }
+
