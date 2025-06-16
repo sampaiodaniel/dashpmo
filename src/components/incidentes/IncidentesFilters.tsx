@@ -26,7 +26,7 @@ export function IncidentesFilters({ responsavelSelecionado, onResponsavelChange 
               {isLoading ? (
                 <SelectItem value="loading" disabled>Carregando...</SelectItem>
               ) : (
-                responsaveisASA?.map((responsavel) => (
+                responsaveisASA?.filter(responsavel => responsavel && responsavel.trim() !== '').map((responsavel) => (
                   <SelectItem key={responsavel} value={responsavel}>
                     {responsavel}
                   </SelectItem>

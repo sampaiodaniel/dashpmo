@@ -49,16 +49,6 @@ function StatusContent() {
     refetch();
   };
 
-  const filtrarAguardandoRevisao = () => {
-    setFiltros({ ...filtros, statusAprovacao: 'aguardando' });
-    setPaginaAtual(1);
-  };
-
-  const filtrarRevisadosHoje = () => {
-    setFiltros({ ...filtros, statusAprovacao: 'aprovado' });
-    setPaginaAtual(1);
-  };
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -114,6 +104,7 @@ function StatusContent() {
           <StatusSearchBar
             termoBusca={termoBusca}
             onTermoBuscaChange={handleBuscarChange}
+            totalResults={status.length}
           />
 
           {status.length === 0 ? (

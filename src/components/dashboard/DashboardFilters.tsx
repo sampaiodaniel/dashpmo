@@ -16,7 +16,7 @@ export function DashboardFilters({ filtros, onFiltroChange }: DashboardFiltersPr
 
   const handleCarteiraChange = (value: string) => {
     const novosFiltros = { ...filtros };
-    if (value === 'Todas') {
+    if (value === 'todas' || !value) {
       delete novosFiltros.carteira;
     } else {
       novosFiltros.carteira = value;
@@ -26,7 +26,7 @@ export function DashboardFilters({ filtros, onFiltroChange }: DashboardFiltersPr
 
   const handleResponsavelChange = (value: string) => {
     const novosFiltros = { ...filtros };
-    if (value === 'todos') {
+    if (value === 'todos' || !value) {
       delete novosFiltros.responsavel_asa;
     } else {
       novosFiltros.responsavel_asa = value;
@@ -41,16 +41,16 @@ export function DashboardFilters({ filtros, onFiltroChange }: DashboardFiltersPr
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <label className="text-sm font-medium text-pmo-gray">Carteira</label>
-          <Select value={filtros.carteira || 'Todas'} onValueChange={handleCarteiraChange}>
+          <Select value={filtros.carteira || 'todas'} onValueChange={handleCarteiraChange}>
             <SelectTrigger>
               <SelectValue placeholder="Selecione uma carteira" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="Todas">Todas as carteiras</SelectItem>
+              <SelectItem value="todas">Todas as carteiras</SelectItem>
               {loadingCarteiras ? (
-                <SelectItem value="" disabled>Carregando...</SelectItem>
+                <SelectItem value="loading" disabled>Carregando...</SelectItem>
               ) : (
-                carteiras?.map((carteira) => (
+                carteiras?.filter(carteira => carteira && carteira.trim() !== '').map((carteira) => (
                   <SelectItem key={carteira} value={carteira}>
                     {carteira}
                   </SelectItem>
@@ -69,9 +69,9 @@ export function DashboardFilters({ filtros, onFiltroChange }: DashboardFiltersPr
             <SelectContent>
               <SelectItem value="todos">Todos os responsáveis</SelectItem>
               {loadingResponsaveis ? (
-                <SelectItem value="" disabled>Carregando...</SelectItem>
+                <SelectItem value="loading" disabled>Carregando...</SelectItem>
               ) : (
-                responsaveisASA?.map((responsavel) => (
+                responsaveisASA?.filter(responsavel => responsavel && responsavel.trim() !== '').map((responsavel) => (
                   <SelectItem key={responsavel} value={responsavel}>
                     {responsavel}
                   </SelectItem>
