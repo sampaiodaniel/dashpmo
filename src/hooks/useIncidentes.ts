@@ -79,17 +79,21 @@ export function useIncidenteOperations() {
         .limit(1)
         .single();
 
-      // O valor "anterior" deve ser o "atual" do último registro, ou 0 se for o primeiro
-      const anterior = ultimoRegistro?.atual || 0;
+      // Implementar as regras de negócio:
+      // 1. O valor "anterior" deve ser o "atual" do último registro, ou 0 se for o primeiro
+      const anteriorCalculado = ultimoRegistro?.atual || 0;
+      
+      // 2. O valor "atual" deve ser: anterior + entradas - saídas
+      const atualCalculado = anteriorCalculado + data.entrada - data.saida;
       
       const { data: result, error } = await supabase
         .from('incidentes')
         .insert([{
           carteira: data.carteira,
-          anterior: anterior,
+          anterior: anteriorCalculado,
           entrada: data.entrada,
           saida: data.saida,
-          atual: data.atual,
+          atual: atualCalculado, // Usar o valor calculado
           mais_15_dias: data.mais_15_dias,
           criticos: data.criticos,
           criado_por: data.criado_por,
@@ -104,6 +108,8 @@ export function useIncidenteOperations() {
       }
 
       console.log('Incidente criado com sucesso:', result);
+      console.log(`Carteira: ${data.carteira}, Anterior: ${anteriorCalculado}, Entradas: ${data.entrada}, Saídas: ${data.saida}, Atual: ${atualCalculado}`);
+      
       return result;
     },
     onSuccess: () => {
