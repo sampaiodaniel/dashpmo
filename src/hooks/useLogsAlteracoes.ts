@@ -24,7 +24,8 @@ export function useLogsAlteracoes() {
       
       return data?.map(log => ({
         ...log,
-        data_criacao: new Date(log.data_criacao)
+        data_criacao: new Date(log.data_criacao),
+        ip_usuario: log.ip_usuario as string || undefined
       })) || [];
     },
   });

@@ -5,14 +5,19 @@ import { Layout } from '@/components/layout/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart3, Download, FileText, Calendar, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useRelatorios } from '@/hooks/useRelatorios';
+import { useRelatorioASA, DadosRelatorioASA } from '@/hooks/useRelatorioASA';
 import { ReportWebhookModal } from '@/components/relatorios/ReportWebhookModal';
+import { RelatorioASAViewer } from '@/components/relatorios/RelatorioASAViewer';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useState } from 'react';
 
 export default function Relatorios() {
   const { usuario, isLoading } = useAuth();
-  const { gerarRelatorio, isLoading: gerandoRelatorio } = useRelatorios();
+  const { gerarRelatorioCarteira, gerarRelatorioGeral, isLoading: gerandoRelatorio, carteiras } = useRelatorioASA();
   const [showWebhookModal, setShowWebhookModal] = useState(false);
+  const [showRelatorioViewer, setShowRelatorioViewer] = useState(false);
+  const [dadosRelatorio, setDadosRelatorio] = useState<DadosRelatorioASA | null>(null);
+  const [carteiraSelecionada, setCarteiraSelecionada] = useState<string>('');
 
   if (isLoading) {
     return (
@@ -31,6 +36,24 @@ export default function Relatorios() {
     return <LoginForm />;
   }
 
+  const handleGerarRelatorioCarteira = async () => {
+    if (!carteiraSelecionada) return;
+    
+    const dados = await gerarRelatorioCarteira(carteiraSelecionada);
+    if (dados) {
+      setDadosRelatorio(dados);
+      setShowRelatorioViewer(true);
+    }
+  };
+
+  const handleGerarRelatorioGeral = async () => {
+    const dados = await gerarRelatorioGeral();
+    if (dados) {
+      setDadosRelatorio(dados);
+      setShowRelatorioViewer(true);
+    }
+  };
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -40,10 +63,66 @@ export default function Relatorios() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="hover:shadow-md transition-shadow cursor-pointer">
+          <Card className="hover:shadow-md transition-shadow">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <BarChart3 className="h-5 w-5 text-pmo-primary" />
+                Relatório ASA Geral
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-pmo-gray mb-4">Relatório completo de todas as carteiras</p>
+              <Button 
+                size="sm" 
+                className="w-full"
+                onClick={handleGerarRelatorioGeral}
+                disabled={gerandoRelatorio}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                {gerandoRelatorio ? 'Gerando...' : 'Gerar Relatório'}
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-md transition-shadow">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5 text-pmo-primary" />
+                Relatório por Carteira
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-pmo-gray mb-4">Relatório específico de uma carteira</p>
+              <div className="space-y-2">
+                <Select value={carteiraSelecionada} onValueChange={setCarteiraSelecionada}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione uma carteira" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {carteiras.map((carteira) => (
+                      <SelectItem key={carteira} value={carteira}>
+                        {carteira}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button 
+                  size="sm" 
+                  className="w-full"
+                  onClick={handleGerarRelatorioCarteira}
+                  disabled={gerandoRelatorio || !carteiraSelecionada}
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  {gerandoRelatorio ? 'Gerando...' : 'Gerar Relatório'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-md transition-shadow cursor-pointer">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="h-5 w-5 text-pmo-primary" />
                 Dashboard Executivo
               </CardTitle>
             </CardHeader>
@@ -52,49 +131,7 @@ export default function Relatorios() {
               <Button 
                 size="sm" 
                 className="w-full"
-                onClick={() => gerarRelatorio('dashboard')}
-                disabled={gerandoRelatorio}
-              >
-                <Download className="h-4 w-4 mr-2" />
-                {gerandoRelatorio ? 'Gerando...' : 'Gerar Relatório'}
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-md transition-shadow cursor-pointer">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5 text-pmo-primary" />
-                Status Semanal
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-pmo-gray mb-4">Relatório semanal de progresso</p>
-              <Button 
-                size="sm" 
-                className="w-full"
-                onClick={() => gerarRelatorio('semanal')}
-                disabled={gerandoRelatorio}
-              >
-                <Download className="h-4 w-4 mr-2" />
-                {gerandoRelatorio ? 'Gerando...' : 'Gerar Relatório'}
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-md transition-shadow cursor-pointer">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-pmo-primary" />
-                Cronograma
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-pmo-gray mb-4">Cronograma detalhado dos projetos</p>
-              <Button 
-                size="sm" 
-                className="w-full"
-                onClick={() => gerarRelatorio('cronograma')}
+                onClick={handleGerarRelatorioGeral}
                 disabled={gerandoRelatorio}
               >
                 <Download className="h-4 w-4 mr-2" />
@@ -140,6 +177,12 @@ export default function Relatorios() {
         <ReportWebhookModal 
           isOpen={showWebhookModal}
           onClose={() => setShowWebhookModal(false)}
+        />
+
+        <RelatorioASAViewer 
+          isOpen={showRelatorioViewer}
+          onClose={() => setShowRelatorioViewer(false)}
+          dados={dadosRelatorio}
         />
       </div>
     </Layout>

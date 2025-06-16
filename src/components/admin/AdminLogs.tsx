@@ -207,7 +207,7 @@ export function AdminLogs() {
                           <FileText className="h-4 w-4 text-gray-400" />
                         )}
                         {log.user_agent && (
-                          <Monitor className="h-4 w-4 text-gray-400" title="User Agent disponível" />
+                          <Monitor className="h-4 w-4 text-gray-400" />
                         )}
                         {log.entidade_id && (
                           <span className="text-xs text-gray-500">ID: {log.entidade_id}</span>
