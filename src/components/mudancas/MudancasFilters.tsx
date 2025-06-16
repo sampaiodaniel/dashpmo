@@ -45,22 +45,22 @@ export function MudancasFilters({ filtros, onFiltrosChange }: MudancasFiltersPro
   };
 
   return (
-    <Card className="bg-white shadow-sm border-gray-200">
+    <Card>
       <CardContent className="p-4">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4 text-pmo-gray" />
-            <span className="text-sm font-medium text-pmo-gray">Filtros:</span>
+            <Filter className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm font-medium text-muted-foreground">Filtros:</span>
           </div>
           
           <div className="flex gap-4">
             <div className="flex items-center gap-2">
-              <label className="text-sm text-pmo-gray">Status:</label>
+              <label className="text-sm text-muted-foreground">Status:</label>
               <Select value={filtros.status || 'todos'} onValueChange={handleStatusChange}>
-                <SelectTrigger className="w-40 bg-white border-gray-300">
+                <SelectTrigger className="w-40">
                   <SelectValue placeholder="Todos" />
                 </SelectTrigger>
-                <SelectContent className="bg-white">
+                <SelectContent>
                   <SelectItem value="todos">Todos</SelectItem>
                   <SelectItem value="Pendente">Pendente</SelectItem>
                   <SelectItem value="Em Análise">Em Análise</SelectItem>
@@ -71,12 +71,12 @@ export function MudancasFilters({ filtros, onFiltrosChange }: MudancasFiltersPro
             </div>
 
             <div className="flex items-center gap-2">
-              <label className="text-sm text-pmo-gray">Carteira:</label>
+              <label className="text-sm text-muted-foreground">Carteira:</label>
               <Select value={filtros.carteira || 'todas'} onValueChange={handleCarteiraChange}>
-                <SelectTrigger className="w-40 bg-white border-gray-300">
+                <SelectTrigger className="w-40">
                   <SelectValue placeholder="Todas" />
                 </SelectTrigger>
-                <SelectContent className="bg-white">
+                <SelectContent>
                   <SelectItem value="todas">Todas</SelectItem>
                   {CARTEIRAS.map((carteira) => (
                     <SelectItem key={carteira} value={carteira}>
@@ -88,12 +88,12 @@ export function MudancasFilters({ filtros, onFiltrosChange }: MudancasFiltersPro
             </div>
 
             <div className="flex items-center gap-2">
-              <label className="text-sm text-pmo-gray">Responsável:</label>
+              <label className="text-sm text-muted-foreground">Responsável:</label>
               <Select value={filtros.responsavel_asa || 'todos'} onValueChange={handleResponsavelChange}>
-                <SelectTrigger className="w-40 bg-white border-gray-300">
+                <SelectTrigger className="w-40">
                   <SelectValue placeholder="Todos" />
                 </SelectTrigger>
-                <SelectContent className="bg-white">
+                <SelectContent>
                   <SelectItem value="todos">Todos</SelectItem>
                   {RESPONSAVEIS_ASA.map((responsavel) => (
                     <SelectItem key={responsavel} value={responsavel}>
