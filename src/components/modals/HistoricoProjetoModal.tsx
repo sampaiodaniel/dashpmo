@@ -17,7 +17,7 @@ export function HistoricoProjetoModal({ projetoId, nomeProjeto, aberto, onFechar
   const { data: historico, isLoading, error } = useQuery({
     queryKey: ['historico-projeto', projetoId],
     queryFn: async (): Promise<StatusProjeto[]> => {
-      console.log('Buscando histórico para projeto:', projetoId);
+      console.log('🔍 Buscando histórico para projeto ID:', projetoId);
       
       const { data, error } = await supabase
         .from('status_projeto')
@@ -26,11 +26,12 @@ export function HistoricoProjetoModal({ projetoId, nomeProjeto, aberto, onFechar
         .order('data_atualizacao', { ascending: false });
 
       if (error) {
-        console.error('Erro ao buscar histórico:', error);
+        console.error('❌ Erro ao buscar histórico:', error);
         throw error;
       }
 
-      console.log('Histórico encontrado:', data?.length || 0, 'registros');
+      console.log('✅ Histórico encontrado:', data?.length || 0, 'registros para projeto', projetoId);
+      console.log('📊 Dados do histórico:', data);
 
       return data?.map(status => ({
         ...status,
@@ -46,7 +47,7 @@ export function HistoricoProjetoModal({ projetoId, nomeProjeto, aberto, onFechar
   });
 
   if (error) {
-    console.error('Erro na query do histórico:', error);
+    console.error('💥 Erro na query do histórico:', error);
   }
 
   return (
@@ -159,6 +160,7 @@ export function HistoricoProjetoModal({ projetoId, nomeProjeto, aberto, onFechar
           <div className="text-center py-8 text-pmo-gray">
             <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
             <p>Nenhum status encontrado para este projeto.</p>
+            <p className="text-xs mt-2">ID do projeto: {projetoId}</p>
           </div>
         )}
       </DialogContent>

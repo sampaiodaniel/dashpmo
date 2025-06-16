@@ -60,11 +60,11 @@ export function Sidebar() {
 
   return (
     <div className="w-64 bg-white border-r border-gray-200 px-4 py-6">
-      <div className="flex items-center justify-center mb-8">
+      <div className="flex items-center justify-center mb-8 px-4">
         <img 
-          src="/lovable-uploads/3f5604a8-d619-401e-b7fe-5e07879367d1.png" 
+          src="/lovable-uploads/48bf655c-460e-490c-9118-e222b43f0c9d.png" 
           alt="DashPMO" 
-          className="h-12 w-auto"
+          className="h-16 w-auto max-w-full"
         />
       </div>
       
