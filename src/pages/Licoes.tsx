@@ -65,17 +65,6 @@ export default function Licoes() {
     setNovaLicaoModalAberto(false);
   };
 
-  // Transform data to match LicaoItem interface
-  const licoesTransformed = licoesFiltradas?.map(licao => ({
-    ...licao,
-    data_registro: licao.data_registro.toISOString().split('T')[0]
-  })) || [];
-
-  const handleLicaoClick = (licaoId: number) => {
-    console.log('Clicou na lição:', licaoId);
-    // Implementar navegação para detalhes da lição quando necessário
-  };
-
   return (
     <Layout>
       <div className="space-y-6">
@@ -85,7 +74,7 @@ export default function Licoes() {
           <LicoesSearchBar 
             termoBusca={busca}
             onTermoBuscaChange={setBusca}
-            totalResults={licoesTransformed.length}
+            totalResults={licoesFiltradas?.length || 0}
           />
           
           <LicoesFilters 
@@ -95,12 +84,7 @@ export default function Licoes() {
         </div>
 
         <LicoesList 
-          licoes={licoesTransformed}
-          isLoading={isLoadingLicoes}
-          error={null}
-          termoBusca={busca}
-          filtrosAplicados={Object.keys(filtros).some(key => filtros[key as keyof typeof filtros])}
-          onLicaoClick={handleLicaoClick}
+          licoes={licoesFiltradas || []}
         />
 
         <NovaLicaoModal 

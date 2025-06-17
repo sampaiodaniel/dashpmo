@@ -10,10 +10,16 @@ import { StatusAcoes } from './StatusAcoes';
 interface StatusCardProps {
   status: StatusProjeto;
   onUpdate?: () => void;
+  onStatusUpdate?: () => void;
 }
 
-export function StatusCard({ status, onUpdate }: StatusCardProps) {
+export function StatusCard({ status, onUpdate, onStatusUpdate }: StatusCardProps) {
   const isRevisado = status.aprovado === true;
+
+  const handleUpdate = () => {
+    if (onUpdate) onUpdate();
+    if (onStatusUpdate) onStatusUpdate();
+  };
 
   return (
     <Card className="hover:shadow-md transition-shadow cursor-pointer border-l-4 border-l-pmo-primary">
@@ -24,13 +30,10 @@ export function StatusCard({ status, onUpdate }: StatusCardProps) {
               <CardTitle className="text-lg text-pmo-primary">
                 {status.projeto?.nome_projeto || 'Projeto não encontrado'}
               </CardTitle>
-              {status.projeto?.area_responsavel && (
-                <div className="flex items-center gap-2 bg-blue-50 px-3 py-1 rounded-lg border border-blue-200">
-                  <Building className="h-4 w-4 text-blue-600" />
-                  <span className="font-semibold text-blue-700 text-sm">
-                    {status.projeto.area_responsavel}
-                  </span>
-                </div>
+              {status.projeto?.carteira_primaria && (
+                <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 font-medium">
+                  {status.projeto.carteira_primaria}
+                </Badge>
               )}
             </div>
             
@@ -70,7 +73,7 @@ export function StatusCard({ status, onUpdate }: StatusCardProps) {
           </div>
           
           <div className="flex items-center gap-2 ml-4">
-            <StatusAcoes status={status} onUpdate={onUpdate} />
+            <StatusAcoes status={status} onUpdate={handleUpdate} />
           </div>
         </div>
       </CardHeader>
