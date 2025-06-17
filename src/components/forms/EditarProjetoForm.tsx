@@ -30,6 +30,8 @@ const GPS_RESPONSAVEIS = [
 ];
 
 export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps) {
+  console.log('📋 EditarProjetoForm iniciado com projeto:', projeto);
+  
   const queryClient = useQueryClient();
   const [carregando, setCarregando] = useState(false);
   
@@ -37,11 +39,13 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
   const { data: responsaveisASA } = useResponsaveisASA();
   const { data: tiposProjeto } = useTiposProjeto();
   
+  console.log('📊 Dados carregados:', { responsaveisASA, tiposProjeto });
+  
   // Filtrar apenas superintendentes
   const superintendentes = responsaveisASA?.filter(resp => resp.nivel === 'Superintendente') || [];
   
   const [formData, setFormData] = useState({
-    nome_projeto: projeto.nome_projeto,
+    nome_projeto: projeto.nome_projeto || '',
     tipo_projeto_id: projeto.tipo_projeto_id || null,
     descricao_projeto: projeto.descricao_projeto || '',
     responsavel_asa: projeto.responsavel_asa || 'none',
@@ -54,8 +58,11 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
     finalizacao_prevista: projeto.finalizacao_prevista && projeto.finalizacao_prevista !== 'TBD' ? projeto.finalizacao_prevista : '',
   });
 
+  console.log('📝 FormData inicial:', formData);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('🚀 Enviando formulário:', formData);
     setCarregando(true);
 
     try {
@@ -87,7 +94,7 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
         .eq('id', projeto.id);
 
       if (error) {
-        console.error('Erro ao atualizar projeto:', error);
+        console.error('❌ Erro ao atualizar projeto:', error);
         toast({
           title: "Erro",
           description: "Erro ao atualizar projeto",
@@ -96,6 +103,7 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
         return;
       }
 
+      console.log('✅ Projeto atualizado com sucesso');
       toast({
         title: "Sucesso",
         description: "Projeto atualizado com sucesso!",
@@ -104,7 +112,7 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
       queryClient.invalidateQueries({ queryKey: ['projetos'] });
       onSuccess();
     } catch (error) {
-      console.error('Erro inesperado:', error);
+      console.error('💥 Erro inesperado:', error);
       toast({
         title: "Erro",
         description: "Erro inesperado ao atualizar projeto",
@@ -116,8 +124,14 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
   };
 
   const handleInputChange = (field: string, value: string | Date | null | boolean | number) => {
+    console.log('🔄 Campo alterado:', { field, value });
     setFormData(prev => ({ ...prev, [field]: value }));
   };
+
+  if (!projeto) {
+    console.error('❌ Projeto não encontrado no EditarProjetoForm');
+    return <div>Projeto não encontrado</div>;
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -147,7 +161,7 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
                 <SelectValue placeholder="Selecione o tipo de projeto" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Nenhum</SelectItem>
+                <SelectItem value="nenhum">Nenhum</SelectItem>
                 {tiposProjeto?.map((tipo) => (
                   <SelectItem key={tipo.id} value={tipo.id.toString()}>
                     {tipo.nome}

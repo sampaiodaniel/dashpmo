@@ -14,9 +14,17 @@ interface EditarProjetoModalProps {
 export function EditarProjetoModal({ projeto, aberto, onFechar }: EditarProjetoModalProps) {
   const { atualizarProjeto, isLoading } = useProjetosOperations();
 
+  console.log('📝 EditarProjetoModal renderizado:', { projeto, aberto });
+
   const handleSuccess = () => {
+    console.log('✅ Projeto editado com sucesso');
     onFechar();
   };
+
+  if (!projeto) {
+    console.error('❌ Projeto não encontrado no EditarProjetoModal');
+    return null;
+  }
 
   return (
     <Dialog open={aberto} onOpenChange={onFechar}>
