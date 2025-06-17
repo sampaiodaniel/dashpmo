@@ -20,7 +20,7 @@ const statusFormSchema = z.object({
   bloqueios_atuais: z.string().optional(),
   observacoes_gerais: z.string().optional(),
   marco1_nome: z.string().min(1, "Nome da entrega do Marco 1 é obrigatório"),
-  marco1_data: z.string().min(1, "Data de entrega do Marco 1 é obrigatória"),
+  marco1_data: z.string().refine((val) => val === 'TBD' || val.length > 0, "Data de entrega do Marco 1 é obrigatória"),
   marco1_responsavel: z.string().min(1, "Entregáveis do Marco 1 são obrigatórios"),
   marco2_nome: z.string().optional(),
   marco2_data: z.string().optional(),
@@ -39,7 +39,7 @@ export function useNovoStatusForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [carteiraSelecionada, setCarteiraSelecionada] = useState('');
   const [projetoSelecionado, setProjetoSelecionado] = useState<number | null>(null);
-  const [progressoEstimado, setProgressoEstimado] = useState<number>(1); // Changed from 5% to 1%
+  const [progressoEstimado, setProgressoEstimado] = useState<number>(1);
 
   const { data: carteiras } = useCarteiraOverview();
   const { data: projetos } = useProjetos();
@@ -99,7 +99,7 @@ export function useNovoStatusForm() {
     try {
       const statusData = {
         criado_por: usuario.nome,
-        aprovado: false, // Set to false instead of null
+        aprovado: false,
         projeto_id: projetoSelecionado,
         status_geral: data.status_geral as "Aguardando Aprovação" | "Aguardando Homologação" | "Cancelado" | "Concluído" | "Em Andamento" | "Em Especificação" | "Pausado" | "Planejamento",
         status_visao_gp: data.status_visao_gp as "Verde" | "Amarelo" | "Vermelho",

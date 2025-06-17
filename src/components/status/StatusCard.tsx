@@ -5,6 +5,7 @@ import { StatusProjeto, getStatusColor, getStatusGeralColor } from '@/types/pmo'
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
+import { formatarData } from '@/utils/dateFormatting';
 
 interface StatusCardProps {
   status: StatusProjeto;
@@ -28,29 +29,6 @@ export function StatusCard({ status, onUpdate, onStatusUpdate }: StatusCardProps
 
   const handleCardClick = () => {
     navigate(`/status/${status.id}`);
-  };
-
-  // Função para formatar data da próxima entrega
-  const formatarProximaEntrega = (data: any) => {
-    if (!data) return '';
-    
-    if (data === 'TBD') return 'TBD';
-    
-    // Se for string no formato YYYY-MM-DD, formatar diretamente
-    if (typeof data === 'string') {
-      const match = data.match(/(\d{4})-(\d{2})-(\d{2})/);
-      if (match) {
-        const [, year, month, day] = match;
-        return `${day}/${month}/${year}`;
-      }
-    }
-    
-    // Se for objeto Date
-    if (data instanceof Date) {
-      return format(data, 'dd/MM/yyyy', { locale: ptBR });
-    }
-    
-    return '';
   };
 
   return (
@@ -94,11 +72,9 @@ export function StatusCard({ status, onUpdate, onStatusUpdate }: StatusCardProps
             <div>
               <span className="font-semibold">Chefe do Projeto: </span> {status.projeto?.gp_responsavel || 'N/A'}
             </div>
-            {status.data_marco1 && (
-              <div>
-                <span className="font-semibold">Próxima Entrega: </span> {formatarProximaEntrega(status.data_marco1)}
-              </div>
-            )}
+            <div>
+              <span className="font-semibold">Próxima Entrega: </span> {formatarData(status.data_marco1) || 'Não definida'}
+            </div>
           </div>
         </div>
         

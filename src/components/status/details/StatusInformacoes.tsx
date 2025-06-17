@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { getStatusVisaoColor } from '@/utils/statusColors';
 import { calcularMatrizRisco } from '@/utils/riskCalculation';
+import { formatarData } from '@/utils/dateFormatting';
 import { StatusProjeto } from '@/types/pmo';
 
 interface StatusInformacoesProps {
@@ -39,7 +40,7 @@ export function StatusInformacoes({ status }: StatusInformacoesProps) {
           </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
             <span className="text-sm font-medium text-pmo-gray">Probabilidade de Riscos:</span>
             <p className="text-gray-700">{status.probabilidade_riscos}</p>
@@ -58,6 +59,10 @@ export function StatusInformacoes({ status }: StatusInformacoesProps) {
               </div>
             </div>
           )}
+          <div>
+            <span className="text-sm font-medium text-pmo-gray">Próxima Entrega:</span>
+            <p className="text-gray-700">{formatarData(status.data_marco1) || 'Não definida'}</p>
+          </div>
         </div>
 
         <div>
