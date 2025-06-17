@@ -49,15 +49,15 @@ export default function Mudancas() {
           onFiltrarRejeitadas={() => {}}
         />
 
-        <div className="flex gap-6">
-          <div className="w-80 flex-shrink-0">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <div className="lg:col-span-1">
             <MudancasFilters 
               filtros={filtros}
               onFiltrosChange={setFiltros}
             />
           </div>
           
-          <div className="flex-1 space-y-6">
+          <div className="lg:col-span-3 space-y-6">
             <MudancasSearchBar
               termoBusca={termoBusca}
               onTermoBuscaChange={setTermoBusca}

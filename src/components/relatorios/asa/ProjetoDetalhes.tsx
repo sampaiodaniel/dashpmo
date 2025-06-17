@@ -91,31 +91,14 @@ export function ProjetoDetalhes({ projeto }: ProjetoDetalhesProps) {
         </Card>
       </div>
 
-      {/* Bloqueios - aparece apenas uma vez */}
-      {ultimoStatus.bloqueios_atuais && (
-        <Card className="bg-[#FEF2F2] border border-[#FECACA]">
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold text-[#EF4444] flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5" />
-              Bloqueios Atuais
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-[#7F1D1D] leading-relaxed">
-              {ultimoStatus.bloqueios_atuais}
-            </p>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Timeline do Projeto */}
-      <ProjetoTimeline projeto={projeto} />
+      <ProjetoTimeline ultimoStatus={ultimoStatus} />
 
       {/* Atividades */}
-      <ProjetoAtividades status={ultimoStatus} />
+      <ProjetoAtividades ultimoStatus={ultimoStatus} />
 
       {/* Milestones */}
-      <ProjetoMilestones status={ultimoStatus} />
+      <ProjetoMilestones ultimoStatus={ultimoStatus} />
     </div>
   );
 }

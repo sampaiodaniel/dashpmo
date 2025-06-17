@@ -244,7 +244,7 @@ export default function LicaoDetalhes() {
       <NovaLicaoModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
-        onLicaoCreated={handleEditSuccess}
+        onSuccess={handleEditSuccess}
         editingLicao={licao}
       />
     </>
