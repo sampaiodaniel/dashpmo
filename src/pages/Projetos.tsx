@@ -1,3 +1,4 @@
+
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
@@ -12,21 +13,31 @@ import { getStatusColor, getStatusGeralColor, FiltrosProjeto } from '@/types/pmo
 import { ProjetoFilters } from '@/components/projetos/ProjetoFilters';
 import { ProjetoAcoesAdmin } from '@/components/projetos/ProjetoAcoesAdmin';
 import { useNavigate } from 'react-router-dom';
+import { ProjetosKPIs } from '@/components/projetos/ProjetosKPIs';
+import { useProjetosFiltros } from '@/hooks/useProjetosFiltros';
 
 export default function Projetos() {
   const { usuario, isLoading: authLoading, isAdmin } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [filtros, setFiltros] = useState<FiltrosProjeto>({});
-  const { data: projetos, isLoading: projetosLoading, error: projetosError } = useProjetos(filtros);
   const [termoBusca, setTermoBusca] = useState('');
+
+  // Primeiro buscamos os projetos sem filtros para calcular as métricas
+  const { data: todosProjetos } = useProjetos({});
+  
+  // Gerenciamos os filtros com o hook personalizado
+  const { metricas, filtroAtivo, filtros, aplicarFiltro, setFiltros } = useProjetosFiltros(todosProjetos);
+  
+  // Buscamos os projetos filtrados
+  const { data: projetos, isLoading: projetosLoading, error: projetosError } = useProjetos(filtros);
 
   console.log('📋 Estado da página Projetos:', {
     projetos,
     projetosLoading,
     projetosError,
     quantidadeProjetos: projetos?.length || 0,
-    filtros
+    filtros,
+    filtroAtivo
   });
 
   const handleProjetoCriado = () => {
@@ -35,6 +46,10 @@ export default function Projetos() {
 
   const handleProjetoAtualizado = () => {
     queryClient.invalidateQueries({ queryKey: ['projetos'] });
+  };
+
+  const handleFiltroChange = (novosFiltros: FiltrosProjeto) => {
+    setFiltros(novosFiltros);
   };
 
   const projetosFiltrados = projetos?.filter(projeto =>
@@ -57,7 +72,7 @@ export default function Projetos() {
       <div className="min-h-screen bg-pmo-background flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 bg-pmo-primary rounded-xl flex items-center justify-center mx-auto mb-4">
-            <span className="text-white font-bold text-xl">PMO</span>
+            <span className="text-white font-bold text-xl">DashPMO</span>
           </div>
           <div className="text-pmo-gray">Carregando...</div>
         </div>
@@ -82,9 +97,16 @@ export default function Projetos() {
           </div>
         </div>
 
+        {/* KPIs dos Projetos */}
+        <ProjetosKPIs 
+          metricas={metricas}
+          filtroAtivo={filtroAtivo}
+          onFiltroClick={aplicarFiltro}
+        />
+
         <ProjetoFilters 
           filtros={filtros}
-          onFiltroChange={setFiltros}
+          onFiltroChange={handleFiltroChange}
           responsaveis={responsaveisUnicos}
         />
 
@@ -98,6 +120,11 @@ export default function Projetos() {
               onChange={(e) => setTermoBusca(e.target.value)}
             />
           </div>
+          {filtroAtivo && (
+            <div className="text-sm text-pmo-gray">
+              Filtro ativo: {filtroAtivo} ({projetosFiltrados.length} registros)
+            </div>
+          )}
         </div>
 
         <div className="bg-white rounded-lg shadow-sm border">
@@ -207,10 +234,10 @@ export default function Projetos() {
             <div className="text-center py-12 text-pmo-gray">
               <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p className="text-lg mb-2">
-                {termoBusca || Object.keys(filtros).length > 0 ? 'Nenhum projeto encontrado para sua busca' : 'Nenhum projeto encontrado'}
+                {termoBusca || filtroAtivo ? 'Nenhum projeto encontrado para sua busca' : 'Nenhum projeto encontrado'}
               </p>
               <p className="text-sm">
-                {termoBusca || Object.keys(filtros).length > 0 ? 'Tente alterar os filtros ou termos da busca' : 'Comece criando seu primeiro projeto'}
+                {termoBusca || filtroAtivo ? 'Tente alterar os filtros ou termos da busca' : 'Comece criando seu primeiro projeto'}
               </p>
             </div>
           )}
