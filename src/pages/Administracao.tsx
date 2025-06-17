@@ -4,12 +4,11 @@ import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
 import { AdminUsuarios } from '@/components/admin/AdminUsuarios';
 import { AdminResponsaveisASA } from '@/components/admin/AdminResponsaveisASA';
-import { AdminTiposProjeto } from '@/components/admin/AdminTiposProjeto';
 import { AdminConfiguracoes } from '@/components/admin/AdminConfiguracoes';
 import { AdminLogs } from '@/components/admin/AdminLogs';
 import { SeedTestData } from '@/components/admin/SeedTestData';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Settings, Users, Building, Shield, Activity, Database, FileType } from 'lucide-react';
+import { Settings, Users, Building, Shield, Activity, Database } from 'lucide-react';
 
 export default function Administracao() {
   const { usuario, isLoading: authLoading, isAdmin } = useAuth();
@@ -54,7 +53,7 @@ export default function Administracao() {
         </div>
 
         <Tabs defaultValue="usuarios" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="usuarios" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               Usuários
@@ -62,10 +61,6 @@ export default function Administracao() {
             <TabsTrigger value="responsaveis" className="flex items-center gap-2">
               <Building className="h-4 w-4" />
               Responsáveis ASA
-            </TabsTrigger>
-            <TabsTrigger value="tipos-projeto" className="flex items-center gap-2">
-              <FileType className="h-4 w-4" />
-              Tipos de Projeto
             </TabsTrigger>
             <TabsTrigger value="configuracoes" className="flex items-center gap-2">
               <Settings className="h-4 w-4" />
@@ -87,10 +82,6 @@ export default function Administracao() {
 
           <TabsContent value="responsaveis">
             <AdminResponsaveisASA />
-          </TabsContent>
-
-          <TabsContent value="tipos-projeto">
-            <AdminTiposProjeto />
           </TabsContent>
 
           <TabsContent value="configuracoes">
