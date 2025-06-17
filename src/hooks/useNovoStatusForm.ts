@@ -11,7 +11,7 @@ import { useProjetos } from './useProjetos';
 import { useCarteiraOverview } from './useCarteiraOverview';
 
 const statusFormSchema = z.object({
-  projeto_id: z.number().optional(),
+  projeto_id: z.number().min(1, "Projeto é obrigatório"),
   status_geral: z.string().min(1, "Status geral é obrigatório"),
   status_visao_gp: z.string().min(1, "Visão GP é obrigatória"),
   probabilidade_riscos: z.string().min(1, "Probabilidade de riscos é obrigatória"),
@@ -73,10 +73,19 @@ export function useNovoStatusForm() {
   });
 
   const onSubmit = async (data: StatusFormData) => {
-    if (!usuario || !projetoSelecionado) {
+    if (!usuario) {
       toast({
         title: "Erro",
-        description: "Usuário não autenticado ou projeto não selecionado",
+        description: "Usuário não autenticado",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!projetoSelecionado) {
+      toast({
+        title: "Erro",
+        description: "Selecione um projeto",
         variant: "destructive",
       });
       return;
@@ -101,22 +110,24 @@ export function useNovoStatusForm() {
         status_geral: data.status_geral as "Aguardando Aprovação" | "Aguardando Homologação" | "Cancelado" | "Concluído" | "Em Andamento" | "Em Especificação" | "Pausado" | "Planejamento",
         status_visao_gp: data.status_visao_gp as "Verde" | "Amarelo" | "Vermelho",
         realizado_semana_atual: data.entregas_realizadas,
-        backlog: data.backlog,
-        bloqueios_atuais: data.bloqueios_atuais,
-        observacoes_pontos_atencao: data.observacoes_gerais,
+        backlog: data.backlog || null,
+        bloqueios_atuais: data.bloqueios_atuais || null,
+        observacoes_pontos_atencao: data.observacoes_gerais || null,
         probabilidade_riscos: data.probabilidade_riscos as "Baixo" | "Médio" | "Alto",
         impacto_riscos: data.impacto_riscos as "Baixo" | "Médio" | "Alto",
         entrega1: data.marco1_nome,
-        data_marco1: data.marco1_data,
+        data_marco1: data.marco1_data || null,
         entregaveis1: data.marco1_responsavel,
-        entrega2: data.marco2_nome,
-        data_marco2: data.marco2_data,
-        entregaveis2: data.marco2_responsavel,
-        entrega3: data.marco3_nome,
-        data_marco3: data.marco3_data,
-        entregaveis3: data.marco3_responsavel,
+        entrega2: data.marco2_nome || null,
+        data_marco2: data.marco2_data || null,
+        entregaveis2: data.marco2_responsavel || null,
+        entrega3: data.marco3_nome || null,
+        data_marco3: data.marco3_data || null,
+        entregaveis3: data.marco3_responsavel || null,
         progresso_estimado: progressoEstimado,
       };
+
+      console.log('Dados do status a serem enviados:', statusData);
 
       const { error } = await supabase
         .from('status_projeto')
@@ -124,7 +135,12 @@ export function useNovoStatusForm() {
 
       if (error) {
         console.error('Erro ao criar status:', error);
-        throw error;
+        toast({
+          title: "Erro ao criar status",
+          description: error.message || "Ocorreu um erro ao salvar o status. Tente novamente.",
+          variant: "destructive",
+        });
+        return;
       }
 
       toast({
@@ -134,10 +150,10 @@ export function useNovoStatusForm() {
 
       navigate('/status');
     } catch (error) {
-      console.error('Erro ao salvar status:', error);
+      console.error('Erro inesperado ao salvar status:', error);
       toast({
         title: "Erro ao criar status",
-        description: "Ocorreu um erro ao salvar o status. Tente novamente.",
+        description: "Ocorreu um erro inesperado ao salvar o status. Tente novamente.",
         variant: "destructive",
       });
     } finally {
@@ -148,7 +164,7 @@ export function useNovoStatusForm() {
   const handleCarteiraChange = (carteira: string) => {
     setCarteiraSelecionada(carteira);
     setProjetoSelecionado(null);
-    form.setValue('projeto_id', undefined);
+    form.setValue('projeto_id', 0);
   };
 
   const handleProjetoChange = (projetoId: number) => {

@@ -4,10 +4,8 @@ import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Save } from 'lucide-react';
@@ -15,6 +13,10 @@ import { Link } from 'react-router-dom';
 import { useNovoStatusForm } from '@/hooks/useNovoStatusForm';
 import { CarteiraProjetoSelect } from '@/components/forms/CarteiraProjetoSelect';
 import { ProximasEntregasForm } from '@/components/forms/status/ProximasEntregasForm';
+import { StatusGeralSelect } from '@/components/forms/StatusGeralSelect';
+import { StatusVisaoGPSelect } from '@/components/forms/StatusVisaoGPSelect';
+import { NivelRiscoSelect } from '@/components/forms/NivelRiscoSelect';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 // Função para calcular o risco baseado na fórmula do Excel
 function calcularMatrizRisco(impacto: string, probabilidade: string): { nivel: string; cor: string } {
@@ -121,23 +123,13 @@ export default function NovoStatus() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Status Geral *</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value} required>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Selecione o status" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="Planejamento">Planejamento</SelectItem>
-                            <SelectItem value="Em Andamento">Em Andamento</SelectItem>
-                            <SelectItem value="Pausado">Pausado</SelectItem>
-                            <SelectItem value="Concluído">Concluído</SelectItem>
-                            <SelectItem value="Cancelado">Cancelado</SelectItem>
-                            <SelectItem value="Em Especificação">Em Especificação</SelectItem>
-                            <SelectItem value="Aguardando Aprovação">Aguardando Aprovação</SelectItem>
-                            <SelectItem value="Aguardando Homologação">Aguardando Homologação</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <FormControl>
+                          <StatusGeralSelect
+                            value={field.value}
+                            onValueChange={field.onChange}
+                            placeholder="Selecione o status"
+                          />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -149,18 +141,13 @@ export default function NovoStatus() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Visão GP *</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value} required>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Selecione a visão" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="Verde">Verde</SelectItem>
-                            <SelectItem value="Amarelo">Amarelo</SelectItem>
-                            <SelectItem value="Vermelho">Vermelho</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <FormControl>
+                          <StatusVisaoGPSelect
+                            value={field.value}
+                            onValueChange={field.onChange}
+                            placeholder="Selecione a visão"
+                          />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -190,18 +177,13 @@ export default function NovoStatus() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Probabilidade de Riscos *</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value} required>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Selecione a probabilidade" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="Baixo">Baixo</SelectItem>
-                            <SelectItem value="Médio">Médio</SelectItem>
-                            <SelectItem value="Alto">Alto</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <FormControl>
+                          <NivelRiscoSelect
+                            value={field.value}
+                            onValueChange={field.onChange}
+                            placeholder="Selecione a probabilidade"
+                          />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -213,18 +195,13 @@ export default function NovoStatus() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Impacto dos Riscos *</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value} required>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Selecione o impacto" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="Baixo">Baixo</SelectItem>
-                            <SelectItem value="Médio">Médio</SelectItem>
-                            <SelectItem value="Alto">Alto</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <FormControl>
+                          <NivelRiscoSelect
+                            value={field.value}
+                            onValueChange={field.onChange}
+                            placeholder="Selecione o impacto"
+                          />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -310,7 +287,7 @@ export default function NovoStatus() {
             <ProximasEntregasForm form={form} />
 
             <div className="flex justify-end">
-              <Button type="submit" disabled={isSubmitting}>
+              <Button type="submit" disabled={isSubmitting || !projetoSelecionado || progressoEstimado === 0}>
                 <Save className="h-4 w-4 mr-2" />
                 {isSubmitting ? 'Salvando...' : 'Salvar Status'}
               </Button>
