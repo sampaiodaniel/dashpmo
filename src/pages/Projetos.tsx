@@ -1,4 +1,3 @@
-
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
@@ -120,11 +119,9 @@ export default function Projetos() {
               onChange={(e) => setTermoBusca(e.target.value)}
             />
           </div>
-          {filtroAtivo && (
-            <div className="text-sm text-pmo-gray">
-              Filtro ativo: {filtroAtivo} ({projetosFiltrados.length} registros)
-            </div>
-          )}
+          <div className="text-sm text-pmo-gray">
+            {projetosFiltrados.length} projetos encontrados
+          </div>
         </div>
 
         <div className="bg-white rounded-lg shadow-sm border">
@@ -141,6 +138,7 @@ export default function Projetos() {
           ) : projetosFiltrados && projetosFiltrados.length > 0 ? (
             <div className="divide-y">
               {projetosFiltrados.map((projeto) => (
+                
                 <div 
                   key={projeto.id} 
                   className="p-6 hover:bg-gray-50 transition-colors group"

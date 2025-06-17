@@ -67,7 +67,6 @@ export default function Incidentes() {
           resolvidos={metricas.resolvidos}
           total={metricas.total}
         />
-        <TabelaIncidentesRecentes />
         
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           <div className="lg:col-span-1">
@@ -77,9 +76,11 @@ export default function Incidentes() {
             />
           </div>
           <div className="lg:col-span-3">
-            <GraficoEvolutivoIncidentes />
+            <TabelaIncidentesRecentes />
           </div>
         </div>
+
+        <GraficoEvolutivoIncidentes />
       </div>
     </Layout>
   );
