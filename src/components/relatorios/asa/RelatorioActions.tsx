@@ -1,4 +1,3 @@
-
 import { Button } from '@/components/ui/button';
 import { Download, Share, FileText, Copy } from 'lucide-react';
 import { DadosRelatorioASA } from '@/hooks/useRelatorioASA';
@@ -12,14 +11,10 @@ interface RelatorioActionsProps {
 export function RelatorioActions({ dados }: RelatorioActionsProps) {
   const handleShareReport = async () => {
     try {
-      // Criar um ID único para o relatório baseado nos dados
-      const reportId = btoa(JSON.stringify({
-        carteira: dados.carteira,
-        data: dados.dataRelatorio,
-        timestamp: Date.now()
-      })).replace(/[+/=]/g, '').substring(0, 16);
+      // Criar um ID único mais simples e consistente
+      const reportId = `${dados.carteira}-${dados.dataRelatorio.replace(/\//g, '')}-${Date.now()}`.replace(/\s+/g, '-');
 
-      // Salvar os dados do relatório no localStorage com chave única
+      // Salvar os dados do relatório no localStorage
       const reportKey = `shared-report-${reportId}`;
       const reportData = {
         ...dados,
@@ -42,6 +37,7 @@ export function RelatorioActions({ dados }: RelatorioActionsProps) {
 
       console.log('Link compartilhável criado:', shareUrl);
       console.log('Dados salvos na chave:', reportKey);
+      console.log('ID do relatório:', reportId);
     } catch (error) {
       console.error('Erro ao criar link compartilhável:', error);
       toast({
@@ -55,43 +51,90 @@ export function RelatorioActions({ dados }: RelatorioActionsProps) {
   const handleDownloadPDF = async () => {
     try {
       const element = document.getElementById('relatorio-content');
-      if (!element) return;
+      if (!element) {
+        console.error('Elemento relatorio-content não encontrado');
+        return;
+      }
 
-      // Aguardar renderização completa
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      console.log('Elemento encontrado:', element);
+      console.log('Dimensões do elemento:', element.scrollWidth, element.scrollHeight);
+
+      // Aguardar renderização completa - tempo maior
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // Verificar se há conteúdo
+      if (element.children.length === 0) {
+        console.error('Elemento não possui conteúdo');
+        toast({
+          title: "Erro",
+          description: "Conteúdo do relatório não encontrado. Aguarde o carregamento completo.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Esconder elementos que não devem aparecer no PDF
+      const noprint = element.querySelectorAll('.no-print');
+      noprint.forEach(el => {
+        (el as HTMLElement).style.display = 'none';
+      });
+
+      // Salvar estilo original
+      const originalStyle = element.style.cssText;
+      
+      // Aplicar estilos otimizados para PDF
+      element.style.cssText = `
+        position: relative !important;
+        top: 0 !important;
+        left: 0 !important;
+        transform: none !important;
+        margin: 0 !important;
+        padding: 30px !important;
+        width: 210mm !important;
+        max-width: 210mm !important;
+        background: white !important;
+        font-family: 'Inter', sans-serif !important;
+        color: #1B365D !important;
+        box-sizing: border-box !important;
+        overflow: visible !important;
+        font-size: 14px !important;
+        line-height: 1.5 !important;
+        min-height: auto !important;
+        height: auto !important;
+        display: block !important;
+      `;
 
       const options = {
-        margin: [5, 5, 5, 5], // Margens reduzidas
+        margin: [10, 10, 10, 10],
         filename: `relatorio-asa-${dados.carteira}-${dados.dataRelatorio.replace(/\//g, '-')}.pdf`,
         image: { 
           type: 'jpeg', 
-          quality: 1.0
+          quality: 0.98
         },
         html2canvas: { 
-          scale: 3, // Maior escala para melhor qualidade
+          scale: 2,
           useCORS: true,
           allowTaint: true,
           backgroundColor: '#ffffff',
-          logging: false,
+          logging: true,
           letterRendering: true,
           foreignObjectRendering: true,
           removeContainer: false,
           scrollX: 0,
           scrollY: 0,
-          x: 0, // Posição X inicial
-          y: 0, // Posição Y inicial
-          width: element.scrollWidth,
-          height: element.scrollHeight,
-          dpi: 300,
-          windowWidth: 1920, // Largura fixa da janela
-          windowHeight: 1080 // Altura fixa da janela
+          x: 0,
+          y: 0,
+          width: element.offsetWidth,
+          height: element.offsetHeight,
+          windowWidth: element.offsetWidth + 100,
+          windowHeight: element.offsetHeight + 100
         },
         jsPDF: { 
           unit: 'mm', 
           format: 'a4', 
-          orientation: 'portrait', // Mudando para portrait
-          compress: false,
-          precision: 2
+          orientation: 'portrait',
+          compress: true,
+          precision: 16
         },
         pagebreak: {
           mode: ['avoid-all', 'css', 'legacy'],
@@ -100,36 +143,8 @@ export function RelatorioActions({ dados }: RelatorioActionsProps) {
         }
       };
 
-      // Esconder elementos que não devem aparecer no PDF
-      const noprint = element.querySelectorAll('.no-print');
-      noprint.forEach(el => {
-        (el as HTMLElement).style.display = 'none';
-      });
-
-      const originalStyle = element.style.cssText;
-      
-      // Aplicar estilos otimizados para PDF com correção de posicionamento
-      element.style.cssText = `
-        position: static !important;
-        top: 0 !important;
-        left: 0 !important;
-        transform: none !important;
-        margin: 0 !important;
-        padding: 20px !important;
-        width: 100% !important;
-        max-width: none !important;
-        background: white !important;
-        font-family: 'Inter', sans-serif !important;
-        color: #1B365D !important;
-        box-sizing: border-box !important;
-        overflow: visible !important;
-        font-size: 12px !important;
-        line-height: 1.4 !important;
-        min-height: auto !important;
-        height: auto !important;
-      `;
-
-      console.log('Iniciando conversão PDF com posicionamento corrigido...');
+      console.log('Iniciando conversão PDF...');
+      console.log('Opções:', options);
 
       await html2pdf().set(options).from(element).save();
 
@@ -138,8 +153,14 @@ export function RelatorioActions({ dados }: RelatorioActionsProps) {
       // Restaurar estilos originais
       element.style.cssText = originalStyle;
       
+      // Restaurar elementos ocultos
       noprint.forEach(el => {
         (el as HTMLElement).style.display = '';
+      });
+
+      toast({
+        title: "Sucesso",
+        description: "PDF gerado com sucesso!",
       });
 
     } catch (error) {
@@ -156,6 +177,9 @@ export function RelatorioActions({ dados }: RelatorioActionsProps) {
     try {
       const element = document.getElementById('relatorio-content');
       if (!element) return;
+
+      // Aguardar renderização
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
       // Processar imagens para embed no HTML
       const images = element.querySelectorAll('img');
@@ -274,7 +298,9 @@ export function RelatorioActions({ dados }: RelatorioActionsProps) {
           </style>
         </head>
         <body>
-          ${content}
+          <div style="max-width: 1200px; margin: 0 auto; padding: 20px;">
+            ${content}
+          </div>
         </body>
         </html>
       `;

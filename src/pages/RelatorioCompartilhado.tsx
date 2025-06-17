@@ -27,6 +27,7 @@ export default function RelatorioCompartilhado() {
       const reportKey = `shared-report-${id}`;
       const savedData = localStorage.getItem(reportKey);
       
+      console.log('Buscando relatório com ID:', id);
       console.log('Buscando relatório com chave:', reportKey);
       console.log('Dados encontrados:', savedData ? 'sim' : 'não');
       
@@ -34,6 +35,29 @@ export default function RelatorioCompartilhado() {
         // Tentar buscar com diferentes formatos de chave para compatibilidade
         const allKeys = Object.keys(localStorage).filter(key => key.startsWith('shared-report-'));
         console.log('Chaves disponíveis:', allKeys);
+        
+        // Tentar encontrar uma chave que contenha o ID
+        const matchingKey = allKeys.find(key => key.includes(id));
+        if (matchingKey) {
+          console.log('Chave correspondente encontrada:', matchingKey);
+          const matchingData = localStorage.getItem(matchingKey);
+          if (matchingData) {
+            const reportData = JSON.parse(matchingData);
+            
+            // Verificar se o relatório não expirou
+            if (reportData.expiresAt && new Date() > new Date(reportData.expiresAt)) {
+              localStorage.removeItem(matchingKey);
+              setError('Relatório expirado');
+              setLoading(false);
+              return;
+            }
+            
+            console.log('Relatório carregado com sucesso:', reportData);
+            setDados(reportData);
+            setLoading(false);
+            return;
+          }
+        }
         
         setError('Relatório não encontrado ou expirado');
         setLoading(false);
@@ -67,21 +91,21 @@ export default function RelatorioCompartilhado() {
       const element = document.getElementById('relatorio-content');
       if (!element) return;
 
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
       const options = {
-        margin: [5, 5, 5, 5],
+        margin: [10, 10, 10, 10],
         filename: `relatorio-asa-${dados.carteira}-${dados.dataRelatorio.replace(/\//g, '-')}.pdf`,
         image: { 
           type: 'jpeg', 
-          quality: 1.0
+          quality: 0.98
         },
         html2canvas: { 
-          scale: 3,
+          scale: 2,
           useCORS: true,
           allowTaint: true,
           backgroundColor: '#ffffff',
-          logging: false,
+          logging: true,
           letterRendering: true,
           foreignObjectRendering: true,
           removeContainer: false,
@@ -89,18 +113,17 @@ export default function RelatorioCompartilhado() {
           scrollY: 0,
           x: 0,
           y: 0,
-          width: element.scrollWidth,
-          height: element.scrollHeight,
-          dpi: 300,
-          windowWidth: 1920,
-          windowHeight: 1080
+          width: element.offsetWidth,
+          height: element.offsetHeight,
+          windowWidth: element.offsetWidth + 100,
+          windowHeight: element.offsetHeight + 100
         },
         jsPDF: { 
           unit: 'mm', 
           format: 'a4', 
           orientation: 'portrait',
-          compress: false,
-          precision: 2
+          compress: true,
+          precision: 16
         },
         pagebreak: {
           mode: ['avoid-all', 'css', 'legacy'],
@@ -117,23 +140,24 @@ export default function RelatorioCompartilhado() {
       const originalStyle = element.style.cssText;
       
       element.style.cssText = `
-        position: static !important;
+        position: relative !important;
         top: 0 !important;
         left: 0 !important;
         transform: none !important;
         margin: 0 !important;
-        padding: 20px !important;
-        width: 100% !important;
-        max-width: none !important;
+        padding: 30px !important;
+        width: 210mm !important;
+        max-width: 210mm !important;
         background: white !important;
         font-family: 'Inter', sans-serif !important;
         color: #1B365D !important;
         box-sizing: border-box !important;
         overflow: visible !important;
-        font-size: 12px !important;
-        line-height: 1.4 !important;
+        font-size: 14px !important;
+        line-height: 1.5 !important;
         min-height: auto !important;
         height: auto !important;
+        display: block !important;
       `;
 
       await html2pdf().set(options).from(element).save();
