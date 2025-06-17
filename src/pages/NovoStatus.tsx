@@ -1,4 +1,3 @@
-
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
@@ -12,12 +11,12 @@ import { ArrowLeft, Save } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useNovoStatusForm } from '@/hooks/useNovoStatusForm';
 import { CarteiraProjetoSelect } from '@/components/forms/CarteiraProjetoSelect';
-import { ProximasEntregasForm } from '@/components/forms/status/ProximasEntregasForm';
 import { StatusGeralSelect } from '@/components/forms/StatusGeralSelect';
 import { StatusVisaoGPSelect } from '@/components/forms/StatusVisaoGPSelect';
 import { NivelRiscoSelect } from '@/components/forms/NivelRiscoSelect';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DateFieldWithTBD } from '@/components/forms/DateFieldWithTBD';
+import { Input } from '@/components/ui/input';
 import { useState } from 'react';
 
 // Função para calcular o risco baseado na fórmula do Excel
@@ -70,6 +69,58 @@ export default function NovoStatus() {
 
   // Gerar opções de progresso de 5 em 5%
   const progressoOptions = Array.from({ length: 21 }, (_, i) => i * 5);
+
+  // Funções para lidar com mudanças de data dos marcos
+  const handleMarco1DateChange = (date: Date | null) => {
+    setDataMarco1(date);
+    if (marco1TBD) {
+      form.setValue('marco1_data', 'TBD');
+    } else {
+      form.setValue('marco1_data', date ? date.toISOString().split('T')[0] : '');
+    }
+  };
+
+  const handleMarco1TBDChange = (isTBD: boolean) => {
+    setMarco1TBD(isTBD);
+    if (isTBD) {
+      form.setValue('marco1_data', 'TBD');
+      setDataMarco1(null);
+    }
+  };
+
+  const handleMarco2DateChange = (date: Date | null) => {
+    setDataMarco2(date);
+    if (marco2TBD) {
+      form.setValue('marco2_data', 'TBD');
+    } else {
+      form.setValue('marco2_data', date ? date.toISOString().split('T')[0] : '');
+    }
+  };
+
+  const handleMarco2TBDChange = (isTBD: boolean) => {
+    setMarco2TBD(isTBD);
+    if (isTBD) {
+      form.setValue('marco2_data', 'TBD');
+      setDataMarco2(null);
+    }
+  };
+
+  const handleMarco3DateChange = (date: Date | null) => {
+    setDataMarco3(date);
+    if (marco3TBD) {
+      form.setValue('marco3_data', 'TBD');
+    } else {
+      form.setValue('marco3_data', date ? date.toISOString().split('T')[0] : '');
+    }
+  };
+
+  const handleMarco3TBDChange = (isTBD: boolean) => {
+    setMarco3TBD(isTBD);
+    if (isTBD) {
+      form.setValue('marco3_data', 'TBD');
+      setDataMarco3(null);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -313,11 +364,17 @@ export default function NovoStatus() {
                       <div className="space-y-4">
                         <div>
                           <Label htmlFor="entregaveis1">Entregáveis *</Label>
-                          <Textarea 
-                            {...form.register('entregas_realizadas')} 
-                            placeholder="Descreva os entregáveis..." 
-                            rows={4} 
-                            required 
+                          <FormField
+                            control={form.control}
+                            name="marco1_responsavel"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormControl>
+                                  <Textarea {...field} placeholder="Descreva os entregáveis..." rows={4} required />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
                           />
                         </div>
                       </div>
@@ -325,19 +382,25 @@ export default function NovoStatus() {
                     <div className="space-y-4">
                       <div>
                         <Label htmlFor="entrega1">Nome da Entrega *</Label>
-                        <input 
-                          {...form.register('entregas_realizadas')} 
-                          placeholder="Nome da entrega" 
-                          className="w-full p-2 border rounded" 
-                          required 
+                        <FormField
+                          control={form.control}
+                          name="marco1_nome"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Input {...field} placeholder="Nome da entrega" className="bg-white" required />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
                         />
                       </div>
 
                       <DateFieldWithTBD
                         label="Data de Entrega"
                         value={dataMarco1}
-                        onChange={setDataMarco1}
-                        onTBDChange={setMarco1TBD}
+                        onChange={handleMarco1DateChange}
+                        onTBDChange={handleMarco1TBDChange}
                         isTBD={marco1TBD}
                         required
                         placeholder="Selecione a data"
@@ -354,10 +417,17 @@ export default function NovoStatus() {
                       <div className="space-y-4">
                         <div>
                           <Label htmlFor="entregaveis2">Entregáveis</Label>
-                          <Textarea 
-                            {...form.register('backlog')} 
-                            placeholder="Descreva os entregáveis..." 
-                            rows={4} 
+                          <FormField
+                            control={form.control}
+                            name="marco2_responsavel"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormControl>
+                                  <Textarea {...field} placeholder="Descreva os entregáveis..." rows={4} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
                           />
                         </div>
                       </div>
@@ -365,18 +435,25 @@ export default function NovoStatus() {
                     <div className="space-y-4">
                       <div>
                         <Label htmlFor="entrega2">Nome da Entrega</Label>
-                        <input 
-                          {...form.register('backlog')} 
-                          placeholder="Nome da entrega" 
-                          className="w-full p-2 border rounded" 
+                        <FormField
+                          control={form.control}
+                          name="marco2_nome"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Input {...field} placeholder="Nome da entrega" className="bg-white" />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
                         />
                       </div>
 
                       <DateFieldWithTBD
                         label="Data de Entrega"
                         value={dataMarco2}
-                        onChange={setDataMarco2}
-                        onTBDChange={setMarco2TBD}
+                        onChange={handleMarco2DateChange}
+                        onTBDChange={handleMarco2TBDChange}
                         isTBD={marco2TBD}
                         placeholder="Selecione a data"
                       />
@@ -392,10 +469,17 @@ export default function NovoStatus() {
                       <div className="space-y-4">
                         <div>
                           <Label htmlFor="entregaveis3">Entregáveis</Label>
-                          <Textarea 
-                            {...form.register('bloqueios_atuais')} 
-                            placeholder="Descreva os entregáveis..." 
-                            rows={4} 
+                          <FormField
+                            control={form.control}
+                            name="marco3_responsavel"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormControl>
+                                  <Textarea {...field} placeholder="Descreva os entregáveis..." rows={4} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
                           />
                         </div>
                       </div>
@@ -403,18 +487,25 @@ export default function NovoStatus() {
                     <div className="space-y-4">
                       <div>
                         <Label htmlFor="entrega3">Nome da Entrega</Label>
-                        <input 
-                          {...form.register('bloqueios_atuais')} 
-                          placeholder="Nome da entrega" 
-                          className="w-full p-2 border rounded" 
+                        <FormField
+                          control={form.control}
+                          name="marco3_nome"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Input {...field} placeholder="Nome da entrega" className="bg-white" />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
                         />
                       </div>
 
                       <DateFieldWithTBD
                         label="Data de Entrega"
                         value={dataMarco3}
-                        onChange={setDataMarco3}
-                        onTBDChange={setMarco3TBD}
+                        onChange={handleMarco3DateChange}
+                        onTBDChange={handleMarco3TBDChange}
                         isTBD={marco3TBD}
                         placeholder="Selecione a data"
                       />
