@@ -27,13 +27,30 @@ export default function RelatorioCompartilhado() {
       const reportKey = `shared-report-${id}`;
       const savedData = localStorage.getItem(reportKey);
       
+      console.log('Buscando relatório com chave:', reportKey);
+      console.log('Dados encontrados:', savedData ? 'sim' : 'não');
+      
       if (!savedData) {
+        // Tentar buscar com diferentes formatos de chave para compatibilidade
+        const allKeys = Object.keys(localStorage).filter(key => key.startsWith('shared-report-'));
+        console.log('Chaves disponíveis:', allKeys);
+        
         setError('Relatório não encontrado ou expirado');
         setLoading(false);
         return;
       }
 
       const reportData = JSON.parse(savedData);
+      
+      // Verificar se o relatório não expirou
+      if (reportData.expiresAt && new Date() > new Date(reportData.expiresAt)) {
+        localStorage.removeItem(reportKey);
+        setError('Relatório expirado');
+        setLoading(false);
+        return;
+      }
+      
+      console.log('Relatório carregado com sucesso:', reportData);
       setDados(reportData);
       setLoading(false);
     } catch (error) {
@@ -53,14 +70,14 @@ export default function RelatorioCompartilhado() {
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       const options = {
-        margin: [10, 10, 10, 10],
+        margin: [5, 5, 5, 5],
         filename: `relatorio-asa-${dados.carteira}-${dados.dataRelatorio.replace(/\//g, '-')}.pdf`,
         image: { 
           type: 'jpeg', 
           quality: 1.0
         },
         html2canvas: { 
-          scale: 2,
+          scale: 3,
           useCORS: true,
           allowTaint: true,
           backgroundColor: '#ffffff',
@@ -70,14 +87,18 @@ export default function RelatorioCompartilhado() {
           removeContainer: false,
           scrollX: 0,
           scrollY: 0,
+          x: 0,
+          y: 0,
           width: element.scrollWidth,
           height: element.scrollHeight,
-          dpi: 300
+          dpi: 300,
+          windowWidth: 1920,
+          windowHeight: 1080
         },
         jsPDF: { 
           unit: 'mm', 
           format: 'a4', 
-          orientation: 'landscape',
+          orientation: 'portrait',
           compress: false,
           precision: 2
         },
@@ -109,8 +130,10 @@ export default function RelatorioCompartilhado() {
         color: #1B365D !important;
         box-sizing: border-box !important;
         overflow: visible !important;
-        font-size: 14px !important;
+        font-size: 12px !important;
         line-height: 1.4 !important;
+        min-height: auto !important;
+        height: auto !important;
       `;
 
       await html2pdf().set(options).from(element).save();
