@@ -1,6 +1,6 @@
 
 import { Badge } from '@/components/ui/badge';
-import { Calendar, User, Building } from 'lucide-react';
+import { Calendar, Building } from 'lucide-react';
 import { StatusProjeto, getStatusColor, getStatusGeralColor } from '@/types/pmo';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -45,7 +45,7 @@ export function StatusCard({ status, onUpdate, onStatusUpdate }: StatusCardProps
             </Badge>
             {status.prob_x_impact && (
               <Badge variant="outline" className="bg-gray-50">
-                Risco: {status.prob_x_impact}
+                Matriz de Risco: {status.prob_x_impact}
               </Badge>
             )}
           </div>
@@ -55,9 +55,11 @@ export function StatusCard({ status, onUpdate, onStatusUpdate }: StatusCardProps
               <Calendar className="h-4 w-4" />
               <span>{format(new Date(status.data_atualizacao), 'dd/MM/yyyy', { locale: ptBR })}</span>
             </div>
-            <div className="flex items-center gap-1">
-              <User className="h-4 w-4" />
-              <span>{status.criado_por}</span>
+            <div>
+              <span>Responsável ASA: {status.projeto?.responsavel_interno || 'N/A'}</span>
+            </div>
+            <div>
+              <span>Chefe do Projeto: {status.projeto?.gp_responsavel || 'N/A'}</span>
             </div>
           </div>
         </div>

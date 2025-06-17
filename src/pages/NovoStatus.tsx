@@ -1,4 +1,3 @@
-
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
@@ -17,6 +16,8 @@ import { StatusGeralSelect } from '@/components/forms/StatusGeralSelect';
 import { StatusVisaoGPSelect } from '@/components/forms/StatusVisaoGPSelect';
 import { NivelRiscoSelect } from '@/components/forms/NivelRiscoSelect';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DateFieldWithTBD } from '@/components/forms/DateFieldWithTBD';
+import { useState } from 'react';
 
 // Função para calcular o risco baseado na fórmula do Excel
 function calcularMatrizRisco(impacto: string, probabilidade: string): { nivel: string; cor: string } {
@@ -50,6 +51,16 @@ export default function NovoStatus() {
     handleProjetoChange,
     handleProgressoChange
   } = useNovoStatusForm();
+
+  // Estados para controlar TBD nos marcos
+  const [marco1TBD, setMarco1TBD] = useState(false);
+  const [marco2TBD, setMarco2TBD] = useState(false);
+  const [marco3TBD, setMarco3TBD] = useState(false);
+
+  // Estados para as datas dos marcos
+  const [dataMarco1, setDataMarco1] = useState<Date | null>(null);
+  const [dataMarco2, setDataMarco2] = useState<Date | null>(null);
+  const [dataMarco3, setDataMarco3] = useState<Date | null>(null);
 
   // Valores atuais dos campos de risco para calcular a matriz
   const impactoAtual = form.watch('impacto_riscos');
@@ -287,8 +298,152 @@ export default function NovoStatus() {
               </CardContent>
             </Card>
 
-            {/* Próximas Entregas */}
-            <ProximasEntregasForm form={form} />
+            {/* Próximas Entregas com DateFieldWithTBD */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Próximas Entregas</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Marco 1 */}
+                <div className="border rounded-lg p-4 space-y-4">
+                  <h4 className="font-medium text-pmo-primary">Marco 1</h4>
+                  <div className="grid grid-cols-3 gap-4 items-end">
+                    <div className="col-span-2">
+                      <FormField
+                        control={form.control}
+                        name="entregaveis1"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Entregáveis *</FormLabel>
+                            <FormControl>
+                              <Textarea {...field} placeholder="Descreva os entregáveis..." rows={4} required />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <div className="space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="entrega1"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Nome da Entrega *</FormLabel>
+                            <FormControl>
+                              <input {...field} placeholder="Nome da entrega" className="w-full p-2 border rounded" required />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <DateFieldWithTBD
+                        label="Data de Entrega"
+                        value={dataMarco1}
+                        onChange={setDataMarco1}
+                        onTBDChange={setMarco1TBD}
+                        isTBD={marco1TBD}
+                        required
+                        placeholder="Selecione a data"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Marco 2 */}
+                <div className="border rounded-lg p-4 space-y-4">
+                  <h4 className="font-medium text-pmo-primary">Marco 2</h4>
+                  <div className="grid grid-cols-3 gap-4 items-end">
+                    <div className="col-span-2">
+                      <FormField
+                        control={form.control}
+                        name="entregaveis2"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Entregáveis</FormLabel>
+                            <FormControl>
+                              <Textarea {...field} placeholder="Descreva os entregáveis..." rows={4} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <div className="space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="entrega2"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Nome da Entrega</FormLabel>
+                            <FormControl>
+                              <input {...field} placeholder="Nome da entrega" className="w-full p-2 border rounded" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <DateFieldWithTBD
+                        label="Data de Entrega"
+                        value={dataMarco2}
+                        onChange={setDataMarco2}
+                        onTBDChange={setMarco2TBD}
+                        isTBD={marco2TBD}
+                        placeholder="Selecione a data"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Marco 3 */}
+                <div className="border rounded-lg p-4 space-y-4">
+                  <h4 className="font-medium text-pmo-primary">Marco 3</h4>
+                  <div className="grid grid-cols-3 gap-4 items-end">
+                    <div className="col-span-2">
+                      <FormField
+                        control={form.control}
+                        name="entregaveis3"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Entregáveis</FormLabel>
+                            <FormControl>
+                              <Textarea {...field} placeholder="Descreva os entregáveis..." rows={4} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <div className="space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="entrega3"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Nome da Entrega</FormLabel>
+                            <FormControl>
+                              <input {...field} placeholder="Nome da entrega" className="w-full p-2 border rounded" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <DateFieldWithTBD
+                        label="Data de Entrega"
+                        value={dataMarco3}
+                        onChange={setDataMarco3}
+                        onTBDChange={setMarco3TBD}
+                        isTBD={marco3TBD}
+                        placeholder="Selecione a data"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
             <div className="flex justify-end">
               <Button 
