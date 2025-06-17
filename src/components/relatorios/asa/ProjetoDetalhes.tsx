@@ -2,7 +2,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, AlertTriangle, Target } from 'lucide-react';
-import { ProjetoTimeline } from './ProjetoTimeline';
 import { ProjetoAtividades } from './ProjetoAtividades';
 import { ProjetoMilestones } from './ProjetoMilestones';
 
@@ -90,9 +89,6 @@ export function ProjetoDetalhes({ projeto }: ProjetoDetalhesProps) {
           </CardContent>
         </Card>
       </div>
-
-      {/* Timeline do Projeto */}
-      <ProjetoTimeline ultimoStatus={ultimoStatus} />
 
       {/* Atividades */}
       <ProjetoAtividades ultimoStatus={ultimoStatus} />

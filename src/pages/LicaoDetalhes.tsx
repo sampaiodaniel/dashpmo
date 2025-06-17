@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
@@ -244,7 +243,7 @@ export default function LicaoDetalhes() {
       <NovaLicaoModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
-        onSuccess={handleEditSuccess}
+        onLicaoCreated={handleEditSuccess}
         editingLicao={licao}
       />
     </>
