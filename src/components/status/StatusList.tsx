@@ -13,7 +13,7 @@ export function StatusList({ status, onStatusUpdate }: StatusListProps) {
   }
 
   return (
-    <div className="space-y-0">
+    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
       {status.map((statusItem) => (
         <StatusCard key={statusItem.id} status={statusItem} />
       ))}
