@@ -12,6 +12,7 @@ import { Bell, CheckCircle, Clock } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useStatusPendentes } from '@/hooks/useStatusPendentes';
 import { useNotificacoesLidas } from '@/hooks/useNotificacoesLidas';
+import { useResponsavelEHierarquia } from '@/hooks/useResponsavelEHierarquia';
 import { useNavigate } from 'react-router-dom';
 
 export function NotificationsDropdown() {
@@ -20,6 +21,15 @@ export function NotificationsDropdown() {
   const [notificacoesProcessadasLocalmente, setNotificacoesProcessadasLocalmente] = useState<number[]>([]);
   const { notificacoesLidas, marcarVariasComoLidas } = useNotificacoesLidas();
   const navigate = useNavigate();
+
+  // Filtrar status pendentes que devem ser notificados para este usuário
+  const statusParaNotificar = statusPendentes?.filter(status => {
+    if (!status.responsavel_asa || !usuario?.nome) return false;
+    
+    // Verificar se o usuário é o responsável ASA ou seu superior hierárquico
+    const { data: hierarquia } = useResponsavelEHierarquia(status.responsavel_asa);
+    return hierarquia?.includes(usuario.nome) || false;
+  }) || [];
 
   // Carregar notificações processadas do localStorage ao inicializar
   useEffect(() => {
@@ -45,12 +55,12 @@ export function NotificationsDropdown() {
 
   // Calcular número de notificações não lidas
   const notificacoesNaoLidas = canApprove() ? 
-    statusPendentes?.filter(status => !todasNotificacoesLidas.includes(status.id)).length || 0 : 0;
+    statusParaNotificar.filter(status => !todasNotificacoesLidas.includes(status.id)).length || 0 : 0;
 
   const handleOpenDropdown = async () => {
     // Marcar todas as notificações como lidas quando abrir o dropdown
-    if (statusPendentes && statusPendentes.length > 0 && usuario?.id) {
-      const statusIds = statusPendentes.map(status => status.id);
+    if (statusParaNotificar && statusParaNotificar.length > 0 && usuario?.id) {
+      const statusIds = statusParaNotificar.map(status => status.id);
       const novasNotificacoes = statusIds.filter(id => !todasNotificacoesLidas.includes(id));
       
       if (novasNotificacoes.length > 0) {
@@ -105,9 +115,9 @@ export function NotificationsDropdown() {
           <div className="px-3 py-4 text-center text-gray-500">
             <p className="text-sm">Você não tem permissão para ver notificações</p>
           </div>
-        ) : statusPendentes && statusPendentes.length > 0 ? (
+        ) : statusParaNotificar && statusParaNotificar.length > 0 ? (
           <>
-            {statusPendentes.slice(0, 5).map((status) => (
+            {statusParaNotificar.slice(0, 5).map((status) => (
               <DropdownMenuItem 
                 key={status.id}
                 onClick={() => handleVerStatus(status.id)}
@@ -117,7 +127,7 @@ export function NotificationsDropdown() {
                   <Clock className="h-4 w-4 text-orange-500 mt-0.5 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-pmo-primary truncate">
-                      Status pendente de aprovação
+                      Status pendente de revisão
                     </p>
                     <p className="text-xs text-gray-600 truncate">
                       Projeto: {status.projeto?.nome_projeto}
@@ -130,12 +140,12 @@ export function NotificationsDropdown() {
               </DropdownMenuItem>
             ))}
             
-            {statusPendentes.length > 5 && (
+            {statusParaNotificar.length > 5 && (
               <>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleVerTodosStatus} className="px-3 py-2 text-center">
                   <span className="text-sm text-pmo-primary font-medium">
-                    Ver todos os status ({statusPendentes.length})
+                    Ver todos os status ({statusParaNotificar.length})
                   </span>
                 </DropdownMenuItem>
               </>

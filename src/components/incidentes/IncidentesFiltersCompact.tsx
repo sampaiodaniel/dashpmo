@@ -66,7 +66,7 @@ export function IncidentesFiltersCompact({
                 ) : (
                   responsaveisASA?.filter(responsavel => responsavel && responsavel.nome && responsavel.nome.trim() !== '').map((responsavel) => (
                     <SelectItem key={responsavel.id} value={responsavel.nome}>
-                      {responsavel.nome} ({responsavel.nivel})
+                      {responsavel.nome}
                     </SelectItem>
                   ))
                 )}

@@ -1,4 +1,3 @@
-
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
@@ -22,7 +21,6 @@ export default function Incidentes() {
   const [carteiraTabelaSelecionada, setCarteiraTabelaSelecionada] = useState('todas');
   
   // Filtros para o gráfico
-  const [responsavelGraficoSelecionado, setResponsavelGraficoSelecionado] = useState('todos');
   const [carteiraGraficoSelecionada, setCarteiraGraficoSelecionada] = useState('todas');
 
   useEffect(() => {
@@ -90,18 +88,12 @@ export default function Incidentes() {
           responsavelSelecionado={responsavelTabelaSelecionado}
         />
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <IncidentesFilters 
-            responsavelSelecionado={responsavelGraficoSelecionado}
-            onResponsavelChange={setResponsavelGraficoSelecionado}
-          />
-          <IncidentesCarteiraFilter
-            carteiraSelecionada={carteiraGraficoSelecionada}
-            onCarteiraChange={setCarteiraGraficoSelecionada}
-          />
-        </div>
+        <IncidentesCarteiraFilter
+          carteiraSelecionada={carteiraGraficoSelecionada}
+          onCarteiraChange={setCarteiraGraficoSelecionada}
+        />
 
-        <GraficoEvolutivoIncidentes />
+        <GraficoEvolutivoIncidentes carteiraFiltro={carteiraGraficoSelecionada} />
       </div>
     </Layout>
   );
