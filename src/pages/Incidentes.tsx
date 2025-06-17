@@ -7,6 +7,7 @@ import { IncidentesMetricas } from '@/components/incidentes/IncidentesMetricas';
 import { TabelaIncidentesRecentes } from '@/components/incidentes/TabelaIncidentesRecentes';
 import { GraficoEvolutivoIncidentes } from '@/components/incidentes/GraficoEvolutivoIncidentes';
 import { IncidentesFilters } from '@/components/incidentes/IncidentesFilters';
+import { IncidentesCarteiraFilter } from '@/components/incidentes/IncidentesCarteiraFilter';
 import { useIncidentes } from '@/hooks/useIncidentes';
 import { useEffect, useState } from 'react';
 import { seedIncidentesCanais } from '@/utils/seedIncidentesCanais';
@@ -15,6 +16,7 @@ export default function Incidentes() {
   const { usuario, isLoading } = useAuth();
   const { data: incidentes, isLoading: isLoadingIncidentes } = useIncidentes();
   const [responsavelSelecionado, setResponsavelSelecionado] = useState('todos');
+  const [carteiraSelecionada, setCarteiraSelecionada] = useState('todas');
 
   useEffect(() => {
     // Inserir dados históricos se necessário
@@ -61,6 +63,7 @@ export default function Incidentes() {
     <Layout>
       <div className="space-y-6">
         <IncidentesHeader />
+        
         <IncidentesMetricas 
           criticos={metricas.criticos}
           emAndamento={metricas.emAndamento}
@@ -68,16 +71,17 @@ export default function Incidentes() {
           total={metricas.total}
         />
         
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          <div className="lg:col-span-1">
-            <IncidentesFilters 
-              responsavelSelecionado={responsavelSelecionado}
-              onResponsavelChange={setResponsavelSelecionado}
-            />
-          </div>
-          <div className="lg:col-span-3">
-            <TabelaIncidentesRecentes />
-          </div>
+        <TabelaIncidentesRecentes />
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <IncidentesFilters 
+            responsavelSelecionado={responsavelSelecionado}
+            onResponsavelChange={setResponsavelSelecionado}
+          />
+          <IncidentesCarteiraFilter
+            carteiraSelecionada={carteiraSelecionada}
+            onCarteiraChange={setCarteiraSelecionada}
+          />
         </div>
 
         <GraficoEvolutivoIncidentes />
