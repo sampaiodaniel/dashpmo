@@ -69,16 +69,12 @@ export default function Incidentes() {
         />
         <TabelaIncidentesRecentes />
         
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          <div className="lg:col-span-1">
-            <IncidentesFilters 
-              responsavelSelecionado={responsavelSelecionado}
-              onResponsavelChange={setResponsavelSelecionado}
-            />
-          </div>
-          <div className="lg:col-span-3">
-            <GraficoEvolutivoIncidentes />
-          </div>
+        <div className="space-y-6">
+          <IncidentesFilters 
+            responsavelSelecionado={responsavelSelecionado}
+            onResponsavelChange={setResponsavelSelecionado}
+          />
+          <GraficoEvolutivoIncidentes />
         </div>
       </div>
     </Layout>

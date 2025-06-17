@@ -27,8 +27,8 @@ export function StatusAcoes({ status, onUpdate }: StatusAcoesProps) {
     onUpdate?.();
   };
 
-  // Mostrar botão apenas para status em revisão (aprovado === null)
-  const isEmRevisao = status.aprovado === null;
+  // Mostrar botão apenas para status não aprovados (aprovado === null ou aprovado === false)
+  const isEmRevisao = status.aprovado !== true;
 
   if (!isEmRevisao) {
     return null;

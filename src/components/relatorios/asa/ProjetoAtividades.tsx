@@ -70,7 +70,7 @@ export function ProjetoAtividades({ ultimoStatus }: ProjetoAtividadesProps) {
         )}
       </div>
 
-      {/* Bloqueios - apenas uma vez e apenas se existir */}
+      {/* Bloqueios - apenas se existir e apenas uma vez */}
       {ultimoStatus.bloqueios_atuais && (
         <div>
           <h4 className="font-semibold text-[#EF4444] mb-3">Bloqueios Atuais</h4>
@@ -78,7 +78,7 @@ export function ProjetoAtividades({ ultimoStatus }: ProjetoAtividadesProps) {
             <div className="space-y-1">
               {ultimoStatus.bloqueios_atuais.split('\n').map((item: string, i: number) => (
                 <div key={i} className="text-xs text-red-700 leading-tight">
-                  <span className="font-medium text-[#EF4444] mr-2">⚠️</span>
+                  <span className="font-medium text-[#EF4444] mr-2">🚫</span>
                   <span>{item.trim()}</span>
                 </div>
               ))}
