@@ -10,7 +10,7 @@ export function useDashboardMetricas(filtros?: FiltrosDashboard) {
 
       // Se há filtro de responsável ASA, buscar a hierarquia
       let responsaveisHierarquia: string[] = [];
-      let carteirasPermitidas: string[] = [];
+      let carteirasPermitidas: AreaResponsavel[] = [];
       
       if (filtros?.responsavel_asa) {
         // Buscar responsável selecionado para entender a hierarquia
@@ -23,7 +23,11 @@ export function useDashboardMetricas(filtros?: FiltrosDashboard) {
 
         if (responsavelSelecionado) {
           responsaveisHierarquia = [responsavelSelecionado.nome];
-          carteirasPermitidas = responsavelSelecionado.carteiras || [];
+          
+          // Filtrar apenas pelas carteiras válidas do enum
+          const carteirasValidas = (responsavelSelecionado.carteiras || [])
+            .filter((c): c is AreaResponsavel => CARTEIRAS.includes(c as AreaResponsavel));
+          carteirasPermitidas = carteirasValidas;
           
           // Se é um Head, incluir todos os superintendentes abaixo dele
           if (responsavelSelecionado.nivel === 'Head') {
@@ -38,7 +42,9 @@ export function useDashboardMetricas(filtros?: FiltrosDashboard) {
               // Adicionar carteiras dos superintendentes
               superintendentes.forEach(s => {
                 if (s.carteiras) {
-                  carteirasPermitidas.push(...s.carteiras);
+                  const carteirasValidasSuperintendente = s.carteiras
+                    .filter((c): c is AreaResponsavel => CARTEIRAS.includes(c as AreaResponsavel));
+                  carteirasPermitidas.push(...carteirasValidasSuperintendente);
                 }
               });
             }
@@ -61,12 +67,8 @@ export function useDashboardMetricas(filtros?: FiltrosDashboard) {
         }
       } else if (carteirasPermitidas.length > 0) {
         // Se temos hierarquia ASA mas não filtro específico de carteira, usar carteiras permitidas
-        // Filtrar apenas pelas carteiras válidas do enum
-        const carteirasValidas = carteirasPermitidas.filter(c => CARTEIRAS.includes(c as AreaResponsavel));
-        if (carteirasValidas.length > 0) {
-          query = query.in('area_responsavel', carteirasValidas);
-          console.log('🏢 Filtro de carteiras por hierarquia ASA aplicado:', carteirasValidas);
-        }
+        query = query.in('area_responsavel', carteirasPermitidas);
+        console.log('🏢 Filtro de carteiras por hierarquia ASA aplicado:', carteirasPermitidas);
       }
 
       if (filtros?.responsavel_asa && responsaveisHierarquia.length > 0) {
@@ -210,7 +212,7 @@ export function useDashboardMetricas(filtros?: FiltrosDashboard) {
         proximosMarcos: proximosMarcos.slice(0, 5), // Limitar a 5 marcos
         projetosCriticos,
         mudancasAtivas,
-        carteirasPermitidas // Retornar as carteiras permitidas para o filtro
+        carteirasPermitidas: carteirasPermitidas.map(c => c.toString()) // Converter para string[] para compatibilidade
       };
     },
   });
