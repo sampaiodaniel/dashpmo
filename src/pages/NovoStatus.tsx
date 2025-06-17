@@ -155,7 +155,11 @@ export default function NovoStatus() {
 
                   <div>
                     <Label htmlFor="progresso">Progresso Estimado (%) *</Label>
-                    <Select value={progressoEstimado.toString()} onValueChange={(value) => handleProgressoChange(Number(value))} required>
+                    <Select 
+                      value={progressoEstimado.toString()} 
+                      onValueChange={(value) => handleProgressoChange(Number(value))} 
+                      required
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione o progresso" />
                       </SelectTrigger>
@@ -287,7 +291,10 @@ export default function NovoStatus() {
             <ProximasEntregasForm form={form} />
 
             <div className="flex justify-end">
-              <Button type="submit" disabled={isSubmitting || !projetoSelecionado || progressoEstimado === 0}>
+              <Button 
+                type="submit" 
+                disabled={isSubmitting || !projetoSelecionado}
+              >
                 <Save className="h-4 w-4 mr-2" />
                 {isSubmitting ? 'Salvando...' : 'Salvar Status'}
               </Button>

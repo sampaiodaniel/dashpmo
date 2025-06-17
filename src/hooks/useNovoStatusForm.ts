@@ -40,7 +40,7 @@ export function useNovoStatusForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [carteiraSelecionada, setCarteiraSelecionada] = useState('');
   const [projetoSelecionado, setProjetoSelecionado] = useState<number | null>(null);
-  const [progressoEstimado, setProgressoEstimado] = useState(0);
+  const [progressoEstimado, setProgressoEstimado] = useState<number>(5); // Default to 5% instead of 0
 
   const { data: carteiras } = useCarteiraOverview();
   const { data: projetos } = useProjetos();
@@ -73,6 +73,10 @@ export function useNovoStatusForm() {
   });
 
   const onSubmit = async (data: StatusFormData) => {
+    console.log('Form data submitted:', data);
+    console.log('Projeto selecionado:', projetoSelecionado);
+    console.log('Progresso estimado:', progressoEstimado);
+
     if (!usuario) {
       toast({
         title: "Erro",
@@ -91,21 +95,12 @@ export function useNovoStatusForm() {
       return;
     }
 
-    if (progressoEstimado === 0) {
-      toast({
-        title: "Erro",
-        description: "Progresso estimado é obrigatório",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsSubmitting(true);
 
     try {
       const statusData = {
         criado_por: usuario.nome,
-        aprovado: null,
+        aprovado: false, // Set to false instead of null
         projeto_id: projetoSelecionado,
         status_geral: data.status_geral as "Aguardando Aprovação" | "Aguardando Homologação" | "Cancelado" | "Concluído" | "Em Andamento" | "Em Especificação" | "Pausado" | "Planejamento",
         status_visao_gp: data.status_visao_gp as "Verde" | "Amarelo" | "Vermelho",
@@ -129,9 +124,10 @@ export function useNovoStatusForm() {
 
       console.log('Dados do status a serem enviados:', statusData);
 
-      const { error } = await supabase
+      const { data: insertedData, error } = await supabase
         .from('status_projeto')
-        .insert([statusData]);
+        .insert([statusData])
+        .select();
 
       if (error) {
         console.error('Erro ao criar status:', error);
@@ -142,6 +138,8 @@ export function useNovoStatusForm() {
         });
         return;
       }
+
+      console.log('Status criado com sucesso:', insertedData);
 
       toast({
         title: "Status criado com sucesso!",
@@ -162,17 +160,20 @@ export function useNovoStatusForm() {
   };
 
   const handleCarteiraChange = (carteira: string) => {
+    console.log('Carteira changed to:', carteira);
     setCarteiraSelecionada(carteira);
     setProjetoSelecionado(null);
     form.setValue('projeto_id', 0);
   };
 
   const handleProjetoChange = (projetoId: number) => {
+    console.log('Projeto changed to:', projetoId);
     setProjetoSelecionado(projetoId);
     form.setValue('projeto_id', projetoId);
   };
 
   const handleProgressoChange = (progresso: number) => {
+    console.log('Progresso changed to:', progresso);
     setProgressoEstimado(progresso);
   };
 
