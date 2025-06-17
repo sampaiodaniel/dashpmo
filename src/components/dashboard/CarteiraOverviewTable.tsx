@@ -55,9 +55,6 @@ export function CarteiraOverviewTable() {
                 <th className="text-center p-2 font-medium">CR Abertas/Aprovadas</th>
                 <th className="text-center p-2 font-medium">CR Fechadas/Reprovadas</th>
                 <th className="text-center p-2 font-medium">Entregas 15 dias</th>
-                <th className="text-center p-2 font-medium">Em Dia</th>
-                <th className="text-center p-2 font-medium">Com Atraso</th>
-                <th className="text-center p-2 font-medium">Entregues</th>
               </tr>
             </thead>
             <tbody>
@@ -84,9 +81,6 @@ export function CarteiraOverviewTable() {
                       {item.entregasProximos15Dias}
                     </Badge>
                   </td>
-                  <td className="text-center p-2">{item.emDia}</td>
-                  <td className="text-center p-2">{item.comAtraso}</td>
-                  <td className="text-center p-2">{item.entregues}</td>
                 </tr>
               ))}
             </tbody>

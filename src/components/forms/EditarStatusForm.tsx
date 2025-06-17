@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
@@ -155,6 +154,33 @@ export function EditarStatusForm({ status, onSuccess }: EditarStatusFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Informações do Projeto */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Informações do Projeto</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label>Projeto:</Label>
+              <p className="text-gray-700">{status.projeto?.nome_projeto}</p>
+            </div>
+            <div>
+              <Label>Carteira:</Label>
+              <p className="text-gray-700">{status.projeto?.area_responsavel}</p>
+            </div>
+            <div>
+              <Label>Responsável ASA:</Label>
+              <p className="text-gray-700">{status.projeto?.responsavel_interno}</p>
+            </div>
+            <div>
+              <Label>Chefe do Projeto:</Label>
+              <p className="text-gray-700">{status.projeto?.gp_responsavel}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Status do Projeto */}
       <Card>
         <CardHeader>
@@ -315,7 +341,6 @@ export function EditarStatusForm({ status, onSuccess }: EditarStatusFormProps) {
                   onChange={(e) => handleInputChange('entregaveis1', e.target.value)} 
                   placeholder="Descreva os entregáveis..."
                   rows={4}
-                  className="min-h-[100px]"
                   required
                 />
               </div>
@@ -379,7 +404,6 @@ export function EditarStatusForm({ status, onSuccess }: EditarStatusFormProps) {
                   onChange={(e) => handleInputChange('entregaveis2', e.target.value)} 
                   placeholder="Descreva os entregáveis..."
                   rows={4}
-                  className="min-h-[100px]"
                 />
               </div>
               <div className="space-y-4">
@@ -441,7 +465,6 @@ export function EditarStatusForm({ status, onSuccess }: EditarStatusFormProps) {
                   onChange={(e) => handleInputChange('entregaveis3', e.target.value)} 
                   placeholder="Descreva os entregáveis..."
                   rows={4}
-                  className="min-h-[100px]"
                 />
               </div>
               <div className="space-y-4">
