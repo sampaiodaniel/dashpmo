@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
@@ -225,13 +224,19 @@ export default function StatusDetalhes() {
                   <p className="text-gray-700">{status.projeto?.area_responsavel}</p>
                 </div>
                 <div>
-                  <span className="text-sm font-medium text-pmo-gray">Responsável Interno:</span>
+                  <span className="text-sm font-medium text-pmo-gray">Responsável ASA:</span>
                   <p className="text-gray-700">{status.projeto?.responsavel_interno}</p>
                 </div>
                 <div>
-                  <span className="text-sm font-medium text-pmo-gray">GP Responsável:</span>
+                  <span className="text-sm font-medium text-pmo-gray">Chefe do Projeto:</span>
                   <p className="text-gray-700">{status.projeto?.gp_responsavel}</p>
                 </div>
+                {status.projeto?.responsavel_cwi && (
+                  <div>
+                    <span className="text-sm font-medium text-pmo-gray">Responsável:</span>
+                    <p className="text-gray-700">{status.projeto?.responsavel_cwi}</p>
+                  </div>
+                )}
                 <div>
                   <span className="text-sm font-medium text-pmo-gray">Criado por:</span>
                   <p className="text-gray-700">{status.criado_por}</p>

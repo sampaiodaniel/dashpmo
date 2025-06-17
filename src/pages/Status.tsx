@@ -76,7 +76,7 @@ function StatusContent() {
 
   // Calcular métricas
   const totalStatus = statusList?.length || 0;
-  const statusPendentes = statusList?.filter(s => s.aprovado === null).length || 0;
+  const statusPendentes = statusList?.filter(s => s.aprovado !== true).length || 0;
   const statusRevisados = statusList?.filter(s => s.aprovado === true).length || 0;
 
   return (
