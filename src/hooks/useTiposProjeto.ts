@@ -127,7 +127,10 @@ export function useTiposProjetoOperations() {
       console.log('Tipo de projeto removido com sucesso');
     },
     onSuccess: () => {
+      // Invalidar a query para forçar um reload da lista
       queryClient.invalidateQueries({ queryKey: ['tipos-projeto'] });
+      // Também forçar um refetch
+      queryClient.refetchQueries({ queryKey: ['tipos-projeto'] });
       toast({
         title: "Sucesso",
         description: "Tipo de projeto removido com sucesso!",

@@ -49,14 +49,14 @@ export function StatusCard({ status, onUpdate, onStatusUpdate }: StatusCardProps
           
           <div className="flex items-center gap-4 mb-4">
             <Badge className={getStatusGeralColor(status.status_geral)}>
-              <span className="font-semibold">Status:</span> {status.status_geral}
+              <span className="font-semibold">Status:</span>&nbsp;{status.status_geral}
             </Badge>
             <Badge className={getStatusColor(status.status_visao_gp)}>
-              <span className="font-semibold">Visão GP:</span> {status.status_visao_gp}
+              <span className="font-semibold">Visão GP:</span>&nbsp;{status.status_visao_gp}
             </Badge>
             {status.prob_x_impact && (
               <Badge variant="outline" className={getMatrizRiscoColor(status.prob_x_impact)}>
-                <span className="font-semibold">Matriz de Risco:</span> {status.prob_x_impact}
+                <span className="font-semibold">Matriz de Risco:</span>&nbsp;{status.prob_x_impact}
               </Badge>
             )}
           </div>
