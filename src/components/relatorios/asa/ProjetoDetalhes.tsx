@@ -1,6 +1,5 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Calendar, AlertTriangle, Target, User, Crown } from 'lucide-react';
 import { ProjetoAtividades } from './ProjetoAtividades';
 import { ProjetoMilestones } from './ProjetoMilestones';
@@ -19,19 +18,6 @@ export function ProjetoDetalhes({ projeto }: ProjetoDetalhesProps) {
       </div>
     );
   }
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Verde':
-        return 'bg-[#10B981] text-white';
-      case 'Amarelo':
-        return 'bg-[#F59E0B] text-white';
-      case 'Vermelho':
-        return 'bg-[#EF4444] text-white';
-      default:
-        return 'bg-[#6B7280] text-white';
-    }
-  };
 
   const getStatusIndicatorColor = (status: string) => {
     switch (status) {
@@ -54,19 +40,14 @@ export function ProjetoDetalhes({ projeto }: ProjetoDetalhesProps) {
           <div className="flex-1">
             <div className="flex items-center gap-4 mb-4">
               <h2 className="text-2xl font-bold text-[#1B365D]">{projeto.nome_projeto}</h2>
-              {/* Indicador de status - bolinha 32x32px */}
-              <div 
-                className={`w-8 h-8 rounded-full ${getStatusIndicatorColor(ultimoStatus.status_visao_gp)}`}
-                title={`Status: ${ultimoStatus.status_visao_gp}`}
-              ></div>
             </div>
             
             {projeto.descricao_projeto && (
               <p className="text-[#6B7280] mb-4 leading-relaxed">{projeto.descricao_projeto}</p>
             )}
             
-            {/* Informações do projeto em grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+            {/* Informações do projeto em grid - removendo o campo Área */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
               <div className="flex items-center gap-2 text-sm">
                 <User className="h-4 w-4 text-[#1B365D]" />
                 <div>
@@ -90,24 +71,15 @@ export function ProjetoDetalhes({ projeto }: ProjetoDetalhesProps) {
                   <div className="font-medium text-[#1B365D]">{ultimoStatus.status_geral}</div>
                 </div>
               </div>
-              
-              <div className="flex items-center gap-2 text-sm">
-                <Calendar className="h-4 w-4 text-[#1B365D]" />
-                <div>
-                  <span className="text-[#6B7280]">Área:</span>
-                  <div className="font-medium text-[#1B365D]">{projeto.area_responsavel}</div>
-                </div>
-              </div>
             </div>
           </div>
           
+          {/* Bolinha indicadora no canto superior direito */}
           <div className="flex items-center gap-2 ml-4">
-            <Badge className={getStatusColor(ultimoStatus.status_geral)}>
-              {ultimoStatus.status_geral}
-            </Badge>
-            <Badge className={getStatusColor(ultimoStatus.status_visao_gp)}>
-              GP: {ultimoStatus.status_visao_gp}
-            </Badge>
+            <div 
+              className={`w-8 h-8 rounded-full ${getStatusIndicatorColor(ultimoStatus.status_visao_gp)}`}
+              title={`Status GP: ${ultimoStatus.status_visao_gp}`}
+            ></div>
           </div>
         </div>
       </div>
