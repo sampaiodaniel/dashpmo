@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, AlertTriangle, Target } from 'lucide-react';
+import { Calendar, AlertTriangle, Target, User, Crown } from 'lucide-react';
 import { ProjetoAtividades } from './ProjetoAtividades';
 import { ProjetoMilestones } from './ProjetoMilestones';
 
@@ -33,25 +33,75 @@ export function ProjetoDetalhes({ projeto }: ProjetoDetalhesProps) {
     }
   };
 
+  const getStatusIndicatorColor = (status: string) => {
+    switch (status) {
+      case 'Verde':
+        return 'bg-[#10B981]';
+      case 'Amarelo':
+        return 'bg-[#F59E0B]';
+      case 'Vermelho':
+        return 'bg-[#EF4444]';
+      default:
+        return 'bg-[#6B7280]';
+    }
+  };
+
   return (
     <div className="space-y-6">
-      {/* Header do Projeto */}
+      {/* Header do Projeto com layout aprimorado */}
       <div className="border-b border-[#E5E7EB] pb-6">
-        <div className="flex items-start justify-between mb-4">
-          <div>
-            <h2 className="text-2xl font-bold text-[#1B365D] mb-2">{projeto.nome_projeto}</h2>
-            <p className="text-[#6B7280] mb-3">{projeto.descricao_projeto}</p>
-            <div className="flex items-center gap-4 text-sm text-[#6B7280]">
-              <div className="flex items-center gap-1">
-                <Calendar className="h-4 w-4" />
-                <span>GP: {projeto.gerente_projeto}</span>
+        <div className="flex items-start justify-between mb-6">
+          <div className="flex-1">
+            <div className="flex items-center gap-4 mb-4">
+              <h2 className="text-2xl font-bold text-[#1B365D]">{projeto.nome_projeto}</h2>
+              {/* Indicador de status - bolinha 32x32px */}
+              <div 
+                className={`w-8 h-8 rounded-full ${getStatusIndicatorColor(ultimoStatus.status_visao_gp)}`}
+                title={`Status: ${ultimoStatus.status_visao_gp}`}
+              ></div>
+            </div>
+            
+            {projeto.descricao_projeto && (
+              <p className="text-[#6B7280] mb-4 leading-relaxed">{projeto.descricao_projeto}</p>
+            )}
+            
+            {/* Informações do projeto em grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+              <div className="flex items-center gap-2 text-sm">
+                <User className="h-4 w-4 text-[#1B365D]" />
+                <div>
+                  <span className="text-[#6B7280]">Responsável ASA:</span>
+                  <div className="font-medium text-[#1B365D]">{projeto.responsavel_asa || 'Não informado'}</div>
+                </div>
               </div>
-              <div className="flex items-center gap-1">
-                <span>Área: {projeto.area_responsavel}</span>
+              
+              <div className="flex items-center gap-2 text-sm">
+                <Crown className="h-4 w-4 text-[#1B365D]" />
+                <div>
+                  <span className="text-[#6B7280]">Chefe do Projeto:</span>
+                  <div className="font-medium text-[#1B365D]">{projeto.gp_responsavel}</div>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-2 text-sm">
+                <Target className="h-4 w-4 text-[#1B365D]" />
+                <div>
+                  <span className="text-[#6B7280]">Status Geral:</span>
+                  <div className="font-medium text-[#1B365D]">{ultimoStatus.status_geral}</div>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-2 text-sm">
+                <Calendar className="h-4 w-4 text-[#1B365D]" />
+                <div>
+                  <span className="text-[#6B7280]">Área:</span>
+                  <div className="font-medium text-[#1B365D]">{projeto.area_responsavel}</div>
+                </div>
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          
+          <div className="flex items-center gap-2 ml-4">
             <Badge className={getStatusColor(ultimoStatus.status_geral)}>
               {ultimoStatus.status_geral}
             </Badge>

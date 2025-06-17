@@ -1,161 +1,69 @@
 
-import { useState, useEffect } from 'react';
-import { Button } from "@/components/ui/button";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger,
-  DropdownMenuSeparator 
-} from "@/components/ui/dropdown-menu";
-import { Bell, CheckCircle, Clock } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
+import { Bell } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Badge } from '@/components/ui/badge';
 import { useStatusPendentes } from '@/hooks/useStatusPendentes';
+import { useAuth } from '@/hooks/useAuth';
 import { useNotificacoesLidas } from '@/hooks/useNotificacoesLidas';
 import { useResponsavelEHierarquia } from '@/hooks/useResponsavelEHierarquia';
-import { useNavigate } from 'react-router-dom';
 
 export function NotificationsDropdown() {
-  const { usuario, canApprove } = useAuth();
+  const { usuario } = useAuth();
   const { data: statusPendentes } = useStatusPendentes();
-  const [notificacoesProcessadasLocalmente, setNotificacoesProcessadasLocalmente] = useState<number[]>([]);
-  const { notificacoesLidas, marcarVariasComoLidas } = useNotificacoesLidas();
-  const navigate = useNavigate();
+  const { notificacoesLidas, marcarComoLida } = useNotificacoesLidas();
 
-  // Filtrar status pendentes que devem ser notificados para este usuário
-  const statusParaNotificar = statusPendentes?.filter(status => {
-    if (!status.responsavel_asa || !usuario?.nome) return false;
+  // Para cada responsável ASA, verificar se o usuário atual está na hierarquia
+  const statusParaUsuario = statusPendentes?.filter(status => {
+    if (!status.projeto?.responsavel_asa || !usuario?.nome) return false;
     
-    // Verificar se o usuário é o responsável ASA ou seu superior hierárquico
-    const { data: hierarquia } = useResponsavelEHierarquia(status.responsavel_asa);
-    return hierarquia?.includes(usuario.nome) || false;
+    // Usar o hook para verificar hierarquia
+    const { data: hierarquia } = useResponsavelEHierarquia(status.projeto.responsavel_asa);
+    
+    return hierarquia?.includes(usuario.nome);
   }) || [];
 
-  // Carregar notificações processadas do localStorage ao inicializar
-  useEffect(() => {
-    if (usuario?.id) {
-      const chaveStorage = `notificacoes-processadas-${usuario.id}`;
-      const saved = localStorage.getItem(chaveStorage);
-      if (saved) {
-        try {
-          const parsedIds = JSON.parse(saved);
-          if (Array.isArray(parsedIds)) {
-            setNotificacoesProcessadasLocalmente(parsedIds);
-          }
-        } catch (error) {
-          console.error('Erro ao carregar notificações processadas:', error);
-          localStorage.removeItem(chaveStorage);
-        }
-      }
-    }
-  }, [usuario?.id]);
+  const statusNaoLidos = statusParaUsuario.filter(status => 
+    !notificacoesLidas.includes(status.id)
+  );
 
-  // Combinar notificações lidas do servidor com as processadas localmente
-  const todasNotificacoesLidas = [...new Set([...notificacoesLidas, ...notificacoesProcessadasLocalmente])];
-
-  // Calcular número de notificações não lidas
-  const notificacoesNaoLidas = canApprove() ? 
-    statusParaNotificar.filter(status => !todasNotificacoesLidas.includes(status.id)).length || 0 : 0;
-
-  const handleOpenDropdown = async () => {
-    // Marcar todas as notificações como lidas quando abrir o dropdown
-    if (statusParaNotificar && statusParaNotificar.length > 0 && usuario?.id) {
-      const statusIds = statusParaNotificar.map(status => status.id);
-      const novasNotificacoes = statusIds.filter(id => !todasNotificacoesLidas.includes(id));
-      
-      if (novasNotificacoes.length > 0) {
-        console.log('Marcando notificações como lidas:', novasNotificacoes);
-        
-        // Marcar imediatamente no estado local e persistir por usuário
-        const novosIds = [...new Set([...notificacoesProcessadasLocalmente, ...novasNotificacoes])];
-        setNotificacoesProcessadasLocalmente(novosIds);
-        
-        // Salvar no localStorage com chave específica do usuário
-        const chaveStorage = `notificacoes-processadas-${usuario.id}`;
-        localStorage.setItem(chaveStorage, JSON.stringify(novosIds));
-        
-        // Marcar no servidor em background
-        try {
-          await marcarVariasComoLidas.mutateAsync(statusIds);
-          console.log('Notificações marcadas como lidas no servidor');
-        } catch (error) {
-          console.error('Erro ao marcar notificações como lidas no servidor:', error);
-        }
-      }
-    }
-  };
-
-  const handleVerStatus = (statusId: number) => {
-    navigate(`/status/${statusId}`);
-  };
-
-  const handleVerTodosStatus = () => {
-    navigate('/status');
+  const handleNotificationClick = (statusId: number) => {
+    marcarComoLida(statusId);
   };
 
   return (
-    <DropdownMenu onOpenChange={(open) => open && handleOpenDropdown()}>
+    <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="relative">
-          <Bell className="h-5 w-5 text-pmo-gray" />
-          {notificacoesNaoLidas > 0 && (
-            <span className="absolute -top-1 -right-1 h-5 w-5 bg-pmo-danger rounded-full text-xs text-white flex items-center justify-center">
-              {notificacoesNaoLidas}
-            </span>
+        <Button variant="ghost" size="icon" className="relative">
+          <Bell className="h-5 w-5" />
+          {statusNaoLidos.length > 0 && (
+            <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs bg-red-500">
+              {statusNaoLidos.length}
+            </Badge>
           )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-80">
-        <div className="px-3 py-2">
-          <h3 className="font-medium text-pmo-primary">Notificações</h3>
-        </div>
-        <DropdownMenuSeparator />
-        
-        {!canApprove() ? (
-          <div className="px-3 py-4 text-center text-gray-500">
-            <p className="text-sm">Você não tem permissão para ver notificações</p>
-          </div>
-        ) : statusParaNotificar && statusParaNotificar.length > 0 ? (
-          <>
-            {statusParaNotificar.slice(0, 5).map((status) => (
-              <DropdownMenuItem 
-                key={status.id}
-                onClick={() => handleVerStatus(status.id)}
-                className="px-3 py-3 cursor-pointer"
-              >
-                <div className="flex items-start gap-3 w-full">
-                  <Clock className="h-4 w-4 text-orange-500 mt-0.5 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-pmo-primary truncate">
-                      Status pendente de revisão
-                    </p>
-                    <p className="text-xs text-gray-600 truncate">
-                      Projeto: {status.projeto?.nome_projeto}
-                    </p>
-                    <p className="text-xs text-gray-400">
-                      {new Date(status.data_atualizacao).toLocaleDateString('pt-BR')}
-                    </p>
-                  </div>
-                </div>
-              </DropdownMenuItem>
-            ))}
-            
-            {statusParaNotificar.length > 5 && (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleVerTodosStatus} className="px-3 py-2 text-center">
-                  <span className="text-sm text-pmo-primary font-medium">
-                    Ver todos os status ({statusParaNotificar.length})
-                  </span>
-                </DropdownMenuItem>
-              </>
-            )}
-          </>
+        {statusNaoLidos.length === 0 ? (
+          <DropdownMenuItem disabled>
+            Nenhuma notificação pendente
+          </DropdownMenuItem>
         ) : (
-          <div className="px-3 py-4 text-center text-gray-500">
-            <CheckCircle className="h-8 w-8 mx-auto mb-2 text-green-500" />
-            <p className="text-sm">Nenhuma notificação pendente</p>
-          </div>
+          statusNaoLidos.map((status) => (
+            <DropdownMenuItem 
+              key={status.id}
+              onClick={() => handleNotificationClick(status.id)}
+              className="flex flex-col items-start p-3"
+            >
+              <div className="font-medium text-sm">Status pendente de revisão</div>
+              <div className="text-xs text-gray-500 mt-1">
+                Projeto: {status.projeto?.nome_projeto}
+              </div>
+              <div className="text-xs text-gray-400 mt-1">
+                {new Date(status.data_atualizacao).toLocaleDateString('pt-BR')}
+              </div>
+            </DropdownMenuItem>
+          ))
         )}
       </DropdownMenuContent>
     </DropdownMenu>
