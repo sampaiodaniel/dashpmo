@@ -45,36 +45,26 @@ export default function Mudancas() {
           mudancas={mudancas || []}
           onFiltrarPendentes={() => {}}
           onFiltrarEmAnalise={() => {}}
-          onFiltrarAprovadas={() => {}}
-          onFiltrarRejeitadas={() => {}}
         />
 
-        <div className="space-y-6">
-          <div className="flex gap-6">
-            <div className="w-80 flex-shrink-0">
-              <MudancasFilters 
-                filtros={filtros}
-                onFiltrosChange={setFiltros}
-              />
-            </div>
-            
-            <div className="flex-1 space-y-6">
-              <MudancasSearchBar
-                termoBusca={termoBusca}
-                onTermoBuscaChange={setTermoBusca}
-                totalResults={mudancasFiltradas.length}
-              />
+        <MudancasFilters 
+          filtros={filtros}
+          onFiltrosChange={setFiltros}
+        />
 
-              {isLoadingMudancas ? (
-                <div className="flex items-center justify-center py-12">
-                  <div className="text-pmo-gray">Carregando mudanças...</div>
-                </div>
-              ) : (
-                <MudancasList mudancas={mudancasFiltradas} />
-              )}
-            </div>
+        <MudancasSearchBar
+          termoBusca={termoBusca}
+          onTermoBuscaChange={setTermoBusca}
+          totalResults={mudancasFiltradas.length}
+        />
+
+        {isLoadingMudancas ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="text-pmo-gray">Carregando mudanças...</div>
           </div>
-        </div>
+        ) : (
+          <MudancasList mudancas={mudancasFiltradas} />
+        )}
       </div>
     </Layout>
   );
