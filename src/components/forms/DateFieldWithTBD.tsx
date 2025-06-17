@@ -39,14 +39,8 @@ export function DateFieldWithTBD({
   };
 
   const handleDateSelect = (date: Date | undefined) => {
-    if (date) {
-      // Adicionar 1 dia para corrigir o problema de timezone
-      const adjustedDate = new Date(date);
-      adjustedDate.setDate(adjustedDate.getDate() + 1);
-      onChange(adjustedDate);
-    } else {
-      onChange(null);
-    }
+    // Exibir a data selecionada normalmente, sem ajustes
+    onChange(date || null);
     setOpen(false);
   };
 

@@ -17,7 +17,10 @@ export function ProximasEntregasForm({ form }: ProximasEntregasFormProps) {
 
   const handleMarcoDateChange = (marcoNumber: number, date: Date | null) => {
     if (date) {
-      form.setValue(`marco${marcoNumber}_data`, date.toISOString().split('T')[0]);
+      // Adicionar 1 dia na hora de salvar para corrigir timezone
+      const adjustedDate = new Date(date);
+      adjustedDate.setDate(adjustedDate.getDate() + 1);
+      form.setValue(`marco${marcoNumber}_data`, adjustedDate.toISOString().split('T')[0]);
     } else {
       form.setValue(`marco${marcoNumber}_data`, '');
     }
