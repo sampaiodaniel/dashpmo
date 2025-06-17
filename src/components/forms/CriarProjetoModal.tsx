@@ -7,25 +7,19 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, X } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { Plus, CalendarIcon } from 'lucide-react';
 import { useProjetosOperations } from '@/hooks/useProjetosOperations';
-import { useResponsaveisASA } from '@/hooks/useResponsaveisASA';
+import { useResponsaveisASADropdown } from '@/hooks/useResponsaveisASADropdown';
 import { CARTEIRAS } from '@/types/pmo';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
 
 interface CriarProjetoModalProps {
   onProjetoCriado?: () => void;
 }
-
-// Lista fixa de GPs
-const GPS_RESPONSAVEIS = [
-  'Camila',
-  'Elias', 
-  'Fabiano',
-  'Fred',
-  'Marco',
-  'Rafael',
-  'Jefferson'
-];
 
 export function CriarProjetoModal({ onProjetoCriado }: CriarProjetoModalProps) {
   const [open, setOpen] = useState(false);
@@ -34,32 +28,34 @@ export function CriarProjetoModal({ onProjetoCriado }: CriarProjetoModalProps) {
     descricao_projeto: '',
     responsavel_asa: '',
     gp_responsavel_cwi: '',
-    responsavel_cwi: 'none',
+    responsavel_cwi: '',
     carteira_primaria: '',
     carteira_secundaria: 'none',
     carteira_terciaria: 'none',
     equipe: '',
-    finalizacao_prevista: ''
+    finalizacao_prevista: null as Date | null
   });
   
   const { criarProjeto, isLoading } = useProjetosOperations();
   
-  // Buscar apenas responsáveis ASA (superintendentes)
-  const { data: responsaveisASA } = useResponsaveisASA();
-  
-  // Filtrar apenas superintendentes
-  const superintendentes = responsaveisASA?.filter(resp => resp.nivel === 'Superintendente') || [];
+  // Buscar responsáveis ASA do banco de dados
+  const { data: responsaveisASA } = useResponsaveisASADropdown();
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: string, value: string | Date | null) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.nome_projeto || !formData.carteira_primaria || !formData.responsavel_asa || !formData.gp_responsavel_cwi) {
+    if (!formData.nome_projeto || !formData.descricao_projeto || !formData.carteira_primaria || !formData.responsavel_asa || !formData.gp_responsavel_cwi || !formData.finalizacao_prevista) {
       return;
     }
+
+    // Formatar data para string no formato ISO
+    const finalizacaoPrevista = formData.finalizacao_prevista 
+      ? format(formData.finalizacao_prevista, 'yyyy-MM-dd')
+      : null;
 
     const projeto = await criarProjeto({
       nome_projeto: formData.nome_projeto,
@@ -72,8 +68,8 @@ export function CriarProjetoModal({ onProjetoCriado }: CriarProjetoModalProps) {
       responsavel_asa: formData.responsavel_asa || null,
       gp_responsavel: formData.gp_responsavel_cwi,
       gp_responsavel_cwi: formData.gp_responsavel_cwi || null,
-      responsavel_cwi: formData.responsavel_cwi === 'none' ? null : formData.responsavel_cwi || null,
-      finalizacao_prevista: formData.finalizacao_prevista || null,
+      responsavel_cwi: formData.responsavel_cwi || null,
+      finalizacao_prevista: finalizacaoPrevista,
       equipe: formData.equipe || null,
     });
 
@@ -84,12 +80,12 @@ export function CriarProjetoModal({ onProjetoCriado }: CriarProjetoModalProps) {
         descricao_projeto: '',
         responsavel_asa: '',
         gp_responsavel_cwi: '',
-        responsavel_cwi: 'none',
+        responsavel_cwi: '',
         carteira_primaria: '',
         carteira_secundaria: 'none',
         carteira_terciaria: 'none',
         equipe: '',
-        finalizacao_prevista: ''
+        finalizacao_prevista: null
       });
       onProjetoCriado?.();
     }
@@ -127,24 +123,47 @@ export function CriarProjetoModal({ onProjetoCriado }: CriarProjetoModalProps) {
               </div>
 
               <div>
-                <Label htmlFor="descricao_projeto">Descrição do Projeto</Label>
+                <Label htmlFor="descricao_projeto">Descrição do Projeto *</Label>
                 <Textarea
                   id="descricao_projeto"
                   value={formData.descricao_projeto}
                   onChange={(e) => handleInputChange('descricao_projeto', e.target.value)}
                   placeholder="Descrição do projeto..."
                   rows={3}
+                  required
                 />
               </div>
 
               <div>
-                <Label htmlFor="finalizacao_prevista">Finalização Prevista</Label>
-                <Input
-                  id="finalizacao_prevista"
-                  type="date"
-                  value={formData.finalizacao_prevista}
-                  onChange={(e) => handleInputChange('finalizacao_prevista', e.target.value)}
-                />
+                <Label htmlFor="finalizacao_prevista">Finalização Prevista *</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !formData.finalizacao_prevista && "text-muted-foreground"
+                      )}
+                      type="button"
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {formData.finalizacao_prevista ? (
+                        format(formData.finalizacao_prevista, "dd/MM/yyyy", { locale: ptBR })
+                      ) : (
+                        <span>Selecione uma data</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={formData.finalizacao_prevista}
+                      onSelect={(date) => handleInputChange('finalizacao_prevista', date)}
+                      initialFocus
+                      className="pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
 
               <div>
@@ -173,9 +192,9 @@ export function CriarProjetoModal({ onProjetoCriado }: CriarProjetoModalProps) {
                     <SelectValue placeholder="Selecione um responsável ASA..." />
                   </SelectTrigger>
                   <SelectContent>
-                    {superintendentes.map((responsavel) => (
-                      <SelectItem key={responsavel.id} value={responsavel.nome}>
-                        {responsavel.nome}
+                    {responsaveisASA?.map((nome) => (
+                      <SelectItem key={nome} value={nome}>
+                        {nome}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -184,35 +203,23 @@ export function CriarProjetoModal({ onProjetoCriado }: CriarProjetoModalProps) {
 
               <div>
                 <Label htmlFor="gp_responsavel_cwi">Chefe do Projeto *</Label>
-                <Select value={formData.gp_responsavel_cwi} onValueChange={(value) => handleInputChange('gp_responsavel_cwi', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o chefe do projeto..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {GPS_RESPONSAVEIS.map((gp) => (
-                      <SelectItem key={gp} value={gp}>
-                        {gp}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Input
+                  id="gp_responsavel_cwi"
+                  value={formData.gp_responsavel_cwi}
+                  onChange={(e) => handleInputChange('gp_responsavel_cwi', e.target.value)}
+                  placeholder="Digite o nome do chefe do projeto..."
+                  required
+                />
               </div>
 
               <div>
                 <Label htmlFor="responsavel_cwi">Responsável</Label>
-                <Select value={formData.responsavel_cwi} onValueChange={(value) => handleInputChange('responsavel_cwi', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione um responsável..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Nenhum</SelectItem>
-                    {GPS_RESPONSAVEIS.map((responsavel) => (
-                      <SelectItem key={responsavel} value={responsavel}>
-                        {responsavel}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Input
+                  id="responsavel_cwi"
+                  value={formData.responsavel_cwi}
+                  onChange={(e) => handleInputChange('responsavel_cwi', e.target.value)}
+                  placeholder="Digite o nome do responsável..."
+                />
               </div>
             </CardContent>
           </Card>
