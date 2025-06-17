@@ -17,7 +17,7 @@ export function useMilestoneHandlers(
   const handleMarco1DateChange = (date: Date | null) => {
     setDataMarco1(date);
     if (!marco1TBD && date) {
-      // Salvar a data selecionada sem ajuste aqui - o ajuste será feito na hora de salvar no banco
+      // Salvar a data selecionada exatamente como está
       setFormData(prev => ({ ...prev, data_marco1: date.toISOString().split('T')[0] }));
     } else if (!marco1TBD) {
       setFormData(prev => ({ ...prev, data_marco1: '' }));
@@ -30,7 +30,7 @@ export function useMilestoneHandlers(
       setFormData(prev => ({ ...prev, data_marco1: 'TBD' }));
       setDataMarco1(null);
     } else if (dataMarco1) {
-      // Salvar a data selecionada sem ajuste aqui
+      // Salvar a data selecionada exatamente como está
       setFormData(prev => ({ ...prev, data_marco1: dataMarco1.toISOString().split('T')[0] }));
     }
   };
@@ -38,7 +38,7 @@ export function useMilestoneHandlers(
   const handleMarco2DateChange = (date: Date | null) => {
     setDataMarco2(date);
     if (!marco2TBD && date) {
-      // Salvar a data selecionada sem ajuste aqui - o ajuste será feito na hora de salvar no banco
+      // Salvar a data selecionada exatamente como está
       setFormData(prev => ({ ...prev, data_marco2: date.toISOString().split('T')[0] }));
     } else if (!marco2TBD) {
       setFormData(prev => ({ ...prev, data_marco2: '' }));
@@ -51,7 +51,7 @@ export function useMilestoneHandlers(
       setFormData(prev => ({ ...prev, data_marco2: 'TBD' }));
       setDataMarco2(null);
     } else if (dataMarco2) {
-      // Salvar a data selecionada sem ajuste aqui
+      // Salvar a data selecionada exatamente como está
       setFormData(prev => ({ ...prev, data_marco2: dataMarco2.toISOString().split('T')[0] }));
     }
   };
@@ -59,7 +59,7 @@ export function useMilestoneHandlers(
   const handleMarco3DateChange = (date: Date | null) => {
     setDataMarco3(date);
     if (!marco3TBD && date) {
-      // Salvar a data selecionada sem ajuste aqui - o ajuste será feito na hora de salvar no banco
+      // Salvar a data selecionada exatamente como está
       setFormData(prev => ({ ...prev, data_marco3: date.toISOString().split('T')[0] }));
     } else if (!marco3TBD) {
       setFormData(prev => ({ ...prev, data_marco3: '' }));
@@ -72,7 +72,7 @@ export function useMilestoneHandlers(
       setFormData(prev => ({ ...prev, data_marco3: 'TBD' }));
       setDataMarco3(null);
     } else if (dataMarco3) {
-      // Salvar a data selecionada sem ajuste aqui
+      // Salvar a data selecionada exatamente como está
       setFormData(prev => ({ ...prev, data_marco3: dataMarco3.toISOString().split('T')[0] }));
     }
   };

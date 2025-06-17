@@ -61,12 +61,11 @@ export function useEditarStatusForm(status: StatusProjeto) {
     setCarregando(true);
 
     try {
-      // Função para processar data antes de salvar - adiciona 1 dia para corrigir timezone
+      // Função para processar data antes de salvar - salvar exatamente como está
       const processarData = (dataString: string) => {
         if (!dataString || dataString === 'TBD') return dataString || null;
-        const date = new Date(dataString + 'T12:00:00'); // Adicionar meio-dia para evitar problemas de timezone
-        date.setDate(date.getDate() + 1); // Adicionar 1 dia
-        return date.toISOString().split('T')[0];
+        // Retornar a data exatamente como está, sem ajustes
+        return dataString;
       };
 
       const dataToUpdate = {
