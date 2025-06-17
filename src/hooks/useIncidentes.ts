@@ -70,21 +70,24 @@ export function useIncidenteOperations() {
         throw new Error(`Já existe um registro para a carteira ${data.carteira} na data ${dataRegistro}`);
       }
 
-      // Buscar o último registro dessa carteira para calcular o valor "anterior"
-      const { data: ultimoRegistro } = await supabase
-        .from('incidentes')
-        .select('atual')
-        .eq('carteira', data.carteira)
-        .order('data_registro', { ascending: false })
-        .limit(1)
-        .single();
-
-      // Implementar as regras de negócio:
-      // 1. O valor "anterior" deve ser o "atual" do último registro, ou 0 se for o primeiro
-      const anteriorCalculado = ultimoRegistro?.atual || 0;
+      // Se não foi fornecido um valor atual customizado, calcular automaticamente
+      let anteriorCalculado = data.anterior;
+      let atualCalculado = data.atual;
       
-      // 2. O valor "atual" deve ser: anterior + entradas - saídas
-      const atualCalculado = anteriorCalculado + data.entrada - data.saida;
+      // Se o valor atual não foi customizado, buscar o último registro para calcular
+      if (data.atual === (data.anterior + data.entrada - data.saida)) {
+        // Buscar o último registro dessa carteira para calcular o valor "anterior"
+        const { data: ultimoRegistro } = await supabase
+          .from('incidentes')
+          .select('atual')
+          .eq('carteira', data.carteira)
+          .order('data_registro', { ascending: false })
+          .limit(1)
+          .single();
+
+        anteriorCalculado = ultimoRegistro?.atual || 0;
+        atualCalculado = anteriorCalculado + data.entrada - data.saida;
+      }
       
       const { data: result, error } = await supabase
         .from('incidentes')
@@ -93,7 +96,7 @@ export function useIncidenteOperations() {
           anterior: anteriorCalculado,
           entrada: data.entrada,
           saida: data.saida,
-          atual: atualCalculado, // Usar o valor calculado
+          atual: atualCalculado,
           mais_15_dias: data.mais_15_dias,
           criticos: data.criticos,
           criado_por: data.criado_por,

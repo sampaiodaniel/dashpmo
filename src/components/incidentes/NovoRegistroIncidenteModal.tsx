@@ -31,6 +31,7 @@ export function NovoRegistroIncidenteModal({ isOpen, onClose }: NovoRegistroInci
   const [carteira, setCarteira] = useState('');
   const [entrada, setEntrada] = useState('');
   const [saida, setSaida] = useState('');
+  const [atual, setAtual] = useState('');
   const [mais15Dias, setMais15Dias] = useState('');
   const [criticos, setCriticos] = useState('');
   const [dataRegistro, setDataRegistro] = useState(new Date().toISOString().split('T')[0]);
@@ -43,10 +44,13 @@ export function NovoRegistroIncidenteModal({ isOpen, onClose }: NovoRegistroInci
   const ultimoRegistroCarteira = incidentesRecentes?.find(inc => inc.carteira === carteira);
   const anteriorCalculado = ultimoRegistroCarteira?.atual || 0;
   
-  // Calcular o "atual" baseado nas entradas e saídas
+  // Se o usuário não preencheu o "atual", calcular automaticamente
   const entradaNum = parseInt(entrada) || 0;
   const saidaNum = parseInt(saida) || 0;
-  const atualCalculado = anteriorCalculado + entradaNum - saidaNum;
+  const atualNum = parseInt(atual) || 0;
+  
+  // Mostrar valor calculado se o campo atual estiver vazio
+  const atualCalculadoAutomatico = atual === '' ? anteriorCalculado + entradaNum - saidaNum : atualNum;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,12 +58,15 @@ export function NovoRegistroIncidenteModal({ isOpen, onClose }: NovoRegistroInci
     if (!carteira || !usuario) return;
 
     try {
+      // Usar o valor do campo "atual" se preenchido, senão usar o calculado
+      const valorAtual = atual !== '' ? atualNum : anteriorCalculado + entradaNum - saidaNum;
+      
       await criarIncidente.mutateAsync({
         carteira,
-        anterior: anteriorCalculado, // Será recalculado no backend
+        anterior: anteriorCalculado,
         entrada: entradaNum,
         saida: saidaNum,
-        atual: atualCalculado, // Será recalculado no backend
+        atual: valorAtual,
         mais_15_dias: parseInt(mais15Dias) || 0,
         criticos: parseInt(criticos) || 0,
         data_registro: dataRegistro,
@@ -70,6 +77,7 @@ export function NovoRegistroIncidenteModal({ isOpen, onClose }: NovoRegistroInci
       setCarteira('');
       setEntrada('');
       setSaida('');
+      setAtual('');
       setMais15Dias('');
       setCriticos('');
       setDataRegistro(new Date().toISOString().split('T')[0]);
@@ -118,13 +126,13 @@ export function NovoRegistroIncidenteModal({ isOpen, onClose }: NovoRegistroInci
           {carteira && (
             <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
               <div className="text-sm text-blue-800 mb-2">
-                <strong>Valores Calculados:</strong>
+                <strong>Valores de Referência:</strong>
               </div>
               <div className="text-sm text-blue-700">
                 Anterior: <strong>{anteriorCalculado}</strong> (atual da última semana)
               </div>
               <div className="text-sm text-blue-700">
-                Atual: <strong>{atualCalculado}</strong> (anterior + entradas - saídas)
+                Cálculo Automático: <strong>{atualCalculadoAutomatico}</strong> (anterior + entradas - saídas)
               </div>
             </div>
           )}
@@ -151,6 +159,21 @@ export function NovoRegistroIncidenteModal({ isOpen, onClose }: NovoRegistroInci
               onChange={(e) => setSaida(e.target.value)}
               required
             />
+          </div>
+
+          <div>
+            <Label htmlFor="atual">Atual (deixe vazio para calcular automaticamente)</Label>
+            <Input
+              id="atual"
+              type="number"
+              min="0"
+              value={atual}
+              onChange={(e) => setAtual(e.target.value)}
+              placeholder={`Automático: ${atualCalculadoAutomatico}`}
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Se não preenchido, será calculado como: anterior + entradas - saídas
+            </p>
           </div>
 
           <div>

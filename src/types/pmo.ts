@@ -158,8 +158,8 @@ export interface Incidente {
 export interface DashboardMetricas {
   totalProjetos: number;
   projetosPorArea: Record<string, number>;
-  projetosPorStatus: Record<StatusGeral, number>;
-  projetosPorSaude: Record<StatusVisaoGP, number>;
+  projetosPorStatus: Record<string, number>;
+  projetosPorSaude: Record<string, number>;
   proximosMarcos: Array<{
     projeto: string;
     marco: string;
@@ -168,6 +168,7 @@ export interface DashboardMetricas {
   }>;
   projetosCriticos: number;
   mudancasAtivas: number;
+  carteirasPermitidas?: string[]; // Adicionado para suportar filtros por hierarquia ASA
 }
 
 export interface FiltrosProjeto {

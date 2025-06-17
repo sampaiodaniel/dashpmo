@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
@@ -26,9 +25,20 @@ function DashboardContent() {
 
   // Filtrar dados da visão geral por carteira baseado nos filtros
   const carteiraOverviewFiltrada = carteiraOverview?.filter(item => {
+    // Filtro por carteira específica
     if (filtros.carteira && filtros.carteira !== 'todas') {
-      return item.carteira === filtros.carteira;
+      if (item.carteira !== filtros.carteira) {
+        return false;
+      }
     }
+    
+    // Filtro por responsável ASA usando as carteiras permitidas das métricas
+    if (filtros.responsavel_asa && metricas?.carteirasPermitidas) {
+      if (!metricas.carteirasPermitidas.includes(item.carteira)) {
+        return false;
+      }
+    }
+    
     return true;
   });
 
@@ -72,7 +82,9 @@ function DashboardContent() {
       <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
         <div className="p-4 border-b bg-gray-50">
           <h2 className="text-lg font-semibold text-pmo-primary">
-            {filtros.carteira ? `Visão Geral - ${filtros.carteira}` : 'Visão Geral por Carteira'}
+            {filtros.carteira ? `Visão Geral - ${filtros.carteira}` : 
+             filtros.responsavel_asa ? `Visão Geral - ${filtros.responsavel_asa}` :
+             'Visão Geral por Carteira'}
           </h2>
         </div>
         <div className="overflow-x-auto">

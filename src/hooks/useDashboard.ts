@@ -62,8 +62,12 @@ export function useDashboardMetricas(filtros?: FiltrosDashboard) {
         }
       } else if (carteirasPermitidas.length > 0) {
         // Se temos hierarquia ASA mas não filtro específico de carteira, usar carteiras permitidas
-        query = query.in('area_responsavel', carteirasPermitidas);
-        console.log('🏢 Filtro de carteiras por hierarquia ASA aplicado:', carteirasPermitidas);
+        // Filtrar apenas pelas carteiras válidas do enum
+        const carteirasValidas = carteirasPermitidas.filter(c => CARTEIRAS.includes(c as any));
+        if (carteirasValidas.length > 0) {
+          query = query.in('area_responsavel', carteirasValidas);
+          console.log('🏢 Filtro de carteiras por hierarquia ASA aplicado:', carteirasValidas);
+        }
       }
 
       if (filtros?.responsavel_asa && responsaveisHierarquia.length > 0) {
@@ -206,7 +210,8 @@ export function useDashboardMetricas(filtros?: FiltrosDashboard) {
         projetosPorSaude,
         proximosMarcos: proximosMarcos.slice(0, 5), // Limitar a 5 marcos
         projetosCriticos,
-        mudancasAtivas
+        mudancasAtivas,
+        carteirasPermitidas // Retornar as carteiras permitidas para o filtro
       };
     },
   });
