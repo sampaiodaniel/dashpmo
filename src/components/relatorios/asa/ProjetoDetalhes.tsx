@@ -84,23 +84,23 @@ export function ProjetoDetalhes({ projeto }: ProjetoDetalhesProps) {
         </div>
       </div>
 
-      {/* Pontos de Atenção */}
+      {/* Atividades - vem primeiro agora */}
+      <ProjetoAtividades ultimoStatus={ultimoStatus} />
+
+      {/* Pontos de Atenção - mais compacto */}
       <Card className="bg-white border border-[#E5E7EB]">
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold text-[#1B365D] flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-[#F59E0B]" />
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base font-semibold text-[#1B365D] flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4 text-[#F59E0B]" />
             Pontos de Atenção
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <p className="text-[#6B7280] leading-relaxed">
+        <CardContent className="pt-0">
+          <p className="text-sm text-[#6B7280] leading-relaxed">
             {ultimoStatus.observacoes_pontos_atencao || 'Nenhum ponto de atenção reportado'}
           </p>
         </CardContent>
       </Card>
-
-      {/* Atividades */}
-      <ProjetoAtividades ultimoStatus={ultimoStatus} />
 
       {/* Milestones */}
       <ProjetoMilestones ultimoStatus={ultimoStatus} />
