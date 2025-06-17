@@ -39,8 +39,15 @@ export function DateFieldWithTBD({
   };
 
   const handleDateSelect = (date: Date | undefined) => {
-    onChange(date || null);
-    setOpen(false); // Fechar o popover após selecionar uma data
+    if (date) {
+      // Adicionar 1 dia para corrigir o problema de timezone
+      const adjustedDate = new Date(date);
+      adjustedDate.setDate(adjustedDate.getDate() + 1);
+      onChange(adjustedDate);
+    } else {
+      onChange(null);
+    }
+    setOpen(false);
   };
 
   return (

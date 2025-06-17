@@ -16,7 +16,11 @@ export function ProximasEntregasForm({ form }: ProximasEntregasFormProps) {
   const [marco3TBD, setMarco3TBD] = useState(false);
 
   const handleMarcoDateChange = (marcoNumber: number, date: Date | null) => {
-    form.setValue(`marco${marcoNumber}_data`, date ? date.toISOString().split('T')[0] : '');
+    if (date) {
+      form.setValue(`marco${marcoNumber}_data`, date.toISOString().split('T')[0]);
+    } else {
+      form.setValue(`marco${marcoNumber}_data`, '');
+    }
   };
 
   const handleMarcoTBDChange = (marcoNumber: number, isTBD: boolean) => {
