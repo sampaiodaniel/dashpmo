@@ -27,6 +27,13 @@ export function LicoesList({ licoes }: LicoesListProps) {
     navigate(`/licoes/${licaoId}`);
   };
 
+  const handleEditarClick = (e: React.MouseEvent, licaoId: number) => {
+    e.stopPropagation();
+    // For now, navigate to the same details page
+    // TODO: Implement dedicated edit page if needed
+    navigate(`/licoes/${licaoId}`);
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Aplicada':
@@ -130,10 +137,7 @@ export function LicoesList({ licoes }: LicoesListProps) {
                       Visualizar
                     </DropdownMenuItem>
                     {isAdmin() && (
-                      <DropdownMenuItem onClick={(e) => {
-                        e.stopPropagation();
-                        handleLicaoClick(licao.id);
-                      }}>
+                      <DropdownMenuItem onClick={(e) => handleEditarClick(e, licao.id)}>
                         <Edit className="h-4 w-4 mr-2" />
                         Editar
                       </DropdownMenuItem>

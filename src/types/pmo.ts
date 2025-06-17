@@ -1,4 +1,3 @@
-
 export interface Usuario {
   id: number;
   nome: string;
@@ -122,19 +121,23 @@ export type CategoriaLicao =
 
 export interface LicaoAprendida {
   id: number;
-  projeto_id: number;
+  projeto_id?: number;
   data_registro: Date;
   responsavel_registro: string;
-  categoria_licao: CategoriaLicao;
+  categoria_licao: 'Técnica' | 'Processo' | 'Comunicação' | 'Recursos' | 'Planejamento' | 'Qualidade' | 'Fornecedores' | 'Riscos' | 'Mudanças' | 'Conhecimento';
   situacao_ocorrida: string;
-  impacto_gerado: string;
   licao_aprendida: string;
+  impacto_gerado: string;
   acao_recomendada: string;
+  status_aplicacao: 'Aplicada' | 'Em andamento' | 'Não aplicada';
   tags_busca?: string;
-  status_aplicacao: 'Aplicada' | 'Não aplicada';
   criado_por: string;
   data_criacao: Date;
-  projeto?: Projeto;
+  projeto?: {
+    id: number;
+    nome_projeto: string;
+    area_responsavel: AreaResponsavel;
+  };
 }
 
 export interface Incidente {
