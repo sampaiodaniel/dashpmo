@@ -88,17 +88,6 @@ export function ProjetoDetalhes({ projeto }: ProjetoDetalhesProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="bg-white border border-[#E5E7EB]">
           <CardHeader>
-            <CardTitle className="text-lg font-semibold text-[#1B365D]">Itens Trabalhados na Semana</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-[#6B7280] leading-relaxed">
-              {ultimoStatus.realizado_semana_atual || 'Nenhuma atividade registrada'}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-white border border-[#E5E7EB]">
-          <CardHeader>
             <CardTitle className="text-lg font-semibold text-[#1B365D] flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-[#F59E0B]" />
               Pontos de Atenção
