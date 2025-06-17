@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Trash2 } from 'lucide-react';
 import { useStatusList } from '@/hooks/useStatusList';
 import { StatusAcoes } from '@/components/status/StatusAcoes';
 import { ProjetoInformacoes } from '@/components/status/details/ProjetoInformacoes';
@@ -12,14 +12,51 @@ import { StatusInformacoes } from '@/components/status/details/StatusInformacoes
 import { StatusDetalhesContent } from '@/components/status/details/StatusDetalhesContent';
 import { ProximasEntregasSection } from '@/components/status/details/ProximasEntregasSection';
 import { Loading } from '@/components/ui/loading';
+import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function StatusDetalhes() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { usuario, isLoading: authLoading } = useAuth();
+  const { usuario, isLoading: authLoading, isAdmin } = useAuth();
   const { data: statusList, isLoading, refetch } = useStatusList();
+  const queryClient = useQueryClient();
 
   const status = statusList?.find(s => s.id === Number(id));
+
+  const handleExcluirStatus = async () => {
+    if (!confirm('Tem certeza que deseja excluir este status? Esta ação não pode ser desfeita.')) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('status_projeto')
+        .delete()
+        .eq('id', status!.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Sucesso",
+        description: "Status excluído com sucesso!",
+      });
+
+      queryClient.invalidateQueries({ queryKey: ['status-projetos'] });
+      queryClient.invalidateQueries({ queryKey: ['status-pendentes'] });
+      queryClient.invalidateQueries({ queryKey: ['status-list'] });
+      
+      navigate('/status');
+    } catch (error) {
+      console.error('Erro ao excluir status:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao excluir status. Tente novamente.",
+        variant: "destructive",
+      });
+    }
+  };
 
   if (authLoading) {
     return <Loading />;
@@ -74,7 +111,20 @@ export default function StatusDetalhes() {
               <p className="text-pmo-gray mt-1">Status do projeto</p>
             </div>
           </div>
-          <StatusAcoes status={status} onUpdate={handleStatusUpdate} />
+          <div className="flex gap-2">
+            <StatusAcoes status={status} />
+            {isAdmin && (
+              <Button
+                onClick={handleExcluirStatus}
+                size="sm"
+                variant="outline"
+                className="border-red-300 text-red-600 hover:bg-red-50"
+              >
+                <Trash2 className="h-4 w-4 mr-1" />
+                Excluir
+              </Button>
+            )}
+          </div>
         </div>
 
         <div className="space-y-6">

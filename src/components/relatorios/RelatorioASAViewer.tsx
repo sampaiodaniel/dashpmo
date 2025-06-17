@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { X, Download, Printer } from 'lucide-react';
+import { Download, Printer } from 'lucide-react';
 import { DadosRelatorioASA } from '@/hooks/useRelatorioASA';
 import { ProjetosOverview } from './asa/ProjetosOverview';
 import { ProjetoDetalhes } from './asa/ProjetoDetalhes';
@@ -342,9 +342,6 @@ export function RelatorioASAViewer({ isOpen, onClose, dados }: RelatorioASAViewe
               <Button variant="outline" size="sm" onClick={handleDownload} className="border-[#1B365D] text-[#1B365D] hover:bg-[#1B365D] hover:text-white">
                 <Download className="h-4 w-4 mr-2" />
                 Download HTML
-              </Button>
-              <Button variant="ghost" size="icon" onClick={onClose}>
-                <X className="h-4 w-4" />
               </Button>
             </div>
           </div>

@@ -1,7 +1,7 @@
+
 import { StatusProjeto } from '@/types/pmo';
 import { StatusCard } from './StatusCard';
 import { Pagination } from '@/components/ui/pagination';
-import { useAuth } from '@/hooks/useAuth';
 
 interface StatusListProps {
   statusList: StatusProjeto[];
@@ -20,8 +20,6 @@ export function StatusList({
   totalPages,
   onPageChange 
 }: StatusListProps) {
-  const { isAdmin } = useAuth();
-
   if (isLoading) {
     return <div className="text-center py-4">Carregando status...</div>;
   }

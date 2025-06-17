@@ -1,10 +1,9 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { FileText } from 'lucide-react';
 import { StatusProjeto } from '@/types/pmo';
 import { useNavigate } from 'react-router-dom';
-import { StatusAcoes } from './StatusAcoes';
-import { useAuth } from '@/hooks/useAuth';
 
 interface StatusCardProps {
   status: StatusProjeto;
@@ -12,7 +11,6 @@ interface StatusCardProps {
 
 export function StatusCard({ status }: StatusCardProps) {
   const navigate = useNavigate();
-  const { isAdmin } = useAuth();
 
   const handleCardClick = () => {
     navigate(`/projetos/${status.projeto_id}`);
@@ -49,10 +47,6 @@ export function StatusCard({ status }: StatusCardProps) {
               <div className="font-medium">{status.status_visao_gp}</div>
             </div>
           </div>
-        </div>
-        
-        <div className="flex justify-end mt-4">
-          <StatusAcoes status={status} isAdmin={isAdmin} />
         </div>
       </CardContent>
     </Card>

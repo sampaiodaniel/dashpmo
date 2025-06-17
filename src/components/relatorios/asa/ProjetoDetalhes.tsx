@@ -46,7 +46,7 @@ export function ProjetoDetalhes({ projeto }: ProjetoDetalhesProps) {
               <p className="text-[#6B7280] mb-4 leading-relaxed">{projeto.descricao_projeto}</p>
             )}
             
-            {/* Informações do projeto em grid - removendo o campo Área */}
+            {/* Informações do projeto em grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
               <div className="flex items-center gap-2 text-sm">
                 <User className="h-4 w-4 text-[#1B365D]" />
@@ -88,11 +88,11 @@ export function ProjetoDetalhes({ projeto }: ProjetoDetalhesProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="bg-white border border-[#E5E7EB]">
           <CardHeader>
-            <CardTitle className="text-lg font-semibold text-[#1B365D]">Realizado na Semana</CardTitle>
+            <CardTitle className="text-lg font-semibold text-[#1B365D]">Itens Trabalhados na Semana</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-[#6B7280] leading-relaxed">
-              {ultimoStatus.realizado_semana || 'Nenhuma atividade registrada'}
+              {ultimoStatus.realizado_semana_atual || 'Nenhuma atividade registrada'}
             </p>
           </CardContent>
         </Card>
@@ -106,7 +106,7 @@ export function ProjetoDetalhes({ projeto }: ProjetoDetalhesProps) {
           </CardHeader>
           <CardContent>
             <p className="text-[#6B7280] leading-relaxed">
-              {ultimoStatus.pontos_atencao || 'Nenhum ponto de atenção reportado'}
+              {ultimoStatus.observacoes_pontos_atencao || 'Nenhum ponto de atenção reportado'}
             </p>
           </CardContent>
         </Card>
