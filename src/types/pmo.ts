@@ -9,12 +9,14 @@ export interface Usuario {
   data_criacao: Date;
 }
 
+export type AreaResponsavel = 'Cadastro' | 'Canais' | 'Core Bancário' | 'Crédito' | 'Cripto' | 'Empréstimos' | 'Fila Rápida' | 'Investimentos 1' | 'Investimentos 2' | 'Onboarding' | 'Open Finance';
+
 export interface Projeto {
   id: number;
   nome_projeto: string;
   descricao?: string;
   descricao_projeto?: string;
-  area_responsavel: 'Cadastro' | 'Canais' | 'Core Bancário' | 'Crédito' | 'Cripto' | 'Empréstimos' | 'Fila Rápida' | 'Investimentos 1' | 'Investimentos 2' | 'Onboarding' | 'Open Finance';
+  area_responsavel: AreaResponsavel;
   responsavel_interno: string;
   gp_responsavel: string;
   responsavel_cwi?: string;
