@@ -1,3 +1,4 @@
+
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
@@ -309,34 +310,28 @@ export default function NovoStatus() {
                   <h4 className="font-medium text-pmo-primary">Marco 1</h4>
                   <div className="grid grid-cols-3 gap-4 items-end">
                     <div className="col-span-2">
-                      <FormField
-                        control={form.control}
-                        name="entregaveis1"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Entregáveis *</FormLabel>
-                            <FormControl>
-                              <Textarea {...field} placeholder="Descreva os entregáveis..." rows={4} required />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="entregaveis1">Entregáveis *</Label>
+                          <Textarea 
+                            {...form.register('entregas_realizadas')} 
+                            placeholder="Descreva os entregáveis..." 
+                            rows={4} 
+                            required 
+                          />
+                        </div>
+                      </div>
                     </div>
                     <div className="space-y-4">
-                      <FormField
-                        control={form.control}
-                        name="entrega1"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Nome da Entrega *</FormLabel>
-                            <FormControl>
-                              <input {...field} placeholder="Nome da entrega" className="w-full p-2 border rounded" required />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                      <div>
+                        <Label htmlFor="entrega1">Nome da Entrega *</Label>
+                        <input 
+                          {...form.register('entregas_realizadas')} 
+                          placeholder="Nome da entrega" 
+                          className="w-full p-2 border rounded" 
+                          required 
+                        />
+                      </div>
 
                       <DateFieldWithTBD
                         label="Data de Entrega"
@@ -356,34 +351,26 @@ export default function NovoStatus() {
                   <h4 className="font-medium text-pmo-primary">Marco 2</h4>
                   <div className="grid grid-cols-3 gap-4 items-end">
                     <div className="col-span-2">
-                      <FormField
-                        control={form.control}
-                        name="entregaveis2"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Entregáveis</FormLabel>
-                            <FormControl>
-                              <Textarea {...field} placeholder="Descreva os entregáveis..." rows={4} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="entregaveis2">Entregáveis</Label>
+                          <Textarea 
+                            {...form.register('backlog')} 
+                            placeholder="Descreva os entregáveis..." 
+                            rows={4} 
+                          />
+                        </div>
+                      </div>
                     </div>
                     <div className="space-y-4">
-                      <FormField
-                        control={form.control}
-                        name="entrega2"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Nome da Entrega</FormLabel>
-                            <FormControl>
-                              <input {...field} placeholder="Nome da entrega" className="w-full p-2 border rounded" />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                      <div>
+                        <Label htmlFor="entrega2">Nome da Entrega</Label>
+                        <input 
+                          {...form.register('backlog')} 
+                          placeholder="Nome da entrega" 
+                          className="w-full p-2 border rounded" 
+                        />
+                      </div>
 
                       <DateFieldWithTBD
                         label="Data de Entrega"
@@ -402,34 +389,26 @@ export default function NovoStatus() {
                   <h4 className="font-medium text-pmo-primary">Marco 3</h4>
                   <div className="grid grid-cols-3 gap-4 items-end">
                     <div className="col-span-2">
-                      <FormField
-                        control={form.control}
-                        name="entregaveis3"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Entregáveis</FormLabel>
-                            <FormControl>
-                              <Textarea {...field} placeholder="Descreva os entregáveis..." rows={4} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="entregaveis3">Entregáveis</Label>
+                          <Textarea 
+                            {...form.register('bloqueios_atuais')} 
+                            placeholder="Descreva os entregáveis..." 
+                            rows={4} 
+                          />
+                        </div>
+                      </div>
                     </div>
                     <div className="space-y-4">
-                      <FormField
-                        control={form.control}
-                        name="entrega3"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Nome da Entrega</FormLabel>
-                            <FormControl>
-                              <input {...field} placeholder="Nome da entrega" className="w-full p-2 border rounded" />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                      <div>
+                        <Label htmlFor="entrega3">Nome da Entrega</Label>
+                        <input 
+                          {...form.register('bloqueios_atuais')} 
+                          placeholder="Nome da entrega" 
+                          className="w-full p-2 border rounded" 
+                        />
+                      </div>
 
                       <DateFieldWithTBD
                         label="Data de Entrega"

@@ -12,6 +12,16 @@ interface StatusCardProps {
   onStatusUpdate?: () => void;
 }
 
+// Função para obter cor da matriz de risco
+function getMatrizRiscoColor(nivel: string): string {
+  switch (nivel) {
+    case 'Baixo': return 'bg-green-100 text-green-700 border-green-200';
+    case 'Médio': return 'bg-yellow-100 text-yellow-700 border-yellow-200';
+    case 'Alto': return 'bg-red-100 text-red-700 border-red-200';
+    default: return 'bg-gray-100 text-gray-700 border-gray-200';
+  }
+}
+
 export function StatusCard({ status, onUpdate, onStatusUpdate }: StatusCardProps) {
   const navigate = useNavigate();
   const isRevisado = status.aprovado === true;
@@ -24,7 +34,7 @@ export function StatusCard({ status, onUpdate, onStatusUpdate }: StatusCardProps
     <div className="p-6 hover:bg-gray-50 transition-colors cursor-pointer group" onClick={handleCardClick}>
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <div className="flex items-center gap-3 mb-3">
+          <div className="flex items-center gap-3 mb-4">
             <h3 className="text-lg font-semibold text-pmo-primary group-hover:text-pmo-secondary transition-colors">
               {status.projeto?.nome_projeto || 'Projeto não encontrado'}
             </h3>
@@ -36,30 +46,30 @@ export function StatusCard({ status, onUpdate, onStatusUpdate }: StatusCardProps
             </div>
           </div>
           
-          <div className="flex items-center gap-2 mb-3">
+          <div className="flex items-center gap-3 mb-4">
             <Badge className={getStatusGeralColor(status.status_geral)}>
-              {status.status_geral}
+              <span className="font-semibold">Status:</span> {status.status_geral}
             </Badge>
             <Badge className={getStatusColor(status.status_visao_gp)}>
-              {status.status_visao_gp}
+              <span className="font-semibold">Visão GP:</span> {status.status_visao_gp}
             </Badge>
             {status.prob_x_impact && (
-              <Badge variant="outline" className="bg-gray-50">
-                Matriz de Risco: {status.prob_x_impact}
+              <Badge variant="outline" className={getMatrizRiscoColor(status.prob_x_impact)}>
+                <span className="font-semibold">Matriz de Risco:</span> {status.prob_x_impact}
               </Badge>
             )}
           </div>
 
-          <div className="flex items-center gap-4 text-sm text-pmo-gray">
+          <div className="flex items-center gap-6 text-sm text-pmo-gray">
             <div className="flex items-center gap-1">
               <Calendar className="h-4 w-4" />
               <span>{format(new Date(status.data_atualizacao), 'dd/MM/yyyy', { locale: ptBR })}</span>
             </div>
             <div>
-              <span>Responsável ASA: {status.projeto?.responsavel_interno || 'N/A'}</span>
+              <span className="font-semibold">Responsável ASA:</span> {status.projeto?.responsavel_interno || 'N/A'}
             </div>
             <div>
-              <span>Chefe do Projeto: {status.projeto?.gp_responsavel || 'N/A'}</span>
+              <span className="font-semibold">Chefe do Projeto:</span> {status.projeto?.gp_responsavel || 'N/A'}
             </div>
           </div>
         </div>
