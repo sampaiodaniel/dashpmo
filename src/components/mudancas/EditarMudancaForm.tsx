@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Save } from 'lucide-react';
 import { useMudancasOperations } from '@/hooks/useMudancasOperations';
+import { useTiposMudanca } from '@/hooks/useListaValores';
 import { MudancaReplanejamento } from '@/types/pmo';
 
 interface EditarMudancaFormProps {
@@ -17,6 +18,9 @@ interface EditarMudancaFormProps {
 
 export function EditarMudancaForm({ mudanca, onSuccess, onCancel }: EditarMudancaFormProps) {
   const { atualizarMudanca, isLoading: atualizandoMudanca } = useMudancasOperations();
+  
+  // Usar dados dinâmicos das configurações
+  const { data: tiposMudanca = [] } = useTiposMudanca();
 
   const [solicitante, setSolicitante] = useState('');
   const [tipoMudanca, setTipoMudanca] = useState('');
@@ -24,14 +28,6 @@ export function EditarMudancaForm({ mudanca, onSuccess, onCancel }: EditarMudanc
   const [justificativa, setJustificativa] = useState('');
   const [impactoPrazo, setImpactoPrazo] = useState('');
   const [observacoes, setObservacoes] = useState('');
-
-  const tiposMudanca = [
-    'Correção Bug',
-    'Melhoria', 
-    'Mudança Escopo',
-    'Novo Requisito',
-    'Replanejamento Cronograma'
-  ];
 
   useEffect(() => {
     if (mudanca) {

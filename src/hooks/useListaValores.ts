@@ -24,8 +24,9 @@ export function useListaValores(tipo: string) {
       console.log(`Lista de valores para ${tipo}:`, data);
       return data?.map(item => item.valor) || [];
     },
-    staleTime: 5 * 60 * 1000, // 5 minutos
-    gcTime: 10 * 60 * 1000, // 10 minutos
+    staleTime: 0, // Reduzir para atualizar mais frequentemente
+    gcTime: 2 * 60 * 1000, // 2 minutos
+    refetchOnWindowFocus: true, // Refetch quando a janela volta ao foco
   });
 }
 

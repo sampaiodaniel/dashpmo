@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -6,9 +7,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Save } from 'lucide-react';
-import { CARTEIRAS } from '@/types/pmo';
 import { useProjetos } from '@/hooks/useProjetos';
 import { useMudancasOperations } from '@/hooks/useMudancasOperations';
+import { useCarteiras, useTiposMudanca } from '@/hooks/useListaValores';
 import { useMemo } from 'react';
 
 interface CriarMudancaModalProps {
@@ -28,6 +29,10 @@ export function CriarMudancaModal({ onMudancaCriada }: CriarMudancaModalProps) {
 
   const { data: allProjetos } = useProjetos();
   const { criarMudanca, isLoading } = useMudancasOperations();
+  
+  // Usar dados dinâmicos das configurações
+  const { data: carteiras = [] } = useCarteiras();
+  const { data: tiposMudanca = [] } = useTiposMudanca();
 
   // Filtrar projetos baseado na carteira selecionada
   const projetosFiltrados = useMemo(() => {
@@ -42,14 +47,6 @@ export function CriarMudancaModal({ onMudancaCriada }: CriarMudancaModalProps) {
       projeto.carteira_terciaria === carteiraSelecionada
     );
   }, [allProjetos, carteiraSelecionada]);
-
-  const tiposMudanca = [
-    'Correção Bug',
-    'Melhoria', 
-    'Mudança Escopo',
-    'Novo Requisito',
-    'Replanejamento Cronograma'
-  ];
 
   const handleCarteiraChange = (value: string) => {
     setCarteiraSelecionada(value);
@@ -110,7 +107,7 @@ export function CriarMudancaModal({ onMudancaCriada }: CriarMudancaModalProps) {
                   <SelectValue placeholder="Selecione a carteira..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {CARTEIRAS.map((carteira) => (
+                  {carteiras.map((carteira) => (
                     <SelectItem key={carteira} value={carteira}>
                       {carteira}
                     </SelectItem>
