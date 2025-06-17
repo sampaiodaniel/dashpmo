@@ -41,18 +41,20 @@ export function TipoProjetoModal({ aberto, onFechar, tipo }: TipoProjetoModalPro
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const dadosSubmit = {
-      ...formData,
-      ativo: true,
-      criado_por: 'Admin', // TODO: pegar usuário logado
-    };
-
     if (tipo) {
       await updateTipoProjeto.mutateAsync({ 
         id: tipo.id, 
-        ...dadosSubmit 
+        nome: formData.nome,
+        descricao: formData.descricao || null,
+        ordem: formData.ordem
       });
     } else {
+      const dadosSubmit = {
+        ...formData,
+        descricao: formData.descricao || null,
+        ativo: true,
+        criado_por: 'Admin',
+      };
       await createTipoProjeto.mutateAsync(dadosSubmit);
     }
     
