@@ -10,7 +10,8 @@ export function ProjetoAtividades({ ultimoStatus }: ProjetoAtividadesProps) {
 
   const hasActivities = ultimoStatus.realizado_semana_atual || 
                        ultimoStatus.observacoes_pontos_atencao || 
-                       ultimoStatus.backlog;
+                       ultimoStatus.backlog ||
+                       ultimoStatus.bloqueios_atuais;
 
   if (!hasActivities) return null;
 

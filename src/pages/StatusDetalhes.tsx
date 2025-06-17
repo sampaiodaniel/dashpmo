@@ -81,6 +81,28 @@ export default function StatusDetalhes() {
     refetch();
   };
 
+  // Calcular matriz de risco
+  const getMatrizRisco = (probabilidade: string, impacto: string) => {
+    if (!probabilidade || !impacto) return null;
+    
+    const prob = probabilidade.toLowerCase();
+    const imp = impacto.toLowerCase();
+    
+    if ((prob === 'alta' && imp === 'alto') || 
+        (prob === 'média' && imp === 'alto') || 
+        (prob === 'alta' && imp === 'médio')) {
+      return { nivel: 'Alto', color: 'bg-red-500' };
+    } else if ((prob === 'baixa' && imp === 'alto') || 
+               (prob === 'média' && imp === 'médio') || 
+               (prob === 'alta' && imp === 'baixo')) {
+      return { nivel: 'Médio', color: 'bg-yellow-500' };
+    } else {
+      return { nivel: 'Baixo', color: 'bg-green-500' };
+    }
+  };
+
+  const matrizRisco = getMatrizRisco(status.probabilidade_riscos, status.impacto_riscos);
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -242,9 +264,11 @@ export default function StatusDetalhes() {
                 </div>
                 <div>
                   <span className="text-sm font-medium text-pmo-gray">Status de Revisão:</span>
-                  <Badge variant={status.aprovado === null ? "destructive" : "default"}>
-                    {statusRevisao}
-                  </Badge>
+                  <div className="mt-1">
+                    <Badge variant={status.aprovado === null ? "destructive" : "default"}>
+                      {statusRevisao}
+                    </Badge>
+                  </div>
                 </div>
                 {status.probabilidade_riscos && (
                   <div>
@@ -256,6 +280,15 @@ export default function StatusDetalhes() {
                   <div>
                     <span className="text-sm font-medium text-pmo-gray">Impacto de Riscos:</span>
                     <p className="text-gray-700">{status.impacto_riscos}</p>
+                  </div>
+                )}
+                {matrizRisco && (
+                  <div>
+                    <span className="text-sm font-medium text-pmo-gray">Matriz de Risco:</span>
+                    <div className="flex items-center gap-2 mt-1">
+                      <div className={`w-3 h-3 rounded-full ${matrizRisco.color}`}></div>
+                      <span className="text-gray-700">{matrizRisco.nivel}</span>
+                    </div>
                   </div>
                 )}
               </CardContent>

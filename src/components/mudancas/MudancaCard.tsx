@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, User, Building2, FileText } from 'lucide-react';
+import { Calendar, User, Building2 } from 'lucide-react';
 import { MudancaReplanejamento } from '@/types/pmo';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -35,15 +35,14 @@ export function MudancaCard({ mudanca }: MudancaCardProps) {
               <Badge className={getTipoColor(mudanca.tipo_mudanca)}>
                 {mudanca.tipo_mudanca}
               </Badge>
+              <span className="text-xs font-semibold text-pmo-primary bg-blue-50 px-2 py-1 rounded">
+                {mudanca.projeto?.area_responsavel}
+              </span>
             </div>
             <CardTitle className="text-lg text-pmo-primary mb-2">
               {mudanca.projeto?.nome_projeto || 'Projeto não encontrado'}
             </CardTitle>
             <div className="flex items-center gap-4 text-sm text-pmo-gray">
-              <div className="flex items-center gap-1">
-                <Building2 className="h-4 w-4" />
-                <span className="font-medium">{mudanca.projeto?.area_responsavel}</span>
-              </div>
               <div className="flex items-center gap-1">
                 <Calendar className="h-4 w-4" />
                 <span>{format(new Date(mudanca.data_solicitacao), 'dd/MM/yyyy', { locale: ptBR })}</span>
@@ -62,13 +61,6 @@ export function MudancaCard({ mudanca }: MudancaCardProps) {
           <div>
             <span className="text-sm font-medium text-pmo-gray">Descrição:</span>
             <p className="text-sm text-gray-700 line-clamp-2 mt-1">{mudanca.descricao}</p>
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <div className="text-sm">
-              <span className="font-medium text-pmo-gray">Impacto no Prazo: </span>
-              <span className="text-pmo-danger font-medium">{mudanca.impacto_prazo_dias} dias</span>
-            </div>
           </div>
         </div>
       </CardContent>

@@ -27,7 +27,7 @@ export function StatusAcoes({ status, onUpdate }: StatusAcoesProps) {
     onUpdate?.();
   };
 
-  const isRevisado = status.aprovado !== null && status.aprovado;
+  // Mostrar botão apenas para status em revisão (aprovado === null)
   const isEmRevisao = status.aprovado === null;
 
   if (!isEmRevisao) {
@@ -40,10 +40,10 @@ export function StatusAcoes({ status, onUpdate }: StatusAcoesProps) {
         size="sm"
         onClick={handleRevisar}
         disabled={isLoading}
-        className="bg-green-600 hover:bg-green-700 text-xs px-2 py-1 h-6"
+        className="bg-green-600 hover:bg-green-700 text-xs px-3 py-1 h-7"
       >
         <CheckCircle className="h-3 w-3 mr-1" />
-        Revisado OK
+        {isLoading ? 'Processando...' : 'Revisado OK'}
       </Button>
     </div>
   );
