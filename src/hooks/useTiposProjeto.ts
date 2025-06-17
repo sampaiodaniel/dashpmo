@@ -78,9 +78,12 @@ export function useTiposProjetoOperations() {
     mutationFn: async ({ id, ...updates }: Partial<TipoProjeto> & { id: number }) => {
       console.log('Atualizando tipo de projeto:', { id, ...updates });
       
+      // Remove campos que não devem ser atualizados
+      const { data_criacao, ...updateData } = updates;
+      
       const { data, error } = await supabase
         .from('tipos_projeto')
-        .update(updates)
+        .update(updateData)
         .eq('id', id)
         .select()
         .single();
@@ -112,19 +115,22 @@ export function useTiposProjetoOperations() {
 
   const deleteTipoProjeto = useMutation({
     mutationFn: async (id: number) => {
-      console.log('Removendo tipo de projeto:', id);
+      console.log('Removendo tipo de projeto (soft delete):', id);
       
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('tipos_projeto')
         .update({ ativo: false })
-        .eq('id', id);
+        .eq('id', id)
+        .select()
+        .single();
 
       if (error) {
         console.error('Erro ao remover tipo de projeto:', error);
         throw error;
       }
       
-      console.log('Tipo de projeto removido com sucesso');
+      console.log('Tipo de projeto removido com sucesso:', data);
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tipos-projeto'] });
