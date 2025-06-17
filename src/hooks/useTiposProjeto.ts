@@ -82,8 +82,7 @@ export function useTiposProjetoOperations() {
         .from('tipos_projeto')
         .update({ nome, descricao, ordem })
         .eq('id', id)
-        .select()
-        .single();
+        .select();
 
       if (error) {
         console.error('Erro ao atualizar tipo de projeto:', error);
@@ -95,6 +94,7 @@ export function useTiposProjetoOperations() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tipos-projeto'] });
+      queryClient.refetchQueries({ queryKey: ['tipos-projeto'] });
       toast({
         title: "Sucesso",
         description: "Tipo de projeto atualizado com sucesso!",
@@ -114,22 +114,22 @@ export function useTiposProjetoOperations() {
     mutationFn: async (id: number) => {
       console.log('Removendo tipo de projeto (soft delete):', id);
       
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('tipos_projeto')
         .update({ ativo: false })
-        .eq('id', id);
+        .eq('id', id)
+        .select();
 
       if (error) {
         console.error('Erro ao remover tipo de projeto:', error);
         throw error;
       }
       
-      console.log('Tipo de projeto removido com sucesso');
+      console.log('Tipo de projeto removido com sucesso:', data);
+      return data;
     },
     onSuccess: () => {
-      // Invalidar a query para forçar um reload da lista
       queryClient.invalidateQueries({ queryKey: ['tipos-projeto'] });
-      // Também forçar um refetch
       queryClient.refetchQueries({ queryKey: ['tipos-projeto'] });
       toast({
         title: "Sucesso",
