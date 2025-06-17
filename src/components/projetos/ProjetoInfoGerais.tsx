@@ -10,33 +10,85 @@ interface ProjetoInfoGeraisProps {
 
 export function ProjetoInfoGerais({ projeto }: ProjetoInfoGeraisProps) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Building className="h-5 w-5" />
-          Informações Gerais
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="text-sm font-medium text-pmo-gray">Nome do Projeto</label>
-            <p className="text-lg font-semibold text-pmo-primary">{projeto.nome_projeto}</p>
+    <div className="space-y-6">
+      {/* Informações Básicas */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Building className="h-5 w-5" />
+            Informações Básicas
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="text-sm font-medium text-pmo-gray">Nome do Projeto</label>
+              <p className="text-lg font-semibold text-pmo-primary">{projeto.nome_projeto}</p>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-pmo-gray">Status</label>
+              <div className="mt-1">
+                <Badge variant={projeto.status_ativo ? "default" : "secondary"}>
+                  {projeto.status_ativo ? "Ativo" : "Inativo"}
+                </Badge>
+              </div>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-pmo-gray">Data de Criação</label>
+              <div className="flex items-center gap-2 mt-1">
+                <Calendar className="h-4 w-4 text-pmo-gray" />
+                <span>{projeto.data_criacao.toLocaleDateString('pt-BR')}</span>
+              </div>
+            </div>
+
+            {projeto.finalizacao_prevista && (
+              <div>
+                <label className="text-sm font-medium text-pmo-gray">Finalização Prevista</label>
+                <div className="flex items-center gap-2 mt-1">
+                  <Calendar className="h-4 w-4 text-pmo-gray" />
+                  <span>{projeto.finalizacao_prevista}</span>
+                </div>
+              </div>
+            )}
           </div>
 
-          <div>
-            <label className="text-sm font-medium text-pmo-gray">Carteira Primária</label>
-            <p className="text-lg font-semibold text-pmo-primary">{projeto.area_responsavel}</p>
-          </div>
-          
-          <div>
-            <label className="text-sm font-medium text-pmo-gray">Responsável ASA</label>
-            <div className="flex items-center gap-2 mt-1">
-              <User className="h-4 w-4 text-pmo-gray" />
-              <span>{projeto.responsavel_interno}</span>
+          {projeto.descricao && (
+            <div>
+              <label className="text-sm font-medium text-pmo-gray">Descrição</label>
+              <p className="mt-1 text-gray-700">{projeto.descricao}</p>
             </div>
-          </div>
-          
+          )}
+
+          {projeto.equipe && (
+            <div>
+              <label className="text-sm font-medium text-pmo-gray">Equipe</label>
+              <p className="mt-1 text-gray-700">{projeto.equipe}</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Responsáveis */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            Responsáveis
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {projeto.responsavel_asa && (
+            <div>
+              <label className="text-sm font-medium text-pmo-gray">Responsável ASA</label>
+              <div className="flex items-center gap-2 mt-1">
+                <User className="h-4 w-4 text-pmo-gray" />
+                <span>{projeto.responsavel_asa}</span>
+              </div>
+            </div>
+          )}
+
           <div>
             <label className="text-sm font-medium text-pmo-gray">Chefe do Projeto</label>
             <div className="flex items-center gap-2 mt-1">
@@ -54,70 +106,44 @@ export function ProjetoInfoGerais({ projeto }: ProjetoInfoGeraisProps) {
               </div>
             </div>
           )}
+        </CardContent>
+      </Card>
 
-          {projeto.gp_responsavel_cwi && (
+      {/* Carteiras */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Building className="h-5 w-5" />
+            Carteiras
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
-              <label className="text-sm font-medium text-pmo-gray">Chefe do Projeto CWI</label>
-              <div className="flex items-center gap-2 mt-1">
-                <Users className="h-4 w-4 text-pmo-gray" />
-                <span>{projeto.gp_responsavel_cwi}</span>
-              </div>
+              <label className="text-sm font-medium text-pmo-gray">Carteira Primária</label>
+              <p className="text-lg font-semibold text-pmo-primary mt-1">{projeto.area_responsavel}</p>
             </div>
-          )}
 
-          {projeto.responsavel_asa && (
-            <div>
-              <label className="text-sm font-medium text-pmo-gray">Responsável ASA (Adicional)</label>
-              <div className="flex items-center gap-2 mt-1">
-                <User className="h-4 w-4 text-pmo-gray" />
-                <span>{projeto.responsavel_asa}</span>
-              </div>
-            </div>
-          )}
-          
-          <div>
-            <label className="text-sm font-medium text-pmo-gray">Data de Criação</label>
-            <div className="flex items-center gap-2 mt-1">
-              <Calendar className="h-4 w-4 text-pmo-gray" />
-              <span>{projeto.data_criacao.toLocaleDateString('pt-BR')}</span>
-            </div>
-          </div>
-
-          <div>
-            <label className="text-sm font-medium text-pmo-gray">Status</label>
-            <div className="mt-1">
-              <Badge variant={projeto.status_ativo ? "default" : "secondary"}>
-                {projeto.status_ativo ? "Ativo" : "Inativo"}
-              </Badge>
-            </div>
-          </div>
-        </div>
-
-        {projeto.descricao && (
-          <div>
-            <label className="text-sm font-medium text-pmo-gray">Descrição</label>
-            <p className="mt-1 text-gray-700">{projeto.descricao}</p>
-          </div>
-        )}
-
-        {(projeto.carteira_secundaria || projeto.carteira_terciaria) && (
-          <div>
-            <label className="text-sm font-medium text-pmo-gray">Carteiras Adicionais</label>
-            <div className="flex flex-wrap gap-2 mt-1">
-              {projeto.carteira_secundaria && (
-                <Badge variant="outline" className="bg-green-50 text-green-700">
-                  Secundária: {projeto.carteira_secundaria}
+            {projeto.carteira_secundaria && (
+              <div>
+                <label className="text-sm font-medium text-pmo-gray">Carteira Secundária</label>
+                <Badge variant="outline" className="bg-green-50 text-green-700 mt-1">
+                  {projeto.carteira_secundaria}
                 </Badge>
-              )}
-              {projeto.carteira_terciaria && (
-                <Badge variant="outline" className="bg-purple-50 text-purple-700">
-                  Terciária: {projeto.carteira_terciaria}
+              </div>
+            )}
+
+            {projeto.carteira_terciaria && (
+              <div>
+                <label className="text-sm font-medium text-pmo-gray">Carteira Terciária</label>
+                <Badge variant="outline" className="bg-purple-50 text-purple-700 mt-1">
+                  {projeto.carteira_terciaria}
                 </Badge>
-              )}
-            </div>
+              </div>
+            )}
           </div>
-        )}
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
