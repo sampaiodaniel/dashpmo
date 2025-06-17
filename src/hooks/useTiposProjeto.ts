@@ -78,8 +78,8 @@ export function useTiposProjetoOperations() {
     mutationFn: async ({ id, ...updates }: Partial<TipoProjeto> & { id: number }) => {
       console.log('Atualizando tipo de projeto:', { id, ...updates });
       
-      // Remove campos que não devem ser atualizados
-      const { data_criacao, ...updateData } = updates;
+      // Remove campos que não devem ser atualizados ou que causam conflito
+      const { data_criacao, criado_por, ...updateData } = updates;
       
       const { data, error } = await supabase
         .from('tipos_projeto')
