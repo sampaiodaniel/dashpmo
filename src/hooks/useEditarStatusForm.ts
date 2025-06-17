@@ -61,6 +61,14 @@ export function useEditarStatusForm(status: StatusProjeto) {
     setCarregando(true);
 
     try {
+      // Função para processar data antes de salvar - adiciona 1 dia para corrigir timezone
+      const processarData = (dataString: string) => {
+        if (!dataString || dataString === 'TBD') return dataString || null;
+        const date = new Date(dataString + 'T12:00:00'); // Adicionar meio-dia para evitar problemas de timezone
+        date.setDate(date.getDate() + 1); // Adicionar 1 dia
+        return date.toISOString().split('T')[0];
+      };
+
       const dataToUpdate = {
         status_geral: formData.status_geral,
         status_visao_gp: formData.status_visao_gp,
@@ -72,16 +80,18 @@ export function useEditarStatusForm(status: StatusProjeto) {
         observacoes_pontos_atencao: formData.observacoes_pontos_atencao,
         entregaveis1: formData.entregaveis1,
         entrega1: formData.entrega1,
-        data_marco1: formData.data_marco1 || null,
+        data_marco1: processarData(formData.data_marco1),
         entregaveis2: formData.entregaveis2,
         entrega2: formData.entrega2,
-        data_marco2: formData.data_marco2 || null,
+        data_marco2: processarData(formData.data_marco2),
         entregaveis3: formData.entregaveis3,
         entrega3: formData.entrega3,
-        data_marco3: formData.data_marco3 || null,
+        data_marco3: processarData(formData.data_marco3),
         progresso_estimado: formData.progresso_estimado,
         data_atualizacao: new Date().toISOString().split('T')[0]
       };
+
+      console.log('Dados a serem salvos:', dataToUpdate);
 
       const { error } = await supabase
         .from('status_projeto')

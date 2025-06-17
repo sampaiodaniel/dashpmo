@@ -1,3 +1,4 @@
+
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
@@ -11,10 +12,17 @@ import { IncidentesFiltersCompact } from '@/components/incidentes/IncidentesFilt
 import { useIncidentes } from '@/hooks/useIncidentes';
 import { useEffect, useState } from 'react';
 import { seedIncidentesCanais } from '@/utils/seedIncidentesCanais';
+import { clearAllIncidentes } from '@/utils/clearIncidentes';
+import { Button } from '@/components/ui/button';
+import { Trash2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function Incidentes() {
   const { usuario, isLoading } = useAuth();
   const { data: incidentes, isLoading: isLoadingIncidentes } = useIncidentes();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   // Filtros para a tabela
   const [responsavelTabelaSelecionado, setResponsavelTabelaSelecionado] = useState('todos');
@@ -29,6 +37,26 @@ export default function Incidentes() {
       seedIncidentesCanais();
     }
   }, [usuario]);
+
+  const handleClearIncidentes = async () => {
+    if (window.confirm('Tem certeza que deseja limpar TODOS os registros de incidentes? Esta ação não pode ser desfeita.')) {
+      try {
+        await clearAllIncidentes();
+        toast({
+          title: "Sucesso",
+          description: "Todos os registros de incidentes foram removidos!",
+        });
+        queryClient.invalidateQueries({ queryKey: ['incidentes-recentes'] });
+        queryClient.invalidateQueries({ queryKey: ['incidentes-historico'] });
+      } catch (error) {
+        toast({
+          title: "Erro",
+          description: "Erro ao limpar registros de incidentes",
+          variant: "destructive",
+        });
+      }
+    }
+  };
 
   if (isLoading) {
     return (
@@ -67,7 +95,18 @@ export default function Incidentes() {
   return (
     <Layout>
       <div className="space-y-6">
-        <IncidentesHeader />
+        <div className="flex items-center justify-between">
+          <IncidentesHeader />
+          <Button 
+            onClick={handleClearIncidentes}
+            variant="destructive"
+            size="sm"
+            className="gap-2"
+          >
+            <Trash2 className="h-4 w-4" />
+            Limpar Base
+          </Button>
+        </div>
         
         <IncidentesMetricas 
           criticos={metricas.criticos}
