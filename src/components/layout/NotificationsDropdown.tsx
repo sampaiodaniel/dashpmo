@@ -28,7 +28,7 @@ export function NotificationsDropdown() {
   );
 
   const handleNotificationClick = (statusId: number) => {
-    marcarComoLida(statusId);
+    marcarComoLida.mutate(statusId);
   };
 
   return (
