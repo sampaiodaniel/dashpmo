@@ -12,17 +12,17 @@ import { useCarteiraOverview } from './useCarteiraOverview';
 
 const statusFormSchema = z.object({
   projeto_id: z.number().optional(),
-  status_geral: z.string(),
-  status_visao_gp: z.string(),
-  probabilidade_riscos: z.string(),
-  impacto_riscos: z.string(),
-  entregas_realizadas: z.string().optional(),
+  status_geral: z.string().min(1, "Status geral é obrigatório"),
+  status_visao_gp: z.string().min(1, "Visão GP é obrigatória"),
+  probabilidade_riscos: z.string().min(1, "Probabilidade de riscos é obrigatória"),
+  impacto_riscos: z.string().min(1, "Impacto de riscos é obrigatório"),
+  entregas_realizadas: z.string().min(1, "Itens trabalhados na semana é obrigatório"),
   backlog: z.string().optional(),
   bloqueios_atuais: z.string().optional(),
   observacoes_gerais: z.string().optional(),
-  marco1_nome: z.string(),
-  marco1_data: z.string(),
-  marco1_responsavel: z.string(),
+  marco1_nome: z.string().min(1, "Nome da entrega do Marco 1 é obrigatório"),
+  marco1_data: z.string().min(1, "Data de entrega do Marco 1 é obrigatória"),
+  marco1_responsavel: z.string().min(1, "Entregáveis do Marco 1 são obrigatórios"),
   marco2_nome: z.string().optional(),
   marco2_data: z.string().optional(),
   marco2_responsavel: z.string().optional(),
@@ -77,6 +77,15 @@ export function useNovoStatusForm() {
       toast({
         title: "Erro",
         description: "Usuário não autenticado ou projeto não selecionado",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (progressoEstimado === 0) {
+      toast({
+        title: "Erro",
+        description: "Progresso estimado é obrigatório",
         variant: "destructive",
       });
       return;

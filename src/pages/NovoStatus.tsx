@@ -10,13 +10,18 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Save } from 'lucide-react';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { ArrowLeft, Save, CalendarIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useNovoStatusForm } from '@/hooks/useNovoStatusForm';
 import { CarteiraProjetoSelect } from '@/components/forms/CarteiraProjetoSelect';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
 
 // Função para calcular o risco baseado na fórmula do Excel
-function calcularFarolRisco(impacto: string, probabilidade: string): { nivel: string; cor: string } {
+function calcularMatrizRisco(impacto: string, probabilidade: string): { nivel: string; cor: string } {
   if (!impacto || !probabilidade) {
     return { nivel: '', cor: '' };
   }
@@ -48,10 +53,10 @@ export default function NovoStatus() {
     handleProgressoChange
   } = useNovoStatusForm();
 
-  // Valores atuais dos campos de risco para calcular o farol
+  // Valores atuais dos campos de risco para calcular a matriz
   const impactoAtual = form.watch('impacto_riscos');
   const probabilidadeAtual = form.watch('probabilidade_riscos');
-  const farolRisco = calcularFarolRisco(impactoAtual, probabilidadeAtual);
+  const matrizRisco = calcularMatrizRisco(impactoAtual, probabilidadeAtual);
 
   // Gerar opções de progresso de 5 em 5%
   const progressoOptions = Array.from({ length: 21 }, (_, i) => i * 5);
@@ -119,8 +124,8 @@ export default function NovoStatus() {
                     name="status_geral"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Status Geral</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormLabel>Status Geral *</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value} required>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Selecione o status" />
@@ -147,8 +152,8 @@ export default function NovoStatus() {
                     name="status_visao_gp"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Visão GP</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormLabel>Visão GP *</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value} required>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Selecione a visão" />
@@ -166,8 +171,8 @@ export default function NovoStatus() {
                   />
 
                   <div>
-                    <Label htmlFor="progresso">Progresso Estimado (%)</Label>
-                    <Select value={progressoEstimado.toString()} onValueChange={(value) => handleProgressoChange(Number(value))}>
+                    <Label htmlFor="progresso">Progresso Estimado (%) *</Label>
+                    <Select value={progressoEstimado.toString()} onValueChange={(value) => handleProgressoChange(Number(value))} required>
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione o progresso" />
                       </SelectTrigger>
@@ -188,8 +193,8 @@ export default function NovoStatus() {
                     name="probabilidade_riscos"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Probabilidade de Riscos</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormLabel>Probabilidade de Riscos *</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value} required>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Selecione a probabilidade" />
@@ -211,8 +216,8 @@ export default function NovoStatus() {
                     name="impacto_riscos"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Impacto dos Riscos</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormLabel>Impacto dos Riscos *</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value} required>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Selecione o impacto" />
@@ -229,11 +234,11 @@ export default function NovoStatus() {
                     )}
                   />
 
-                  {farolRisco.nivel && (
+                  {matrizRisco.nivel && (
                     <div>
-                      <Label>Farol de Risco (Prob x Impacto)</Label>
-                      <Badge className={`${farolRisco.cor} mt-2 block w-fit`}>
-                        {farolRisco.nivel}
+                      <Label>Matriz de Risco (Prob x Impacto)</Label>
+                      <Badge className={`${matrizRisco.cor} mt-2 block w-fit`}>
+                        {matrizRisco.nivel}
                       </Badge>
                     </div>
                   )}
@@ -252,9 +257,9 @@ export default function NovoStatus() {
                   name="entregas_realizadas"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Itens Trabalhados na Semana</FormLabel>
+                      <FormLabel>Itens Trabalhados na Semana *</FormLabel>
                       <FormControl>
-                        <Textarea {...field} placeholder="Descreva os itens trabalhados na semana" />
+                        <Textarea {...field} placeholder="Descreva os itens trabalhados na semana" required />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -305,10 +310,10 @@ export default function NovoStatus() {
               </CardContent>
             </Card>
 
-            {/* Marco 1 (Required Fields) */}
+            {/* Marco 1 */}
             <Card>
               <CardHeader>
-                <CardTitle>Marco 1 (Obrigatório)</CardTitle>
+                <CardTitle>Marco 1</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-3 gap-4">
@@ -325,6 +330,7 @@ export default function NovoStatus() {
                               placeholder="Descreva os entregáveis..."
                               rows={4}
                               className="min-h-[100px]"
+                              required
                             />
                           </FormControl>
                           <FormMessage />
@@ -340,7 +346,7 @@ export default function NovoStatus() {
                         <FormItem>
                           <FormLabel>Nome da Entrega *</FormLabel>
                           <FormControl>
-                            <Input {...field} placeholder="Nome da entrega" />
+                            <Input {...field} placeholder="Nome da entrega" required />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -353,9 +359,35 @@ export default function NovoStatus() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Data de Entrega *</FormLabel>
-                          <FormControl>
-                            <Input type="date" {...field} />
-                          </FormControl>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant="outline"
+                                  className={cn(
+                                    "w-full pl-3 text-left font-normal",
+                                    !field.value && "text-muted-foreground"
+                                  )}
+                                >
+                                  {field.value ? (
+                                    format(new Date(field.value), "dd/MM/yyyy", { locale: ptBR })
+                                  ) : (
+                                    <span>Selecione a data</span>
+                                  )}
+                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={field.value ? new Date(field.value) : undefined}
+                                onSelect={(date) => field.onChange(date ? date.toISOString().split('T')[0] : '')}
+                                initialFocus
+                                className={cn("p-3 pointer-events-auto")}
+                              />
+                            </PopoverContent>
+                          </Popover>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -365,10 +397,10 @@ export default function NovoStatus() {
               </CardContent>
             </Card>
 
-            {/* Marco 2 (Optional Fields) */}
+            {/* Marco 2 */}
             <Card>
               <CardHeader>
-                <CardTitle>Marco 2 (Opcional)</CardTitle>
+                <CardTitle>Marco 2</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-3 gap-4">
@@ -413,9 +445,35 @@ export default function NovoStatus() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Data de Entrega</FormLabel>
-                          <FormControl>
-                            <Input type="date" {...field} />
-                          </FormControl>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant="outline"
+                                  className={cn(
+                                    "w-full pl-3 text-left font-normal",
+                                    !field.value && "text-muted-foreground"
+                                  )}
+                                >
+                                  {field.value ? (
+                                    format(new Date(field.value), "dd/MM/yyyy", { locale: ptBR })
+                                  ) : (
+                                    <span>Selecione a data</span>
+                                  )}
+                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={field.value ? new Date(field.value) : undefined}
+                                onSelect={(date) => field.onChange(date ? date.toISOString().split('T')[0] : '')}
+                                initialFocus
+                                className={cn("p-3 pointer-events-auto")}
+                              />
+                            </PopoverContent>
+                          </Popover>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -425,10 +483,10 @@ export default function NovoStatus() {
               </CardContent>
             </Card>
 
-            {/* Marco 3 (Optional Fields) */}
+            {/* Marco 3 */}
             <Card>
               <CardHeader>
-                <CardTitle>Marco 3 (Opcional)</CardTitle>
+                <CardTitle>Marco 3</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-3 gap-4">
@@ -473,9 +531,35 @@ export default function NovoStatus() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Data de Entrega</FormLabel>
-                          <FormControl>
-                            <Input type="date" {...field} />
-                          </FormControl>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant="outline"
+                                  className={cn(
+                                    "w-full pl-3 text-left font-normal",
+                                    !field.value && "text-muted-foreground"
+                                  )}
+                                >
+                                  {field.value ? (
+                                    format(new Date(field.value), "dd/MM/yyyy", { locale: ptBR })
+                                  ) : (
+                                    <span>Selecione a data</span>
+                                  )}
+                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={field.value ? new Date(field.value) : undefined}
+                                onSelect={(date) => field.onChange(date ? date.toISOString().split('T')[0] : '')}
+                                initialFocus
+                                className={cn("p-3 pointer-events-auto")}
+                              />
+                            </PopoverContent>
+                          </Popover>
                           <FormMessage />
                         </FormItem>
                       )}
