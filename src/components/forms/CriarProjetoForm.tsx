@@ -5,15 +5,10 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
-import { CalendarIcon } from 'lucide-react';
 import { useResponsaveisASADropdown } from '@/hooks/useResponsaveisASADropdown';
 import { CARTEIRAS } from '@/types/pmo';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { cn } from '@/lib/utils';
+import { DateFieldWithTBD } from './DateFieldWithTBD';
 
 interface CriarProjetoFormProps {
   formData: any;
@@ -31,15 +26,11 @@ export function CriarProjetoForm({
   onCancel
 }: CriarProjetoFormProps) {
   const { data: responsaveisASA } = useResponsaveisASADropdown();
-  const [dataTBD, setDataTBD] = useState(false);
 
-  const handleDataToggle = (isTBD: boolean) => {
-    setDataTBD(isTBD);
+  const handleDataTBDChange = (isTBD: boolean) => {
+    onInputChange('finalizacao_tbd', isTBD);
     if (isTBD) {
       onInputChange('finalizacao_prevista', null);
-      onInputChange('finalizacao_tbd', true);
-    } else {
-      onInputChange('finalizacao_tbd', false);
     }
   };
 
@@ -74,66 +65,15 @@ export function CriarProjetoForm({
             />
           </div>
 
-          <div>
-            <Label htmlFor="finalizacao_prevista">Finalização Prevista *</Label>
-            <div className="space-y-2">
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant={!dataTBD ? "default" : "outline"}
-                  onClick={() => handleDataToggle(false)}
-                  className="flex-1"
-                >
-                  Data Específica
-                </Button>
-                <Button
-                  type="button"
-                  variant={dataTBD ? "default" : "outline"}
-                  onClick={() => handleDataToggle(true)}
-                  className="flex-1"
-                >
-                  TBD (A definir)
-                </Button>
-              </div>
-              
-              {!dataTBD && (
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !formData.finalizacao_prevista && "text-muted-foreground"
-                      )}
-                      type="button"
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {formData.finalizacao_prevista ? (
-                        format(formData.finalizacao_prevista, "dd/MM/yyyy", { locale: ptBR })
-                      ) : (
-                        <span>Selecione uma data</span>
-                      )}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={formData.finalizacao_prevista}
-                      onSelect={(date) => onInputChange('finalizacao_prevista', date)}
-                      initialFocus
-                      className="pointer-events-auto"
-                    />
-                  </PopoverContent>
-                </Popover>
-              )}
-              
-              {dataTBD && (
-                <div className="p-3 bg-gray-100 rounded border text-center text-gray-600">
-                  Data a ser definida (TBD)
-                </div>
-              )}
-            </div>
-          </div>
+          <DateFieldWithTBD
+            label="Finalização Prevista"
+            value={formData.finalizacao_prevista}
+            onChange={(date) => onInputChange('finalizacao_prevista', date)}
+            onTBDChange={handleDataTBDChange}
+            isTBD={formData.finalizacao_tbd}
+            required
+            placeholder="Selecione uma data"
+          />
 
           <div>
             <Label htmlFor="equipe">Equipe</Label>

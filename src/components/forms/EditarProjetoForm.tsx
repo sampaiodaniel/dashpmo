@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Projeto, CARTEIRAS } from '@/types/pmo';
 import { useQueryClient } from '@tanstack/react-query';
 import { useResponsaveisASA } from '@/hooks/useResponsaveisASA';
+import { DateFieldWithTBD } from './DateFieldWithTBD';
 
 interface EditarProjetoFormProps {
   projeto: Projeto;
@@ -48,7 +49,8 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
     carteira_secundaria: projeto.carteira_secundaria || 'none',
     carteira_terciaria: projeto.carteira_terciaria || 'none',
     equipe: projeto.equipe || '',
-    finalizacao_prevista: projeto.finalizacao_prevista || ''
+    finalizacao_prevista: projeto.finalizacao_prevista && projeto.finalizacao_prevista !== 'TBD' ? new Date(projeto.finalizacao_prevista) : null,
+    finalizacao_tbd: projeto.finalizacao_prevista === 'TBD'
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -67,7 +69,11 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
         carteira_secundaria: formData.carteira_secundaria === 'none' ? '' : formData.carteira_secundaria,
         carteira_terciaria: formData.carteira_terciaria === 'none' ? '' : formData.carteira_terciaria,
         equipe: formData.equipe,
-        finalizacao_prevista: formData.finalizacao_prevista,
+        finalizacao_prevista: formData.finalizacao_tbd 
+          ? 'TBD' 
+          : formData.finalizacao_prevista 
+            ? formData.finalizacao_prevista.toISOString().split('T')[0]
+            : null,
         // Manter os campos obrigatórios do banco com valores derivados dos novos campos
         area_responsavel: (formData.carteira_primaria === 'none' ? 'Cadastro' : formData.carteira_primaria) as typeof CARTEIRAS[number],
         responsavel_interno: formData.responsavel_asa === 'none' ? 'Admin' : formData.responsavel_asa,
@@ -108,8 +114,15 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
     }
   };
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: string, value: string | Date | null | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleDataTBDChange = (isTBD: boolean) => {
+    handleInputChange('finalizacao_tbd', isTBD);
+    if (isTBD) {
+      handleInputChange('finalizacao_prevista', null);
+    }
   };
 
   return (
@@ -140,15 +153,14 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
             />
           </div>
 
-          <div>
-            <Label htmlFor="finalizacao_prevista">Finalização Prevista</Label>
-            <Input
-              id="finalizacao_prevista"
-              type="date"
-              value={formData.finalizacao_prevista}
-              onChange={(e) => handleInputChange('finalizacao_prevista', e.target.value)}
-            />
-          </div>
+          <DateFieldWithTBD
+            label="Finalização Prevista"
+            value={formData.finalizacao_prevista}
+            onChange={(date) => handleInputChange('finalizacao_prevista', date)}
+            onTBDChange={handleDataTBDChange}
+            isTBD={formData.finalizacao_tbd}
+            placeholder="Selecione uma data"
+          />
 
           <div>
             <Label htmlFor="equipe">Equipe</Label>

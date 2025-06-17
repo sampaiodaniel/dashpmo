@@ -8,6 +8,7 @@ import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface DateFieldWithTBDProps {
   label: string;
@@ -28,9 +29,9 @@ export function DateFieldWithTBD({
   required = false,
   placeholder = "Selecione uma data"
 }: DateFieldWithTBDProps) {
-  const handleToggle = (tbdValue: boolean) => {
-    onTBDChange(tbdValue);
-    if (tbdValue) {
+  const handleToggle = (checked: boolean) => {
+    onTBDChange(checked);
+    if (checked) {
       onChange(null);
     }
   };
@@ -39,25 +40,18 @@ export function DateFieldWithTBD({
     <div>
       <Label>{label} {required && '*'}</Label>
       <div className="space-y-2">
-        <div className="flex gap-2">
-          <Button
-            type="button"
-            variant={!isTBD ? "default" : "outline"}
-            onClick={() => handleToggle(false)}
-            className="flex-1"
-            size="sm"
-          >
-            Data Específica
-          </Button>
-          <Button
-            type="button"
-            variant={isTBD ? "default" : "outline"}
-            onClick={() => handleToggle(true)}
-            className="flex-1"
-            size="sm"
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="tbd-checkbox"
+            checked={isTBD}
+            onCheckedChange={handleToggle}
+          />
+          <Label
+            htmlFor="tbd-checkbox"
+            className="text-sm font-normal cursor-pointer"
           >
             TBD (A definir)
-          </Button>
+          </Label>
         </div>
         
         {!isTBD && (
