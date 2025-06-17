@@ -13,11 +13,9 @@ export function StatusList({ status, onStatusUpdate }: StatusListProps) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-0">
       {status.map((statusItem) => (
-        <div key={statusItem.id} className="bg-white rounded-lg shadow-sm border p-6">
-          <StatusCard status={statusItem} />
-        </div>
+        <StatusCard key={statusItem.id} status={statusItem} />
       ))}
     </div>
   );
