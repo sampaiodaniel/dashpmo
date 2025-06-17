@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { FileText } from 'lucide-react';
 import { useIncidentes } from '@/hooks/useIncidentes';
+import { useCarteirasDoResponsavel } from '@/hooks/useResponsaveisASAHierarquia';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useMemo } from 'react';
@@ -17,17 +18,30 @@ export function TabelaIncidentesRecentes({
   responsavelSelecionado = 'todos' 
 }: TabelaIncidentesRecentesProps) {
   const { data: incidentes, isLoading, error } = useIncidentes();
+  const carteirasDoResponsavel = useCarteirasDoResponsavel(responsavelSelecionado);
 
   const incidentesFiltrados = useMemo(() => {
     if (!incidentes) return [];
 
     return incidentes.filter(incidente => {
+      // Filtro por carteira
       const passaCarteiraFiltro = carteiraSelecionada === 'todas' || incidente.carteira === carteiraSelecionada;
-      const passaResponsavelFiltro = responsavelSelecionado === 'todos' || incidente.criado_por === responsavelSelecionado;
+      
+      // Filtro por responsável ASA com hierarquia
+      let passaResponsavelFiltro = true;
+      if (responsavelSelecionado !== 'todos') {
+        // Se tem carteiras específicas do responsável, filtrar por elas
+        if (carteirasDoResponsavel.length > 0) {
+          passaResponsavelFiltro = carteirasDoResponsavel.includes(incidente.carteira);
+        } else {
+          // Fallback: filtrar pelo criado_por se não houver carteiras
+          passaResponsavelFiltro = incidente.criado_por === responsavelSelecionado;
+        }
+      }
       
       return passaCarteiraFiltro && passaResponsavelFiltro;
     });
-  }, [incidentes, carteiraSelecionada, responsavelSelecionado]);
+  }, [incidentes, carteiraSelecionada, responsavelSelecionado, carteirasDoResponsavel]);
 
   if (isLoading) {
     return (

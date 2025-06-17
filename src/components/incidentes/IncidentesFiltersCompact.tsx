@@ -1,7 +1,7 @@
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useResponsaveisASADropdown } from '@/hooks/useResponsaveisASADropdown';
+import { useResponsaveisASAHierarquia } from '@/hooks/useResponsaveisASAHierarquia';
 
 const CARTEIRAS = [
   'Cadastro',
@@ -30,7 +30,7 @@ export function IncidentesFiltersCompact({
   onResponsavelChange, 
   onCarteiraChange 
 }: IncidentesFiltersCompactProps) {
-  const { data: responsaveisASA, isLoading } = useResponsaveisASADropdown();
+  const { data: responsaveisASA, isLoading } = useResponsaveisASAHierarquia();
 
   return (
     <Card>
@@ -64,9 +64,9 @@ export function IncidentesFiltersCompact({
                 {isLoading ? (
                   <SelectItem value="loading" disabled>Carregando...</SelectItem>
                 ) : (
-                  responsaveisASA?.filter(responsavel => responsavel && responsavel.trim() !== '').map((responsavel) => (
-                    <SelectItem key={responsavel} value={responsavel}>
-                      {responsavel}
+                  responsaveisASA?.filter(responsavel => responsavel && responsavel.nome && responsavel.nome.trim() !== '').map((responsavel) => (
+                    <SelectItem key={responsavel.id} value={responsavel.nome}>
+                      {responsavel.nome} ({responsavel.nivel})
                     </SelectItem>
                   ))
                 )}
