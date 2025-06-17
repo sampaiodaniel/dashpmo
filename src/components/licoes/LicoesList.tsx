@@ -29,8 +29,7 @@ export function LicoesList({ licoes }: LicoesListProps) {
 
   const handleEditarClick = (e: React.MouseEvent, licaoId: number) => {
     e.stopPropagation();
-    // For now, navigate to the same details page
-    // TODO: Implement dedicated edit page if needed
+    console.log('Editando lição:', licaoId);
     navigate(`/licoes/${licaoId}`);
   };
 
@@ -113,6 +112,10 @@ export function LicoesList({ licoes }: LicoesListProps) {
                   <div className="flex items-center gap-1">
                     <User className="h-4 w-4" />
                     <span>{licao.responsavel_registro}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-medium text-pmo-gray">Por:</span>
+                    <span className="text-xs text-gray-600">{licao.criado_por}</span>
                   </div>
                 </div>
               </div>
