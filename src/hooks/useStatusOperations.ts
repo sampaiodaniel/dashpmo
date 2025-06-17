@@ -1,14 +1,16 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useAutoLog } from './useLogsAlteracoes';
 import { useAuth } from './useAuth';
+import { useNavigate } from 'react-router-dom';
 
 export function useStatusOperations() {
   const queryClient = useQueryClient();
   const { logAction } = useAutoLog();
   const { usuario } = useAuth();
+  const navigate = useNavigate();
 
   const revisar = useMutation({
     mutationFn: async ({ statusId, revisadoPor }: { statusId: number; revisadoPor: string }) => {
@@ -58,6 +60,8 @@ export function useStatusOperations() {
         title: "Sucesso",
         description: "Status revisado com sucesso!",
       });
+      // Redirecionar para a listagem de status
+      navigate('/status');
     },
     onError: (error) => {
       console.error('Erro ao revisar status:', error);

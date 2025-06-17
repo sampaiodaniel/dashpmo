@@ -63,6 +63,19 @@ export function useStatusFiltrados({
       );
     }
 
+    // Ordenação: "Em Revisão" primeiro, depois por data de atualização decrescente
+    statusFiltrados.sort((a, b) => {
+      // Priorizar status "Em Revisão" (não aprovados)
+      const aEmRevisao = !a.aprovado;
+      const bEmRevisao = !b.aprovado;
+      
+      if (aEmRevisao && !bEmRevisao) return -1;
+      if (!aEmRevisao && bEmRevisao) return 1;
+      
+      // Se ambos têm o mesmo status de aprovação, ordenar por data decrescente
+      return new Date(b.data_atualizacao).getTime() - new Date(a.data_atualizacao).getTime();
+    });
+
     // Paginação
     const totalItens = statusFiltrados.length;
     const totalPaginas = Math.ceil(totalItens / itensPorPagina);

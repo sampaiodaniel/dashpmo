@@ -19,6 +19,28 @@ export function ProjetosOverview({ projetos }: ProjetosOverviewProps) {
   // Filtrar apenas projetos com último status aprovado
   const projetosAtivos = projetos.filter(projeto => projeto.ultimoStatus);
 
+  // Agrupar projetos por Responsável ASA
+  const projetosPorResponsavel = projetosAtivos.reduce((grupos, projeto) => {
+    const responsavel = projeto.responsavel_asa || 'Não informado';
+    if (!grupos[responsavel]) {
+      grupos[responsavel] = [];
+    }
+    grupos[responsavel].push(projeto);
+    return grupos;
+  }, {} as Record<string, any[]>);
+
+  // Ordenar projetos dentro de cada grupo por progresso decrescente
+  Object.keys(projetosPorResponsavel).forEach(responsavel => {
+    projetosPorResponsavel[responsavel].sort((a, b) => {
+      const progressoA = a.ultimoStatus?.progresso_estimado || 0;
+      const progressoB = b.ultimoStatus?.progresso_estimado || 0;
+      return progressoB - progressoA;
+    });
+  });
+
+  // Ordenar responsáveis alfabeticamente
+  const responsaveisOrdenados = Object.keys(projetosPorResponsavel).sort();
+
   return (
     <Card>
       <CardHeader>
@@ -29,44 +51,53 @@ export function ProjetosOverview({ projetos }: ProjetosOverviewProps) {
       </CardHeader>
       <CardContent>
         {projetosAtivos.length > 0 ? (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="text-[#1B365D] font-semibold">Projeto</TableHead>
-                <TableHead className="text-[#1B365D] font-semibold">Chefe do Projeto</TableHead>
-                <TableHead className="text-[#1B365D] font-semibold text-right">Status</TableHead>
-                <TableHead className="text-[#1B365D] font-semibold">Progresso</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {projetosAtivos.map((projeto) => (
-                <TableRow key={projeto.id}>
-                  <TableCell className="font-medium text-[#1B365D]">
-                    {projeto.nome_projeto}
-                  </TableCell>
-                  <TableCell className="text-[#6B7280]">
-                    {projeto.gp_responsavel || projeto.equipe || 'Não informado'}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center justify-end gap-2">
-                      <div className={`w-8 h-8 rounded-full ${getStatusColor(projeto.ultimoStatus?.status_visao_gp || 'Cinza')}`}></div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <div className="w-20 bg-gray-200 rounded-full h-2">
-                        <div 
-                          className="bg-[#1B365D] h-2 rounded-full" 
-                          style={{ width: `${projeto.ultimoStatus?.progresso_estimado || 0}%` }}
-                        ></div>
-                      </div>
-                      <span className="text-sm text-[#6B7280]">{projeto.ultimoStatus?.progresso_estimado || 0}%</span>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <div className="space-y-6">
+            {responsaveisOrdenados.map((responsavel) => (
+              <div key={responsavel}>
+                <h3 className="text-lg font-semibold text-[#1B365D] mb-3 border-b border-[#E5E7EB] pb-2">
+                  {responsavel} ({projetosPorResponsavel[responsavel].length} projetos)
+                </h3>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-[#1B365D] font-semibold">Projeto</TableHead>
+                      <TableHead className="text-[#1B365D] font-semibold">Chefe do Projeto</TableHead>
+                      <TableHead className="text-[#1B365D] font-semibold text-right">Status</TableHead>
+                      <TableHead className="text-[#1B365D] font-semibold">Progresso</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {projetosPorResponsavel[responsavel].map((projeto) => (
+                      <TableRow key={projeto.id}>
+                        <TableCell className="font-medium text-[#1B365D]">
+                          {projeto.nome_projeto}
+                        </TableCell>
+                        <TableCell className="text-[#6B7280]">
+                          {projeto.gp_responsavel || projeto.equipe || 'Não informado'}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center justify-end gap-2">
+                            <div className={`w-8 h-8 rounded-full ${getStatusColor(projeto.ultimoStatus?.status_visao_gp || 'Cinza')}`}></div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <div className="w-20 bg-gray-200 rounded-full h-2">
+                              <div 
+                                className="bg-[#1B365D] h-2 rounded-full" 
+                                style={{ width: `${projeto.ultimoStatus?.progresso_estimado || 0}%` }}
+                              ></div>
+                            </div>
+                            <span className="text-sm text-[#6B7280]">{projeto.ultimoStatus?.progresso_estimado || 0}%</span>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            ))}
+          </div>
         ) : (
           <div className="text-center py-8 text-[#6B7280]">
             <p>Nenhum projeto ativo com status reportado</p>
