@@ -41,6 +41,23 @@ export function StatusCard({ status }: StatusCardProps) {
     }
   };
 
+  const getCarteiraBadgeClasses = (carteira: string) => {
+    switch (carteira) {
+      case 'Crédito':
+        return 'bg-blue-50 text-blue-700 border-blue-200';
+      case 'Empréstimos':
+        return 'bg-purple-50 text-purple-700 border-purple-200';
+      case 'Investimentos':
+        return 'bg-green-50 text-green-700 border-green-200';
+      case 'Canais':
+        return 'bg-orange-50 text-orange-700 border-orange-200';
+      case 'Operacional':
+        return 'bg-gray-50 text-gray-700 border-gray-200';
+      default:
+        return 'bg-gray-50 text-gray-700 border-gray-200';
+    }
+  };
+
   const getCarteiraIcon = (carteira: string) => {
     switch (carteira) {
       case 'Crédito':
@@ -49,6 +66,10 @@ export function StatusCard({ status }: StatusCardProps) {
         return '💰';
       case 'Investimentos':
         return '📈';
+      case 'Canais':
+        return '📱';
+      case 'Operacional':
+        return '⚙️';
       default:
         return '📁';
     }
@@ -64,10 +85,10 @@ export function StatusCard({ status }: StatusCardProps) {
           <h3 className="text-lg font-semibold text-[#1B365D]">
             {status.projeto?.nome_projeto}
           </h3>
-          <div className="flex items-center gap-1 bg-blue-50 px-2 py-1 rounded text-sm font-medium text-blue-600">
-            <span>{getCarteiraIcon(status.projeto?.area_responsavel || 'Crédito')}</span>
-            <span>{status.projeto?.area_responsavel || 'Crédito'}</span>
-          </div>
+          <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border ${getCarteiraBadgeClasses(status.projeto?.area_responsavel || 'Crédito')}`}>
+            <span className="text-sm">{getCarteiraIcon(status.projeto?.area_responsavel || 'Crédito')}</span>
+            {status.projeto?.area_responsavel || 'Crédito'}
+          </span>
         </div>
         <div className="flex items-center gap-2">
           {!status.aprovado && (
