@@ -15,6 +15,24 @@ export function ProjetoInfoGerais({ projeto }: ProjetoInfoGeraisProps) {
     return date.toLocaleDateString('pt-BR');
   };
 
+  // Função para formatar a data de finalização ou mostrar TBD
+  const formatarFinalizacaoPrevista = (finalizacaoPrevista: string | null) => {
+    if (!finalizacaoPrevista) {
+      return 'TBD';
+    }
+    
+    if (finalizacaoPrevista === 'TBD') {
+      return 'TBD';
+    }
+    
+    try {
+      const date = new Date(finalizacaoPrevista);
+      return date.toLocaleDateString('pt-BR');
+    } catch {
+      return 'TBD';
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Informações Básicas */}
@@ -49,15 +67,13 @@ export function ProjetoInfoGerais({ projeto }: ProjetoInfoGeraisProps) {
               </div>
             </div>
 
-            {projeto.finalizacao_prevista && (
-              <div>
-                <label className="text-sm font-medium text-pmo-gray">Finalização Prevista</label>
-                <div className="flex items-center gap-2 mt-1">
-                  <Calendar className="h-4 w-4 text-pmo-gray" />
-                  <span>{formatDate(projeto.finalizacao_prevista)}</span>
-                </div>
+            <div>
+              <label className="text-sm font-medium text-pmo-gray">Data Prevista de Finalização</label>
+              <div className="flex items-center gap-2 mt-1">
+                <Calendar className="h-4 w-4 text-pmo-gray" />
+                <span>{formatarFinalizacaoPrevista(projeto.finalizacao_prevista)}</span>
               </div>
-            )}
+            </div>
           </div>
 
           {projeto.descricao && (

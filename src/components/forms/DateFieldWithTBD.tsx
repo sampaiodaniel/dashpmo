@@ -29,11 +29,18 @@ export function DateFieldWithTBD({
   required = false,
   placeholder = "Selecione uma data"
 }: DateFieldWithTBDProps) {
+  const [open, setOpen] = useState(false);
+
   const handleToggle = (checked: boolean) => {
     onTBDChange(checked);
     if (checked) {
       onChange(null);
     }
+  };
+
+  const handleDateSelect = (date: Date | undefined) => {
+    onChange(date || null);
+    setOpen(false); // Fechar o popover após selecionar uma data
   };
 
   return (
@@ -55,7 +62,7 @@ export function DateFieldWithTBD({
         </div>
         
         {!isTBD && (
-          <Popover>
+          <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
@@ -77,7 +84,7 @@ export function DateFieldWithTBD({
               <Calendar
                 mode="single"
                 selected={value}
-                onSelect={onChange}
+                onSelect={handleDateSelect}
                 initialFocus
                 className="pointer-events-auto"
               />
