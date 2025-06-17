@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,10 +14,18 @@ import { TagsInput } from '@/components/forms/TagsInput';
 interface NovaLicaoModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onLicaoCreated?: () => void;
   categorias?: string[];
+  editingLicao?: any;
 }
 
-export function NovaLicaoModal({ isOpen, onClose, categorias = [] }: NovaLicaoModalProps) {
+export function NovaLicaoModal({ 
+  isOpen, 
+  onClose, 
+  onLicaoCreated,
+  categorias = [],
+  editingLicao 
+}: NovaLicaoModalProps) {
   const [categoria, setCategoria] = useState('');
   const [situacaoOcorrida, setSituacaoOcorrida] = useState('');
   const [licaoAprendida, setLicaoAprendida] = useState('');
@@ -32,6 +40,21 @@ export function NovaLicaoModal({ isOpen, onClose, categorias = [] }: NovaLicaoMo
   const { data: projetos } = useProjetos();
 
   const statusOptions = ['Aplicada', 'Em andamento', 'Não aplicada'];
+
+  // Populate form when editing
+  useEffect(() => {
+    if (editingLicao) {
+      setCategoria(editingLicao.categoria_licao || '');
+      setSituacaoOcorrida(editingLicao.situacao_ocorrida || '');
+      setLicaoAprendida(editingLicao.licao_aprendida || '');
+      setImpactoGerado(editingLicao.impacto_gerado || '');
+      setAcaoRecomendada(editingLicao.acao_recomendada || '');
+      setStatusAplicacao(editingLicao.status_aplicacao || 'Não aplicada');
+      setProjetoId(editingLicao.projeto_id ? editingLicao.projeto_id.toString() : '');
+      setResponsavel(editingLicao.responsavel_registro || '');
+      setTags(editingLicao.tags_busca ? editingLicao.tags_busca.split(', ') : []);
+    }
+  }, [editingLicao]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,6 +78,9 @@ export function NovaLicaoModal({ isOpen, onClose, categorias = [] }: NovaLicaoMo
 
     if (licao) {
       handleClose();
+      if (onLicaoCreated) {
+        onLicaoCreated();
+      }
     }
   };
 
@@ -76,7 +102,9 @@ export function NovaLicaoModal({ isOpen, onClose, categorias = [] }: NovaLicaoMo
       <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center justify-between">
-            <DialogTitle>Nova Lição Aprendida</DialogTitle>
+            <DialogTitle>
+              {editingLicao ? 'Editar Lição Aprendida' : 'Nova Lição Aprendida'}
+            </DialogTitle>
             <Button variant="ghost" size="icon" onClick={handleClose}>
               <X className="h-4 w-4" />
             </Button>
@@ -209,7 +237,7 @@ export function NovaLicaoModal({ isOpen, onClose, categorias = [] }: NovaLicaoMo
               className="bg-pmo-primary hover:bg-pmo-primary/90"
               disabled={isLoading}
             >
-              {isLoading ? 'Salvando...' : 'Salvar Lição'}
+              {isLoading ? 'Salvando...' : editingLicao ? 'Atualizar Lição' : 'Salvar Lição'}
             </Button>
             <Button type="button" variant="outline" onClick={handleClose} disabled={isLoading}>
               Cancelar
