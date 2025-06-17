@@ -7,8 +7,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useResponsaveisASADropdown } from '@/hooks/useResponsaveisASADropdown';
+import { useTiposProjeto } from '@/hooks/useTiposProjeto';
 import { CARTEIRAS } from '@/types/pmo';
-import { DateFieldWithTBD } from './DateFieldWithTBD';
 
 interface CriarProjetoFormProps {
   formData: any;
@@ -26,13 +26,7 @@ export function CriarProjetoForm({
   onCancel
 }: CriarProjetoFormProps) {
   const { data: responsaveisASA } = useResponsaveisASADropdown();
-
-  const handleDataTBDChange = (isTBD: boolean) => {
-    onInputChange('finalizacao_tbd', isTBD);
-    if (isTBD) {
-      onInputChange('finalizacao_prevista', null);
-    }
-  };
+  const { data: tiposProjeto } = useTiposProjeto();
 
   return (
     <form onSubmit={onSubmit} className="space-y-6">
@@ -54,6 +48,25 @@ export function CriarProjetoForm({
           </div>
 
           <div>
+            <Label htmlFor="tipo_projeto_id">Tipo de Projeto *</Label>
+            <Select 
+              value={formData.tipo_projeto_id?.toString() || ''} 
+              onValueChange={(value) => onInputChange('tipo_projeto_id', parseInt(value))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione o tipo de projeto..." />
+              </SelectTrigger>
+              <SelectContent>
+                {tiposProjeto?.map((tipo) => (
+                  <SelectItem key={tipo.id} value={tipo.id.toString()}>
+                    {tipo.nome}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
             <Label htmlFor="descricao_projeto">Descrição do Projeto *</Label>
             <Textarea
               id="descricao_projeto"
@@ -65,15 +78,18 @@ export function CriarProjetoForm({
             />
           </div>
 
-          <DateFieldWithTBD
-            label="Finalização Prevista"
-            value={formData.finalizacao_prevista}
-            onChange={(date) => onInputChange('finalizacao_prevista', date)}
-            onTBDChange={handleDataTBDChange}
-            isTBD={formData.finalizacao_tbd}
-            required
-            placeholder="Selecione uma data"
-          />
+          <div>
+            <Label htmlFor="finalizacao_prevista">Finalização Prevista</Label>
+            <Input
+              id="finalizacao_prevista"
+              type="date"
+              value={formData.finalizacao_prevista || ''}
+              onChange={(e) => onInputChange('finalizacao_prevista', e.target.value)}
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Deixe em branco se a data ainda for indefinida (TBD)
+            </p>
+          </div>
 
           <div>
             <Label htmlFor="equipe">Equipe</Label>

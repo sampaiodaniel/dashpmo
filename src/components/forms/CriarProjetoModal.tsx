@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { useProjetosOperations } from '@/hooks/useProjetosOperations';
 import { CARTEIRAS } from '@/types/pmo';
-import { format } from 'date-fns';
 import { CriarProjetoForm } from './CriarProjetoForm';
 
 interface CriarProjetoModalProps {
@@ -16,6 +15,7 @@ export function CriarProjetoModal({ onProjetoCriado }: CriarProjetoModalProps) {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     nome_projeto: '',
+    tipo_projeto_id: null as number | null,
     descricao_projeto: '',
     responsavel_asa: '',
     gp_responsavel_cwi: '',
@@ -24,37 +24,30 @@ export function CriarProjetoModal({ onProjetoCriado }: CriarProjetoModalProps) {
     carteira_secundaria: 'none',
     carteira_terciaria: 'none',
     equipe: '',
-    finalizacao_prevista: null as Date | null,
-    finalizacao_tbd: false
+    finalizacao_prevista: '',
   });
   
   const { criarProjeto, isLoading } = useProjetosOperations();
 
-  const handleInputChange = (field: string, value: string | Date | null | boolean) => {
+  const handleInputChange = (field: string, value: string | Date | null | boolean | number) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.nome_projeto || !formData.descricao_projeto || !formData.carteira_primaria || !formData.responsavel_asa || !formData.gp_responsavel_cwi) {
+    if (!formData.nome_projeto || !formData.descricao_projeto || !formData.carteira_primaria || !formData.responsavel_asa || !formData.gp_responsavel_cwi || !formData.tipo_projeto_id) {
       return;
     }
 
-    // Se não é TBD, a data é obrigatória
-    if (!formData.finalizacao_tbd && !formData.finalizacao_prevista) {
-      return;
-    }
-
-    // Formatar data para string no formato ISO ou manter como TBD
-    const finalizacaoPrevista = formData.finalizacao_tbd 
-      ? 'TBD'
-      : formData.finalizacao_prevista 
-        ? format(formData.finalizacao_prevista, 'yyyy-MM-dd')
-        : null;
+    // Formatar data para string no formato ISO ou null se vazio
+    const finalizacaoPrevista = formData.finalizacao_prevista 
+      ? formData.finalizacao_prevista
+      : null;
 
     const projeto = await criarProjeto({
       nome_projeto: formData.nome_projeto,
+      tipo_projeto_id: formData.tipo_projeto_id,
       descricao_projeto: formData.descricao_projeto || null,
       area_responsavel: formData.carteira_primaria as typeof CARTEIRAS[number],
       carteira_primaria: formData.carteira_primaria || null,
@@ -73,6 +66,7 @@ export function CriarProjetoModal({ onProjetoCriado }: CriarProjetoModalProps) {
       setOpen(false);
       setFormData({
         nome_projeto: '',
+        tipo_projeto_id: null,
         descricao_projeto: '',
         responsavel_asa: '',
         gp_responsavel_cwi: '',
@@ -81,8 +75,7 @@ export function CriarProjetoModal({ onProjetoCriado }: CriarProjetoModalProps) {
         carteira_secundaria: 'none',
         carteira_terciaria: 'none',
         equipe: '',
-        finalizacao_prevista: null,
-        finalizacao_tbd: false
+        finalizacao_prevista: '',
       });
       onProjetoCriado?.();
     }

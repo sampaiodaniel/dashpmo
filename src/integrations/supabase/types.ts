@@ -387,6 +387,7 @@ export type Database = {
           responsavel_cwi: string | null
           responsavel_interno: string
           status_ativo: boolean | null
+          tipo_projeto_id: number | null
         }
         Insert: {
           area_responsavel?:
@@ -409,6 +410,7 @@ export type Database = {
           responsavel_cwi?: string | null
           responsavel_interno: string
           status_ativo?: boolean | null
+          tipo_projeto_id?: number | null
         }
         Update: {
           area_responsavel?:
@@ -431,8 +433,17 @@ export type Database = {
           responsavel_cwi?: string | null
           responsavel_interno?: string
           status_ativo?: boolean | null
+          tipo_projeto_id?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_projetos_tipo_projeto"
+            columns: ["tipo_projeto_id"]
+            isOneToOne: false
+            referencedRelation: "tipos_projeto"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       responsaveis_asa: {
         Row: {
@@ -590,6 +601,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      tipos_projeto: {
+        Row: {
+          ativo: boolean | null
+          criado_por: string
+          data_criacao: string | null
+          descricao: string | null
+          id: number
+          nome: string
+          ordem: number | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          criado_por: string
+          data_criacao?: string | null
+          descricao?: string | null
+          id?: number
+          nome: string
+          ordem?: number | null
+        }
+        Update: {
+          ativo?: boolean | null
+          criado_por?: string
+          data_criacao?: string | null
+          descricao?: string | null
+          id?: number
+          nome?: string
+          ordem?: number | null
+        }
+        Relationships: []
       }
       usuarios: {
         Row: {

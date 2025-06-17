@@ -1,14 +1,17 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Building, Calendar, User, Users } from 'lucide-react';
+import { Building, Calendar, User, Users, FileType } from 'lucide-react';
 import { Projeto } from '@/types/pmo';
+import { useTiposProjeto } from '@/hooks/useTiposProjeto';
 
 interface ProjetoInfoGeraisProps {
   projeto: Projeto;
 }
 
 export function ProjetoInfoGerais({ projeto }: ProjetoInfoGeraisProps) {
+  const { data: tiposProjeto } = useTiposProjeto();
+
   // Function to format date as dd/MM/yyyy
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -32,6 +35,9 @@ export function ProjetoInfoGerais({ projeto }: ProjetoInfoGeraisProps) {
       return 'TBD';
     }
   };
+
+  // Buscar o nome do tipo de projeto
+  const tipoProjeto = tiposProjeto?.find(tipo => tipo.id === projeto.tipo_projeto_id);
 
   return (
     <div className="space-y-6">
@@ -58,6 +64,16 @@ export function ProjetoInfoGerais({ projeto }: ProjetoInfoGeraisProps) {
                 </Badge>
               </div>
             </div>
+
+            {tipoProjeto && (
+              <div>
+                <label className="text-sm font-medium text-pmo-gray">Tipo de Projeto</label>
+                <div className="flex items-center gap-2 mt-1">
+                  <FileType className="h-4 w-4 text-pmo-gray" />
+                  <span className="font-medium">{tipoProjeto.nome}</span>
+                </div>
+              </div>
+            )}
 
             <div>
               <label className="text-sm font-medium text-pmo-gray">Data de Criação</label>

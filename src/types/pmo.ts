@@ -14,22 +14,23 @@ export type AreaResponsavel = 'Cadastro' | 'Canais' | 'Core Bancário' | 'Crédi
 export interface Projeto {
   id: number;
   nome_projeto: string;
-  descricao?: string;
-  descricao_projeto?: string;
+  tipo_projeto_id?: number | null;
+  descricao?: string | null;
+  descricao_projeto?: string | null;
   area_responsavel: AreaResponsavel;
+  carteira_primaria?: string | null;
+  carteira_secundaria?: string | null;
+  carteira_terciaria?: string | null;
   responsavel_interno: string;
+  responsavel_asa?: string | null;
   gp_responsavel: string;
-  responsavel_cwi?: string;
-  gp_responsavel_cwi?: string;
-  responsavel_asa?: string;
-  carteira_primaria?: string;
-  carteira_secundaria?: string;
-  carteira_terciaria?: string;
-  equipe?: string;
-  finalizacao_prevista?: string;
-  status_ativo: boolean;
-  data_criacao: Date;
+  gp_responsavel_cwi?: string | null;
+  responsavel_cwi?: string | null;
+  finalizacao_prevista?: string | null;
+  equipe?: string | null;
   criado_por: string;
+  data_criacao: Date;
+  status_ativo: boolean;
   ultimoStatus?: StatusProjeto;
 }
 

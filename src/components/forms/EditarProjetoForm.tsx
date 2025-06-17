@@ -11,7 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Projeto, CARTEIRAS } from '@/types/pmo';
 import { useQueryClient } from '@tanstack/react-query';
 import { useResponsaveisASA } from '@/hooks/useResponsaveisASA';
-import { DateFieldWithTBD } from './DateFieldWithTBD';
+import { useTiposProjeto } from '@/hooks/useTiposProjeto';
 
 interface EditarProjetoFormProps {
   projeto: Projeto;
@@ -35,12 +35,14 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
   
   // Buscar apenas responsáveis ASA (superintendentes)
   const { data: responsaveisASA } = useResponsaveisASA();
+  const { data: tiposProjeto } = useTiposProjeto();
   
   // Filtrar apenas superintendentes
   const superintendentes = responsaveisASA?.filter(resp => resp.nivel === 'Superintendente') || [];
   
   const [formData, setFormData] = useState({
     nome_projeto: projeto.nome_projeto,
+    tipo_projeto_id: projeto.tipo_projeto_id || null,
     descricao_projeto: projeto.descricao_projeto || '',
     responsavel_asa: projeto.responsavel_asa || 'none',
     gp_responsavel_cwi: projeto.gp_responsavel_cwi || 'none',
@@ -49,8 +51,7 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
     carteira_secundaria: projeto.carteira_secundaria || 'none',
     carteira_terciaria: projeto.carteira_terciaria || 'none',
     equipe: projeto.equipe || '',
-    finalizacao_prevista: projeto.finalizacao_prevista && projeto.finalizacao_prevista !== 'TBD' ? new Date(projeto.finalizacao_prevista) : null,
-    finalizacao_tbd: projeto.finalizacao_prevista === 'TBD'
+    finalizacao_prevista: projeto.finalizacao_prevista && projeto.finalizacao_prevista !== 'TBD' ? projeto.finalizacao_prevista : '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -61,6 +62,7 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
       // Convert "none" back to null/empty string for database
       const dataToSubmit = {
         nome_projeto: formData.nome_projeto,
+        tipo_projeto_id: formData.tipo_projeto_id,
         descricao_projeto: formData.descricao_projeto,
         responsavel_asa: formData.responsavel_asa === 'none' ? '' : formData.responsavel_asa,
         gp_responsavel_cwi: formData.gp_responsavel_cwi === 'none' ? '' : formData.gp_responsavel_cwi,
@@ -69,12 +71,8 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
         carteira_secundaria: formData.carteira_secundaria === 'none' ? '' : formData.carteira_secundaria,
         carteira_terciaria: formData.carteira_terciaria === 'none' ? '' : formData.carteira_terciaria,
         equipe: formData.equipe,
-        // CORREÇÃO: Usar null quando for TBD, não string "TBD"
-        finalizacao_prevista: formData.finalizacao_tbd 
-          ? null 
-          : formData.finalizacao_prevista 
-            ? formData.finalizacao_prevista.toISOString().split('T')[0]
-            : null,
+        // Usar null quando for vazio, senão usar a data formatada
+        finalizacao_prevista: formData.finalizacao_prevista || null,
         // Manter os campos obrigatórios do banco com valores derivados dos novos campos
         area_responsavel: (formData.carteira_primaria === 'none' ? 'Cadastro' : formData.carteira_primaria) as typeof CARTEIRAS[number],
         responsavel_interno: formData.responsavel_asa === 'none' ? 'Admin' : formData.responsavel_asa,
@@ -117,15 +115,8 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
     }
   };
 
-  const handleInputChange = (field: string, value: string | Date | null | boolean) => {
+  const handleInputChange = (field: string, value: string | Date | null | boolean | number) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleDataTBDChange = (isTBD: boolean) => {
-    handleInputChange('finalizacao_tbd', isTBD);
-    if (isTBD) {
-      handleInputChange('finalizacao_prevista', null);
-    }
   };
 
   return (
@@ -147,6 +138,26 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
           </div>
 
           <div>
+            <Label htmlFor="tipo_projeto_id">Tipo de Projeto</Label>
+            <Select 
+              value={formData.tipo_projeto_id?.toString() || ''} 
+              onValueChange={(value) => handleInputChange('tipo_projeto_id', value ? parseInt(value) : null)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione o tipo de projeto" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Nenhum</SelectItem>
+                {tiposProjeto?.map((tipo) => (
+                  <SelectItem key={tipo.id} value={tipo.id.toString()}>
+                    {tipo.nome}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
             <Label htmlFor="descricao_projeto">Descrição do Projeto</Label>
             <Textarea
               id="descricao_projeto"
@@ -156,14 +167,18 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
             />
           </div>
 
-          <DateFieldWithTBD
-            label="Finalização Prevista"
-            value={formData.finalizacao_prevista}
-            onChange={(date) => handleInputChange('finalizacao_prevista', date)}
-            onTBDChange={handleDataTBDChange}
-            isTBD={formData.finalizacao_tbd}
-            placeholder="Selecione uma data"
-          />
+          <div>
+            <Label htmlFor="finalizacao_prevista">Finalização Prevista</Label>
+            <Input
+              id="finalizacao_prevista"
+              type="date"
+              value={formData.finalizacao_prevista}
+              onChange={(e) => handleInputChange('finalizacao_prevista', e.target.value)}
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Deixe em branco se a data ainda for indefinida (TBD)
+            </p>
+          </div>
 
           <div>
             <Label htmlFor="equipe">Equipe</Label>

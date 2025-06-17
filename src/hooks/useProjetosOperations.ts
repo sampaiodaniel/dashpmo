@@ -154,6 +154,7 @@ export function useProjetosOperations() {
     const projetosTeste = [
       {
         nome_projeto: 'Implementação Open Banking',
+        tipo_projeto_id: 1, // Projeto Estratégico
         descricao_projeto: 'Projeto para implementar funcionalidades de Open Banking',
         area_responsavel: 'Open Finance' as const,
         responsavel_interno: 'Dapper',
@@ -164,16 +165,18 @@ export function useProjetosOperations() {
       },
       {
         nome_projeto: 'Modernização Core Bancário',
+        tipo_projeto_id: 1, // Projeto Estratégico
         descricao_projeto: 'Atualização da arquitetura do sistema core',
         area_responsavel: 'Core Bancário' as const,
         responsavel_interno: 'Pitta',
         gp_responsavel: 'Elias',
-        finalizacao_prevista: 'TBD',
+        finalizacao_prevista: null,
         equipe: 'Ana Lima, Carlos Ferreira, Bruno Oliveira',
         criado_por: 'Sistema'
       },
       {
         nome_projeto: 'Portal de Investimentos V2',
+        tipo_projeto_id: 2, // Melhoria/Evolução
         descricao_projeto: 'Nova versão do portal de investimentos com melhorias de UX',
         area_responsavel: 'Investimentos 1' as const,
         responsavel_interno: 'Judice',
@@ -184,16 +187,18 @@ export function useProjetosOperations() {
       },
       {
         nome_projeto: 'Sistema de Empréstimos Digitais',
+        tipo_projeto_id: 1, // Projeto Estratégico
         descricao_projeto: 'Plataforma digital para solicitação e aprovação de empréstimos',
         area_responsavel: 'Empréstimos' as const,
         responsavel_interno: 'Thadeus',
         gp_responsavel: 'Fred',
-        finalizacao_prevista: 'TBD',
+        finalizacao_prevista: null,
         equipe: 'Felipe Nascimento, Carla Torres, Diego Pereira',
         criado_por: 'Sistema'
       },
       {
         nome_projeto: 'App Mobile Cripto',
+        tipo_projeto_id: 2, // Melhoria/Evolução
         descricao_projeto: 'Aplicativo mobile para negociação de criptomoedas',
         area_responsavel: 'Cripto' as const,
         responsavel_interno: 'André Simões',
