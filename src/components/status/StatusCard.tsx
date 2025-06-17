@@ -1,7 +1,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { FileText, Calendar, User, Crown, Target } from 'lucide-react';
 import { StatusProjeto } from '@/types/pmo';
 import { useNavigate } from 'react-router-dom';
 
@@ -62,12 +61,10 @@ export function StatusCard({ status }: StatusCardProps) {
     >
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3 flex-1">
-          <div className="flex items-center gap-2">
-            <span className="text-lg">{getCarteiraIcon(status.projeto?.area_responsavel || 'Crédito')}</span>
-            <span className="text-sm font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded">
-              {status.projeto?.area_responsavel || 'Crédito'}
-            </span>
-          </div>
+          <span className="text-lg">{getCarteiraIcon(status.projeto?.area_responsavel || 'Crédito')}</span>
+          <span className="text-sm font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded">
+            {status.projeto?.area_responsavel || 'Crédito'}
+          </span>
           <h3 className="text-lg font-semibold text-gray-900">
             {status.projeto?.nome_projeto}
           </h3>
@@ -94,22 +91,10 @@ export function StatusCard({ status }: StatusCardProps) {
       </div>
 
       <div className="flex items-center gap-6 text-sm text-gray-600">
-        <div className="flex items-center gap-1">
-          <Calendar className="h-4 w-4" />
-          <span>{status.data_atualizacao.toLocaleDateString()}</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <User className="h-4 w-4" />
-          <span>Responsável ASA: {status.criado_por || 'Judice'}</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <Crown className="h-4 w-4" />
-          <span>Chefe do Projeto: {status.projeto?.gp_responsavel || 'Marco'}</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <Target className="h-4 w-4" />
-          <span>Próxima Entrega: {status.data_marco1 ? status.data_marco1.toLocaleDateString() : 'TBD (A definir)'}</span>
-        </div>
+        <span>{status.data_atualizacao.toLocaleDateString()}</span>
+        <span><span className="font-bold">Responsável ASA:</span> {status.criado_por || 'Judice'}</span>
+        <span><span className="font-bold">Chefe do Projeto:</span> {status.projeto?.gp_responsavel || 'Marco'}</span>
+        <span><span className="font-bold">Próxima Entrega:</span> {status.data_marco1 ? status.data_marco1.toLocaleDateString() : 'TBD (A definir)'}</span>
       </div>
     </div>
   );
