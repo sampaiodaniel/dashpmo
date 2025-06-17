@@ -1,23 +1,6 @@
 
 import { useMemo } from 'react';
-
-export interface MudancaItem {
-  id: number;
-  projeto_id: number;
-  tipo_mudanca: string;
-  descricao: string;
-  justificativa_negocio: string;
-  impacto_prazo_dias: number;
-  status_aprovacao: string;
-  solicitante: string;
-  data_solicitacao: Date;
-  data_aprovacao?: Date;
-  responsavel_aprovacao?: string;
-  observacoes?: string;
-  data_criacao: Date;
-  criado_por: string;
-  carteira_primaria?: string;
-}
+import { MudancaReplanejamento } from '@/types/pmo';
 
 export interface MudancasFilters {
   statusAprovacao?: string;
@@ -27,7 +10,7 @@ export interface MudancasFilters {
 }
 
 export function useMudancasFiltradas(
-  mudancas: MudancaItem[] | undefined,
+  mudancas: MudancaReplanejamento[] | undefined,
   filtros: MudancasFilters,
   termoBusca: string
 ) {
@@ -49,7 +32,7 @@ export function useMudancasFiltradas(
     // Filtro por carteira
     if (filtros.carteira && filtros.carteira !== 'todas') {
       mudancasFiltradas = mudancasFiltradas.filter(mudanca =>
-        mudanca.carteira_primaria === filtros.carteira
+        mudanca.projeto?.area_responsavel === filtros.carteira
       );
     }
 

@@ -17,14 +17,7 @@ export default function Mudancas() {
   const [filtros, setFiltros] = useState<MudancasFiltersType>({});
   const [termoBusca, setTermoBusca] = useState('');
   
-  // Converter MudancaItem[] para MudancaReplanejamento[] garantindo compatibilidade de tipos
-  const mudancasCompatibilizadas = mudancas?.map(mudanca => ({
-    ...mudanca,
-    // Garantir que tipo_mudanca seja do tipo correto
-    tipo_mudanca: mudanca.tipo_mudanca as 'Escopo' | 'Prazo' | 'Recurso' | 'Orçamento'
-  })) || [];
-  
-  const mudancasFiltradas = useMudancasFiltradas(mudancasCompatibilizadas, filtros, termoBusca);
+  const mudancasFiltradas = useMudancasFiltradas(mudancas, filtros, termoBusca);
 
   if (isLoading) {
     return (
@@ -49,7 +42,7 @@ export default function Mudancas() {
         <MudancasHeader onMudancaCriada={() => {}} />
         
         <MudancasMetricas 
-          mudancas={mudancasCompatibilizadas}
+          mudancas={mudancas || []}
           onFiltrarPendentes={() => {}}
           onFiltrarEmAnalise={() => {}}
           onFiltrarAprovadas={() => {}}

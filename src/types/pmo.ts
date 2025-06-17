@@ -1,3 +1,4 @@
+
 export interface Usuario {
   id: number;
   nome: string;
@@ -77,6 +78,10 @@ export interface StatusProjeto {
 }
 
 export type TipoMudanca = 
+  | 'Escopo'
+  | 'Prazo'
+  | 'Recurso'
+  | 'Orçamento'
   | 'Correção Bug'
   | 'Melhoria'
   | 'Mudança Escopo'
