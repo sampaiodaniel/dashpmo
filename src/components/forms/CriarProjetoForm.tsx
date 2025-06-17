@@ -12,7 +12,7 @@ import { CARTEIRAS } from '@/types/pmo';
 
 interface CriarProjetoFormProps {
   formData: any;
-  onInputChange: (field: string, value: string | Date | null | boolean) => void;
+  onInputChange: (field: string, value: string | Date | null | boolean | number) => void;
   onSubmit: (e: React.FormEvent) => void;
   isLoading: boolean;
   onCancel: () => void;
@@ -51,7 +51,7 @@ export function CriarProjetoForm({
             <Label htmlFor="tipo_projeto_id">Tipo de Projeto *</Label>
             <Select 
               value={formData.tipo_projeto_id?.toString() || ''} 
-              onValueChange={(value) => onInputChange('tipo_projeto_id', parseInt(value))}
+              onValueChange={(value) => onInputChange('tipo_projeto_id', value ? parseInt(value) : null)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Selecione o tipo de projeto..." />
@@ -112,7 +112,7 @@ export function CriarProjetoForm({
         <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <Label htmlFor="responsavel_asa">Responsável ASA *</Label>
-            <Select value={formData.responsavel_asa} onValueChange={(value) => onInputChange('responsavel_asa', value)}>
+            <Select value={formData.responsavel_asa || ''} onValueChange={(value) => onInputChange('responsavel_asa', value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione um responsável ASA..." />
               </SelectTrigger>
@@ -157,7 +157,7 @@ export function CriarProjetoForm({
         <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <Label htmlFor="carteira_primaria">Carteira Primária *</Label>
-            <Select value={formData.carteira_primaria} onValueChange={(value) => onInputChange('carteira_primaria', value)}>
+            <Select value={formData.carteira_primaria || ''} onValueChange={(value) => onInputChange('carteira_primaria', value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione a carteira primária..." />
               </SelectTrigger>
@@ -173,7 +173,7 @@ export function CriarProjetoForm({
 
           <div>
             <Label htmlFor="carteira_secundaria">Carteira Secundária</Label>
-            <Select value={formData.carteira_secundaria} onValueChange={(value) => onInputChange('carteira_secundaria', value)}>
+            <Select value={formData.carteira_secundaria || 'none'} onValueChange={(value) => onInputChange('carteira_secundaria', value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione uma carteira..." />
               </SelectTrigger>
@@ -190,7 +190,7 @@ export function CriarProjetoForm({
 
           <div>
             <Label htmlFor="carteira_terciaria">Carteira Terciária</Label>
-            <Select value={formData.carteira_terciaria} onValueChange={(value) => onInputChange('carteira_terciaria', value)}>
+            <Select value={formData.carteira_terciaria || 'none'} onValueChange={(value) => onInputChange('carteira_terciaria', value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione uma carteira..." />
               </SelectTrigger>
