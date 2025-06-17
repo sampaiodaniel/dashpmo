@@ -1,15 +1,21 @@
 
 import { Button } from '@/components/ui/button';
-import { Check, X } from 'lucide-react';
+import { Check, Edit } from 'lucide-react';
 import { StatusProjeto } from '@/types/pmo';
 import { useStatusOperations } from '@/hooks/useStatusOperations';
+import { useNavigate } from 'react-router-dom';
 
 interface StatusAcoesProps {
   status: StatusProjeto;
 }
 
 export function StatusAcoes({ status }: StatusAcoesProps) {
-  const { revisar, rejeitarStatus, isLoading } = useStatusOperations();
+  const { revisar, isLoading } = useStatusOperations();
+  const navigate = useNavigate();
+
+  const handleEditarStatus = () => {
+    navigate(`/status/${status.id}/editar`);
+  };
 
   return (
     <div className="flex gap-2">
@@ -22,17 +28,18 @@ export function StatusAcoes({ status }: StatusAcoesProps) {
             className="bg-green-600 hover:bg-green-700 text-white"
           >
             <Check className="h-4 w-4 mr-1" />
-            Aprovar
+            Revisão OK
           </Button>
           
           <Button
-            onClick={() => rejeitarStatus({ statusId: status.id })}
+            onClick={handleEditarStatus}
             disabled={isLoading}
             size="sm"
-            variant="destructive"
+            variant="outline"
+            className="border-blue-300 text-blue-600 hover:bg-blue-50"
           >
-            <X className="h-4 w-4 mr-1" />
-            Rejeitar
+            <Edit className="h-4 w-4 mr-1" />
+            Editar Status
           </Button>
         </>
       )}

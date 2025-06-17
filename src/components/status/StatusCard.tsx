@@ -61,15 +61,20 @@ export function StatusCard({ status }: StatusCardProps) {
     >
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3 flex-1">
-          <span className="text-lg">{getCarteiraIcon(status.projeto?.area_responsavel || 'Crédito')}</span>
-          <span className="text-sm font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded">
-            {status.projeto?.area_responsavel || 'Crédito'}
-          </span>
-          <h3 className="text-lg font-semibold text-gray-900">
+          <h3 className="text-lg font-semibold text-[#1B365D]">
             {status.projeto?.nome_projeto}
           </h3>
+          <div className="flex items-center gap-1 bg-blue-50 px-2 py-1 rounded text-sm font-medium text-blue-600">
+            <span>{getCarteiraIcon(status.projeto?.area_responsavel || 'Crédito')}</span>
+            <span>{status.projeto?.area_responsavel || 'Crédito'}</span>
+          </div>
         </div>
         <div className="flex items-center gap-2">
+          {!status.aprovado && (
+            <Badge className="bg-yellow-100 text-yellow-800">
+              Em Revisão
+            </Badge>
+          )}
           {status.aprovado && (
             <Badge className="bg-green-100 text-green-800">
               Revisado
