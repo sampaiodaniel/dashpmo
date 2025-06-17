@@ -4,9 +4,11 @@ import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { StatusProjeto } from '@/types/pmo';
 import { useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '@/hooks/useAuth';
 
 export function useEditarStatusForm(status: StatusProjeto) {
   const queryClient = useQueryClient();
+  const { isAdmin } = useAuth();
   const [carregando, setCarregando] = useState(false);
   
   // Estados para controlar TBD nos marcos - verificar se é string 'TBD'
@@ -86,7 +88,13 @@ export function useEditarStatusForm(status: StatusProjeto) {
         entrega3: formData.entrega3,
         data_marco3: processarData(formData.data_marco3),
         progresso_estimado: formData.progresso_estimado,
-        data_atualizacao: new Date().toISOString().split('T')[0]
+        data_atualizacao: new Date().toISOString().split('T')[0],
+        // Se for admin editando status aprovado, voltar para revisão
+        ...(status.aprovado && isAdmin() && {
+          aprovado: false,
+          aprovado_por: null,
+          data_aprovacao: null
+        })
       };
 
       console.log('Dados a serem salvos:', dataToUpdate);
@@ -106,9 +114,13 @@ export function useEditarStatusForm(status: StatusProjeto) {
         return;
       }
 
+      const successMessage = status.aprovado && isAdmin() 
+        ? "Status atualizado com sucesso! O status voltou para revisão."
+        : "Status atualizado com sucesso!";
+
       toast({
         title: "Sucesso",
-        description: "Status atualizado com sucesso!",
+        description: successMessage,
       });
 
       queryClient.invalidateQueries({ queryKey: ['status-list'] });

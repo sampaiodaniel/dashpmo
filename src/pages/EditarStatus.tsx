@@ -5,11 +5,13 @@ import { useStatusList } from '@/hooks/useStatusList';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { EditarStatusForm } from '@/components/forms/EditarStatusForm';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function EditarStatus() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { data: statusList, isLoading, error } = useStatusList();
+  const { isAdmin } = useAuth();
 
   console.log('EditarStatus - ID:', id);
   console.log('EditarStatus - StatusList:', statusList);
@@ -91,7 +93,8 @@ export default function EditarStatus() {
     );
   }
 
-  if (status.aprovado) {
+  // Permitir edição apenas se status não está aprovado OU se usuário é admin
+  if (status.aprovado && !isAdmin()) {
     return (
       <Layout>
         <div className="text-center py-8">
@@ -127,6 +130,11 @@ export default function EditarStatus() {
             </h1>
             <p className="text-pmo-gray mt-2">
               Status de {status.data_atualizacao.toLocaleDateString('pt-BR')}
+              {status.aprovado && isAdmin() && (
+                <span className="ml-2 text-yellow-600 font-medium">
+                  (Editando como Administrador - Status voltará para revisão)
+                </span>
+              )}
             </p>
           </div>
         </div>
