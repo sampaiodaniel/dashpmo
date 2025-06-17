@@ -1,92 +1,60 @@
-
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Building } from 'lucide-react';
-import { StatusProjeto, getStatusColor, getStatusGeralColor } from '@/types/pmo';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { FileText } from 'lucide-react';
+import { StatusProjeto } from '@/types/pmo';
 import { useNavigate } from 'react-router-dom';
-import { formatarData } from '@/utils/dateFormatting';
+import { StatusAcoes } from './StatusAcoes';
+import { useAuth } from '@/hooks/useAuth';
 
 interface StatusCardProps {
   status: StatusProjeto;
-  onUpdate?: () => void;
-  onStatusUpdate?: () => void;
 }
 
-// Função para obter cor da matriz de risco
-function getMatrizRiscoColor(nivel: string): string {
-  switch (nivel) {
-    case 'Baixo': return 'bg-green-100 text-green-700 border-green-200';
-    case 'Médio': return 'bg-yellow-100 text-yellow-700 border-yellow-200';
-    case 'Alto': return 'bg-red-100 text-red-700 border-red-200';
-    default: return 'bg-gray-100 text-gray-700 border-gray-200';
-  }
-}
-
-export function StatusCard({ status, onUpdate, onStatusUpdate }: StatusCardProps) {
+export function StatusCard({ status }: StatusCardProps) {
   const navigate = useNavigate();
-  const isRevisado = status.aprovado === true;
+  const { isAdmin } = useAuth();
 
   const handleCardClick = () => {
-    navigate(`/status/${status.id}`);
+    navigate(`/projetos/${status.projeto_id}`);
   };
 
   return (
-    <div className="p-6 hover:bg-gray-50 transition-colors cursor-pointer group" onClick={handleCardClick}>
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <div className="flex items-center gap-3 mb-4">
-            <h3 className="text-lg font-semibold text-pmo-primary group-hover:text-pmo-secondary transition-colors">
-              {status.projeto?.nome_projeto || 'Projeto não encontrado'}
-            </h3>
-            <div className="flex items-center gap-2 bg-blue-50 px-3 py-1 rounded-lg border border-blue-200">
-              <Building className="h-4 w-4 text-blue-600" />
-              <span className="font-semibold text-blue-700 text-sm">
-                {status.projeto?.carteira_primaria || status.projeto?.area_responsavel || 'N/A'}
-              </span>
-            </div>
+    <Card className="hover:shadow-md transition-shadow">
+      <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+        <CardTitle className="text-sm font-medium">
+          <div className="flex items-center gap-2">
+            <FileText className="h-4 w-4 text-gray-500" />
+            Status do Projeto
           </div>
-          
-          <div className="flex items-center gap-4 mb-4">
-            <Badge className={getStatusGeralColor(status.status_geral)}>
-              <span className="font-semibold">Status:</span>&nbsp;{status.status_geral}
-            </Badge>
-            <Badge className={getStatusColor(status.status_visao_gp)}>
-              <span className="font-semibold">Visão GP:</span>&nbsp;{status.status_visao_gp}
-            </Badge>
-            {status.prob_x_impact && (
-              <Badge variant="outline" className={getMatrizRiscoColor(status.prob_x_impact)}>
-                <span className="font-semibold">Matriz de Risco:</span>&nbsp;{status.prob_x_impact}
-              </Badge>
-            )}
-          </div>
-
-          <div className="flex items-center gap-6 text-sm text-pmo-gray">
-            <div className="flex items-center gap-1">
-              <Calendar className="h-4 w-4" />
-              <span>{format(new Date(status.data_atualizacao), 'dd/MM/yyyy', { locale: ptBR })}</span>
+        </CardTitle>
+      </CardHeader>
+      
+      <CardContent className="pt-0">
+        <div className="text-sm text-muted-foreground">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div>
+              <span className="text-xs font-medium text-gray-500">Projeto:</span>
+              <div className="font-medium">{status.projeto?.nome_projeto}</div>
             </div>
             <div>
-              <span className="font-semibold">Responsável ASA: </span> {status.projeto?.responsavel_interno || 'N/A'}
+              <span className="text-xs font-medium text-gray-500">Data:</span>
+              <div className="font-medium">{status.data_atualizacao.toLocaleDateString()}</div>
             </div>
             <div>
-              <span className="font-semibold">Chefe do Projeto: </span> {status.projeto?.gp_responsavel || 'N/A'}
+              <span className="text-xs font-medium text-gray-500">Status Geral:</span>
+              <div className="font-medium">{status.status_geral}</div>
             </div>
             <div>
-              <span className="font-semibold">Próxima Entrega: </span> {formatarData(status.data_marco1)}
+              <span className="text-xs font-medium text-gray-500">Visão do GP:</span>
+              <div className="font-medium">{status.status_visao_gp}</div>
             </div>
           </div>
         </div>
         
-        <div className="flex items-center gap-2 ml-4">
-          <Badge 
-            variant={isRevisado ? "default" : "secondary"}
-            className={isRevisado ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}
-          >
-            {isRevisado ? 'Revisado' : 'Em Revisão'}
-          </Badge>
+        <div className="flex justify-end mt-4">
+          <StatusAcoes status={status} isAdmin={isAdmin} />
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

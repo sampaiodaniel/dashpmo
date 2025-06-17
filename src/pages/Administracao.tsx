@@ -1,4 +1,3 @@
-
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
@@ -9,6 +8,7 @@ import { AdminLogs } from '@/components/admin/AdminLogs';
 import { SeedTestData } from '@/components/admin/SeedTestData';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Settings, Users, Building, Shield, Activity, Database } from 'lucide-react';
+import { AtualizarProjetosTipo } from '@/components/admin/AtualizarProjetosTipo';
 
 export default function Administracao() {
   const { usuario, isLoading: authLoading, isAdmin } = useAuth();
@@ -46,12 +46,41 @@ export default function Administracao() {
 
   return (
     <Layout>
-      <div className="mx-auto space-y-6">
+      <div className="space-y-6">
+        {/* Header */}
         <div>
           <h1 className="text-3xl font-bold text-pmo-primary">Administração</h1>
-          <p className="text-pmo-gray mt-2">Gerenciamento do sistema e configurações</p>
+          <p className="text-pmo-gray mt-2">Configurações e gerenciamento do sistema</p>
         </div>
 
+        {/* Atualização de Tipos de Projeto */}
+        <AtualizarProjetosTipo />
+
+        {/* Menu de Navegação */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div>
+            <h2 className="text-xl font-bold text-pmo-primary">Gerenciamento de Usuários</h2>
+            <p className="text-pmo-gray mt-2">Criação, edição e visualização de usuários</p>
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-pmo-primary">Responsáveis ASA</h2>
+            <p className="text-pmo-gray mt-2">Gerenciamento de responsáveis ASA</p>
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-pmo-primary">Configurações</h2>
+            <p className="text-pmo-gray mt-2">Configurações do sistema</p>
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-pmo-primary">Logs</h2>
+            <p className="text-pmo-gray mt-2">Visualização de logs do sistema</p>
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-pmo-primary">Dados de Teste</h2>
+            <p className="text-pmo-gray mt-2">Criação e visualização de dados de teste</p>
+          </div>
+        </div>
+
+        {/* Conteúdo das Seções */}
         <Tabs defaultValue="usuarios" className="space-y-4">
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="usuarios" className="flex items-center gap-2">

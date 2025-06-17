@@ -1,82 +1,86 @@
-
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Edit } from 'lucide-react';
-import { useStatusOperations } from '@/hooks/useStatusOperations';
+import { Check, X, Trash2 } from 'lucide-react';
 import { StatusProjeto } from '@/types/pmo';
-import { useAuth } from '@/hooks/useAuth';
-import { useNavigate } from 'react-router-dom';
+import { useStatusOperations } from '@/hooks/useStatusOperations';
+import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface StatusAcoesProps {
   status: StatusProjeto;
-  onUpdate?: () => void;
+  isAdmin?: boolean;
 }
 
-export function StatusAcoes({ status, onUpdate }: StatusAcoesProps) {
-  const { revisar, isLoading } = useStatusOperations();
-  const { usuario } = useAuth();
-  const navigate = useNavigate();
+export function StatusAcoes({ status, isAdmin }: StatusAcoesProps) {
+  const { revisar, rejeitarStatus, isLoading } = useStatusOperations();
+  const queryClient = useQueryClient();
 
-  const handleRevisar = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (!usuario) return;
-    
-    await revisar({
-      statusId: status.id,
-      revisadoPor: usuario.nome,
-    });
-    onUpdate?.();
+  const handleExcluirStatus = async () => {
+    if (!confirm('Tem certeza que deseja excluir este status? Esta ação não pode ser desfeita.')) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('status_projeto')
+        .delete()
+        .eq('id', status.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Sucesso",
+        description: "Status excluído com sucesso!",
+      });
+
+      queryClient.invalidateQueries({ queryKey: ['status-projetos'] });
+      queryClient.invalidateQueries({ queryKey: ['status-pendentes'] });
+      queryClient.invalidateQueries({ queryKey: ['status-list'] });
+    } catch (error) {
+      console.error('Erro ao excluir status:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao excluir status. Tente novamente.",
+        variant: "destructive",
+      });
+    }
   };
-
-  const handleEditarStatus = () => {
-    navigate(`/status/${status.id}/editar`);
-  };
-
-  // Verificar se o usuário pode revisar (Admin, Responsável ASA ou seu Head)
-  const canReview = () => {
-    if (!usuario) return false;
-    
-    // Admin sempre pode revisar
-    if (usuario.tipo_usuario === 'Admin') return true;
-    
-    // Responsável ASA do projeto pode revisar
-    if (status.projeto?.responsavel_interno === usuario.nome) return true;
-    
-    // Head do responsável ASA pode revisar (implementar lógica de hierarquia aqui)
-    // Por enquanto, responsáveis também podem revisar
-    if (usuario.tipo_usuario === 'Responsavel') return true;
-    
-    return false;
-  };
-
-  // Mostrar botão apenas para status não aprovados (aprovado === null ou aprovado === false)
-  const isEmRevisao = status.aprovado !== true;
-
-  if (!isEmRevisao) {
-    return null;
-  }
 
   return (
-    <div className="flex items-center gap-2">
-      <Button
-        size="sm"
-        variant="outline"
-        onClick={handleEditarStatus}
-        className="text-xs px-3 py-1 h-8"
-      >
-        <Edit className="h-3 w-3 mr-1" />
-        Editar Status
-      </Button>
-      {canReview() && (
+    <div className="flex gap-2">
+      {!status.aprovado && (
+        <>
+          <Button
+            onClick={() => revisar({ statusId: status.id, revisadoPor: 'Admin' })}
+            disabled={isLoading}
+            size="sm"
+            className="bg-green-600 hover:bg-green-700 text-white"
+          >
+            <Check className="h-4 w-4 mr-1" />
+            Aprovar
+          </Button>
+          
+          <Button
+            onClick={() => rejeitarStatus({ statusId: status.id })}
+            disabled={isLoading}
+            size="sm"
+            variant="destructive"
+          >
+            <X className="h-4 w-4 mr-1" />
+            Rejeitar
+          </Button>
+        </>
+      )}
+
+      {isAdmin && (
         <Button
+          onClick={handleExcluirStatus}
           size="sm"
-          onClick={handleRevisar}
-          disabled={isLoading}
-          className="bg-green-600 hover:bg-green-700 text-sm px-4 py-2 h-10"
+          variant="outline"
+          className="border-red-300 text-red-600 hover:bg-red-50"
         >
-          <CheckCircle className="h-4 w-4 mr-2" />
-          {isLoading ? 'Processando...' : 'Revisado OK'}
+          <Trash2 className="h-4 w-4 mr-1" />
+          Excluir
         </Button>
       )}
     </div>
