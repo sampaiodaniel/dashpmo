@@ -6,7 +6,7 @@ import { IncidentesHeader } from '@/components/incidentes/IncidentesHeader';
 import { IncidentesMetricas } from '@/components/incidentes/IncidentesMetricas';
 import { TabelaIncidentesRecentes } from '@/components/incidentes/TabelaIncidentesRecentes';
 import { GraficoEvolutivoIncidentes } from '@/components/incidentes/GraficoEvolutivoIncidentes';
-import { IncidentesFiltersCompact } from '@/components/incidentes/IncidentesFiltersCompact';
+import { IncidentesFilters } from '@/components/incidentes/IncidentesFilters';
 import { useIncidentes } from '@/hooks/useIncidentes';
 import { useEffect, useState } from 'react';
 import { seedIncidentesCanais } from '@/utils/seedIncidentesCanais';
@@ -14,7 +14,6 @@ import { seedIncidentesCanais } from '@/utils/seedIncidentesCanais';
 export default function Incidentes() {
   const { usuario, isLoading } = useAuth();
   const { data: incidentes, isLoading: isLoadingIncidentes } = useIncidentes();
-  const [carteiraSelecionada, setCarteiraSelecionada] = useState('todas');
   const [responsavelSelecionado, setResponsavelSelecionado] = useState('todos');
 
   useEffect(() => {
@@ -70,14 +69,16 @@ export default function Incidentes() {
         />
         <TabelaIncidentesRecentes />
         
-        <div className="space-y-6">
-          <IncidentesFiltersCompact 
-            carteiraSelecionada={carteiraSelecionada}
-            responsavelSelecionado={responsavelSelecionado}
-            onCarteiraChange={setCarteiraSelecionada}
-            onResponsavelChange={setResponsavelSelecionado}
-          />
-          <GraficoEvolutivoIncidentes />
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <div className="lg:col-span-1">
+            <IncidentesFilters 
+              responsavelSelecionado={responsavelSelecionado}
+              onResponsavelChange={setResponsavelSelecionado}
+            />
+          </div>
+          <div className="lg:col-span-3">
+            <GraficoEvolutivoIncidentes />
+          </div>
         </div>
       </div>
     </Layout>

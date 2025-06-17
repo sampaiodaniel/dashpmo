@@ -1,86 +1,121 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Calendar, AlertTriangle, Target } from 'lucide-react';
 import { ProjetoTimeline } from './ProjetoTimeline';
 import { ProjetoAtividades } from './ProjetoAtividades';
+import { ProjetoMilestones } from './ProjetoMilestones';
 
 interface ProjetoDetalhesProps {
   projeto: any;
 }
 
 export function ProjetoDetalhes({ projeto }: ProjetoDetalhesProps) {
+  const ultimoStatus = projeto.ultimoStatus;
+  
+  if (!ultimoStatus) {
+    return (
+      <div className="text-center py-8 text-[#6B7280]">
+        <p>Nenhum status aprovado encontrado para este projeto</p>
+      </div>
+    );
+  }
+
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Verde': return 'bg-[#10B981]';
-      case 'Amarelo': return 'bg-[#F59E0B]';
-      case 'Vermelho': return 'bg-[#EF4444]';
-      default: return 'bg-gray-500';
-    }
-  };
-
-  const getStatusBadgeVariant = (status: string) => {
-    switch (status) {
-      case 'Verde': return 'default';
-      case 'Amarelo': return 'secondary';
-      case 'Vermelho': return 'destructive';
-      default: return 'outline';
+      case 'Verde':
+        return 'bg-[#10B981] text-white';
+      case 'Amarelo':
+        return 'bg-[#F59E0B] text-white';
+      case 'Vermelho':
+        return 'bg-[#EF4444] text-white';
+      default:
+        return 'bg-[#6B7280] text-white';
     }
   };
 
   return (
-    <Card className="break-inside-avoid">
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <span className="text-[#1B365D]">{projeto.nome_projeto}</span>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-[#6B7280] font-medium">Matriz de Risco:</span>
-            <div className={`w-4 h-4 rounded-full ${getStatusColor(projeto.ultimoStatus?.status_visao_gp || 'Cinza')}`}></div>
-          </div>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-8">
-        {/* Descrição e Informações Básicas */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="space-y-6">
+      {/* Header do Projeto */}
+      <div className="border-b border-[#E5E7EB] pb-6">
+        <div className="flex items-start justify-between mb-4">
           <div>
-            <h4 className="font-semibold text-[#1B365D] mb-3">Descrição do Projeto</h4>
-            <p className="text-sm text-gray-700 leading-relaxed">
-              {projeto.descricao_projeto || projeto.descricao || 'Descrição não informada'}
-            </p>
-          </div>
-          <div>
-            <h4 className="font-semibold text-[#1B365D] mb-3">Informações</h4>
-            <div className="space-y-2 text-sm">
-              <p><strong>Responsável ASA:</strong> {projeto.responsavel_asa || projeto.responsavel_interno}</p>
-              <p><strong>Chefe do Projeto:</strong> {projeto.gp_responsavel}</p>
-              <p><strong>Status Geral:</strong> {projeto.ultimoStatus?.status_geral}</p>
-              <p><strong>Progresso:</strong> {projeto.ultimoStatus?.progresso_estimado || 0}%</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Timeline de Entregas */}
-        <ProjetoTimeline ultimoStatus={projeto.ultimoStatus} />
-
-        {/* Atividades e Atenções */}
-        <ProjetoAtividades ultimoStatus={projeto.ultimoStatus} />
-
-        {/* Bloqueios */}
-        {projeto.ultimoStatus?.bloqueios_atuais && (
-          <div>
-            <h4 className="font-semibold text-[#EF4444] mb-3">Bloqueios Atuais</h4>
-            <div className="bg-red-50 border border-red-200 p-4 rounded-lg">
-              <div className="space-y-2">
-                {projeto.ultimoStatus.bloqueios_atuais.split('\n').map((item: string, i: number) => (
-                  <div key={i} className="text-sm text-red-700 leading-relaxed">
-                    <span className="font-medium text-[#EF4444] mr-2">⚠️</span>
-                    <span>{item.trim()}</span>
-                  </div>
-                ))}
+            <h2 className="text-2xl font-bold text-[#1B365D] mb-2">{projeto.nome_projeto}</h2>
+            <p className="text-[#6B7280] mb-3">{projeto.descricao_projeto}</p>
+            <div className="flex items-center gap-4 text-sm text-[#6B7280]">
+              <div className="flex items-center gap-1">
+                <Calendar className="h-4 w-4" />
+                <span>GP: {projeto.gerente_projeto}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <span>Área: {projeto.area_responsavel}</span>
               </div>
             </div>
           </div>
-        )}
-      </CardContent>
-    </Card>
+          <div className="flex items-center gap-2">
+            <Badge className={getStatusColor(ultimoStatus.status_geral)}>
+              {ultimoStatus.status_geral}
+            </Badge>
+            <Badge className={getStatusColor(ultimoStatus.status_visao_gp)}>
+              GP: {ultimoStatus.status_visao_gp}
+            </Badge>
+          </div>
+        </div>
+      </div>
+
+      {/* Informações do Status */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card className="bg-white border border-[#E5E7EB]">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold text-[#1B365D]">Realizado na Semana</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-[#6B7280] leading-relaxed">
+              {ultimoStatus.realizado_semana || 'Nenhuma atividade registrada'}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-white border border-[#E5E7EB]">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold text-[#1B365D] flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-[#F59E0B]" />
+              Pontos de Atenção
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-[#6B7280] leading-relaxed">
+              {ultimoStatus.pontos_atencao || 'Nenhum ponto de atenção reportado'}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Bloqueios - aparece apenas uma vez */}
+      {ultimoStatus.bloqueios_atuais && (
+        <Card className="bg-[#FEF2F2] border border-[#FECACA]">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold text-[#EF4444] flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5" />
+              Bloqueios Atuais
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-[#7F1D1D] leading-relaxed">
+              {ultimoStatus.bloqueios_atuais}
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Timeline do Projeto */}
+      <ProjetoTimeline projeto={projeto} />
+
+      {/* Atividades */}
+      <ProjetoAtividades status={ultimoStatus} />
+
+      {/* Milestones */}
+      <ProjetoMilestones status={ultimoStatus} />
+    </div>
   );
 }

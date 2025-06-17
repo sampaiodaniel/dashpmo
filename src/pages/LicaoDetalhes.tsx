@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
@@ -9,13 +8,16 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, BookOpen, User, Calendar, Building, Edit } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useState } from 'react';
+import { NovaLicaoModal } from '@/components/licoes/NovaLicaoModal';
 
 export default function LicaoDetalhes() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { usuario, isLoading: authLoading, isAdmin } = useAuth();
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  const { data: licao, isLoading, error } = useQuery({
+  const { data: licao, isLoading, error, refetch } = useQuery({
     queryKey: ['licao', id],
     queryFn: async () => {
       if (!id) throw new Error('ID da lição não fornecido');
@@ -102,6 +104,11 @@ export default function LicaoDetalhes() {
     }
   };
 
+  const handleEditSuccess = () => {
+    setIsEditModalOpen(false);
+    refetch();
+  };
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -123,10 +130,7 @@ export default function LicaoDetalhes() {
           
           {isAdmin() && (
             <Button 
-              onClick={() => {
-                // TODO: Implementar edição de lição
-                console.log('Editar lição:', licao.id);
-              }}
+              onClick={() => setIsEditModalOpen(true)}
               className="bg-pmo-primary hover:bg-pmo-secondary text-white"
             >
               <Edit className="h-4 w-4 mr-2" />
@@ -234,5 +238,13 @@ export default function LicaoDetalhes() {
         </div>
       </div>
     </Layout>
+
+    {/* Edit Modal */}
+    <NovaLicaoModal
+      isOpen={isEditModalOpen}
+      onClose={() => setIsEditModalOpen(false)}
+      onLicaoCreated={handleEditSuccess}
+      editingLicao={licao}
+    />
   );
 }
