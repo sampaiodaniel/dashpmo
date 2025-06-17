@@ -1,6 +1,6 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useAutoLog } from './useLogsAlteracoes';
 import { useAuth } from './useAuth';
@@ -117,6 +117,8 @@ export function useStatusOperations() {
         title: "Sucesso",
         description: "Status rejeitado com sucesso!",
       });
+      // Redirecionar para a listagem de status
+      navigate('/status');
     },
     onError: (error) => {
       console.error('Erro ao rejeitar status:', error);
