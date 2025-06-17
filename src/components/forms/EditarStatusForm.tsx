@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
@@ -10,12 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
-import { CalendarIcon } from 'lucide-react';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { cn } from '@/lib/utils';
+import { DateFieldWithTBD } from '@/components/forms/DateFieldWithTBD';
 
 // Função para calcular o risco baseado na fórmula do Excel
 function calcularMatrizRisco(impacto: string, probabilidade: string): { nivel: string; cor: string } {
@@ -44,11 +40,22 @@ interface EditarStatusFormProps {
 export function EditarStatusForm({ status, onSuccess }: EditarStatusFormProps) {
   const queryClient = useQueryClient();
   const [carregando, setCarregando] = useState(false);
-  const [openPopovers, setOpenPopovers] = useState<{[key: string]: boolean}>({
-    marco1: false,
-    marco2: false,
-    marco3: false,
-  });
+  
+  // Estados para controlar TBD nos marcos
+  const [marco1TBD, setMarco1TBD] = useState(false);
+  const [marco2TBD, setMarco2TBD] = useState(false);
+  const [marco3TBD, setMarco3TBD] = useState(false);
+
+  // Estados para as datas dos marcos
+  const [dataMarco1, setDataMarco1] = useState<Date | null>(
+    status.data_marco1 ? new Date(status.data_marco1) : null
+  );
+  const [dataMarco2, setDataMarco2] = useState<Date | null>(
+    status.data_marco2 ? new Date(status.data_marco2) : null
+  );
+  const [dataMarco3, setDataMarco3] = useState<Date | null>(
+    status.data_marco3 ? new Date(status.data_marco3) : null
+  );
   
   const [formData, setFormData] = useState({
     status_geral: status.status_geral,
@@ -71,13 +78,55 @@ export function EditarStatusForm({ status, onSuccess }: EditarStatusFormProps) {
     progresso_estimado: (status as any).progresso_estimado || 0
   });
 
-  const handleDateSelect = (date: Date | undefined, fieldName: string, marcoKey: string) => {
-    if (date) {
-      const dateString = format(date, 'yyyy-MM-dd');
-      setFormData(prev => ({ ...prev, [fieldName]: dateString }));
-      
-      // Fechar o popover após seleção
-      setOpenPopovers(prev => ({ ...prev, [marcoKey]: false }));
+  // Funções para lidar com mudanças de data dos marcos
+  const handleMarco1DateChange = (date: Date | null) => {
+    setDataMarco1(date);
+    if (marco1TBD) {
+      setFormData(prev => ({ ...prev, data_marco1: 'TBD' }));
+    } else {
+      setFormData(prev => ({ ...prev, data_marco1: date ? date.toISOString().split('T')[0] : '' }));
+    }
+  };
+
+  const handleMarco1TBDChange = (isTBD: boolean) => {
+    setMarco1TBD(isTBD);
+    if (isTBD) {
+      setFormData(prev => ({ ...prev, data_marco1: 'TBD' }));
+      setDataMarco1(null);
+    }
+  };
+
+  const handleMarco2DateChange = (date: Date | null) => {
+    setDataMarco2(date);
+    if (marco2TBD) {
+      setFormData(prev => ({ ...prev, data_marco2: 'TBD' }));
+    } else {
+      setFormData(prev => ({ ...prev, data_marco2: date ? date.toISOString().split('T')[0] : '' }));
+    }
+  };
+
+  const handleMarco2TBDChange = (isTBD: boolean) => {
+    setMarco2TBD(isTBD);
+    if (isTBD) {
+      setFormData(prev => ({ ...prev, data_marco2: 'TBD' }));
+      setDataMarco2(null);
+    }
+  };
+
+  const handleMarco3DateChange = (date: Date | null) => {
+    setDataMarco3(date);
+    if (marco3TBD) {
+      setFormData(prev => ({ ...prev, data_marco3: 'TBD' }));
+    } else {
+      setFormData(prev => ({ ...prev, data_marco3: date ? date.toISOString().split('T')[0] : '' }));
+    }
+  };
+
+  const handleMarco3TBDChange = (isTBD: boolean) => {
+    setMarco3TBD(isTBD);
+    if (isTBD) {
+      setFormData(prev => ({ ...prev, data_marco3: 'TBD' }));
+      setDataMarco3(null);
     }
   };
 
@@ -97,13 +146,13 @@ export function EditarStatusForm({ status, onSuccess }: EditarStatusFormProps) {
         observacoes_pontos_atencao: formData.observacoes_pontos_atencao,
         entregaveis1: formData.entregaveis1,
         entrega1: formData.entrega1,
-        data_marco1: formData.data_marco1 || null,
+        data_marco1: marco1TBD ? 'TBD' : (formData.data_marco1 || null),
         entregaveis2: formData.entregaveis2,
         entrega2: formData.entrega2,
-        data_marco2: formData.data_marco2 || null,
+        data_marco2: marco2TBD ? 'TBD' : (formData.data_marco2 || null),
         entregaveis3: formData.entregaveis3,
         entrega3: formData.entrega3,
-        data_marco3: formData.data_marco3 || null,
+        data_marco3: marco3TBD ? 'TBD' : (formData.data_marco3 || null),
         progresso_estimado: formData.progresso_estimado,
         data_atualizacao: new Date().toISOString().split('T')[0]
       };
@@ -351,44 +400,20 @@ export function EditarStatusForm({ status, onSuccess }: EditarStatusFormProps) {
                     value={formData.entrega1} 
                     onChange={(e) => handleInputChange('entrega1', e.target.value)} 
                     placeholder="Nome da entrega"
+                    className="bg-white"
                     required
                   />
                 </div>
 
-                <div>
-                  <Label>Data de Entrega *</Label>
-                  <Popover 
-                    open={openPopovers.marco1} 
-                    onOpenChange={(open) => setOpenPopovers(prev => ({ ...prev, marco1: open }))}
-                  >
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full pl-3 text-left font-normal",
-                          !formData.data_marco1 && "text-muted-foreground"
-                        )}
-                        type="button"
-                      >
-                        {formData.data_marco1 ? (
-                          format(new Date(formData.data_marco1 + 'T00:00:00'), "dd/MM/yyyy", { locale: ptBR })
-                        ) : (
-                          <span>Selecione a data</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={formData.data_marco1 ? new Date(formData.data_marco1 + 'T00:00:00') : undefined}
-                        onSelect={(date) => handleDateSelect(date, 'data_marco1', 'marco1')}
-                        initialFocus
-                        className={cn("p-3 pointer-events-auto")}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
+                <DateFieldWithTBD
+                  label="Data de Entrega"
+                  value={dataMarco1}
+                  onChange={handleMarco1DateChange}
+                  onTBDChange={handleMarco1TBDChange}
+                  isTBD={marco1TBD}
+                  required
+                  placeholder="Selecione a data"
+                />
               </div>
             </div>
           </div>
@@ -413,43 +438,18 @@ export function EditarStatusForm({ status, onSuccess }: EditarStatusFormProps) {
                     value={formData.entrega2} 
                     onChange={(e) => handleInputChange('entrega2', e.target.value)} 
                     placeholder="Nome da entrega"
+                    className="bg-white"
                   />
                 </div>
 
-                <div>
-                  <Label>Data de Entrega</Label>
-                  <Popover 
-                    open={openPopovers.marco2} 
-                    onOpenChange={(open) => setOpenPopovers(prev => ({ ...prev, marco2: open }))}
-                  >
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full pl-3 text-left font-normal",
-                          !formData.data_marco2 && "text-muted-foreground"
-                        )}
-                        type="button"
-                      >
-                        {formData.data_marco2 ? (
-                          format(new Date(formData.data_marco2 + 'T00:00:00'), "dd/MM/yyyy", { locale: ptBR })
-                        ) : (
-                          <span>Selecione a data</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={formData.data_marco2 ? new Date(formData.data_marco2 + 'T00:00:00') : undefined}
-                        onSelect={(date) => handleDateSelect(date, 'data_marco2', 'marco2')}
-                        initialFocus
-                        className={cn("p-3 pointer-events-auto")}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
+                <DateFieldWithTBD
+                  label="Data de Entrega"
+                  value={dataMarco2}
+                  onChange={handleMarco2DateChange}
+                  onTBDChange={handleMarco2TBDChange}
+                  isTBD={marco2TBD}
+                  placeholder="Selecione a data"
+                />
               </div>
             </div>
           </div>
@@ -474,43 +474,18 @@ export function EditarStatusForm({ status, onSuccess }: EditarStatusFormProps) {
                     value={formData.entrega3} 
                     onChange={(e) => handleInputChange('entrega3', e.target.value)} 
                     placeholder="Nome da entrega"
+                    className="bg-white"
                   />
                 </div>
 
-                <div>
-                  <Label>Data de Entrega</Label>
-                  <Popover 
-                    open={openPopovers.marco3} 
-                    onOpenChange={(open) => setOpenPopovers(prev => ({ ...prev, marco3: open }))}
-                  >
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full pl-3 text-left font-normal",
-                          !formData.data_marco3 && "text-muted-foreground"
-                        )}
-                        type="button"
-                      >
-                        {formData.data_marco3 ? (
-                          format(new Date(formData.data_marco3 + 'T00:00:00'), "dd/MM/yyyy", { locale: ptBR })
-                        ) : (
-                          <span>Selecione a data</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={formData.data_marco3 ? new Date(formData.data_marco3 + 'T00:00:00') : undefined}
-                        onSelect={(date) => handleDateSelect(date, 'data_marco3', 'marco3')}
-                        initialFocus
-                        className={cn("p-3 pointer-events-auto")}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
+                <DateFieldWithTBD
+                  label="Data de Entrega"
+                  value={dataMarco3}
+                  onChange={handleMarco3DateChange}
+                  onTBDChange={handleMarco3TBDChange}
+                  isTBD={marco3TBD}
+                  placeholder="Selecione a data"
+                />
               </div>
             </div>
           </div>

@@ -103,6 +103,21 @@ export default function StatusDetalhes() {
   // Calcular matriz de risco
   const matrizRisco = calcularMatrizRisco(status.impacto_riscos, status.probabilidade_riscos);
 
+  // Função para formatar datas corretamente sem problema de timezone
+  const formatarData = (data: Date | string) => {
+    if (!data) return '';
+    
+    if (typeof data === 'string') {
+      if (data === 'TBD') return 'TBD (A definir)';
+      // Para datas no formato YYYY-MM-DD, criar a data sem problemas de timezone
+      const [year, month, day] = data.split('-').map(Number);
+      const dateObj = new Date(year, month - 1, day);
+      return format(dateObj, 'dd/MM/yyyy', { locale: ptBR });
+    }
+    
+    return format(data, 'dd/MM/yyyy', { locale: ptBR });
+  };
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -271,7 +286,7 @@ export default function StatusDetalhes() {
                         <div>
                           <span className="text-sm font-medium text-pmo-gray">Data de Entrega:</span>
                           <p className="text-gray-700">
-                            {format(new Date(status.data_marco1), 'dd/MM/yyyy', { locale: ptBR })}
+                            {formatarData(status.data_marco1)}
                           </p>
                         </div>
                       )}
@@ -297,7 +312,7 @@ export default function StatusDetalhes() {
                         <div>
                           <span className="text-sm font-medium text-pmo-gray">Data de Entrega:</span>
                           <p className="text-gray-700">
-                            {format(new Date(status.data_marco2), 'dd/MM/yyyy', { locale: ptBR })}
+                            {formatarData(status.data_marco2)}
                           </p>
                         </div>
                       )}
@@ -323,7 +338,7 @@ export default function StatusDetalhes() {
                         <div>
                           <span className="text-sm font-medium text-pmo-gray">Data de Entrega:</span>
                           <p className="text-gray-700">
-                            {format(new Date(status.data_marco3), 'dd/MM/yyyy', { locale: ptBR })}
+                            {formatarData(status.data_marco3)}
                           </p>
                         </div>
                       )}

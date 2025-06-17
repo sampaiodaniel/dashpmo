@@ -122,6 +122,20 @@ export default function NovoStatus() {
     }
   };
 
+  // Função customizada para submit que lida com TBD
+  const handleFormSubmit = async (data: any) => {
+    // Processar dados dos marcos com TBD
+    const processedData = {
+      ...data,
+      marco1_data: marco1TBD ? 'TBD' : (dataMarco1 ? dataMarco1.toISOString().split('T')[0] : ''),
+      marco2_data: marco2TBD ? 'TBD' : (dataMarco2 ? dataMarco2.toISOString().split('T')[0] : ''),
+      marco3_data: marco3TBD ? 'TBD' : (dataMarco3 ? dataMarco3.toISOString().split('T')[0] : ''),
+    };
+
+    console.log('Dados do formulário processados:', processedData);
+    await onSubmit(processedData);
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-pmo-background flex items-center justify-center">
@@ -156,7 +170,7 @@ export default function NovoStatus() {
         </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
             {/* Projeto Selection */}
             <Card>
               <CardHeader>
