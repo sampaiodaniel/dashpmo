@@ -1,7 +1,6 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { DashboardMetricas, FiltrosDashboard, CARTEIRAS } from '@/types/pmo';
+import { DashboardMetricas, FiltrosDashboard, CARTEIRAS, AreaResponsavel } from '@/types/pmo';
 
 export function useDashboardMetricas(filtros?: FiltrosDashboard) {
   return useQuery({
@@ -63,7 +62,7 @@ export function useDashboardMetricas(filtros?: FiltrosDashboard) {
       } else if (carteirasPermitidas.length > 0) {
         // Se temos hierarquia ASA mas não filtro específico de carteira, usar carteiras permitidas
         // Filtrar apenas pelas carteiras válidas do enum
-        const carteirasValidas = carteirasPermitidas.filter(c => CARTEIRAS.includes(c as any));
+        const carteirasValidas = carteirasPermitidas.filter(c => CARTEIRAS.includes(c as AreaResponsavel));
         if (carteirasValidas.length > 0) {
           query = query.in('area_responsavel', carteirasValidas);
           console.log('🏢 Filtro de carteiras por hierarquia ASA aplicado:', carteirasValidas);
