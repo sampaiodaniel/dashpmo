@@ -1,11 +1,13 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Download, Printer } from 'lucide-react';
+import { Download, Printer, FileText } from 'lucide-react';
 import { DadosRelatorioASA } from '@/hooks/useRelatorioASA';
 import { ProjetosOverview } from './asa/ProjetosOverview';
 import { ProjetoDetalhes } from './asa/ProjetoDetalhes';
 import { TabelaIncidentes } from './asa/TabelaIncidentes';
 import { GraficoStatusProjeto } from './asa/GraficoStatusProjeto';
+import html2pdf from 'html2pdf.js';
 
 interface RelatorioASAViewerProps {
   isOpen: boolean;
@@ -139,7 +141,76 @@ export function RelatorioASAViewer({ isOpen, onClose, dados }: RelatorioASAViewe
     }, 1000);
   };
 
-  const handleDownload = async () => {
+  const handleDownloadPDF = async () => {
+    try {
+      const element = document.getElementById('relatorio-content');
+      if (!element) return;
+
+      // Configurações otimizadas para PDF
+      const options = {
+        margin: [10, 10, 10, 10], // margem em mm
+        filename: `relatorio-asa-${dados.carteira}-${dados.dataRelatorio.replace(/\//g, '-')}.pdf`,
+        image: { 
+          type: 'jpeg', 
+          quality: 0.98 
+        },
+        html2canvas: { 
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: '#ffffff',
+          logging: false,
+          letterRendering: true,
+          width: 210 * 3.77953, // A4 width in pixels at 96 DPI
+          height: 297 * 3.77953, // A4 height in pixels at 96 DPI
+        },
+        jsPDF: { 
+          unit: 'mm', 
+          format: 'a4', 
+          orientation: 'portrait',
+          compress: true,
+          precision: 2
+        },
+        pagebreak: {
+          mode: ['avoid-all', 'css', 'legacy'],
+          before: '.page-break-before',
+          after: '.page-break-after'
+        }
+      };
+
+      // Adicionar estilo específico para PDF antes da conversão
+      const style = document.createElement('style');
+      style.textContent = `
+        #relatorio-content {
+          font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+          color: #1B365D !important;
+          background: white !important;
+          padding: 0 !important;
+          margin: 0 !important;
+        }
+        .break-inside-avoid {
+          page-break-inside: avoid !important;
+        }
+        .page-break-after {
+          page-break-after: always !important;
+        }
+        .no-print {
+          display: none !important;
+        }
+      `;
+      document.head.appendChild(style);
+
+      await html2pdf().set(options).from(element).save();
+
+      // Remover o estilo após a conversão
+      document.head.removeChild(style);
+
+    } catch (error) {
+      console.error('Erro ao gerar PDF:', error);
+    }
+  };
+
+  const handleDownloadHTML = async () => {
     try {
       const element = document.getElementById('relatorio-content');
       if (!element) return;
@@ -304,7 +375,7 @@ export function RelatorioASAViewer({ isOpen, onClose, dados }: RelatorioASAViewe
           </style>
         </head>
         <body>
-          ${content}
+          ${element.innerHTML}
         </body>
         </html>
       `;
@@ -339,7 +410,11 @@ export function RelatorioASAViewer({ isOpen, onClose, dados }: RelatorioASAViewe
                 <Printer className="h-4 w-4 mr-2" />
                 Imprimir
               </Button>
-              <Button variant="outline" size="sm" onClick={handleDownload} className="border-[#1B365D] text-[#1B365D] hover:bg-[#1B365D] hover:text-white">
+              <Button variant="outline" size="sm" onClick={handleDownloadPDF} className="border-[#EF4444] text-[#EF4444] hover:bg-[#EF4444] hover:text-white">
+                <FileText className="h-4 w-4 mr-2" />
+                Download PDF
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleDownloadHTML} className="border-[#1B365D] text-[#1B365D] hover:bg-[#1B365D] hover:text-white">
                 <Download className="h-4 w-4 mr-2" />
                 Download HTML
               </Button>
