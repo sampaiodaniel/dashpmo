@@ -61,10 +61,9 @@ export function useEditarStatusForm(status: StatusProjeto) {
     setCarregando(true);
 
     try {
-      // Função para processar data antes de salvar - salvar exatamente como está
+      // Função para processar data antes de salvar
       const processarData = (dataString: string) => {
         if (!dataString || dataString === 'TBD') return dataString || null;
-        // Retornar a data exatamente como está, sem ajustes
         return dataString;
       };
 

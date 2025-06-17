@@ -1,3 +1,4 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { DashboardMetricas, FiltrosDashboard, CARTEIRAS } from '@/types/pmo';
@@ -10,8 +11,10 @@ export function useDashboardMetricas(filtros?: FiltrosDashboard) {
 
       // Se há filtro de responsável ASA, buscar a hierarquia
       let responsaveisHierarquia: string[] = [];
+      let carteirasPermitidas: string[] = [];
+      
       if (filtros?.responsavel_asa) {
-        // Buscar responsáveis ASA para entender a hierarquia
+        // Buscar responsável selecionado para entender a hierarquia
         const { data: responsavelSelecionado } = await supabase
           .from('responsaveis_asa')
           .select('*')
@@ -21,17 +24,24 @@ export function useDashboardMetricas(filtros?: FiltrosDashboard) {
 
         if (responsavelSelecionado) {
           responsaveisHierarquia = [responsavelSelecionado.nome];
+          carteirasPermitidas = responsavelSelecionado.carteiras || [];
           
           // Se é um Head, incluir todos os superintendentes abaixo dele
           if (responsavelSelecionado.nivel === 'Head') {
             const { data: superintendentes } = await supabase
               .from('responsaveis_asa')
-              .select('nome')
+              .select('nome, carteiras')
               .eq('head_id', responsavelSelecionado.id)
               .eq('ativo', true);
             
             if (superintendentes) {
               responsaveisHierarquia.push(...superintendentes.map(s => s.nome));
+              // Adicionar carteiras dos superintendentes
+              superintendentes.forEach(s => {
+                if (s.carteiras) {
+                  carteirasPermitidas.push(...s.carteiras);
+                }
+              });
             }
           }
         }
@@ -50,6 +60,10 @@ export function useDashboardMetricas(filtros?: FiltrosDashboard) {
           query = query.eq('area_responsavel', carteiraValida);
           console.log('🏢 Filtro de carteira aplicado:', carteiraValida);
         }
+      } else if (carteirasPermitidas.length > 0) {
+        // Se temos hierarquia ASA mas não filtro específico de carteira, usar carteiras permitidas
+        query = query.in('area_responsavel', carteirasPermitidas);
+        console.log('🏢 Filtro de carteiras por hierarquia ASA aplicado:', carteirasPermitidas);
       }
 
       if (filtros?.responsavel_asa && responsaveisHierarquia.length > 0) {
@@ -153,7 +167,7 @@ export function useDashboardMetricas(filtros?: FiltrosDashboard) {
             { data: status.data_marco2, entrega: status.entrega2 },
             { data: status.data_marco3, entrega: status.entrega3 }
           ].forEach(marco => {
-            if (marco.data && marco.entrega) {
+            if (marco.data && marco.entrega && marco.data !== 'TBD') {
               const dataMarco = new Date(marco.data);
               if (dataMarco >= hoje && dataMarco <= em15Dias) {
                 const diasRestantes = Math.ceil((dataMarco.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));

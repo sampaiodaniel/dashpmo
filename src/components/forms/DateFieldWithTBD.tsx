@@ -39,7 +39,7 @@ export function DateFieldWithTBD({
   };
 
   const handleDateSelect = (date: Date | undefined) => {
-    // Exibir a data selecionada normalmente, sem ajustes
+    // Enviar a data exatamente como selecionada, sem ajustes
     onChange(date || null);
     setOpen(false);
   };
