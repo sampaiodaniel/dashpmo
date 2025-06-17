@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
@@ -42,19 +41,19 @@ export function EditarStatusForm({ status, onSuccess }: EditarStatusFormProps) {
   const [carregando, setCarregando] = useState(false);
   
   // Estados para controlar TBD nos marcos
-  const [marco1TBD, setMarco1TBD] = useState(false);
-  const [marco2TBD, setMarco2TBD] = useState(false);
-  const [marco3TBD, setMarco3TBD] = useState(false);
+  const [marco1TBD, setMarco1TBD] = useState(status.data_marco1 === 'TBD');
+  const [marco2TBD, setMarco2TBD] = useState(status.data_marco2 === 'TBD');
+  const [marco3TBD, setMarco3TBD] = useState(status.data_marco3 === 'TBD');
 
   // Estados para as datas dos marcos
   const [dataMarco1, setDataMarco1] = useState<Date | null>(
-    status.data_marco1 ? new Date(status.data_marco1) : null
+    status.data_marco1 && status.data_marco1 !== 'TBD' ? new Date(status.data_marco1) : null
   );
   const [dataMarco2, setDataMarco2] = useState<Date | null>(
-    status.data_marco2 ? new Date(status.data_marco2) : null
+    status.data_marco2 && status.data_marco2 !== 'TBD' ? new Date(status.data_marco2) : null
   );
   const [dataMarco3, setDataMarco3] = useState<Date | null>(
-    status.data_marco3 ? new Date(status.data_marco3) : null
+    status.data_marco3 && status.data_marco3 !== 'TBD' ? new Date(status.data_marco3) : null
   );
   
   const [formData, setFormData] = useState({
@@ -68,22 +67,20 @@ export function EditarStatusForm({ status, onSuccess }: EditarStatusFormProps) {
     observacoes_pontos_atencao: status.observacoes_pontos_atencao || '',
     entregaveis1: status.entregaveis1 || '',
     entrega1: status.entrega1 || '',
-    data_marco1: status.data_marco1 ? status.data_marco1.toISOString().split('T')[0] : '',
+    data_marco1: status.data_marco1 === 'TBD' ? 'TBD' : (status.data_marco1 ? status.data_marco1.toISOString().split('T')[0] : ''),
     entregaveis2: status.entregaveis2 || '',
     entrega2: status.entrega2 || '',
-    data_marco2: status.data_marco2 ? status.data_marco2.toISOString().split('T')[0] : '',
+    data_marco2: status.data_marco2 === 'TBD' ? 'TBD' : (status.data_marco2 ? status.data_marco2.toISOString().split('T')[0] : ''),
     entregaveis3: status.entregaveis3 || '',
     entrega3: status.entrega3 || '',
-    data_marco3: status.data_marco3 ? status.data_marco3.toISOString().split('T')[0] : '',
+    data_marco3: status.data_marco3 === 'TBD' ? 'TBD' : (status.data_marco3 ? status.data_marco3.toISOString().split('T')[0] : ''),
     progresso_estimado: (status as any).progresso_estimado || 0
   });
 
   // Funções para lidar com mudanças de data dos marcos
   const handleMarco1DateChange = (date: Date | null) => {
     setDataMarco1(date);
-    if (marco1TBD) {
-      setFormData(prev => ({ ...prev, data_marco1: 'TBD' }));
-    } else {
+    if (!marco1TBD) {
       setFormData(prev => ({ ...prev, data_marco1: date ? date.toISOString().split('T')[0] : '' }));
     }
   };
@@ -93,14 +90,14 @@ export function EditarStatusForm({ status, onSuccess }: EditarStatusFormProps) {
     if (isTBD) {
       setFormData(prev => ({ ...prev, data_marco1: 'TBD' }));
       setDataMarco1(null);
+    } else {
+      setFormData(prev => ({ ...prev, data_marco1: dataMarco1 ? dataMarco1.toISOString().split('T')[0] : '' }));
     }
   };
 
   const handleMarco2DateChange = (date: Date | null) => {
     setDataMarco2(date);
-    if (marco2TBD) {
-      setFormData(prev => ({ ...prev, data_marco2: 'TBD' }));
-    } else {
+    if (!marco2TBD) {
       setFormData(prev => ({ ...prev, data_marco2: date ? date.toISOString().split('T')[0] : '' }));
     }
   };
@@ -110,14 +107,14 @@ export function EditarStatusForm({ status, onSuccess }: EditarStatusFormProps) {
     if (isTBD) {
       setFormData(prev => ({ ...prev, data_marco2: 'TBD' }));
       setDataMarco2(null);
+    } else {
+      setFormData(prev => ({ ...prev, data_marco2: dataMarco2 ? dataMarco2.toISOString().split('T')[0] : '' }));
     }
   };
 
   const handleMarco3DateChange = (date: Date | null) => {
     setDataMarco3(date);
-    if (marco3TBD) {
-      setFormData(prev => ({ ...prev, data_marco3: 'TBD' }));
-    } else {
+    if (!marco3TBD) {
       setFormData(prev => ({ ...prev, data_marco3: date ? date.toISOString().split('T')[0] : '' }));
     }
   };
@@ -127,6 +124,8 @@ export function EditarStatusForm({ status, onSuccess }: EditarStatusFormProps) {
     if (isTBD) {
       setFormData(prev => ({ ...prev, data_marco3: 'TBD' }));
       setDataMarco3(null);
+    } else {
+      setFormData(prev => ({ ...prev, data_marco3: dataMarco3 ? dataMarco3.toISOString().split('T')[0] : '' }));
     }
   };
 
@@ -146,13 +145,13 @@ export function EditarStatusForm({ status, onSuccess }: EditarStatusFormProps) {
         observacoes_pontos_atencao: formData.observacoes_pontos_atencao,
         entregaveis1: formData.entregaveis1,
         entrega1: formData.entrega1,
-        data_marco1: marco1TBD ? 'TBD' : (formData.data_marco1 || null),
+        data_marco1: formData.data_marco1 || null,
         entregaveis2: formData.entregaveis2,
         entrega2: formData.entrega2,
-        data_marco2: marco2TBD ? 'TBD' : (formData.data_marco2 || null),
+        data_marco2: formData.data_marco2 || null,
         entregaveis3: formData.entregaveis3,
         entrega3: formData.entrega3,
-        data_marco3: marco3TBD ? 'TBD' : (formData.data_marco3 || null),
+        data_marco3: formData.data_marco3 || null,
         progresso_estimado: formData.progresso_estimado,
         data_atualizacao: new Date().toISOString().split('T')[0]
       };
@@ -277,7 +276,7 @@ export function EditarStatusForm({ status, onSuccess }: EditarStatusFormProps) {
                   <SelectValue placeholder="Selecione o progresso" />
                 </SelectTrigger>
                 <SelectContent>
-                  {progressoOptions.map((progress) => (
+                  {Array.from({ length: 21 }, (_, i) => i * 5).map((progress) => (
                     <SelectItem key={progress} value={progress.toString()}>
                       {progress}%
                     </SelectItem>
@@ -316,11 +315,11 @@ export function EditarStatusForm({ status, onSuccess }: EditarStatusFormProps) {
               </Select>
             </div>
 
-            {matrizRisco.nivel && (
+            {calcularMatrizRisco(formData.impacto_riscos, formData.probabilidade_riscos).nivel && (
               <div>
                 <Label>Matriz de Risco (Prob x Impacto)</Label>
-                <Badge className={`${matrizRisco.cor} mt-2 block w-fit`}>
-                  {matrizRisco.nivel}
+                <Badge className={`${calcularMatrizRisco(formData.impacto_riscos, formData.probabilidade_riscos).cor} mt-2 block w-fit`}>
+                  {calcularMatrizRisco(formData.impacto_riscos, formData.probabilidade_riscos).nivel}
                 </Badge>
               </div>
             )}

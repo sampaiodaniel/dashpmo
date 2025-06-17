@@ -30,6 +30,29 @@ export function StatusCard({ status, onUpdate, onStatusUpdate }: StatusCardProps
     navigate(`/status/${status.id}`);
   };
 
+  // Função para formatar data da próxima entrega
+  const formatarProximaEntrega = (data: any) => {
+    if (!data) return '';
+    
+    if (data === 'TBD') return 'TBD';
+    
+    // Se for string no formato YYYY-MM-DD, formatar diretamente
+    if (typeof data === 'string') {
+      const match = data.match(/(\d{4})-(\d{2})-(\d{2})/);
+      if (match) {
+        const [, year, month, day] = match;
+        return `${day}/${month}/${year}`;
+      }
+    }
+    
+    // Se for objeto Date
+    if (data instanceof Date) {
+      return format(data, 'dd/MM/yyyy', { locale: ptBR });
+    }
+    
+    return '';
+  };
+
   return (
     <div className="p-6 hover:bg-gray-50 transition-colors cursor-pointer group" onClick={handleCardClick}>
       <div className="flex items-start justify-between">
@@ -46,16 +69,16 @@ export function StatusCard({ status, onUpdate, onStatusUpdate }: StatusCardProps
             </div>
           </div>
           
-          <div className="flex items-center gap-3 mb-4">
+          <div className="flex items-center gap-4 mb-4">
             <Badge className={getStatusGeralColor(status.status_geral)}>
-              <span className="font-semibold">Status:</span> {status.status_geral}
+              <span className="font-semibold">Status: </span> {status.status_geral}
             </Badge>
             <Badge className={getStatusColor(status.status_visao_gp)}>
-              <span className="font-semibold">Visão GP:</span> {status.status_visao_gp}
+              <span className="font-semibold">Visão GP: </span> {status.status_visao_gp}
             </Badge>
             {status.prob_x_impact && (
               <Badge variant="outline" className={getMatrizRiscoColor(status.prob_x_impact)}>
-                <span className="font-semibold">Matriz de Risco:</span> {status.prob_x_impact}
+                <span className="font-semibold">Matriz de Risco: </span> {status.prob_x_impact}
               </Badge>
             )}
           </div>
@@ -66,11 +89,16 @@ export function StatusCard({ status, onUpdate, onStatusUpdate }: StatusCardProps
               <span>{format(new Date(status.data_atualizacao), 'dd/MM/yyyy', { locale: ptBR })}</span>
             </div>
             <div>
-              <span className="font-semibold">Responsável ASA:</span> {status.projeto?.responsavel_interno || 'N/A'}
+              <span className="font-semibold">Responsável ASA: </span> {status.projeto?.responsavel_interno || 'N/A'}
             </div>
             <div>
-              <span className="font-semibold">Chefe do Projeto:</span> {status.projeto?.gp_responsavel || 'N/A'}
+              <span className="font-semibold">Chefe do Projeto: </span> {status.projeto?.gp_responsavel || 'N/A'}
             </div>
+            {status.data_marco1 && (
+              <div>
+                <span className="font-semibold">Próxima Entrega: </span> {formatarProximaEntrega(status.data_marco1)}
+              </div>
+            )}
           </div>
         </div>
         

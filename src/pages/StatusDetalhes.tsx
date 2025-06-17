@@ -103,19 +103,27 @@ export default function StatusDetalhes() {
   // Calcular matriz de risco
   const matrizRisco = calcularMatrizRisco(status.impacto_riscos, status.probabilidade_riscos);
 
-  // Função para formatar datas corretamente sem problema de timezone
-  const formatarData = (data: Date | string) => {
+  // Função para formatar datas corretamente - usando apenas string sem conversão
+  const formatarData = (data: any) => {
     if (!data) return '';
     
+    if (data === 'TBD') return 'TBD (A definir)';
+    
+    // Se for string no formato YYYY-MM-DD, formatar diretamente
     if (typeof data === 'string') {
-      if (data === 'TBD') return 'TBD (A definir)';
-      // Para datas no formato YYYY-MM-DD, criar a data sem problemas de timezone
-      const [year, month, day] = data.split('-').map(Number);
-      const dateObj = new Date(year, month - 1, day);
-      return format(dateObj, 'dd/MM/yyyy', { locale: ptBR });
+      const match = data.match(/(\d{4})-(\d{2})-(\d{2})/);
+      if (match) {
+        const [, year, month, day] = match;
+        return `${day}/${month}/${year}`;
+      }
     }
     
-    return format(data, 'dd/MM/yyyy', { locale: ptBR });
+    // Se for objeto Date
+    if (data instanceof Date) {
+      return format(data, 'dd/MM/yyyy', { locale: ptBR });
+    }
+    
+    return '';
   };
 
   return (
