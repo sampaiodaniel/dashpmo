@@ -137,6 +137,58 @@ export default function StatusDetalhes() {
                 </CardContent>
               </Card>
             )}
+
+            {/* Entregas e Marcos */}
+            {(status.entrega1 || status.entrega2 || status.entrega3) && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Próximas Entregas</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {status.entrega1 && (
+                    <div className="border-l-4 border-blue-500 pl-4">
+                      <h4 className="font-medium text-pmo-gray">{status.entrega1}</h4>
+                      {status.data_marco1 && (
+                        <p className="text-sm text-gray-600">
+                          {format(new Date(status.data_marco1), 'dd/MM/yyyy', { locale: ptBR })}
+                        </p>
+                      )}
+                      {status.entregaveis1 && (
+                        <p className="text-sm text-gray-700">{status.entregaveis1}</p>
+                      )}
+                    </div>
+                  )}
+                  
+                  {status.entrega2 && (
+                    <div className="border-l-4 border-orange-500 pl-4">
+                      <h4 className="font-medium text-pmo-gray">{status.entrega2}</h4>
+                      {status.data_marco2 && (
+                        <p className="text-sm text-gray-600">
+                          {format(new Date(status.data_marco2), 'dd/MM/yyyy', { locale: ptBR })}
+                        </p>
+                      )}
+                      {status.entregaveis2 && (
+                        <p className="text-sm text-gray-700">{status.entregaveis2}</p>
+                      )}
+                    </div>
+                  )}
+                  
+                  {status.entrega3 && (
+                    <div className="border-l-4 border-green-500 pl-4">
+                      <h4 className="font-medium text-pmo-gray">{status.entrega3}</h4>
+                      {status.data_marco3 && (
+                        <p className="text-sm text-gray-600">
+                          {format(new Date(status.data_marco3), 'dd/MM/yyyy', { locale: ptBR })}
+                        </p>
+                      )}
+                      {status.entregaveis3 && (
+                        <p className="text-sm text-gray-700">{status.entregaveis3}</p>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           <div className="space-y-6">
@@ -150,18 +202,6 @@ export default function StatusDetalhes() {
                   <span className="text-sm font-medium text-pmo-gray">Carteira:</span>
                   <p className="text-gray-700">{status.projeto?.area_responsavel}</p>
                 </div>
-                {status.carteira_secundaria && (
-                  <div>
-                    <span className="text-sm font-medium text-pmo-gray">Carteira Secundária:</span>
-                    <p className="text-gray-700">{status.carteira_secundaria}</p>
-                  </div>
-                )}
-                {status.carteira_terciaria && (
-                  <div>
-                    <span className="text-sm font-medium text-pmo-gray">Carteira Terciária:</span>
-                    <p className="text-gray-700">{status.carteira_terciaria}</p>
-                  </div>
-                )}
                 <div>
                   <span className="text-sm font-medium text-pmo-gray">Responsável Interno:</span>
                   <p className="text-gray-700">{status.projeto?.responsavel_interno}</p>
@@ -206,6 +246,18 @@ export default function StatusDetalhes() {
                     {statusRevisao}
                   </Badge>
                 </div>
+                {status.probabilidade_riscos && (
+                  <div>
+                    <span className="text-sm font-medium text-pmo-gray">Probabilidade de Riscos:</span>
+                    <p className="text-gray-700">{status.probabilidade_riscos}</p>
+                  </div>
+                )}
+                {status.impacto_riscos && (
+                  <div>
+                    <span className="text-sm font-medium text-pmo-gray">Impacto de Riscos:</span>
+                    <p className="text-gray-700">{status.impacto_riscos}</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>

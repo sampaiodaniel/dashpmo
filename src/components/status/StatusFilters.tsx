@@ -11,7 +11,7 @@ interface StatusFiltersProps {
 }
 
 export function StatusFilters({ filtros, onFiltroChange, responsaveis }: StatusFiltersProps) {
-  const { data: carteiras } = useCarteiraOverview();
+  const { data: carteiraOverview } = useCarteiraOverview();
 
   const handleFiltroChange = (campo: keyof StatusFiltersType, valor: string) => {
     onFiltroChange({
@@ -19,6 +19,9 @@ export function StatusFilters({ filtros, onFiltroChange, responsaveis }: StatusF
       [campo]: valor === 'todos' || valor === 'Todas' ? undefined : valor
     });
   };
+
+  // Extract carteira names from overview data
+  const carteiras = carteiraOverview?.map(item => item.carteira) || [];
 
   return (
     <Card>
@@ -38,7 +41,7 @@ export function StatusFilters({ filtros, onFiltroChange, responsaveis }: StatusF
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="Todas">Todas as carteiras</SelectItem>
-                {carteiras?.map((carteira) => (
+                {carteiras.map((carteira) => (
                   <SelectItem key={carteira} value={carteira}>
                     {carteira}
                   </SelectItem>

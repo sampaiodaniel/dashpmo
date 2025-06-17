@@ -17,7 +17,7 @@ export default function Mudancas() {
   const [filtros, setFiltros] = useState<MudancasFiltersType>({});
   const [termoBusca, setTermoBusca] = useState('');
   
-  const mudancasFiltradas = useMudancasFiltradas(mudancas, filtros, termoBusca);
+  const mudancasFiltradas = useMudancasFiltradas(mudancas || [], filtros, termoBusca);
 
   if (isLoading) {
     return (
@@ -42,7 +42,7 @@ export default function Mudancas() {
         <MudancasHeader onMudancaCriada={() => {}} />
         
         <MudancasMetricas 
-          mudancas={mudancas}
+          mudancas={mudancas || []}
           onFiltrarPendentes={() => {}}
           onFiltrarEmAnalise={() => {}}
           onFiltrarAprovadas={() => {}}
