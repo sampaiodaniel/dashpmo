@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useCarteirasDropdown } from '@/hooks/useCarteiraOverview';
+import { useCarteiraOverview } from '@/hooks/useCarteiraOverview';
 import { StatusFilters as StatusFiltersType } from './filters/FilterUtils';
 
 interface StatusFiltersProps {
@@ -11,7 +11,7 @@ interface StatusFiltersProps {
 }
 
 export function StatusFilters({ filtros, onFiltroChange, responsaveis }: StatusFiltersProps) {
-  const { data: carteiras } = useCarteirasDropdown();
+  const { data: carteiras } = useCarteiraOverview();
 
   const handleFiltroChange = (campo: keyof StatusFiltersType, valor: string) => {
     onFiltroChange({

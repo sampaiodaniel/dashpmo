@@ -206,12 +206,6 @@ export default function StatusDetalhes() {
                     {statusRevisao}
                   </Badge>
                 </div>
-                {status.progresso_estimado !== null && (
-                  <div>
-                    <span className="text-sm font-medium text-pmo-gray">Progresso:</span>
-                    <p className="text-gray-700">{status.progresso_estimado}%</p>
-                  </div>
-                )}
               </CardContent>
             </Card>
           </div>

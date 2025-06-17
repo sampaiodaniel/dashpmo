@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { useProjetosDropdown } from './useProjetos';
+import { useProjetos } from './useProjetos';
 import { useCarteiraOverview } from './useCarteiraOverview';
 
 const statusFormSchema = z.object({
@@ -43,7 +43,11 @@ export function useNovoStatusForm() {
   const [progressoEstimado, setProgressoEstimado] = useState(0);
 
   const { data: carteiras } = useCarteiraOverview();
-  const { data: projetos } = useProjetosDropdown(carteiraSelecionada);
+  const { data: projetos } = useProjetos();
+
+  const projetosFiltrados = projetos?.filter(p => 
+    !carteiraSelecionada || carteiraSelecionada === 'todas' || p.area_responsavel === carteiraSelecionada
+  ) || [];
 
   const form = useForm<StatusFormData>({
     resolver: zodResolver(statusFormSchema),
@@ -157,5 +161,7 @@ export function useNovoStatusForm() {
     handleCarteiraChange,
     handleProjetoChange,
     handleProgressoChange,
+    projetos: projetosFiltrados,
+    carteiras: carteiras || [],
   };
 }
