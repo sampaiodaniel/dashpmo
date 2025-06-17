@@ -146,39 +146,40 @@ export function RelatorioASAViewer({ isOpen, onClose, dados }: RelatorioASAViewe
       if (!element) return;
 
       // Aguardar um momento para garantir que o DOM está renderizado
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 500));
 
-      // Configurações otimizadas para PDF em paisagem
+      // Configurações corrigidas para PDF
       const options = {
-        margin: [15, 15, 15, 15], // margem em mm
+        margin: [10, 10, 10, 10], // margem reduzida
         filename: `relatorio-asa-${dados.carteira}-${dados.dataRelatorio.replace(/\//g, '-')}.pdf`,
         image: { 
           type: 'jpeg', 
-          quality: 0.95 
+          quality: 0.9 
         },
         html2canvas: { 
-          scale: 1.5,
+          scale: 1,
           useCORS: true,
           allowTaint: true,
           backgroundColor: '#ffffff',
-          logging: false,
+          logging: true,
           letterRendering: true,
-          foreignObjectRendering: true,
-          removeContainer: true,
+          foreignObjectRendering: false,
+          removeContainer: false,
           scrollX: 0,
           scrollY: 0,
-          width: element.scrollWidth,
-          height: element.scrollHeight
+          x: 0,
+          y: 0,
+          windowWidth: 1200,
+          windowHeight: 800
         },
         jsPDF: { 
           unit: 'mm', 
           format: 'a4', 
-          orientation: 'landscape', // Alterado para paisagem
-          compress: true,
-          precision: 2
+          orientation: 'landscape',
+          compress: true
         },
         pagebreak: {
-          mode: ['avoid-all', 'css'],
+          mode: ['css', 'legacy'],
           before: '.page-break-before',
           after: '.page-break-after',
           avoid: '.break-inside-avoid'
@@ -191,65 +192,80 @@ export function RelatorioASAViewer({ isOpen, onClose, dados }: RelatorioASAViewe
         (el as HTMLElement).style.display = 'none';
       });
 
-      // Adicionar estilo específico para PDF antes da conversão
+      // Preparar o elemento para PDF
+      const originalStyle = element.style.cssText;
+      
+      // Aplicar estilos específicos para PDF
+      element.style.cssText = `
+        position: static !important;
+        top: 0 !important;
+        left: 0 !important;
+        transform: none !important;
+        margin: 0 !important;
+        padding: 20px !important;
+        width: 100% !important;
+        max-width: none !important;
+        background: white !important;
+        font-family: 'Inter', sans-serif !important;
+        color: #1B365D !important;
+        box-sizing: border-box !important;
+        overflow: visible !important;
+      `;
+
+      // Adicionar estilo CSS global para PDF
       const style = document.createElement('style');
-      style.id = 'pdf-styles';
+      style.id = 'pdf-temp-styles';
       style.textContent = `
-        #relatorio-content {
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-          color: #1B365D !important;
-          background: white !important;
-          padding: 20px !important;
-          margin: 0 !important;
-          max-width: none !important;
-          width: 100% !important;
-          box-sizing: border-box !important;
-        }
-        .break-inside-avoid {
-          page-break-inside: avoid !important;
-          break-inside: avoid !important;
-        }
-        .page-break-after {
-          page-break-after: always !important;
-          break-after: page !important;
-        }
-        .no-print {
-          display: none !important;
-        }
-        .grid {
-          display: grid !important;
-        }
-        .space-y-8 > * + * {
-          margin-top: 2rem !important;
-        }
-        .space-y-6 > * + * {
-          margin-top: 1.5rem !important;
-        }
-        .space-y-4 > * + * {
-          margin-top: 1rem !important;
-        }
-        * {
-          -webkit-print-color-adjust: exact !important;
-          color-adjust: exact !important;
-          print-color-adjust: exact !important;
+        @media print {
+          * {
+            -webkit-print-color-adjust: exact !important;
+            color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          
+          .space-y-8 > * + * {
+            margin-top: 2rem !important;
+          }
+          
+          .space-y-6 > * + * {
+            margin-top: 1.5rem !important;
+          }
+          
+          .space-y-4 > * + * {
+            margin-top: 1rem !important;
+          }
+          
+          .grid {
+            display: grid !important;
+          }
+          
+          .break-inside-avoid {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+          }
+          
+          .page-break-after {
+            page-break-after: always !important;
+            break-after: page !important;
+          }
         }
       `;
       document.head.appendChild(style);
 
       console.log('Iniciando conversão PDF...');
-      
-      // Forçar re-render antes da conversão
-      element.style.display = 'block';
-      element.style.visibility = 'visible';
 
+      // Gerar PDF
       await html2pdf().set(options).from(element).save();
 
       console.log('PDF gerado com sucesso!');
 
-      // Limpar após a conversão
-      const pdfStyle = document.getElementById('pdf-styles');
-      if (pdfStyle) {
-        document.head.removeChild(pdfStyle);
+      // Restaurar estado original
+      element.style.cssText = originalStyle;
+      
+      // Remover estilos temporários
+      const tempStyle = document.getElementById('pdf-temp-styles');
+      if (tempStyle) {
+        document.head.removeChild(tempStyle);
       }
 
       // Restaurar elementos no-print
