@@ -9,7 +9,7 @@ interface StatusListProps {
 
 export function StatusList({ status, onStatusUpdate }: StatusListProps) {
   return (
-    <div className="space-y-0">
+    <div className="space-y-4">
       {status.map((item) => (
         <StatusCard 
           key={item.id} 

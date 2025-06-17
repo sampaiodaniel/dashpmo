@@ -5,7 +5,7 @@ import { Calendar, User, Building } from 'lucide-react';
 import { StatusProjeto, getStatusColor, getStatusGeralColor } from '@/types/pmo';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { StatusAcoes } from './StatusAcoes';
+import { useNavigate } from 'react-router-dom';
 
 interface StatusCardProps {
   status: StatusProjeto;
@@ -14,15 +14,15 @@ interface StatusCardProps {
 }
 
 export function StatusCard({ status, onUpdate, onStatusUpdate }: StatusCardProps) {
+  const navigate = useNavigate();
   const isRevisado = status.aprovado === true;
 
-  const handleUpdate = () => {
-    if (onUpdate) onUpdate();
-    if (onStatusUpdate) onStatusUpdate();
+  const handleCardClick = () => {
+    navigate(`/status/${status.id}`);
   };
 
   return (
-    <Card className="hover:shadow-md transition-shadow cursor-pointer">
+    <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={handleCardClick}>
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex-1">
@@ -61,20 +61,16 @@ export function StatusCard({ status, onUpdate, onStatusUpdate }: StatusCardProps
                 <User className="h-4 w-4" />
                 <span>{status.criado_por}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-medium text-pmo-gray">Status:</span>
-                <Badge 
-                  variant={isRevisado ? "default" : "secondary"}
-                  className={isRevisado ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}
-                >
-                  {isRevisado ? 'Revisado' : 'Em Revisão'}
-                </Badge>
-              </div>
             </div>
           </div>
           
           <div className="flex items-center gap-2 ml-4">
-            <StatusAcoes status={status} onUpdate={handleUpdate} />
+            <Badge 
+              variant={isRevisado ? "default" : "secondary"}
+              className={isRevisado ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}
+            >
+              {isRevisado ? 'Revisado' : 'Em Revisão'}
+            </Badge>
           </div>
         </div>
       </CardHeader>
