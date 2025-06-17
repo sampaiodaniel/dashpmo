@@ -5,9 +5,29 @@ import { FileText } from 'lucide-react';
 import { useIncidentes } from '@/hooks/useIncidentes';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useMemo } from 'react';
 
-export function TabelaIncidentesRecentes() {
+interface TabelaIncidentesRecentesProps {
+  carteiraSelecionada?: string;
+  responsavelSelecionado?: string;
+}
+
+export function TabelaIncidentesRecentes({ 
+  carteiraSelecionada = 'todas', 
+  responsavelSelecionado = 'todos' 
+}: TabelaIncidentesRecentesProps) {
   const { data: incidentes, isLoading, error } = useIncidentes();
+
+  const incidentesFiltrados = useMemo(() => {
+    if (!incidentes) return [];
+
+    return incidentes.filter(incidente => {
+      const passaCarteiraFiltro = carteiraSelecionada === 'todas' || incidente.carteira === carteiraSelecionada;
+      const passaResponsavelFiltro = responsavelSelecionado === 'todos' || incidente.criado_por === responsavelSelecionado;
+      
+      return passaCarteiraFiltro && passaResponsavelFiltro;
+    });
+  }, [incidentes, carteiraSelecionada, responsavelSelecionado]);
 
   if (isLoading) {
     return (
@@ -46,7 +66,7 @@ export function TabelaIncidentesRecentes() {
     );
   }
 
-  if (!incidentes || incidentes.length === 0) {
+  if (!incidentesFiltrados || incidentesFiltrados.length === 0) {
     return (
       <Card>
         <CardHeader>
@@ -59,7 +79,12 @@ export function TabelaIncidentesRecentes() {
           <div className="text-center py-8 text-pmo-gray">
             <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
             <p className="text-lg mb-2">Nenhum registro encontrado</p>
-            <p className="text-sm">Crie o primeiro registro de incidentes</p>
+            <p className="text-sm">
+              {carteiraSelecionada !== 'todas' || responsavelSelecionado !== 'todos' 
+                ? 'Tente ajustar os filtros ou crie novos registros'
+                : 'Crie o primeiro registro de incidentes'
+              }
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -72,6 +97,11 @@ export function TabelaIncidentesRecentes() {
         <CardTitle className="flex items-center gap-2">
           <FileText className="h-5 w-5" />
           Registros Mais Recentes por Carteira
+          {(carteiraSelecionada !== 'todas' || responsavelSelecionado !== 'todos') && (
+            <span className="text-sm font-normal text-pmo-gray">
+              ({incidentesFiltrados.length} registro{incidentesFiltrados.length !== 1 ? 's' : ''} filtrado{incidentesFiltrados.length !== 1 ? 's' : ''})
+            </span>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -90,7 +120,7 @@ export function TabelaIncidentesRecentes() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {incidentes.map((incidente) => (
+              {incidentesFiltrados.map((incidente) => (
                 <TableRow key={`${incidente.carteira}-${incidente.id}`}>
                   <TableCell className="font-medium">{incidente.carteira}</TableCell>
                   <TableCell>

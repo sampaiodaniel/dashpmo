@@ -8,6 +8,7 @@ import { TabelaIncidentesRecentes } from '@/components/incidentes/TabelaIncident
 import { GraficoEvolutivoIncidentes } from '@/components/incidentes/GraficoEvolutivoIncidentes';
 import { IncidentesFilters } from '@/components/incidentes/IncidentesFilters';
 import { IncidentesCarteiraFilter } from '@/components/incidentes/IncidentesCarteiraFilter';
+import { IncidentesFiltersCompact } from '@/components/incidentes/IncidentesFiltersCompact';
 import { useIncidentes } from '@/hooks/useIncidentes';
 import { useEffect, useState } from 'react';
 import { seedIncidentesCanais } from '@/utils/seedIncidentesCanais';
@@ -15,8 +16,14 @@ import { seedIncidentesCanais } from '@/utils/seedIncidentesCanais';
 export default function Incidentes() {
   const { usuario, isLoading } = useAuth();
   const { data: incidentes, isLoading: isLoadingIncidentes } = useIncidentes();
-  const [responsavelSelecionado, setResponsavelSelecionado] = useState('todos');
-  const [carteiraSelecionada, setCarteiraSelecionada] = useState('todas');
+  
+  // Filtros para a tabela
+  const [responsavelTabelaSelecionado, setResponsavelTabelaSelecionado] = useState('todos');
+  const [carteiraTabelaSelecionada, setCarteiraTabelaSelecionada] = useState('todas');
+  
+  // Filtros para o gráfico
+  const [responsavelGraficoSelecionado, setResponsavelGraficoSelecionado] = useState('todos');
+  const [carteiraGraficoSelecionada, setCarteiraGraficoSelecionada] = useState('todas');
 
   useEffect(() => {
     // Inserir dados históricos se necessário
@@ -70,17 +77,27 @@ export default function Incidentes() {
           resolvidos={metricas.resolvidos}
           total={metricas.total}
         />
+
+        <IncidentesFiltersCompact
+          responsavelSelecionado={responsavelTabelaSelecionado}
+          carteiraSelecionada={carteiraTabelaSelecionada}
+          onResponsavelChange={setResponsavelTabelaSelecionado}
+          onCarteiraChange={setCarteiraTabelaSelecionada}
+        />
         
-        <TabelaIncidentesRecentes />
+        <TabelaIncidentesRecentes 
+          carteiraSelecionada={carteiraTabelaSelecionada}
+          responsavelSelecionado={responsavelTabelaSelecionado}
+        />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <IncidentesFilters 
-            responsavelSelecionado={responsavelSelecionado}
-            onResponsavelChange={setResponsavelSelecionado}
+            responsavelSelecionado={responsavelGraficoSelecionado}
+            onResponsavelChange={setResponsavelGraficoSelecionado}
           />
           <IncidentesCarteiraFilter
-            carteiraSelecionada={carteiraSelecionada}
-            onCarteiraChange={setCarteiraSelecionada}
+            carteiraSelecionada={carteiraGraficoSelecionada}
+            onCarteiraChange={setCarteiraGraficoSelecionada}
           />
         </div>
 
