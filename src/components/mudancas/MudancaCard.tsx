@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, User } from 'lucide-react';
+import { Calendar, User, Building } from 'lucide-react';
 import { MudancaReplanejamento } from '@/types/pmo';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -34,7 +34,7 @@ export function MudancaCard({ mudanca }: MudancaCardProps) {
         return 'bg-blue-100 text-blue-800';
       case 'aprovada':
         return 'bg-green-100 text-green-800';
-      case 'reprovada':
+      case 'rejeitada':
         return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';
@@ -46,9 +46,20 @@ export function MudancaCard({ mudanca }: MudancaCardProps) {
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <CardTitle className="text-lg text-pmo-primary mb-3">
-              {mudanca.projeto?.nome_projeto || 'Projeto não encontrado'}
-            </CardTitle>
+            <div className="flex items-center gap-3 mb-3">
+              <CardTitle className="text-lg text-pmo-primary">
+                {mudanca.projeto?.nome_projeto || 'Projeto não encontrado'}
+              </CardTitle>
+              {mudanca.projeto?.area_responsavel && (
+                <div className="flex items-center gap-2 bg-blue-50 px-3 py-1 rounded-lg border border-blue-200">
+                  <Building className="h-4 w-4 text-blue-600" />
+                  <span className="font-semibold text-blue-700 text-sm">
+                    {mudanca.projeto.area_responsavel}
+                  </span>
+                </div>
+              )}
+            </div>
+            
             <div className="flex items-center gap-2 mb-3">
               <Badge className={getTipoColor(mudanca.tipo_mudanca)}>
                 {mudanca.tipo_mudanca}
@@ -56,12 +67,8 @@ export function MudancaCard({ mudanca }: MudancaCardProps) {
               <Badge className={getStatusColor(mudanca.status_aprovacao || 'Pendente')}>
                 {mudanca.status_aprovacao || 'Pendente'}
               </Badge>
-              {mudanca.projeto?.area_responsavel && (
-                <span className="text-xs font-semibold text-pmo-primary bg-blue-50 px-2 py-1 rounded">
-                  {mudanca.projeto.area_responsavel}
-                </span>
-              )}
             </div>
+            
             <div className="flex items-center gap-4 text-sm text-pmo-gray">
               <div className="flex items-center gap-1">
                 <Calendar className="h-4 w-4" />
@@ -82,12 +89,6 @@ export function MudancaCard({ mudanca }: MudancaCardProps) {
             <span className="text-sm font-medium text-pmo-gray">Descrição:</span>
             <p className="text-sm text-gray-700 line-clamp-2 mt-1">{mudanca.descricao}</p>
           </div>
-          {mudanca.justificativa_negocio && (
-            <div>
-              <span className="text-sm font-medium text-pmo-gray">Justificativa:</span>
-              <p className="text-sm text-gray-700 line-clamp-2 mt-1">{mudanca.justificativa_negocio}</p>
-            </div>
-          )}
         </div>
       </CardContent>
     </Card>

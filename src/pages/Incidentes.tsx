@@ -6,7 +6,7 @@ import { IncidentesHeader } from '@/components/incidentes/IncidentesHeader';
 import { IncidentesMetricas } from '@/components/incidentes/IncidentesMetricas';
 import { TabelaIncidentesRecentes } from '@/components/incidentes/TabelaIncidentesRecentes';
 import { GraficoEvolutivoIncidentes } from '@/components/incidentes/GraficoEvolutivoIncidentes';
-import { IncidentesFilters } from '@/components/incidentes/IncidentesFilters';
+import { IncidentesFiltersCompact } from '@/components/incidentes/IncidentesFiltersCompact';
 import { useIncidentes } from '@/hooks/useIncidentes';
 import { useEffect, useState } from 'react';
 import { seedIncidentesCanais } from '@/utils/seedIncidentesCanais';
@@ -14,6 +14,7 @@ import { seedIncidentesCanais } from '@/utils/seedIncidentesCanais';
 export default function Incidentes() {
   const { usuario, isLoading } = useAuth();
   const { data: incidentes, isLoading: isLoadingIncidentes } = useIncidentes();
+  const [carteiraSelecionada, setCarteiraSelecionada] = useState('todas');
   const [responsavelSelecionado, setResponsavelSelecionado] = useState('todos');
 
   useEffect(() => {
@@ -70,8 +71,10 @@ export default function Incidentes() {
         <TabelaIncidentesRecentes />
         
         <div className="space-y-6">
-          <IncidentesFilters 
+          <IncidentesFiltersCompact 
+            carteiraSelecionada={carteiraSelecionada}
             responsavelSelecionado={responsavelSelecionado}
+            onCarteiraChange={setCarteiraSelecionada}
             onResponsavelChange={setResponsavelSelecionado}
           />
           <GraficoEvolutivoIncidentes />
