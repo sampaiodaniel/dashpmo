@@ -13,12 +13,19 @@ import { useStatusList } from '@/hooks/useStatusList';
 import { PaginationFooter } from '@/components/common/PaginationFooter';
 import { StatusFilters as StatusFiltersType } from '@/components/status/filters/FilterUtils';
 import { useResponsaveisASADropdown } from '@/hooks/useResponsaveisASADropdown';
+import { useStatusFiltroMetricas } from '@/hooks/useStatusFiltroMetricas';
 
 function StatusContent() {
   const [filtros, setFiltros] = useState<StatusFiltersType>({});
   const [termoBusca, setTermoBusca] = useState('');
   const [paginaAtual, setPaginaAtual] = useState(1);
   const itensPorPagina = 10;
+
+  const { data: statusList } = useStatusList();
+  const { data: responsaveis } = useResponsaveisASADropdown();
+  
+  // Hook para gerenciar métricas e filtros
+  const { metricas, filtroAtivo, aplicarFiltroStatus } = useStatusFiltroMetricas(statusList);
 
   const statusFiltradosResult = useStatusFiltrados({
     filtros,
@@ -27,10 +34,13 @@ function StatusContent() {
     itensPorPagina
   });
 
-  const { data: statusList } = useStatusList();
-  const { data: responsaveis } = useResponsaveisASADropdown();
-
   const handleFiltroChange = (novosFiltros: StatusFiltersType) => {
+    setFiltros(novosFiltros);
+    setPaginaAtual(1);
+  };
+
+  const handleFiltroMetricaClick = (tipo: string) => {
+    const novosFiltros = aplicarFiltroStatus(tipo);
     setFiltros(novosFiltros);
     setPaginaAtual(1);
   };
@@ -49,7 +59,7 @@ function StatusContent() {
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <div className="w-16 h-16 bg-pmo-primary rounded-xl flex items-center justify-center mx-auto mb-4">
-            <span className="text-white font-bold text-xl">PMO</span>
+            <span className="text-white font-bold text-xl">DashPMO</span>
           </div>
           <div className="text-pmo-gray">Carregando status...</div>
         </div>
@@ -74,19 +84,16 @@ function StatusContent() {
     totalPaginas: 0 
   };
 
-  // Calcular métricas
-  const totalStatus = statusList?.length || 0;
-  const statusPendentes = statusList?.filter(s => s.aprovado !== true).length || 0;
-  const statusRevisados = statusList?.filter(s => s.aprovado === true).length || 0;
-
   return (
     <div className="space-y-6">
       <StatusHeader />
 
       <StatusAprovacaoMetricas
-        totalStatus={totalStatus}
-        statusPendentes={statusPendentes}
-        statusRevisados={statusRevisados}
+        totalStatus={metricas.totalStatus}
+        statusPendentes={metricas.statusPendentes}
+        statusRevisados={metricas.statusRevisados}
+        filtroAtivo={filtroAtivo}
+        onFiltroClick={handleFiltroMetricaClick}
       />
 
       <StatusFilters 
@@ -135,7 +142,7 @@ export default function Status() {
       <div className="min-h-screen bg-pmo-background flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 bg-pmo-primary rounded-xl flex items-center justify-center mx-auto mb-4">
-            <span className="text-white font-bold text-xl">PMO</span>
+            <span className="text-white font-bold text-xl">DashPMO</span>
           </div>
           <div className="text-pmo-gray">Carregando...</div>
         </div>
