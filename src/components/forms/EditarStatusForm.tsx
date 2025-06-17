@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
@@ -40,20 +41,26 @@ export function EditarStatusForm({ status, onSuccess }: EditarStatusFormProps) {
   const queryClient = useQueryClient();
   const [carregando, setCarregando] = useState(false);
   
-  // Estados para controlar TBD nos marcos
-  const [marco1TBD, setMarco1TBD] = useState(status.data_marco1 === 'TBD');
-  const [marco2TBD, setMarco2TBD] = useState(status.data_marco2 === 'TBD');
-  const [marco3TBD, setMarco3TBD] = useState(status.data_marco3 === 'TBD');
+  // Estados para controlar TBD nos marcos - verificar se é string 'TBD'
+  const [marco1TBD, setMarco1TBD] = useState(
+    typeof status.data_marco1 === 'string' ? status.data_marco1 === 'TBD' : false
+  );
+  const [marco2TBD, setMarco2TBD] = useState(
+    typeof status.data_marco2 === 'string' ? status.data_marco2 === 'TBD' : false
+  );
+  const [marco3TBD, setMarco3TBD] = useState(
+    typeof status.data_marco3 === 'string' ? status.data_marco3 === 'TBD' : false
+  );
 
-  // Estados para as datas dos marcos
+  // Estados para as datas dos marcos - só usar Date se não for 'TBD'
   const [dataMarco1, setDataMarco1] = useState<Date | null>(
-    status.data_marco1 && status.data_marco1 !== 'TBD' ? new Date(status.data_marco1) : null
+    (status.data_marco1 && typeof status.data_marco1 !== 'string') ? new Date(status.data_marco1) : null
   );
   const [dataMarco2, setDataMarco2] = useState<Date | null>(
-    status.data_marco2 && status.data_marco2 !== 'TBD' ? new Date(status.data_marco2) : null
+    (status.data_marco2 && typeof status.data_marco2 !== 'string') ? new Date(status.data_marco2) : null
   );
   const [dataMarco3, setDataMarco3] = useState<Date | null>(
-    status.data_marco3 && status.data_marco3 !== 'TBD' ? new Date(status.data_marco3) : null
+    (status.data_marco3 && typeof status.data_marco3 !== 'string') ? new Date(status.data_marco3) : null
   );
   
   const [formData, setFormData] = useState({
@@ -67,13 +74,13 @@ export function EditarStatusForm({ status, onSuccess }: EditarStatusFormProps) {
     observacoes_pontos_atencao: status.observacoes_pontos_atencao || '',
     entregaveis1: status.entregaveis1 || '',
     entrega1: status.entrega1 || '',
-    data_marco1: status.data_marco1 === 'TBD' ? 'TBD' : (status.data_marco1 ? status.data_marco1.toISOString().split('T')[0] : ''),
+    data_marco1: typeof status.data_marco1 === 'string' ? status.data_marco1 : (status.data_marco1 ? status.data_marco1.toISOString().split('T')[0] : ''),
     entregaveis2: status.entregaveis2 || '',
     entrega2: status.entrega2 || '',
-    data_marco2: status.data_marco2 === 'TBD' ? 'TBD' : (status.data_marco2 ? status.data_marco2.toISOString().split('T')[0] : ''),
+    data_marco2: typeof status.data_marco2 === 'string' ? status.data_marco2 : (status.data_marco2 ? status.data_marco2.toISOString().split('T')[0] : ''),
     entregaveis3: status.entregaveis3 || '',
     entrega3: status.entrega3 || '',
-    data_marco3: status.data_marco3 === 'TBD' ? 'TBD' : (status.data_marco3 ? status.data_marco3.toISOString().split('T')[0] : ''),
+    data_marco3: typeof status.data_marco3 === 'string' ? status.data_marco3 : (status.data_marco3 ? status.data_marco3.toISOString().split('T')[0] : ''),
     progresso_estimado: (status as any).progresso_estimado || 0
   });
 

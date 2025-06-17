@@ -44,7 +44,7 @@ export default function StatusDetalhes() {
       <div className="min-h-screen bg-pmo-background flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 bg-pmo-primary rounded-xl flex items-center justify-center mx-auto mb-4">
-            <span className="text-white font-bold text-xl">PMO</span>
+            <img src="/lovable-uploads/4edf43e8-5e62-424c-9464-7188816ca0f8.png" alt="Loading" className="w-8 h-8" />
           </div>
           <div className="text-pmo-gray">Carregando...</div>
         </div>
@@ -60,6 +60,9 @@ export default function StatusDetalhes() {
     return (
       <Layout>
         <div className="text-center py-8 text-pmo-gray">
+          <div className="flex items-center justify-center mb-4">
+            <img src="/lovable-uploads/4edf43e8-5e62-424c-9464-7188816ca0f8.png" alt="Loading" className="w-8 h-8" />
+          </div>
           <div>Carregando status...</div>
         </div>
       </Layout>
@@ -103,19 +106,17 @@ export default function StatusDetalhes() {
   // Calcular matriz de risco
   const matrizRisco = calcularMatrizRisco(status.impacto_riscos, status.probabilidade_riscos);
 
-  // Função para formatar datas corretamente - usando apenas string sem conversão
+  // Função para formatar datas - suporta string 'TBD' e datas
   const formatarData = (data: any) => {
     if (!data) return '';
     
     if (data === 'TBD') return 'TBD (A definir)';
     
-    // Se for string no formato YYYY-MM-DD, formatar diretamente
-    if (typeof data === 'string') {
-      const match = data.match(/(\d{4})-(\d{2})-(\d{2})/);
-      if (match) {
-        const [, year, month, day] = match;
-        return `${day}/${month}/${year}`;
-      }
+    // Se for string no formato YYYY-MM-DD, criar Date usando partes separadas
+    if (typeof data === 'string' && data.includes('-')) {
+      const [year, month, day] = data.split('-').map(Number);
+      const date = new Date(year, month - 1, day); // month - 1 porque Date usa 0-11 para meses
+      return format(date, 'dd/MM/yyyy', { locale: ptBR });
     }
     
     // Se for objeto Date
@@ -276,92 +277,94 @@ export default function StatusDetalhes() {
           </Card>
 
           {/* Próximas Entregas */}
-          {(status.entrega1 || status.entrega2 || status.entrega3) && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Próximas Entregas</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {status.entrega1 && (
-                  <div className="border rounded-lg p-4 space-y-2">
-                    <h4 className="font-medium text-pmo-primary">Marco 1</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <span className="text-sm font-medium text-pmo-gray">Nome da Entrega:</span>
-                        <p className="text-gray-700">{status.entrega1}</p>
-                      </div>
-                      {status.data_marco1 && (
-                        <div>
-                          <span className="text-sm font-medium text-pmo-gray">Data de Entrega:</span>
-                          <p className="text-gray-700">
-                            {formatarData(status.data_marco1)}
-                          </p>
-                        </div>
-                      )}
+          <Card>
+            <CardHeader>
+              <CardTitle>Próximas Entregas</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Marco 1 - sempre exibir se houver entrega1 */}
+              {status.entrega1 && (
+                <div className="border rounded-lg p-4 space-y-2">
+                  <h4 className="font-medium text-pmo-primary">Marco 1</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <span className="text-sm font-medium text-pmo-gray">Nome da Entrega:</span>
+                      <p className="text-gray-700">{status.entrega1}</p>
                     </div>
-                    {status.entregaveis1 && (
-                      <div>
-                        <span className="text-sm font-medium text-pmo-gray">Entregáveis:</span>
-                        <p className="text-gray-700 whitespace-pre-wrap">{status.entregaveis1}</p>
-                      </div>
-                    )}
-                  </div>
-                )}
-                
-                {status.entrega2 && (
-                  <div className="border rounded-lg p-4 space-y-2">
-                    <h4 className="font-medium text-pmo-primary">Marco 2</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <span className="text-sm font-medium text-pmo-gray">Nome da Entrega:</span>
-                        <p className="text-gray-700">{status.entrega2}</p>
-                      </div>
-                      {status.data_marco2 && (
-                        <div>
-                          <span className="text-sm font-medium text-pmo-gray">Data de Entrega:</span>
-                          <p className="text-gray-700">
-                            {formatarData(status.data_marco2)}
-                          </p>
-                        </div>
-                      )}
+                    <div>
+                      <span className="text-sm font-medium text-pmo-gray">Data de Entrega:</span>
+                      <p className="text-gray-700">
+                        {formatarData(status.data_marco1)}
+                      </p>
                     </div>
-                    {status.entregaveis2 && (
-                      <div>
-                        <span className="text-sm font-medium text-pmo-gray">Entregáveis:</span>
-                        <p className="text-gray-700 whitespace-pre-wrap">{status.entregaveis2}</p>
-                      </div>
-                    )}
                   </div>
-                )}
-                
-                {status.entrega3 && (
-                  <div className="border rounded-lg p-4 space-y-2">
-                    <h4 className="font-medium text-pmo-primary">Marco 3</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <span className="text-sm font-medium text-pmo-gray">Nome da Entrega:</span>
-                        <p className="text-gray-700">{status.entrega3}</p>
-                      </div>
-                      {status.data_marco3 && (
-                        <div>
-                          <span className="text-sm font-medium text-pmo-gray">Data de Entrega:</span>
-                          <p className="text-gray-700">
-                            {formatarData(status.data_marco3)}
-                          </p>
-                        </div>
-                      )}
+                  {status.entregaveis1 && (
+                    <div>
+                      <span className="text-sm font-medium text-pmo-gray">Entregáveis:</span>
+                      <p className="text-gray-700 whitespace-pre-wrap">{status.entregaveis1}</p>
                     </div>
-                    {status.entregaveis3 && (
-                      <div>
-                        <span className="text-sm font-medium text-pmo-gray">Entregáveis:</span>
-                        <p className="text-gray-700 whitespace-pre-wrap">{status.entregaveis3}</p>
-                      </div>
-                    )}
+                  )}
+                </div>
+              )}
+              
+              {/* Marco 2 - sempre exibir se houver entrega2 */}
+              {status.entrega2 && (
+                <div className="border rounded-lg p-4 space-y-2">
+                  <h4 className="font-medium text-pmo-primary">Marco 2</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <span className="text-sm font-medium text-pmo-gray">Nome da Entrega:</span>
+                      <p className="text-gray-700">{status.entrega2}</p>
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium text-pmo-gray">Data de Entrega:</span>
+                      <p className="text-gray-700">
+                        {formatarData(status.data_marco2)}
+                      </p>
+                    </div>
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
+                  {status.entregaveis2 && (
+                    <div>
+                      <span className="text-sm font-medium text-pmo-gray">Entregáveis:</span>
+                      <p className="text-gray-700 whitespace-pre-wrap">{status.entregaveis2}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {/* Marco 3 - sempre exibir se houver entrega3 */}
+              {status.entrega3 && (
+                <div className="border rounded-lg p-4 space-y-2">
+                  <h4 className="font-medium text-pmo-primary">Marco 3</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <span className="text-sm font-medium text-pmo-gray">Nome da Entrega:</span>
+                      <p className="text-gray-700">{status.entrega3}</p>
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium text-pmo-gray">Data de Entrega:</span>
+                      <p className="text-gray-700">
+                        {formatarData(status.data_marco3)}
+                      </p>
+                    </div>
+                  </div>
+                  {status.entregaveis3 && (
+                    <div>
+                      <span className="text-sm font-medium text-pmo-gray">Entregáveis:</span>
+                      <p className="text-gray-700 whitespace-pre-wrap">{status.entregaveis3}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Mostrar mensagem se não houver entregas */}
+              {!status.entrega1 && !status.entrega2 && !status.entrega3 && (
+                <div className="text-center py-8 text-pmo-gray">
+                  <p>Nenhuma entrega cadastrada</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
     </Layout>
