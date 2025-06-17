@@ -10,6 +10,7 @@ import { MudancasFilters } from '@/components/mudancas/MudancasFilters';
 import { MudancasSearchBar } from '@/components/mudancas/MudancasSearchBar';
 import { useMudancasList } from '@/hooks/useMudancasList';
 import { useMudancasFiltradas, MudancasFilters as MudancasFiltersType } from '@/hooks/useMudancasFiltradas';
+import { Loading } from '@/components/ui/loading';
 
 export default function Mudancas() {
   const { usuario, isLoading } = useAuth();
@@ -20,16 +21,7 @@ export default function Mudancas() {
   const mudancasFiltradas = useMudancasFiltradas(mudancas, filtros, termoBusca);
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-pmo-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-pmo-primary rounded-xl flex items-center justify-center mx-auto mb-4">
-            <span className="text-white font-bold text-xl">PMO</span>
-          </div>
-          <div className="text-pmo-gray">Carregando...</div>
-        </div>
-      </div>
-    );
+    return <Loading />;
   }
 
   if (!usuario) {
