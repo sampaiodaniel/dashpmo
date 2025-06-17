@@ -9,6 +9,12 @@ interface ProjetoInfoGeraisProps {
 }
 
 export function ProjetoInfoGerais({ projeto }: ProjetoInfoGeraisProps) {
+  // Function to format date as dd/MM/yyyy
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('pt-BR');
+  };
+
   return (
     <div className="space-y-6">
       {/* Informações Básicas */}
@@ -48,7 +54,7 @@ export function ProjetoInfoGerais({ projeto }: ProjetoInfoGeraisProps) {
                 <label className="text-sm font-medium text-pmo-gray">Finalização Prevista</label>
                 <div className="flex items-center gap-2 mt-1">
                   <Calendar className="h-4 w-4 text-pmo-gray" />
-                  <span>{projeto.finalizacao_prevista}</span>
+                  <span>{formatDate(projeto.finalizacao_prevista)}</span>
                 </div>
               </div>
             )}
@@ -127,18 +133,14 @@ export function ProjetoInfoGerais({ projeto }: ProjetoInfoGeraisProps) {
             {projeto.carteira_secundaria && (
               <div>
                 <label className="text-sm font-medium text-pmo-gray">Carteira Secundária</label>
-                <Badge variant="outline" className="bg-green-50 text-green-700 mt-1">
-                  {projeto.carteira_secundaria}
-                </Badge>
+                <p className="text-lg font-semibold text-pmo-primary mt-1">{projeto.carteira_secundaria}</p>
               </div>
             )}
 
             {projeto.carteira_terciaria && (
               <div>
                 <label className="text-sm font-medium text-pmo-gray">Carteira Terciária</label>
-                <Badge variant="outline" className="bg-purple-50 text-purple-700 mt-1">
-                  {projeto.carteira_terciaria}
-                </Badge>
+                <p className="text-lg font-semibold text-pmo-primary mt-1">{projeto.carteira_terciaria}</p>
               </div>
             )}
           </div>
