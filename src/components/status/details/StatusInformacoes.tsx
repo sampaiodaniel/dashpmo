@@ -61,7 +61,7 @@ export function StatusInformacoes({ status }: StatusInformacoesProps) {
           )}
           <div>
             <span className="text-sm font-medium text-pmo-gray">Próxima Entrega:</span>
-            <p className="text-gray-700">{formatarData(status.data_marco1) || 'Não definida'}</p>
+            <p className="text-gray-700">{formatarData(status.data_marco1)}</p>
           </div>
         </div>
 

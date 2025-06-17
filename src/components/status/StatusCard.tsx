@@ -73,7 +73,7 @@ export function StatusCard({ status, onUpdate, onStatusUpdate }: StatusCardProps
               <span className="font-semibold">Chefe do Projeto: </span> {status.projeto?.gp_responsavel || 'N/A'}
             </div>
             <div>
-              <span className="font-semibold">Próxima Entrega: </span> {formatarData(status.data_marco1) || 'Não definida'}
+              <span className="font-semibold">Próxima Entrega: </span> {formatarData(status.data_marco1)}
             </div>
           </div>
         </div>

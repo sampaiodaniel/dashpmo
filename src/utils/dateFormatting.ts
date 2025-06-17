@@ -4,7 +4,7 @@ import { ptBR } from 'date-fns/locale';
 
 // Função para formatar datas - suporta string 'TBD' e datas
 export function formatarData(data: any): string {
-  if (!data) return '';
+  if (!data) return 'TBD (A definir)';
   
   if (data === 'TBD') return 'TBD (A definir)';
   
@@ -20,5 +20,5 @@ export function formatarData(data: any): string {
     return format(data, 'dd/MM/yyyy', { locale: ptBR });
   }
   
-  return '';
+  return 'TBD (A definir)';
 }
