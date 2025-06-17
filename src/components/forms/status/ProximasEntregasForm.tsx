@@ -32,9 +32,7 @@ export function ProximasEntregasForm({ form }: ProximasEntregasFormProps) {
 
   const handleDateSelect = (date: Date | undefined, fieldName: string, marcoKey: string) => {
     if (date) {
-      // Corrigir o problema do timezone - usar a data local
-      const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
-      const dateString = localDate.toISOString().split('T')[0];
+      const dateString = format(date, 'yyyy-MM-dd');
       form.setValue(fieldName, dateString);
       
       // Fechar o popover após seleção
@@ -117,7 +115,7 @@ export function ProximasEntregasForm({ form }: ProximasEntregasFormProps) {
                         type="button"
                       >
                         {field.value ? (
-                          format(new Date(field.value), "dd/MM/yyyy", { locale: ptBR })
+                          format(new Date(field.value + 'T00:00:00'), "dd/MM/yyyy", { locale: ptBR })
                         ) : (
                           <span>Selecione a data</span>
                         )}
@@ -128,7 +126,7 @@ export function ProximasEntregasForm({ form }: ProximasEntregasFormProps) {
                   <PopoverContent className="w-auto p-0" align="start">
                     <Calendar
                       mode="single"
-                      selected={field.value ? new Date(field.value) : undefined}
+                      selected={field.value ? new Date(field.value + 'T00:00:00') : undefined}
                       onSelect={(date) => handleDateSelect(date, dataField, marcoKey)}
                       initialFocus
                       className={cn("p-3 pointer-events-auto")}
