@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Download, Printer, FileText } from 'lucide-react';
@@ -146,67 +145,121 @@ export function RelatorioASAViewer({ isOpen, onClose, dados }: RelatorioASAViewe
       const element = document.getElementById('relatorio-content');
       if (!element) return;
 
-      // Configurações otimizadas para PDF
+      // Aguardar um momento para garantir que o DOM está renderizado
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Configurações otimizadas para PDF em paisagem
       const options = {
-        margin: [10, 10, 10, 10], // margem em mm
+        margin: [15, 15, 15, 15], // margem em mm
         filename: `relatorio-asa-${dados.carteira}-${dados.dataRelatorio.replace(/\//g, '-')}.pdf`,
         image: { 
           type: 'jpeg', 
-          quality: 0.98 
+          quality: 0.95 
         },
         html2canvas: { 
-          scale: 2,
+          scale: 1.5,
           useCORS: true,
           allowTaint: true,
           backgroundColor: '#ffffff',
           logging: false,
           letterRendering: true,
-          width: 210 * 3.77953, // A4 width in pixels at 96 DPI
-          height: 297 * 3.77953, // A4 height in pixels at 96 DPI
+          foreignObjectRendering: true,
+          removeContainer: true,
+          scrollX: 0,
+          scrollY: 0,
+          width: element.scrollWidth,
+          height: element.scrollHeight
         },
         jsPDF: { 
           unit: 'mm', 
           format: 'a4', 
-          orientation: 'portrait',
+          orientation: 'landscape', // Alterado para paisagem
           compress: true,
           precision: 2
         },
         pagebreak: {
-          mode: ['avoid-all', 'css', 'legacy'],
+          mode: ['avoid-all', 'css'],
           before: '.page-break-before',
-          after: '.page-break-after'
+          after: '.page-break-after',
+          avoid: '.break-inside-avoid'
         }
       };
 
+      // Remover elementos que não devem aparecer no PDF
+      const noprint = element.querySelectorAll('.no-print');
+      noprint.forEach(el => {
+        (el as HTMLElement).style.display = 'none';
+      });
+
       // Adicionar estilo específico para PDF antes da conversão
       const style = document.createElement('style');
+      style.id = 'pdf-styles';
       style.textContent = `
         #relatorio-content {
           font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
           color: #1B365D !important;
           background: white !important;
-          padding: 0 !important;
+          padding: 20px !important;
           margin: 0 !important;
+          max-width: none !important;
+          width: 100% !important;
+          box-sizing: border-box !important;
         }
         .break-inside-avoid {
           page-break-inside: avoid !important;
+          break-inside: avoid !important;
         }
         .page-break-after {
           page-break-after: always !important;
+          break-after: page !important;
         }
         .no-print {
           display: none !important;
         }
+        .grid {
+          display: grid !important;
+        }
+        .space-y-8 > * + * {
+          margin-top: 2rem !important;
+        }
+        .space-y-6 > * + * {
+          margin-top: 1.5rem !important;
+        }
+        .space-y-4 > * + * {
+          margin-top: 1rem !important;
+        }
+        * {
+          -webkit-print-color-adjust: exact !important;
+          color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
       `;
       document.head.appendChild(style);
 
+      console.log('Iniciando conversão PDF...');
+      
+      // Forçar re-render antes da conversão
+      element.style.display = 'block';
+      element.style.visibility = 'visible';
+
       await html2pdf().set(options).from(element).save();
 
-      // Remover o estilo após a conversão
-      document.head.removeChild(style);
+      console.log('PDF gerado com sucesso!');
+
+      // Limpar após a conversão
+      const pdfStyle = document.getElementById('pdf-styles');
+      if (pdfStyle) {
+        document.head.removeChild(pdfStyle);
+      }
+
+      // Restaurar elementos no-print
+      noprint.forEach(el => {
+        (el as HTMLElement).style.display = '';
+      });
 
     } catch (error) {
       console.error('Erro ao gerar PDF:', error);
+      alert('Erro ao gerar PDF. Tente novamente.');
     }
   };
 
