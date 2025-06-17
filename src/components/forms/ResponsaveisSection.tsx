@@ -35,6 +35,7 @@ export function ResponsaveisSection({
               <SelectValue placeholder="Selecione..." />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="none">Nenhum</SelectItem>
               {responsaveisCwi.map((nome) => (
                 <SelectItem key={nome} value={nome}>
                   {nome}

@@ -34,7 +34,7 @@ export function CriarProjetoModal({ onProjetoCriado }: CriarProjetoModalProps) {
     descricao_projeto: '',
     responsavel_asa: '',
     gp_responsavel_cwi: '',
-    responsavel_cwi: '',
+    responsavel_cwi: 'none',
     carteira_primaria: '',
     carteira_secundaria: 'none',
     carteira_terciaria: 'none',
@@ -72,7 +72,7 @@ export function CriarProjetoModal({ onProjetoCriado }: CriarProjetoModalProps) {
       responsavel_asa: formData.responsavel_asa || null,
       gp_responsavel: formData.gp_responsavel_cwi,
       gp_responsavel_cwi: formData.gp_responsavel_cwi || null,
-      responsavel_cwi: formData.responsavel_cwi || null,
+      responsavel_cwi: formData.responsavel_cwi === 'none' ? null : formData.responsavel_cwi || null,
       finalizacao_prevista: formData.finalizacao_prevista || null,
       equipe: formData.equipe || null,
     });
@@ -84,7 +84,7 @@ export function CriarProjetoModal({ onProjetoCriado }: CriarProjetoModalProps) {
         descricao_projeto: '',
         responsavel_asa: '',
         gp_responsavel_cwi: '',
-        responsavel_cwi: '',
+        responsavel_cwi: 'none',
         carteira_primaria: '',
         carteira_secundaria: 'none',
         carteira_terciaria: 'none',
@@ -205,7 +205,7 @@ export function CriarProjetoModal({ onProjetoCriado }: CriarProjetoModalProps) {
                     <SelectValue placeholder="Selecione um responsável..." />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Nenhum</SelectItem>
+                    <SelectItem value="none">Nenhum</SelectItem>
                     {GPS_RESPONSAVEIS.map((responsavel) => (
                       <SelectItem key={responsavel} value={responsavel}>
                         {responsavel}
