@@ -1,7 +1,8 @@
 
 import React from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
+import { Card, CardContent } from '@/components/ui/card';
+import { Filter } from 'lucide-react';
 
 const CATEGORIAS_LICAO = [
   'Técnica',
@@ -43,66 +44,75 @@ export function LicoesFilters({ filters, onFiltersChange }: LicoesFiltersProps) 
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="categoria" className="text-sm font-medium text-gray-700">Categoria</Label>
-          <Select value={filters.categoria || 'all'} onValueChange={(value) => updateFilter('categoria', value)}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Todas as categorias" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas as categorias</SelectItem>
-              {CATEGORIAS_LICAO.map((categoria) => (
-                <SelectItem key={categoria} value={categoria}>
-                  {categoria}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+    <Card className="bg-white shadow-sm">
+      <CardContent className="p-4">
+        <div className="flex items-center gap-4 flex-wrap">
+          <div className="flex items-center gap-2">
+            <Filter className="h-4 w-4 text-pmo-gray" />
+            <span className="text-sm font-medium text-pmo-gray">Filtros:</span>
+          </div>
+          
+          <div className="flex gap-4 flex-wrap">
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-pmo-gray">Categoria:</label>
+              <Select value={filters.categoria || 'all'} onValueChange={(value) => updateFilter('categoria', value)}>
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Todas" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas</SelectItem>
+                  {CATEGORIAS_LICAO.map((categoria) => (
+                    <SelectItem key={categoria} value={categoria}>
+                      {categoria}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="status" className="text-sm font-medium text-gray-700">Status de Aplicação</Label>
-          <Select value={filters.status || 'all'} onValueChange={(value) => updateFilter('status', value)}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Todos os status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos os status</SelectItem>
-              {STATUS_APLICACAO.map((status) => (
-                <SelectItem key={status} value={status}>
-                  {status}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-pmo-gray">Status de Aplicação:</label>
+              <Select value={filters.status || 'all'} onValueChange={(value) => updateFilter('status', value)}>
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Todos" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  {STATUS_APLICACAO.map((status) => (
+                    <SelectItem key={status} value={status}>
+                      {status}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="responsavel" className="text-sm font-medium text-gray-700">Responsável</Label>
-          <Select value={filters.responsavel || 'all'} onValueChange={(value) => updateFilter('responsavel', value)}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Todos os responsáveis" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos os responsáveis</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-pmo-gray">Responsável:</label>
+              <Select value={filters.responsavel || 'all'} onValueChange={(value) => updateFilter('responsavel', value)}>
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Todos" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="projeto" className="text-sm font-medium text-gray-700">Projeto</Label>
-          <Select value={filters.projeto || 'all'} onValueChange={(value) => updateFilter('projeto', value)}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Todos os projetos" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos os projetos</SelectItem>
-            </SelectContent>
-          </Select>
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-pmo-gray">Projeto:</label>
+              <Select value={filters.projeto || 'all'} onValueChange={(value) => updateFilter('projeto', value)}>
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Todos" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

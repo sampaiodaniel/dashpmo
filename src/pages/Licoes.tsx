@@ -70,18 +70,16 @@ export default function Licoes() {
       <div className="space-y-6">
         <LicoesHeader onNovaLicao={handleNovaLicao} />
         
-        <div className="space-y-4">
-          <LicoesSearchBar 
-            termoBusca={busca}
-            onTermoBuscaChange={setBusca}
-            totalResults={licoesFiltradas?.length || 0}
-          />
-          
-          <LicoesFilters 
-            filters={filtros}
-            onFiltersChange={atualizarFiltros}
-          />
-        </div>
+        <LicoesFilters 
+          filters={filtros}
+          onFiltersChange={atualizarFiltros}
+        />
+
+        <LicoesSearchBar 
+          termoBusca={busca}
+          onTermoBuscaChange={setBusca}
+          totalResults={licoesFiltradas?.length || 0}
+        />
 
         <LicoesList 
           licoes={licoesFiltradas || []}

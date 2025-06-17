@@ -1,6 +1,8 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Filter } from 'lucide-react';
 import { useCarteiraOverview } from '@/hooks/useCarteiraOverview';
 import { StatusFilters as StatusFiltersType } from './filters/FilterUtils';
 
@@ -24,67 +26,71 @@ export function StatusFilters({ filtros, onFiltroChange, responsaveis }: StatusF
   const carteiras = carteiraOverview?.map(item => item.carteira) || [];
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg text-pmo-primary">Filtros</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="text-sm font-medium text-pmo-gray mb-2 block">Carteira</label>
-            <Select
-              value={filtros.carteira || 'Todas'}
-              onValueChange={(value) => handleFiltroChange('carteira', value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Todas as carteiras" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Todas">Todas as carteiras</SelectItem>
-                {carteiras.map((carteira) => (
-                  <SelectItem key={carteira} value={carteira}>
-                    {carteira}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+    <Card className="bg-white shadow-sm">
+      <CardContent className="p-4">
+        <div className="flex items-center gap-4 flex-wrap">
+          <div className="flex items-center gap-2">
+            <Filter className="h-4 w-4 text-pmo-gray" />
+            <span className="text-sm font-medium text-pmo-gray">Filtros:</span>
           </div>
+          
+          <div className="flex gap-4 flex-wrap">
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-pmo-gray">Carteira:</label>
+              <Select
+                value={filtros.carteira || 'Todas'}
+                onValueChange={(value) => handleFiltroChange('carteira', value)}
+              >
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Todas" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Todas">Todas</SelectItem>
+                  {carteiras.map((carteira) => (
+                    <SelectItem key={carteira} value={carteira}>
+                      {carteira}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-          <div>
-            <label className="text-sm font-medium text-pmo-gray mb-2 block">Responsável</label>
-            <Select
-              value={filtros.responsavel || 'todos'}
-              onValueChange={(value) => handleFiltroChange('responsavel', value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Todos os responsáveis" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="todos">Todos os responsáveis</SelectItem>
-                {responsaveis.map((responsavel) => (
-                  <SelectItem key={responsavel} value={responsavel}>
-                    {responsavel}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-pmo-gray">Responsável:</label>
+              <Select
+                value={filtros.responsavel || 'todos'}
+                onValueChange={(value) => handleFiltroChange('responsavel', value)}
+              >
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Todos" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Todos</SelectItem>
+                  {responsaveis.map((responsavel) => (
+                    <SelectItem key={responsavel} value={responsavel}>
+                      {responsavel}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-          <div>
-            <label className="text-sm font-medium text-pmo-gray mb-2 block">Status de Revisão</label>
-            <Select
-              value={filtros.statusAprovacao || 'todos'}
-              onValueChange={(value) => handleFiltroChange('statusAprovacao', value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Todos os status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="todos">Todos os status</SelectItem>
-                <SelectItem value="Em Revisão">Em Revisão</SelectItem>
-                <SelectItem value="Revisado">Revisado</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-pmo-gray">Status de Revisão:</label>
+              <Select
+                value={filtros.statusAprovacao || 'todos'}
+                onValueChange={(value) => handleFiltroChange('statusAprovacao', value)}
+              >
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Todos" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Todos</SelectItem>
+                  <SelectItem value="Em Revisão">Em Revisão</SelectItem>
+                  <SelectItem value="Revisado">Revisado</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
       </CardContent>
