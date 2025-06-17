@@ -168,7 +168,7 @@ export function useProjetosOperations() {
         area_responsavel: 'Core Bancário' as const,
         responsavel_interno: 'Pitta',
         gp_responsavel: 'Elias',
-        finalizacao_prevista: '2024-12-30',
+        finalizacao_prevista: 'TBD',
         equipe: 'Ana Lima, Carlos Ferreira, Bruno Oliveira',
         criado_por: 'Sistema'
       },
@@ -188,7 +188,7 @@ export function useProjetosOperations() {
         area_responsavel: 'Empréstimos' as const,
         responsavel_interno: 'Thadeus',
         gp_responsavel: 'Fred',
-        finalizacao_prevista: '2024-11-15',
+        finalizacao_prevista: 'TBD',
         equipe: 'Felipe Nascimento, Carla Torres, Diego Pereira',
         criado_por: 'Sistema'
       },

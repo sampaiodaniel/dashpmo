@@ -1,146 +1,33 @@
 
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
-import { CalendarIcon } from 'lucide-react';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { cn } from '@/lib/utils';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { UseFormReturn } from 'react-hook-form';
+import { DateFieldWithTBD } from '../DateFieldWithTBD';
 import { useState } from 'react';
 
-interface MarcoFieldData {
-  nome: string;
-  data: string;
-  responsavel: string;
-}
-
 interface ProximasEntregasFormProps {
-  form: UseFormReturn<any>;
+  form: any;
 }
 
 export function ProximasEntregasForm({ form }: ProximasEntregasFormProps) {
-  const [openPopovers, setOpenPopovers] = useState<{[key: string]: boolean}>({
-    marco1: false,
-    marco2: false,
-    marco3: false,
-  });
+  const [marco1TBD, setMarco1TBD] = useState(false);
+  const [marco2TBD, setMarco2TBD] = useState(false);
+  const [marco3TBD, setMarco3TBD] = useState(false);
 
-  const handleDateSelect = (date: Date | undefined, fieldName: string, marcoKey: string) => {
-    if (date) {
-      const dateString = format(date, 'yyyy-MM-dd');
-      form.setValue(fieldName, dateString);
-      
-      // Fechar o popover após seleção
-      setOpenPopovers(prev => ({ ...prev, [marcoKey]: false }));
-    }
+  const handleMarcoDateChange = (marcoNumber: number, date: Date | null) => {
+    form.setValue(`marco${marcoNumber}_data`, date ? date.toISOString().split('T')[0] : '');
   };
 
-  const MarcoSection = ({ 
-    titulo, 
-    marcoKey, 
-    nomeField, 
-    dataField, 
-    responsavelField, 
-    isRequired = false 
-  }: {
-    titulo: string;
-    marcoKey: string;
-    nomeField: string;
-    dataField: string;
-    responsavelField: string;
-    isRequired?: boolean;
-  }) => (
-    <div className="border rounded-lg p-4 space-y-4">
-      <h4 className="font-medium text-pmo-primary">{titulo}</h4>
-      <div className="grid grid-cols-3 gap-4 items-end">
-        <div className="col-span-2">
-          <FormField
-            control={form.control}
-            name={responsavelField}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Entregáveis {isRequired && '*'}</FormLabel>
-                <FormControl>
-                  <Textarea 
-                    {...field} 
-                    placeholder="Descreva os entregáveis..."
-                    rows={4}
-                    className="min-h-[100px]"
-                    required={isRequired}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        <div className="space-y-4">
-          <FormField
-            control={form.control}
-            name={nomeField}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Nome da Entrega {isRequired && '*'}</FormLabel>
-                <FormControl>
-                  <Input {...field} placeholder="Nome da entrega" required={isRequired} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name={dataField}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Data de Entrega {isRequired && '*'}</FormLabel>
-                <Popover 
-                  open={openPopovers[marcoKey]} 
-                  onOpenChange={(open) => setOpenPopovers(prev => ({ ...prev, [marcoKey]: open }))}
-                >
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full pl-3 text-left font-normal",
-                          !field.value && "text-muted-foreground"
-                        )}
-                        type="button"
-                      >
-                        {field.value ? (
-                          format(new Date(field.value + 'T00:00:00'), "dd/MM/yyyy", { locale: ptBR })
-                        ) : (
-                          <span>Selecione a data</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value ? new Date(field.value + 'T00:00:00') : undefined}
-                      onSelect={(date) => handleDateSelect(date, dataField, marcoKey)}
-                      initialFocus
-                      className={cn("p-3 pointer-events-auto")}
-                    />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-      </div>
-    </div>
-  );
+  const handleMarcoTBDChange = (marcoNumber: number, isTBD: boolean) => {
+    if (marcoNumber === 1) setMarco1TBD(isTBD);
+    if (marcoNumber === 2) setMarco2TBD(isTBD);
+    if (marcoNumber === 3) setMarco3TBD(isTBD);
+    
+    if (isTBD) {
+      form.setValue(`marco${marcoNumber}_data`, 'TBD');
+    }
+  };
 
   return (
     <Card>
@@ -148,28 +35,132 @@ export function ProximasEntregasForm({ form }: ProximasEntregasFormProps) {
         <CardTitle>Próximas Entregas</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        <MarcoSection
-          titulo="Marco 1"
-          marcoKey="marco1"
-          nomeField="marco1_nome"
-          dataField="marco1_data"
-          responsavelField="marco1_responsavel"
-          isRequired={true}
-        />
-        <MarcoSection
-          titulo="Marco 2"
-          marcoKey="marco2"
-          nomeField="marco2_nome"
-          dataField="marco2_data"
-          responsavelField="marco2_responsavel"
-        />
-        <MarcoSection
-          titulo="Marco 3"
-          marcoKey="marco3"
-          nomeField="marco3_nome"
-          dataField="marco3_data"
-          responsavelField="marco3_responsavel"
-        />
+        {/* Marco 1 */}
+        <div className="space-y-4 p-4 border rounded-lg">
+          <h4 className="font-medium text-lg">Marco 1 *</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="marco1_nome"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nome da Entrega *</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="Nome da entrega" required />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <DateFieldWithTBD
+              label="Data de Entrega"
+              value={form.watch('marco1_data') && form.watch('marco1_data') !== 'TBD' ? new Date(form.watch('marco1_data')) : null}
+              onChange={(date) => handleMarcoDateChange(1, date)}
+              onTBDChange={(isTBD) => handleMarcoTBDChange(1, isTBD)}
+              isTBD={marco1TBD || form.watch('marco1_data') === 'TBD'}
+              required
+            />
+          </div>
+          
+          <FormField
+            control={form.control}
+            name="marco1_responsavel"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Entregáveis *</FormLabel>
+                <FormControl>
+                  <Textarea {...field} placeholder="Descreva os entregáveis" required />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {/* Marco 2 */}
+        <div className="space-y-4 p-4 border rounded-lg">
+          <h4 className="font-medium text-lg">Marco 2</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="marco2_nome"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nome da Entrega</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="Nome da entrega" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <DateFieldWithTBD
+              label="Data de Entrega"
+              value={form.watch('marco2_data') && form.watch('marco2_data') !== 'TBD' ? new Date(form.watch('marco2_data')) : null}
+              onChange={(date) => handleMarcoDateChange(2, date)}
+              onTBDChange={(isTBD) => handleMarcoTBDChange(2, isTBD)}
+              isTBD={marco2TBD || form.watch('marco2_data') === 'TBD'}
+            />
+          </div>
+          
+          <FormField
+            control={form.control}
+            name="marco2_responsavel"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Entregáveis</FormLabel>
+                <FormControl>
+                  <Textarea {...field} placeholder="Descreva os entregáveis" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {/* Marco 3 */}
+        <div className="space-y-4 p-4 border rounded-lg">
+          <h4 className="font-medium text-lg">Marco 3</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="marco3_nome"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nome da Entrega</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="Nome da entrega" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <DateFieldWithTBD
+              label="Data de Entrega"
+              value={form.watch('marco3_data') && form.watch('marco3_data') !== 'TBD' ? new Date(form.watch('marco3_data')) : null}
+              onChange={(date) => handleMarcoDateChange(3, date)}
+              onTBDChange={(isTBD) => handleMarcoTBDChange(3, isTBD)}
+              isTBD={marco3TBD || form.watch('marco3_data') === 'TBD'}
+            />
+          </div>
+          
+          <FormField
+            control={form.control}
+            name="marco3_responsavel"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Entregáveis</FormLabel>
+                <FormControl>
+                  <Textarea {...field} placeholder="Descreva os entregáveis" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
       </CardContent>
     </Card>
   );

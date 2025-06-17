@@ -1,4 +1,3 @@
-
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -40,7 +39,7 @@ export function useNovoStatusForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [carteiraSelecionada, setCarteiraSelecionada] = useState('');
   const [projetoSelecionado, setProjetoSelecionado] = useState<number | null>(null);
-  const [progressoEstimado, setProgressoEstimado] = useState<number>(5); // Default to 5% instead of 0
+  const [progressoEstimado, setProgressoEstimado] = useState<number>(1); // Changed from 5% to 1%
 
   const { data: carteiras } = useCarteiraOverview();
   const { data: projetos } = useProjetos();
