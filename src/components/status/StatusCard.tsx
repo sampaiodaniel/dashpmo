@@ -22,7 +22,7 @@ export function StatusCard({ status, onUpdate, onStatusUpdate }: StatusCardProps
   };
 
   return (
-    <Card className="hover:shadow-md transition-shadow cursor-pointer border-l-4 border-l-pmo-primary">
+    <Card className="hover:shadow-md transition-shadow cursor-pointer">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex-1">
@@ -33,7 +33,7 @@ export function StatusCard({ status, onUpdate, onStatusUpdate }: StatusCardProps
               <div className="flex items-center gap-2 bg-blue-50 px-3 py-1 rounded-lg border border-blue-200">
                 <Building className="h-4 w-4 text-blue-600" />
                 <span className="font-semibold text-blue-700 text-sm">
-                  {status.projeto?.area_responsavel || 'N/A'}
+                  {status.projeto?.carteira_primaria || status.projeto?.area_responsavel || 'N/A'}
                 </span>
               </div>
             </div>
@@ -52,7 +52,7 @@ export function StatusCard({ status, onUpdate, onStatusUpdate }: StatusCardProps
               )}
             </div>
 
-            <div className="flex items-center gap-4 text-sm text-pmo-gray mb-3">
+            <div className="flex items-center gap-4 text-sm text-pmo-gray">
               <div className="flex items-center gap-1">
                 <Calendar className="h-4 w-4" />
                 <span>{format(new Date(status.data_atualizacao), 'dd/MM/yyyy', { locale: ptBR })}</span>
@@ -78,31 +78,6 @@ export function StatusCard({ status, onUpdate, onStatusUpdate }: StatusCardProps
           </div>
         </div>
       </CardHeader>
-      
-      <CardContent className="pt-0">
-        <div className="space-y-3">
-          {status.realizado_semana_atual && (
-            <div>
-              <span className="text-sm font-medium text-pmo-gray">Realizado na Semana:</span>
-              <p className="text-sm text-gray-700 line-clamp-2 mt-1">{status.realizado_semana_atual}</p>
-            </div>
-          )}
-          
-          {status.observacoes_pontos_atencao && (
-            <div>
-              <span className="text-sm font-medium text-orange-600">Pontos de Atenção:</span>
-              <p className="text-sm text-gray-700 line-clamp-2 mt-1">{status.observacoes_pontos_atencao}</p>
-            </div>
-          )}
-          
-          {status.bloqueios_atuais && (
-            <div>
-              <span className="text-sm font-medium text-red-600">Bloqueios:</span>
-              <p className="text-sm text-gray-700 line-clamp-2 mt-1">{status.bloqueios_atuais}</p>
-            </div>
-          )}
-        </div>
-      </CardContent>
     </Card>
   );
 }

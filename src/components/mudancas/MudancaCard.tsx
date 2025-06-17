@@ -49,7 +49,7 @@ export function MudancaCard({ mudanca }: MudancaCardProps) {
   };
 
   return (
-    <Card className="hover:shadow-md transition-shadow cursor-pointer border-l-4 border-l-pmo-primary">
+    <Card className="hover:shadow-md transition-shadow cursor-pointer">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex-1">
@@ -60,7 +60,7 @@ export function MudancaCard({ mudanca }: MudancaCardProps) {
               <div className="flex items-center gap-2 bg-blue-50 px-3 py-1 rounded-lg border border-blue-200">
                 <Building className="h-4 w-4 text-blue-600" />
                 <span className="font-semibold text-blue-700 text-sm">
-                  {mudanca.projeto?.area_responsavel || 'N/A'}
+                  {mudanca.projeto?.carteira_primaria || mudanca.projeto?.area_responsavel || 'N/A'}
                 </span>
               </div>
             </div>
@@ -79,7 +79,7 @@ export function MudancaCard({ mudanca }: MudancaCardProps) {
               )}
             </div>
             
-            <div className="flex items-center gap-4 text-sm text-pmo-gray mb-3">
+            <div className="flex items-center gap-4 text-sm text-pmo-gray">
               <div className="flex items-center gap-1">
                 <Calendar className="h-4 w-4" />
                 <span>{format(new Date(mudanca.data_solicitacao), 'dd/MM/yyyy', { locale: ptBR })}</span>
@@ -120,22 +120,6 @@ export function MudancaCard({ mudanca }: MudancaCardProps) {
           </div>
         </div>
       </CardHeader>
-      
-      <CardContent className="pt-0">
-        <div className="space-y-3">
-          <div>
-            <span className="text-sm font-medium text-pmo-gray">Descrição:</span>
-            <p className="text-sm text-gray-700 line-clamp-2 mt-1">{mudanca.descricao}</p>
-          </div>
-          
-          {mudanca.justificativa_negocio && (
-            <div>
-              <span className="text-sm font-medium text-pmo-gray">Justificativa:</span>
-              <p className="text-sm text-gray-700 line-clamp-2 mt-1">{mudanca.justificativa_negocio}</p>
-            </div>
-          )}
-        </div>
-      </CardContent>
     </Card>
   );
 }

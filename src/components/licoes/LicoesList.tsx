@@ -73,11 +73,11 @@ export function LicoesList({ licoes }: LicoesListProps) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-0">
       {licoes.map((licao) => (
         <Card 
           key={licao.id} 
-          className="hover:shadow-md transition-shadow cursor-pointer border-l-4 border-l-pmo-primary"
+          className="hover:shadow-md transition-shadow cursor-pointer"
           onClick={() => handleLicaoClick(licao.id)}
         >
           <CardHeader className="pb-3">
@@ -104,7 +104,7 @@ export function LicoesList({ licoes }: LicoesListProps) {
                   </Badge>
                 </div>
 
-                <div className="flex items-center gap-4 text-sm text-pmo-gray mb-3">
+                <div className="flex items-center gap-4 text-sm text-pmo-gray">
                   <div className="flex items-center gap-1">
                     <Calendar className="h-4 w-4" />
                     <span>{format(licao.data_registro, 'dd/MM/yyyy', { locale: ptBR })}</span>
@@ -150,35 +150,6 @@ export function LicoesList({ licoes }: LicoesListProps) {
               </div>
             </div>
           </CardHeader>
-
-          <CardContent className="pt-0">
-            <div className="space-y-3">
-              <div>
-                <span className="text-sm font-medium text-pmo-gray">Situação:</span>
-                <p className="text-sm text-gray-700 line-clamp-2 mt-1">{licao.situacao_ocorrida}</p>
-              </div>
-              
-              <div>
-                <span className="text-sm font-medium text-pmo-gray">Lição:</span>
-                <p className="text-sm text-gray-700 line-clamp-2 mt-1">{licao.licao_aprendida}</p>
-              </div>
-
-              {licao.tags_busca && (
-                <div className="flex flex-wrap gap-1 mt-2">
-                  {licao.tags_busca.split(',').slice(0, 3).map((tag, index) => (
-                    <Badge key={index} variant="secondary" className="text-xs">
-                      {tag.trim()}
-                    </Badge>
-                  ))}
-                  {licao.tags_busca.split(',').length > 3 && (
-                    <span className="text-xs text-pmo-gray">
-                      +{licao.tags_busca.split(',').length - 3} mais
-                    </span>
-                  )}
-                </div>
-              )}
-            </div>
-          </CardContent>
         </Card>
       ))}
     </div>

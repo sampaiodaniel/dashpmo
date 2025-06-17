@@ -8,7 +8,7 @@ interface MudancasListProps {
 
 export function MudancasList({ mudancas }: MudancasListProps) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-0">
       {mudancas.map((mudanca) => (
         <MudancaCard
           key={mudanca.id}
