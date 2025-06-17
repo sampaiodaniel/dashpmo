@@ -1,7 +1,8 @@
+
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
-import { Search, ChevronRight, FileText, Building } from 'lucide-react';
+import { Search, ChevronRight, FileText, Building, Calendar } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { CriarProjetoModal } from '@/components/forms/CriarProjetoModal';
 import { useProjetos } from '@/hooks/useProjetos';
@@ -64,6 +65,24 @@ export default function Projetos() {
 
   const handleProjetoClick = (projetoId: number) => {
     navigate(`/projetos/${projetoId}`);
+  };
+
+  // Função para formatar a data de finalização ou mostrar TBD
+  const formatarFinalizacaoPrevista = (finalizacaoPrevista: string | null) => {
+    if (!finalizacaoPrevista) {
+      return 'TBD';
+    }
+    
+    if (finalizacaoPrevista === 'TBD') {
+      return 'TBD';
+    }
+    
+    try {
+      const date = new Date(finalizacaoPrevista);
+      return date.toLocaleDateString('pt-BR');
+    } catch {
+      return 'TBD';
+    }
   };
 
   if (authLoading) {
@@ -191,9 +210,12 @@ export default function Projetos() {
                           <div className="font-medium">{projeto.gp_responsavel}</div>
                         </div>
                         <div>
-                          <span className="text-pmo-gray">Criado em:</span>
-                          <div className="font-medium">
-                            {projeto.data_criacao.toLocaleDateString('pt-BR')}
+                          <span className="text-pmo-gray">Finalização Prevista:</span>
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4 text-pmo-gray" />
+                            <span className="font-medium">
+                              {formatarFinalizacaoPrevista(projeto.finalizacao_prevista)}
+                            </span>
                           </div>
                         </div>
                       </div>

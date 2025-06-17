@@ -69,8 +69,9 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
         carteira_secundaria: formData.carteira_secundaria === 'none' ? '' : formData.carteira_secundaria,
         carteira_terciaria: formData.carteira_terciaria === 'none' ? '' : formData.carteira_terciaria,
         equipe: formData.equipe,
+        // CORREÇÃO: Usar null quando for TBD, não string "TBD"
         finalizacao_prevista: formData.finalizacao_tbd 
-          ? 'TBD' 
+          ? null 
           : formData.finalizacao_prevista 
             ? formData.finalizacao_prevista.toISOString().split('T')[0]
             : null,
@@ -79,6 +80,8 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
         responsavel_interno: formData.responsavel_asa === 'none' ? 'Admin' : formData.responsavel_asa,
         gp_responsavel: formData.gp_responsavel_cwi === 'none' ? 'Admin' : formData.gp_responsavel_cwi
       };
+
+      console.log('📝 Dados sendo enviados para atualização:', dataToSubmit);
 
       const { error } = await supabase
         .from('projetos')
@@ -234,7 +237,6 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
         </CardContent>
       </Card>
 
-      {/* Carteiras */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Carteiras</CardTitle>
