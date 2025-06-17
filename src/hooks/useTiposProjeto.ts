@@ -5,23 +5,24 @@ import { toast } from '@/hooks/use-toast';
 
 export interface TipoProjeto {
   id: number;
-  nome: string;
-  descricao: string | null;
-  ativo: boolean;
+  tipo: string;
+  valor: string;
   ordem: number;
+  ativo: boolean;
   criado_por: string;
   data_criacao: string;
 }
 
 export function useTiposProjeto() {
   return useQuery({
-    queryKey: ['tipos-projeto'],
+    queryKey: ['configuracoes-sistema', 'tipos_projeto'],
     queryFn: async (): Promise<TipoProjeto[]> => {
       console.log('Buscando tipos de projeto');
       
       const { data, error } = await supabase
-        .from('tipos_projeto')
+        .from('configuracoes_sistema')
         .select('*')
+        .eq('tipo', 'tipos_projeto')
         .eq('ativo', true)
         .order('ordem', { ascending: true });
 
@@ -31,7 +32,15 @@ export function useTiposProjeto() {
       }
 
       console.log('Tipos de projeto encontrados:', data);
-      return data || [];
+      return data?.map(item => ({
+        id: item.id,
+        tipo: item.tipo,
+        valor: item.valor,
+        ordem: item.ordem || 0,
+        ativo: item.ativo || true,
+        criado_por: item.criado_por,
+        data_criacao: item.data_criacao
+      })) || [];
     },
   });
 }
@@ -40,12 +49,20 @@ export function useTiposProjetoOperations() {
   const queryClient = useQueryClient();
 
   const createTipoProjeto = useMutation({
-    mutationFn: async (tipo: Omit<TipoProjeto, 'id' | 'data_criacao'>) => {
+    mutationFn: async (tipo: { valor: string; ordem: number }) => {
       console.log('Criando novo tipo de projeto:', tipo);
       
+      const novoTipo = {
+        tipo: 'tipos_projeto',
+        valor: tipo.valor,
+        ordem: tipo.ordem,
+        ativo: true,
+        criado_por: 'Admin'
+      };
+      
       const { data, error } = await supabase
-        .from('tipos_projeto')
-        .insert([tipo])
+        .from('configuracoes_sistema')
+        .insert([novoTipo])
         .select()
         .single();
 
@@ -58,7 +75,7 @@ export function useTiposProjetoOperations() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tipos-projeto'] });
+      queryClient.invalidateQueries({ queryKey: ['configuracoes-sistema'] });
       toast({
         title: "Sucesso",
         description: "Tipo de projeto criado com sucesso!",
@@ -75,12 +92,12 @@ export function useTiposProjetoOperations() {
   });
 
   const updateTipoProjeto = useMutation({
-    mutationFn: async ({ id, nome, descricao, ordem }: { id: number; nome: string; descricao: string | null; ordem: number }) => {
-      console.log('Atualizando tipo de projeto:', { id, nome, descricao, ordem });
+    mutationFn: async ({ id, valor, ordem }: { id: number; valor: string; ordem: number }) => {
+      console.log('Atualizando tipo de projeto:', { id, valor, ordem });
       
       const { data, error } = await supabase
-        .from('tipos_projeto')
-        .update({ nome, descricao, ordem })
+        .from('configuracoes_sistema')
+        .update({ valor, ordem })
         .eq('id', id)
         .select();
 
@@ -93,8 +110,8 @@ export function useTiposProjetoOperations() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tipos-projeto'] });
-      queryClient.refetchQueries({ queryKey: ['tipos-projeto'] });
+      queryClient.invalidateQueries({ queryKey: ['configuracoes-sistema'] });
+      queryClient.refetchQueries({ queryKey: ['configuracoes-sistema'] });
       toast({
         title: "Sucesso",
         description: "Tipo de projeto atualizado com sucesso!",
@@ -115,7 +132,7 @@ export function useTiposProjetoOperations() {
       console.log('Removendo tipo de projeto (soft delete):', id);
       
       const { data, error } = await supabase
-        .from('tipos_projeto')
+        .from('configuracoes_sistema')
         .update({ ativo: false })
         .eq('id', id)
         .select();
@@ -129,8 +146,8 @@ export function useTiposProjetoOperations() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tipos-projeto'] });
-      queryClient.refetchQueries({ queryKey: ['tipos-projeto'] });
+      queryClient.invalidateQueries({ queryKey: ['configuracoes-sistema'] });
+      queryClient.refetchQueries({ queryKey: ['configuracoes-sistema'] });
       toast({
         title: "Sucesso",
         description: "Tipo de projeto removido com sucesso!",

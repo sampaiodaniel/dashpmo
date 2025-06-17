@@ -181,10 +181,7 @@ export function AdminConfiguracoes() {
                     {tiposProjeto?.map((tipo) => (
                       <div key={tipo.id} className="flex items-center justify-between p-3 border rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
                         <div className="flex-1">
-                          <span className="font-medium">{tipo.nome}</span>
-                          {tipo.descricao && (
-                            <p className="text-sm text-gray-600">{tipo.descricao}</p>
-                          )}
+                          <span className="font-medium">{tipo.valor}</span>
                           <span className="text-sm text-gray-500 ml-2">(Ordem: {tipo.ordem})</span>
                         </div>
                         <div className="flex gap-2">
