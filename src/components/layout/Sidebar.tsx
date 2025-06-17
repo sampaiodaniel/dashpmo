@@ -59,7 +59,7 @@ export function Sidebar() {
   const location = useLocation();
 
   return (
-    <div className="w-64 bg-white border-r border-gray-200 px-4 py-6 h-full overflow-y-auto">
+    <div className="w-64 bg-white border-r border-gray-200 px-4 py-6 h-full overflow-y-auto shadow-sm">
       <div className="flex items-center justify-center mb-8 px-2">
         <img 
           src="/lovable-uploads/48bf655c-460e-490c-9118-e222b43f0c9d.png" 
@@ -82,8 +82,8 @@ export function Sidebar() {
               className={cn(
                 "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                 isActive 
-                  ? "bg-pmo-primary text-white" 
-                  : "text-pmo-gray hover:bg-gray-100 hover:text-pmo-primary"
+                  ? "bg-blue-50 text-blue-700 border border-blue-200" 
+                  : "text-pmo-gray hover:bg-gray-50 hover:text-pmo-primary"
               )}
             >
               <Icon className="h-4 w-4" />

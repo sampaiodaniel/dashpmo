@@ -22,7 +22,7 @@
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
+    --input: 0 0% 96%;
     --ring: 0 0% 3.9%;
     --chart-1: 12 76% 61%;
     --chart-2: 173 58% 39%;
@@ -31,16 +31,16 @@
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
     
-    /* Cores personalizadas do PMO */
-    --pmo-primary: 217 91% 60%;
-    --pmo-secondary: 142 76% 36%;
-    --pmo-accent: 47 96% 89%;
-    --pmo-gray: 215 28% 17%;
-    --pmo-light-gray: 220 13% 91%;
-    --pmo-background: 0 0% 98%;
-    --pmo-success: 142 76% 36%;
-    --pmo-warning: 38 92% 50%;
-    --pmo-danger: 0 84% 60%;
+    /* Cores personalizadas do PMO - versão clara */
+    --pmo-primary: 59 130% 95%;
+    --pmo-secondary: 142 76% 85%;
+    --pmo-accent: 47 96% 95%;
+    --pmo-gray: 215 15% 60%;
+    --pmo-light-gray: 220 13% 96%;
+    --pmo-background: 0 0% 99%;
+    --pmo-success: 142 50% 75%;
+    --pmo-warning: 38 70% 85%;
+    --pmo-danger: 0 60% 85%;
   }
 
   .dark {
@@ -82,19 +82,19 @@
 
 @layer utilities {
   .text-pmo-primary {
-    color: hsl(var(--pmo-primary));
+    color: hsl(217 50% 40%);
   }
   .text-pmo-secondary {
-    color: hsl(var(--pmo-secondary));
+    color: hsl(142 50% 45%);
   }
   .text-pmo-gray {
     color: hsl(var(--pmo-gray));
   }
   .bg-pmo-primary {
-    background-color: hsl(var(--pmo-primary));
+    background-color: hsl(217 50% 40%);
   }
   .bg-pmo-secondary {
-    background-color: hsl(var(--pmo-secondary));
+    background-color: hsl(142 50% 45%);
   }
   .bg-pmo-background {
     background-color: hsl(var(--pmo-background));
@@ -109,7 +109,7 @@
     background-color: hsl(var(--pmo-danger));
   }
   .border-pmo-primary {
-    border-color: hsl(var(--pmo-primary));
+    border-color: hsl(217 50% 70%);
   }
 }
 
@@ -119,15 +119,15 @@
 }
 
 .scrollbar-track-gray-100 {
-  scrollbar-color: #d1d5db #f3f4f6;
+  scrollbar-color: #e5e7eb #f9fafb;
 }
 
 .scrollbar-thumb-gray-300 {
-  scrollbar-color: #d1d5db #f3f4f6;
+  scrollbar-color: #d1d5db #f9fafb;
 }
 
 .hover\:scrollbar-thumb-gray-400:hover {
-  scrollbar-color: #9ca3af #f3f4f6;
+  scrollbar-color: #9ca3af #f9fafb;
 }
 
 /* Para navegadores WebKit (Chrome, Safari, Edge) */
@@ -136,17 +136,17 @@ textarea::-webkit-scrollbar {
 }
 
 textarea::-webkit-scrollbar-track {
-  background: #f3f4f6;
+  background: #f9fafb;
   border-radius: 4px;
 }
 
 textarea::-webkit-scrollbar-thumb {
-  background: #d1d5db;
+  background: #e5e7eb;
   border-radius: 4px;
 }
 
 textarea::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
+  background: #d1d5db;
 }
 
 /* Estilo específico para campos de texto do formulário */
@@ -155,15 +155,15 @@ textarea::-webkit-scrollbar-thumb:hover {
 }
 
 .form-textarea::-webkit-scrollbar-track {
-  background: #e5e7eb;
+  background: #f3f4f6;
   border-radius: 3px;
 }
 
 .form-textarea::-webkit-scrollbar-thumb {
-  background: #9ca3af;
+  background: #d1d5db;
   border-radius: 3px;
 }
 
 .form-textarea::-webkit-scrollbar-thumb:hover {
-  background: #6b7280;
+  background: #9ca3af;
 }

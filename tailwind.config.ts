@@ -20,48 +20,48 @@ export default {
 		},
 		extend: {
 			colors: {
-				// Cores corporativas PMO
-				'pmo-primary': '#1B365D',
-				'pmo-secondary': '#2E5984',
-				'pmo-gray': '#6B7280',
-				'pmo-success': '#10B981',
-				'pmo-warning': '#F59E0B',
-				'pmo-danger': '#EF4444',
-				'pmo-background': '#F8FAFC',
+				// Cores corporativas PMO - versão clara
+				'pmo-primary': '#5A7FB8',
+				'pmo-secondary': '#7DD3C0',
+				'pmo-gray': '#8B92A6',
+				'pmo-success': '#86C7B0',
+				'pmo-warning': '#F5C842',
+				'pmo-danger': '#F87171',
+				'pmo-background': '#FEFEFE',
 				
-				// Cores originais do shadcn
-				border: 'hsl(var(--border))',
-				input: 'hsl(var(--input))',
-				ring: 'hsl(var(--ring))',
-				background: 'hsl(var(--background))',
-				foreground: 'hsl(var(--foreground))',
+				// Cores originais do shadcn - versão clara
+				border: 'hsl(0 0% 90%)',
+				input: 'hsl(0 0% 96%)',
+				ring: 'hsl(217 50% 70%)',
+				background: 'hsl(0 0% 100%)',
+				foreground: 'hsl(0 0% 20%)',
 				primary: {
-					DEFAULT: '#1B365D',
+					DEFAULT: '#5A7FB8',
 					foreground: '#FFFFFF'
 				},
 				secondary: {
-					DEFAULT: '#2E5984',
-					foreground: '#FFFFFF'
+					DEFAULT: '#F8FAFC',
+					foreground: '#5A7FB8'
 				},
 				destructive: {
-					DEFAULT: '#EF4444',
+					DEFAULT: '#F87171',
 					foreground: '#FFFFFF'
 				},
 				muted: {
 					DEFAULT: '#F8FAFC',
-					foreground: '#6B7280'
+					foreground: '#8B92A6'
 				},
 				accent: {
-					DEFAULT: '#10B981',
-					foreground: '#FFFFFF'
+					DEFAULT: '#E0F2FE',
+					foreground: '#5A7FB8'
 				},
 				popover: {
 					DEFAULT: '#FFFFFF',
-					foreground: '#1B365D'
+					foreground: '#374151'
 				},
 				card: {
 					DEFAULT: '#FFFFFF',
-					foreground: '#1B365D'
+					foreground: '#374151'
 				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
