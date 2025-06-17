@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -59,7 +58,7 @@ export function CriarProjetoForm({
               <SelectContent>
                 {tiposProjeto?.map((tipo) => (
                   <SelectItem key={tipo.id} value={tipo.id.toString()}>
-                    {tipo.nome}
+                    {tipo.valor}
                   </SelectItem>
                 ))}
               </SelectContent>

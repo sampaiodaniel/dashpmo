@@ -24,8 +24,7 @@ function TipoProjetoModal({ tipo, isOpen, onClose }: TipoProjetoModalProps) {
   const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    nome: tipo?.nome || '',
-    descricao: tipo?.descricao || '',
+    valor: tipo?.valor || '',
     ordem: tipo?.ordem || 0
   });
 
@@ -37,10 +36,9 @@ function TipoProjetoModal({ tipo, isOpen, onClose }: TipoProjetoModalProps) {
       if (tipo) {
         // Editar
         const { error } = await supabase
-          .from('tipos_projeto')
+          .from('configuracoes_sistema')
           .update({
-            nome: formData.nome,
-            descricao: formData.descricao || null,
+            valor: formData.valor,
             ordem: formData.ordem
           })
           .eq('id', tipo.id);
@@ -54,11 +52,12 @@ function TipoProjetoModal({ tipo, isOpen, onClose }: TipoProjetoModalProps) {
       } else {
         // Criar
         const { error } = await supabase
-          .from('tipos_projeto')
+          .from('configuracoes_sistema')
           .insert({
-            nome: formData.nome,
-            descricao: formData.descricao || null,
+            tipo: 'tipos_projeto',
+            valor: formData.valor,
             ordem: formData.ordem,
+            ativo: true,
             criado_por: 'Admin'
           });
 
@@ -70,9 +69,9 @@ function TipoProjetoModal({ tipo, isOpen, onClose }: TipoProjetoModalProps) {
         });
       }
 
-      queryClient.invalidateQueries({ queryKey: ['tipos-projeto'] });
+      queryClient.invalidateQueries({ queryKey: ['configuracoes-sistema'] });
       onClose();
-      setFormData({ nome: '', descricao: '', ordem: 0 });
+      setFormData({ valor: '', ordem: 0 });
     } catch (error) {
       console.error('Erro ao salvar tipo de projeto:', error);
       toast({
@@ -96,22 +95,12 @@ function TipoProjetoModal({ tipo, isOpen, onClose }: TipoProjetoModalProps) {
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="nome">Nome *</Label>
+            <Label htmlFor="valor">Valor *</Label>
             <Input
-              id="nome"
-              value={formData.nome}
-              onChange={(e) => setFormData(prev => ({ ...prev, nome: e.target.value }))}
+              id="valor"
+              value={formData.valor}
+              onChange={(e) => setFormData(prev => ({ ...prev, valor: e.target.value }))}
               required
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="descricao">Descrição</Label>
-            <Textarea
-              id="descricao"
-              value={formData.descricao}
-              onChange={(e) => setFormData(prev => ({ ...prev, descricao: e.target.value }))}
-              rows={3}
             />
           </div>
 
@@ -161,13 +150,13 @@ export function AdminTiposProjeto() {
   };
 
   const handleDelete = async (tipo: TipoProjeto) => {
-    if (!confirm(`Tem certeza que deseja excluir o tipo "${tipo.nome}"?`)) {
+    if (!confirm(`Tem certeza que deseja excluir o tipo "${tipo.valor}"?`)) {
       return;
     }
 
     try {
       const { error } = await supabase
-        .from('tipos_projeto')
+        .from('configuracoes_sistema')
         .update({ ativo: false })
         .eq('id', tipo.id);
 
@@ -178,7 +167,7 @@ export function AdminTiposProjeto() {
         description: "Tipo de projeto excluído com sucesso!",
       });
 
-      queryClient.invalidateQueries({ queryKey: ['tipos-projeto'] });
+      queryClient.invalidateQueries({ queryKey: ['configuracoes-sistema'] });
     } catch (error) {
       console.error('Erro ao excluir tipo de projeto:', error);
       toast({
@@ -206,8 +195,7 @@ export function AdminTiposProjeto() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Nome</TableHead>
-              <TableHead>Descrição</TableHead>
+              <TableHead>Valor</TableHead>
               <TableHead>Ordem</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Ações</TableHead>
@@ -216,8 +204,7 @@ export function AdminTiposProjeto() {
           <TableBody>
             {tipos?.map((tipo) => (
               <TableRow key={tipo.id}>
-                <TableCell className="font-medium">{tipo.nome}</TableCell>
-                <TableCell>{tipo.descricao || '-'}</TableCell>
+                <TableCell className="font-medium">{tipo.valor}</TableCell>
                 <TableCell>{tipo.ordem}</TableCell>
                 <TableCell>
                   <Badge variant={tipo.ativo ? "default" : "secondary"}>

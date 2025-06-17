@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Building, Calendar, User, Users, FileType } from 'lucide-react';
@@ -70,7 +69,7 @@ export function ProjetoInfoGerais({ projeto }: ProjetoInfoGeraisProps) {
                 <label className="text-sm font-medium text-pmo-gray">Tipo de Projeto</label>
                 <div className="flex items-center gap-2 mt-1">
                   <FileType className="h-4 w-4 text-pmo-gray" />
-                  <span className="font-medium">{tipoProjeto.nome}</span>
+                  <span className="font-medium">{tipoProjeto.valor}</span>
                 </div>
               </div>
             )}

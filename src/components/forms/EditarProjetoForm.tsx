@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -164,7 +163,7 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
                 <SelectItem value="nenhum">Nenhum</SelectItem>
                 {tiposProjeto?.map((tipo) => (
                   <SelectItem key={tipo.id} value={tipo.id.toString()}>
-                    {tipo.nome}
+                    {tipo.valor}
                   </SelectItem>
                 ))}
               </SelectContent>
