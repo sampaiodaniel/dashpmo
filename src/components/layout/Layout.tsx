@@ -28,12 +28,15 @@ export function Layout({ children }: LayoutProps) {
         <Sidebar />
       </div>
       
-      {/* Content area com margem para compensar sidebar fixo */}
+      {/* Content area com margem para compensar sidebar fixo e alinhamento à esquerda */}
       <div className="flex-1 flex flex-col ml-64">
         <Header onToggleSidebar={toggleSidebar} />
         
         <main className="flex-1">
-          <div className={cn(location.pathname === "/projetos" ? "p-3" : "p-6")}>
+          <div className={cn(
+            location.pathname === "/projetos" ? "p-3 pl-6" : "p-6 pl-8",
+            "text-left" // Garantir alinhamento à esquerda
+          )}>
             {children}
           </div>
         </main>

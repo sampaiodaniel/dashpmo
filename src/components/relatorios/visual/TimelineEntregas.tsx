@@ -67,37 +67,48 @@ export function TimelineEntregas({ projetos }: TimelineEntregasProps) {
     );
   }
 
-  // Dividir entregas em páginas se necessário (máximo 4 por página para reduzir largura)
+  // Calcular largura dinâmica dos boxes baseada no conteúdo
+  const calcularLargura = (entrega: any) => {
+    const textoTitulo = entrega.titulo || '';
+    const textoEntregaveis = entrega.entregaveis || '';
+    const textoTotal = textoTitulo + ' ' + textoEntregaveis;
+    
+    // Largura mínima: 200px, máxima: 350px, baseada no comprimento do texto
+    const larguraBase = Math.max(200, Math.min(350, textoTotal.length * 3.5));
+    return `${larguraBase}px`;
+  };
+
+  // Dividir entregas em páginas se necessário (máximo 4 por página)
   const entregasPorPagina = 4;
   const totalPaginas = Math.ceil(entregas.length / entregasPorPagina);
   
   const renderTimeline = (entregasPagina: any[], paginaAtual: number) => (
     <div className="relative py-6">
-      {/* Linha horizontal principal */}
-      <div className="absolute top-1/2 left-0 right-0 h-1 bg-gradient-to-r from-[#1B365D] via-[#1B365D] to-[#1B365D] transform -translate-y-1/2 shadow-sm"></div>
+      {/* Timeline na parte inferior */}
+      <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-[#1B365D] via-[#1B365D] to-[#1B365D] shadow-sm"></div>
       
-      <div className="flex justify-between items-center min-h-[280px] relative">
+      <div className="flex justify-between items-end min-h-[280px] relative">
         {entregasPagina.map((entrega, index) => {
-          const isAbove = index % 2 === 0; // Alternar posição: pares acima, ímpares abaixo
+          const larguraBox = calcularLargura(entrega);
           
           return (
-            <div key={index} className="flex flex-col items-center relative z-10 w-full max-w-[280px]">
-              {/* Caixa de informação - acima ou abaixo com largura reduzida */}
-              <div className={`${isAbove ? 'order-1 mb-4' : 'order-3 mt-4'}`}>
-                <div className={`p-3 rounded-lg border-2 w-[270px] shadow-sm ${entrega.cor}`}>
+            <div key={index} className="flex flex-col items-center relative z-10" style={{ minWidth: larguraBox }}>
+              {/* Caixa de informação - sempre acima da linha */}
+              <div className="mb-4" style={{ width: larguraBox }}>
+                <div className={`p-2 rounded-lg border-2 shadow-sm ${entrega.cor}`} style={{ width: larguraBox }}>
                   {/* Data */}
-                  <div className="text-sm font-bold mb-2">
+                  <div className="text-xs font-bold mb-1 text-left">
                     {new Date(entrega.data).toLocaleDateString('pt-BR')}
                   </div>
                   
                   {/* Nome da entrega */}
-                  <div className="text-sm font-semibold mb-2">
+                  <div className="text-xs font-semibold mb-1 text-left leading-tight">
                     {entrega.titulo}
                   </div>
                   
-                  {/* Entregáveis - todos sem limite, fonte menor e espaçamento reduzido */}
+                  {/* Entregáveis - sem título "Entregáveis" */}
                   {entrega.entregaveis && (
-                    <div className="text-xs leading-tight mb-2">
+                    <div className="text-xs leading-tight mb-1 text-left">
                       <div className="space-y-0.5">
                         {entrega.entregaveis.split('\n').filter((item: string) => item.trim()).map((item: string, i: number) => (
                           <div key={i} className="leading-tight flex items-start">
@@ -111,7 +122,7 @@ export function TimelineEntregas({ projetos }: TimelineEntregasProps) {
                   
                   {/* Nome do projeto (se for timeline geral) */}
                   {projetos.length > 1 && (
-                    <div className="text-xs opacity-75 leading-tight font-medium">
+                    <div className="text-xs opacity-75 leading-tight font-medium text-left">
                       Projeto: {entrega.projeto}
                     </div>
                   )}
@@ -119,16 +130,16 @@ export function TimelineEntregas({ projetos }: TimelineEntregasProps) {
               </div>
               
               {/* Linha vertical conectora */}
-              <div className={`order-2 w-0.5 ${isAbove ? 'h-6' : 'h-6'} ${
+              <div className={`w-0.5 h-6 ${
                 entrega.tipo === 'marco1' ? 'bg-blue-500' :
                 entrega.tipo === 'marco2' ? 'bg-green-500' : 'bg-purple-500'
               }`}></div>
               
               {/* Ponto na timeline */}
-              <div className={`order-2 w-5 h-5 rounded-full bg-white border-3 ${
+              <div className={`w-4 h-4 rounded-full bg-white border-2 ${
                 entrega.tipo === 'marco1' ? 'border-blue-500' :
                 entrega.tipo === 'marco2' ? 'border-green-500' : 'border-purple-500'
-              } shadow-md ${isAbove ? '-mb-2.5' : '-mt-2.5'}`}></div>
+              } shadow-md -mb-2`}></div>
             </div>
           );
         })}

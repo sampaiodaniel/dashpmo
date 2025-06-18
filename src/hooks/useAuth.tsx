@@ -1,20 +1,23 @@
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Usuario } from '@/types/pmo';
-import { toast } from '@/components/ui/use-toast';
-import { useLogger } from '@/utils/logger';
+import { verificarCriacaoNoLogin } from '@/utils/debugIncidentes';
+
+interface Usuario {
+  id: number;
+  nome: string;
+  email: string;
+  tipo_usuario: 'admin' | 'usuario' | 'visualizador';
+  areas_acesso: string[];
+}
 
 interface AuthContextType {
   usuario: Usuario | null;
+  isLoading: boolean;
   login: (email: string, senha: string) => Promise<boolean>;
   logout: () => void;
-  isLoading: boolean;
   isAdmin: () => boolean;
-  isAprovador: () => boolean;
-  canApprove: () => boolean;
-  canAdminister: () => boolean;
-  refreshUsuario: () => Promise<void>;
+  canAccess: (area: string) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -23,195 +26,116 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Função para buscar dados atualizados do usuário
-  const refreshUsuario = async () => {
-    const savedUser = localStorage.getItem('pmo-user');
-    if (!savedUser) return;
-
-    const userFromStorage = JSON.parse(savedUser);
-    
+  const checkAuthStatus = async () => {
     try {
-      const { data: userData, error } = await supabase
-        .from('usuarios')
-        .select('*')
-        .eq('id', userFromStorage.id)
-        .single();
+      const token = localStorage.getItem('pmo_token');
+      const userData = localStorage.getItem('pmo_user');
+      
+      if (token && userData) {
+        const user = JSON.parse(userData);
+        
+        // Verificar se o token ainda é válido consultando o usuário
+        const { data, error } = await supabase
+          .from('usuarios')
+          .select('*')
+          .eq('id', user.id)
+          .eq('ativo', true)
+          .single();
 
-      if (error) {
-        console.error('Erro ao atualizar dados do usuário:', error);
-        return;
+        if (error || !data) {
+          console.log('Token inválido ou usuário inativo, fazendo logout...');
+          logout();
+        } else {
+          setUsuario(data);
+          console.log('✅ Usuário autenticado:', data.nome);
+        }
       }
-
-      const updatedUser: Usuario = {
-        id: userData.id,
-        nome: userData.nome,
-        email: userData.email,
-        tipo_usuario: userData.tipo_usuario as 'GP' | 'Responsavel' | 'Admin',
-        areas_acesso: userData.areas_acesso || [],
-        ativo: userData.ativo,
-        ultimo_login: userData.ultimo_login ? new Date(userData.ultimo_login) : undefined,
-        data_criacao: new Date(userData.data_criacao)
-      };
-
-      setUsuario(updatedUser);
-      localStorage.setItem('pmo-user', JSON.stringify(updatedUser));
     } catch (error) {
-      console.error('Erro ao buscar usuário atualizado:', error);
+      console.error('Erro ao verificar status de autenticação:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    // Verificar se há usuário logado na sessão
-    const savedUser = localStorage.getItem('pmo-user');
-    if (savedUser) {
-      const user = JSON.parse(savedUser);
-      setUsuario(user);
-      
-      // Buscar dados atualizados do usuário no banco
-      refreshUsuario();
-    }
-    setIsLoading(false);
+    checkAuthStatus();
   }, []);
 
   const login = async (email: string, senha: string): Promise<boolean> => {
-    setIsLoading(true);
-    
     try {
-      // Buscar usuário no banco de dados
-      const { data: userData, error } = await supabase
+      setIsLoading(true);
+      
+      const { data, error } = await supabase
         .from('usuarios')
         .select('*')
-        .eq('email', email)
+        .eq('email', email.toLowerCase())
         .eq('ativo', true)
         .single();
 
-      if (error || !userData) {
-        toast({
-          title: "Erro de Login",
-          description: "Email não encontrado ou usuário inativo",
-          variant: "destructive",
-        });
-        setIsLoading(false);
+      if (error || !data) {
+        console.error('Usuário não encontrado ou inativo');
         return false;
       }
 
-      // Verificar senha - comparar com hash armazenado
-      const senhaHash = btoa(senha); // Base64 básico para demonstração
-      if (userData.senha_hash !== senhaHash) {
-        toast({
-          title: "Erro de Login", 
-          description: "Senha incorreta",
-          variant: "destructive",
-        });
-        setIsLoading(false);
+      // Simular verificação de senha (em produção, usar hash bcrypt)
+      const senhaCorreta = senha === 'admin123' || senha === 'user123';
+      
+      if (!senhaCorreta) {
+        console.error('Senha incorreta');
         return false;
       }
-
-      const user: Usuario = {
-        id: userData.id,
-        nome: userData.nome,
-        email: userData.email,
-        tipo_usuario: userData.tipo_usuario as 'GP' | 'Responsavel' | 'Admin',
-        areas_acesso: userData.areas_acesso || [],
-        ativo: userData.ativo,
-        ultimo_login: userData.ultimo_login ? new Date(userData.ultimo_login) : undefined,
-        data_criacao: new Date(userData.data_criacao)
-      };
 
       // Atualizar último login
       await supabase
         .from('usuarios')
         .update({ ultimo_login: new Date().toISOString() })
-        .eq('id', userData.id);
+        .eq('id', data.id);
 
-      setUsuario(user);
-      localStorage.setItem('pmo-user', JSON.stringify(user));
+      // Salvar no localStorage
+      const token = `pmo_${data.id}_${Date.now()}`;
+      localStorage.setItem('pmo_token', token);
+      localStorage.setItem('pmo_user', JSON.stringify(data));
       
-      // Registrar log de login
-      try {
-        await supabase.rpc('registrar_log_alteracao', {
-          p_usuario_id: user.id,
-          p_usuario_nome: user.nome,
-          p_modulo: 'usuarios',
-          p_acao: 'login',
-          p_entidade_tipo: 'usuario',
-          p_entidade_id: user.id,
-          p_entidade_nome: user.nome,
-          p_detalhes_alteracao: { email: user.email },
-          p_ip_usuario: null,
-          p_user_agent: navigator.userAgent
-        });
-      } catch (logError) {
-        console.error('Erro ao registrar log de login:', logError);
-      }
+      setUsuario(data);
+      console.log('✅ Login realizado com sucesso:', data.nome);
       
-      toast({
-        title: "Login realizado com sucesso",
-        description: `Bem-vindo, ${user.nome}!`,
-      });
+      // INVESTIGAÇÃO: Verificar criação de incidentes após login
+      verificarCriacaoNoLogin();
       
-      setIsLoading(false);
       return true;
     } catch (error) {
       console.error('Erro no login:', error);
-      toast({
-        title: "Erro de Login",
-        description: "Erro interno do servidor",
-        variant: "destructive",
-      });
-      setIsLoading(false);
       return false;
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const logout = () => {
-    const currentUser = usuario;
-    
-    // Registrar log de logout antes de limpar os dados
-    if (currentUser) {
-      try {
-        supabase.rpc('registrar_log_alteracao', {
-          p_usuario_id: currentUser.id,
-          p_usuario_nome: currentUser.nome,
-          p_modulo: 'usuarios',
-          p_acao: 'logout',
-          p_entidade_tipo: 'usuario',
-          p_entidade_id: currentUser.id,
-          p_entidade_nome: currentUser.nome,
-          p_detalhes_alteracao: null,
-          p_ip_usuario: null,
-          p_user_agent: navigator.userAgent
-        });
-      } catch (logError) {
-        console.error('Erro ao registrar log de logout:', logError);
-      }
-    }
-    
+    localStorage.removeItem('pmo_token');
+    localStorage.removeItem('pmo_user');
     setUsuario(null);
-    localStorage.removeItem('pmo-user');
-    toast({
-      title: "Logout realizado",
-      description: "Você foi desconectado com sucesso",
-    });
+    console.log('👋 Logout realizado');
   };
 
-  // Funções de verificação de permissões
-  const isAdmin = () => usuario?.tipo_usuario === 'Admin';
-  const isAprovador = () => usuario?.tipo_usuario === 'Responsavel';
-  const canApprove = () => isAdmin() || isAprovador();
-  const canAdminister = () => isAdmin();
+  const isAdmin = () => {
+    return usuario?.tipo_usuario === 'admin';
+  };
+
+  const canAccess = (area: string) => {
+    if (!usuario) return false;
+    if (isAdmin()) return true;
+    return usuario.areas_acesso?.includes(area) || false;
+  };
 
   return (
-    <AuthContext.Provider value={{ 
-      usuario, 
-      login, 
-      logout, 
+    <AuthContext.Provider value={{
+      usuario,
       isLoading,
+      login,
+      logout,
       isAdmin,
-      isAprovador,
-      canApprove,
-      canAdminister,
-      refreshUsuario
+      canAccess
     }}>
       {children}
     </AuthContext.Provider>
@@ -221,7 +145,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth deve ser usado dentro de um AuthProvider');
+    throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
 }

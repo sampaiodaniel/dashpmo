@@ -18,7 +18,7 @@ export function useIncidentes() {
   return useQuery({
     queryKey: ['incidentes-recentes'],
     queryFn: async () => {
-      console.log('Buscando registros mais recentes por carteira...');
+      console.log('🔍 Buscando registros mais recentes por carteira...');
       
       const { data, error } = await supabase
         .from('incidentes')
@@ -26,11 +26,11 @@ export function useIncidentes() {
         .order('data_registro', { ascending: false });
 
       if (error) {
-        console.error('Erro ao buscar incidentes:', error);
+        console.error('❌ Erro ao buscar incidentes:', error);
         throw error;
       }
 
-      console.log('Todos os registros encontrados:', data);
+      console.log('📋 Todos os registros encontrados:', data);
 
       // Agrupar por carteira e pegar o mais recente de cada uma
       const registrosPorCarteira = new Map();
@@ -43,7 +43,7 @@ export function useIncidentes() {
       });
 
       const registrosRecentes = Array.from(registrosPorCarteira.values());
-      console.log('Registros mais recentes por carteira:', registrosRecentes);
+      console.log('📊 Registros mais recentes por carteira:', registrosRecentes);
       
       return registrosRecentes;
     },
@@ -56,12 +56,12 @@ export function useIncidenteOperations() {
 
   const criarIncidente = useMutation({
     mutationFn: async (data: IncidenteData & { criado_por: string }) => {
-      console.log('Criando novo registro de incidente:', data);
+      console.log('🆕 Criando novo registro de incidente:', data);
       
       // Verificar se já existe um registro para esta carteira e data
       const dataRegistro = data.data_registro || new Date().toISOString().split('T')[0];
       
-      console.log(`Verificando registros existentes para carteira: ${data.carteira} e data: ${dataRegistro}`);
+      console.log(`🔍 Verificando registros existentes para carteira: ${data.carteira} e data: ${dataRegistro}`);
       
       const { data: existente, error: checkError } = await supabase
         .from('incidentes')
@@ -70,12 +70,12 @@ export function useIncidenteOperations() {
         .eq('data_registro', dataRegistro);
 
       if (checkError) {
-        console.error('Erro ao verificar registros existentes:', checkError);
+        console.error('❌ Erro ao verificar registros existentes:', checkError);
         throw checkError;
       }
 
       if (existente && existente.length > 0) {
-        console.log('Registro existente encontrado:', existente);
+        console.log('⚠️ Registro existente encontrado:', existente);
         throw new Error(`Já existe um registro para a carteira ${data.carteira} na data ${dataRegistro}`);
       }
 
@@ -115,12 +115,12 @@ export function useIncidenteOperations() {
         .single();
 
       if (error) {
-        console.error('Erro ao criar incidente:', error);
+        console.error('❌ Erro ao criar incidente:', error);
         throw error;
       }
 
-      console.log('Incidente criado com sucesso:', result);
-      console.log(`Carteira: ${data.carteira}, Anterior: ${anteriorCalculado}, Entradas: ${data.entrada}, Saídas: ${data.saida}, Atual: ${atualCalculado}`);
+      console.log('✅ Incidente criado com sucesso:', result);
+      console.log(`📊 Carteira: ${data.carteira}, Anterior: ${anteriorCalculado}, Entradas: ${data.entrada}, Saídas: ${data.saida}, Atual: ${atualCalculado}`);
       
       return result;
     },
@@ -133,7 +133,7 @@ export function useIncidenteOperations() {
       });
     },
     onError: (error: Error) => {
-      console.error('Erro ao criar incidente:', error);
+      console.error('❌ Erro ao criar incidente:', error);
       toast({
         title: "Erro",
         description: error.message || "Erro ao criar registro de incidente. Tente novamente.",
@@ -144,7 +144,7 @@ export function useIncidenteOperations() {
 
   const editarIncidente = useMutation({
     mutationFn: async (data: { id: number } & Partial<IncidenteData>) => {
-      console.log('Editando registro de incidente:', data);
+      console.log('✏️ Editando registro de incidente:', data);
       
       const { data: result, error } = await supabase
         .from('incidentes')
@@ -163,11 +163,11 @@ export function useIncidenteOperations() {
         .single();
 
       if (error) {
-        console.error('Erro ao editar incidente:', error);
+        console.error('❌ Erro ao editar incidente:', error);
         throw error;
       }
 
-      console.log('Incidente editado com sucesso:', result);
+      console.log('✅ Incidente editado com sucesso:', result);
       return result;
     },
     onSuccess: () => {
@@ -179,7 +179,7 @@ export function useIncidenteOperations() {
       });
     },
     onError: (error: Error) => {
-      console.error('Erro ao editar incidente:', error);
+      console.error('❌ Erro ao editar incidente:', error);
       toast({
         title: "Erro",
         description: error.message || "Erro ao editar registro de incidente. Tente novamente.",
@@ -190,7 +190,7 @@ export function useIncidenteOperations() {
 
   const excluirIncidente = useMutation({
     mutationFn: async (id: number) => {
-      console.log('Excluindo registro de incidente com ID:', id);
+      console.log('🗑️ Excluindo registro de incidente com ID:', id);
       
       // Primeiro verificar se o registro existe
       const { data: existing, error: checkError } = await supabase
@@ -200,11 +200,11 @@ export function useIncidenteOperations() {
         .single();
 
       if (checkError) {
-        console.error('Erro ao verificar registro existente:', checkError);
+        console.error('❌ Erro ao verificar registro existente:', checkError);
         throw checkError;
       }
 
-      console.log('Registro a ser excluído:', existing);
+      console.log('📋 Registro a ser excluído:', existing);
 
       const { error } = await supabase
         .from('incidentes')
@@ -212,11 +212,11 @@ export function useIncidenteOperations() {
         .eq('id', id);
 
       if (error) {
-        console.error('Erro ao excluir incidente:', error);
+        console.error('❌ Erro ao excluir incidente:', error);
         throw error;
       }
 
-      console.log('Incidente excluído com sucesso. ID:', id);
+      console.log('✅ Incidente excluído com sucesso. ID:', id);
       
       // Verificar se realmente foi excluído
       const { data: verification } = await supabase
@@ -225,11 +225,11 @@ export function useIncidenteOperations() {
         .eq('id', id);
 
       if (verification && verification.length > 0) {
-        console.error('Registro ainda existe após tentativa de exclusão!');
+        console.error('⚠️ Registro ainda existe após tentativa de exclusão!');
         throw new Error('Falha na exclusão do registro');
       }
 
-      console.log('Exclusão verificada com sucesso');
+      console.log('✅ Exclusão verificada com sucesso');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['incidentes-recentes'] });
@@ -240,7 +240,7 @@ export function useIncidenteOperations() {
       });
     },
     onError: (error: Error) => {
-      console.error('Erro ao excluir incidente:', error);
+      console.error('❌ Erro ao excluir incidente:', error);
       toast({
         title: "Erro",
         description: error.message || "Erro ao excluir registro de incidente. Tente novamente.",
