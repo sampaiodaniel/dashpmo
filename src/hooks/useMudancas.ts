@@ -17,6 +17,17 @@ const tipoMudancaMap: Record<TipoMudanca, string> = {
   'Replanejamento Cronograma': 'Replanejamento Cronograma'
 };
 
+// Tipos aceitos pelo banco (enum values)
+const validTipoMudanca = [
+  'Correção Bug',
+  'Melhoria', 
+  'Mudança Escopo',
+  'Novo Requisito',
+  'Replanejamento Cronograma'
+] as const;
+
+type ValidTipoMudanca = typeof validTipoMudanca[number];
+
 export function useMudancas() {
   return useQuery({
     queryKey: ['mudancas-replanejamento'],
@@ -52,9 +63,15 @@ export function useMudancasOperations() {
       // Preparar dados limpos para inserção, removendo propriedades que não pertencem à tabela
       const { projeto, ...cleanData } = mudancaData;
       
+      // Mapear e validar tipo_mudanca
+      const mappedTipo = tipoMudancaMap[cleanData.tipo_mudanca] || cleanData.tipo_mudanca;
+      const validatedTipo = validTipoMudanca.includes(mappedTipo as ValidTipoMudanca) 
+        ? mappedTipo as ValidTipoMudanca
+        : 'Novo Requisito' as ValidTipoMudanca;
+      
       const dataToInsert = {
         ...cleanData,
-        tipo_mudanca: tipoMudancaMap[cleanData.tipo_mudanca] || cleanData.tipo_mudanca,
+        tipo_mudanca: validatedTipo,
         data_solicitacao: cleanData.data_solicitacao instanceof Date 
           ? cleanData.data_solicitacao.toISOString().split('T')[0]
           : cleanData.data_solicitacao,
@@ -108,7 +125,11 @@ export function useMudancasOperations() {
       const dataToUpdate: any = { ...cleanUpdates };
       
       if (cleanUpdates.tipo_mudanca) {
-        dataToUpdate.tipo_mudanca = tipoMudancaMap[cleanUpdates.tipo_mudanca] || cleanUpdates.tipo_mudanca;
+        const mappedTipo = tipoMudancaMap[cleanUpdates.tipo_mudanca] || cleanUpdates.tipo_mudanca;
+        const validatedTipo = validTipoMudanca.includes(mappedTipo as ValidTipoMudanca) 
+          ? mappedTipo as ValidTipoMudanca
+          : 'Novo Requisito' as ValidTipoMudanca;
+        dataToUpdate.tipo_mudanca = validatedTipo;
       }
       
       if (cleanUpdates.data_solicitacao) {
