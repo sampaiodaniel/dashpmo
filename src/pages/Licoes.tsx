@@ -2,10 +2,11 @@
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
-import { LicoesHeader } from '@/components/licoes/LicoesHeader';
 import { LicoesList } from '@/components/licoes/LicoesList';
 import { LicoesMetricas } from '@/components/licoes/LicoesMetricas';
 import { useLicoesAprendidas } from '@/hooks/useLicoesAprendidas';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
 
 export default function Licoes() {
   const { usuario, isLoading } = useAuth();
@@ -47,9 +48,18 @@ export default function Licoes() {
   return (
     <Layout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold text-pmo-primary">Lições Aprendidas</h1>
-          <p className="text-pmo-gray mt-2">Gestão de conhecimento e aprendizados dos projetos</p>
+        <div className="flex items-center justify-between">
+          <div className="text-left">
+            <h1 className="text-3xl font-bold text-pmo-primary">Lições Aprendidas</h1>
+            <p className="text-pmo-gray mt-2">Gestão de conhecimento e aprendizados dos projetos</p>
+          </div>
+          <Button 
+            onClick={handleNovaLicao}
+            className="bg-pmo-primary hover:bg-pmo-primary/90"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Nova Lição
+          </Button>
         </div>
 
         <LicoesMetricas 
@@ -57,7 +67,6 @@ export default function Licoes() {
           boasPraticas={boasPraticas}
           pontosAtencao={pontosAtencao}
         />
-        <LicoesHeader onNovaLicao={handleNovaLicao} />
         <LicoesList licoes={licoes || []} />
       </div>
     </Layout>

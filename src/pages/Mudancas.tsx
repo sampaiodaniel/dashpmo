@@ -2,10 +2,12 @@
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
-import { MudancasHeader } from '@/components/mudancas/MudancasHeader';
 import { MudancasList } from '@/components/mudancas/MudancasList';
 import { MudancasMetricas } from '@/components/mudancas/MudancasMetricas';
 import { useMudancas } from '@/hooks/useMudancas';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export default function Mudancas() {
   const { usuario, isLoading } = useAuth();
@@ -35,13 +37,20 @@ export default function Mudancas() {
   return (
     <Layout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold text-pmo-primary">Replanejamento / CRs</h1>
-          <p className="text-pmo-gray mt-2">Gestão de mudanças e replanejamentos de projetos</p>
+        <div className="flex items-center justify-between">
+          <div className="text-left">
+            <h1 className="text-3xl font-bold text-pmo-primary">Replanejamento / CRs</h1>
+            <p className="text-pmo-gray mt-2">Gestão de mudanças e replanejamentos de projetos</p>
+          </div>
+          <Link to="/nova-mudanca">
+            <Button className="bg-pmo-primary hover:bg-pmo-primary/90">
+              <Plus className="h-4 w-4 mr-2" />
+              Nova Mudança
+            </Button>
+          </Link>
         </div>
 
         <MudancasMetricas mudancas={mudancas} />
-        <MudancasHeader onMudancaCriada={handleMudancaCriada} />
         <MudancasList mudancas={mudancas || []} />
       </div>
     </Layout>

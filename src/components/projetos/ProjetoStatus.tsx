@@ -94,7 +94,7 @@ export function ProjetoStatus({ projeto }: ProjetoStatusProps) {
         </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div>
           <h3 className="font-medium text-pmo-gray mb-2">Status Geral</h3>
           <Badge className={getStatusGeralColor(ultimoStatus.status_geral)}>
