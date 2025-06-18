@@ -10,7 +10,7 @@ import { useNovoStatusForm } from '@/hooks/useNovoStatusForm';
 import { ProjetoInformacaoSection } from '@/components/forms/status/ProjetoInformacaoSection';
 import { StatusInformacaoSection } from '@/components/forms/status/StatusInformacaoSection';
 import { DetalhesStatusSection } from '@/components/forms/status/DetalhesStatusSection';
-import { ProximasEntregasForm } from '@/components/forms/status/ProximasEntregasForm';
+import { EntregasDinamicasNovo } from '@/components/forms/EntregasDinamicasNovo';
 import { calcularMatrizRisco } from '@/utils/riskMatrixCalculator';
 
 export default function NovoStatus() {
@@ -22,6 +22,8 @@ export default function NovoStatus() {
     projetoSelecionado,
     carteiraSelecionada,
     progressoEstimado,
+    entregas,
+    setEntregas,
     handleCarteiraChange,
     handleProjetoChange,
     handleProgressoChange
@@ -37,7 +39,11 @@ export default function NovoStatus() {
       <div className="min-h-screen bg-pmo-background flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 bg-pmo-primary rounded-xl flex items-center justify-center mx-auto mb-4">
-            <span className="text-white font-bold text-xl">PMO</span>
+            <img 
+              src="/lovable-uploads/fdc350e6-9710-407a-8086-69dd3e7945bb.png" 
+              alt="DashPMO" 
+              className="h-8 w-8"
+            />
           </div>
           <div className="text-pmo-gray">Carregando...</div>
         </div>
@@ -83,7 +89,11 @@ export default function NovoStatus() {
 
             <DetalhesStatusSection form={form} />
 
-            <ProximasEntregasForm form={form} />
+            <EntregasDinamicasNovo
+              form={form}
+              entregas={entregas}
+              onEntregasChange={setEntregas}
+            />
 
             <div className="flex justify-end">
               <Button 

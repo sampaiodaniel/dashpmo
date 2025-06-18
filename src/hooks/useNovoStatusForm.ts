@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import { useState } from 'react';
 import { useLogger } from '@/utils/logger';
+import { EntregaDinamica } from '@/components/forms/EntregasDinamicasNovo';
 
 const statusFormSchema = z.object({
   projeto_id: z.number().min(1, "Projeto é obrigatório"),
@@ -29,15 +30,6 @@ const statusFormSchema = z.object({
   backlog: z.string().optional(),
   bloqueios_atuais: z.string().optional(),
   observacoes_gerais: z.string().optional(),
-  marco1_nome: z.string().min(1, "Nome da primeira entrega é obrigatório"),
-  marco1_data: z.string().optional(),
-  marco1_responsavel: z.string().min(1, "Entregáveis da primeira entrega são obrigatórios"),
-  marco2_nome: z.string().optional(),
-  marco2_data: z.string().optional(),
-  marco2_responsavel: z.string().optional(),
-  marco3_nome: z.string().optional(),
-  marco3_data: z.string().optional(),
-  marco3_responsavel: z.string().optional(),
 });
 
 type StatusFormData = z.infer<typeof statusFormSchema>;
@@ -51,6 +43,9 @@ export function useNovoStatusForm() {
   const [carteiraSelecionada, setCarteiraSelecionada] = useState('');
   const [projetoSelecionado, setProjetoSelecionado] = useState<number | null>(null);
   const [progressoEstimado, setProgressoEstimado] = useState(0);
+  const [entregas, setEntregas] = useState<EntregaDinamica[]>([
+    { id: '1', nome: '', data: '', entregaveis: '' }
+  ]);
 
   const form = useForm<StatusFormData>({
     resolver: zodResolver(statusFormSchema),
@@ -60,15 +55,6 @@ export function useNovoStatusForm() {
       backlog: '',
       bloqueios_atuais: '',
       observacoes_gerais: '',
-      marco1_nome: '',
-      marco1_data: '',
-      marco1_responsavel: '',
-      marco2_nome: '',
-      marco2_data: '',
-      marco2_responsavel: '',
-      marco3_nome: '',
-      marco3_data: '',
-      marco3_responsavel: '',
     },
   });
 
@@ -76,6 +62,12 @@ export function useNovoStatusForm() {
     mutationFn: async (data: StatusFormData) => {
       if (!usuario || !projetoSelecionado) {
         throw new Error('Usuário não autenticado ou projeto não selecionado');
+      }
+
+      // Validar primeira entrega
+      const primeiraEntrega = entregas[0];
+      if (!primeiraEntrega?.nome || !primeiraEntrega?.entregaveis) {
+        throw new Error('A primeira entrega é obrigatória');
       }
 
       console.log('📝 Criando status:', data);
@@ -103,15 +95,15 @@ export function useNovoStatusForm() {
         backlog: data.backlog || null,
         bloqueios_atuais: data.bloqueios_atuais || null,
         observacoes_pontos_atencao: data.observacoes_gerais || null,
-        entrega1: data.marco1_nome,
-        data_marco1: data.marco1_data === 'TBD' ? null : (data.marco1_data || null),
-        entregaveis1: data.marco1_responsavel,
-        entrega2: data.marco2_nome || null,
-        data_marco2: data.marco2_data === 'TBD' ? null : (data.marco2_data || null),
-        entregaveis2: data.marco2_responsavel || null,
-        entrega3: data.marco3_nome || null,
-        data_marco3: data.marco3_data === 'TBD' ? null : (data.marco3_data || null),
-        entregaveis3: data.marco3_responsavel || null,
+        entrega1: entregas[0]?.nome || null,
+        data_marco1: entregas[0]?.data || null,
+        entregaveis1: entregas[0]?.entregaveis || null,
+        entrega2: entregas[1]?.nome || null,
+        data_marco2: entregas[1]?.data || null,
+        entregaveis2: entregas[1]?.entregaveis || null,
+        entrega3: entregas[2]?.nome || null,
+        data_marco3: entregas[2]?.data || null,
+        entregaveis3: entregas[2]?.entregaveis || null,
         criado_por: usuario.nome,
         responsavel_asa: projeto.responsavel_asa,
         responsavel_cwi: projeto.responsavel_cwi,
@@ -134,6 +126,24 @@ export function useNovoStatusForm() {
 
       console.log('✅ Status criado com sucesso:', novoStatus);
 
+      // Salvar entregas extras se houver
+      if (entregas.length > 3) {
+        const entregasExtras = entregas.slice(3);
+        for (const entrega of entregasExtras) {
+          if (entrega.nome) {
+            await supabase
+              .from('entregas_status')
+              .insert({
+                status_id: novoStatus.id,
+                nome_entrega: entrega.nome,
+                data_entrega: entrega.data || null,
+                entregaveis: entrega.entregaveis,
+                ordem: entregas.indexOf(entrega) + 1
+              });
+          }
+        }
+      }
+
       // Registrar log da criação
       log(
         'status',
@@ -144,7 +154,8 @@ export function useNovoStatusForm() {
         {
           status_geral: novoStatus.status_geral,
           status_visao_gp: novoStatus.status_visao_gp,
-          progresso_estimado: novoStatus.progresso_estimado
+          progresso_estimado: novoStatus.progresso_estimado,
+          total_entregas: entregas.length
         }
       );
 
@@ -163,7 +174,7 @@ export function useNovoStatusForm() {
       console.error('Erro ao criar status:', error);
       toast({
         title: "Erro",
-        description: "Erro ao criar status. Tente novamente.",
+        description: error.message || "Erro ao criar status. Tente novamente.",
         variant: "destructive",
       });
     },
@@ -196,6 +207,8 @@ export function useNovoStatusForm() {
     projetoSelecionado,
     carteiraSelecionada,
     progressoEstimado,
+    entregas,
+    setEntregas,
     handleCarteiraChange,
     handleProjetoChange,
     handleProgressoChange,

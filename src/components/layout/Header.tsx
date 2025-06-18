@@ -48,6 +48,15 @@ export function Header({ onToggleSidebar }: HeaderProps) {
         >
           <Menu className="h-5 w-5" />
         </Button>
+        
+        <div className="flex items-center gap-2">
+          <img 
+            src="/lovable-uploads/fdc350e6-9710-407a-8086-69dd3e7945bb.png" 
+            alt="DashPMO" 
+            className="h-8 w-8"
+          />
+          <span className="text-lg font-bold text-pmo-primary">DashPMO</span>
+        </div>
       </div>
 
       <div className="flex items-center gap-4">
