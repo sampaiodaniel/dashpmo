@@ -97,9 +97,17 @@ export function ProjetoDetalhes({ projeto }: ProjetoDetalhesProps) {
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-0 pb-3">
-            <p className="text-xs text-[#6B7280] leading-tight">
-              {ultimoStatus.observacoes_pontos_atencao || 'Nenhum ponto de atenção reportado'}
-            </p>
+            <div className="space-y-1">
+              {ultimoStatus.observacoes_pontos_atencao ? 
+                ultimoStatus.observacoes_pontos_atencao.split('\n').map((item: string, i: number) => (
+                  <div key={i} className="text-xs text-[#6B7280] leading-tight">
+                    <span className="font-medium text-[#F59E0B] mr-2">⚠️</span>
+                    <span>{item.trim()}</span>
+                  </div>
+                )) : 
+                <p className="text-xs text-[#6B7280] leading-tight">Nenhum ponto de atenção reportado</p>
+              }
+            </div>
           </CardContent>
         </Card>
 
@@ -111,9 +119,17 @@ export function ProjetoDetalhes({ projeto }: ProjetoDetalhesProps) {
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-0 pb-3">
-            <p className="text-xs text-[#6B7280] leading-tight">
-              {ultimoStatus.backlog || 'Nenhum item de backlog reportado'}
-            </p>
+            <div className="space-y-1">
+              {ultimoStatus.backlog ? 
+                ultimoStatus.backlog.split('\n').map((item: string, i: number) => (
+                  <div key={i} className="text-xs text-[#6B7280] leading-tight">
+                    <span className="font-medium text-[#6B7280] mr-2">→</span>
+                    <span>{item.trim()}</span>
+                  </div>
+                )) : 
+                <p className="text-xs text-[#6B7280] leading-tight">Nenhum item de backlog reportado</p>
+              }
+            </div>
           </CardContent>
         </Card>
       </div>

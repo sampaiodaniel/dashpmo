@@ -64,54 +64,75 @@ export function TimelineEntregas({ projetos }: TimelineEntregasProps) {
     );
   }
 
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Timeline de Entregas - Diagrama Sequencial</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="relative">
-          {/* Linha horizontal principal */}
-          <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gray-300 transform -translate-y-1/2"></div>
+  // Dividir entregas em páginas se necessário (máximo 10 por página)
+  const entregasPorPagina = 10;
+  const totalPaginas = Math.ceil(entregas.length / entregasPorPagina);
+  
+  const renderTimeline = (entregasPagina: any[], paginaAtual: number) => (
+    <div className="relative py-8">
+      {/* Linha horizontal principal */}
+      <div className="absolute top-1/2 left-0 right-0 h-1 bg-gradient-to-r from-[#1B365D] via-[#1B365D] to-[#1B365D] transform -translate-y-1/2 shadow-sm"></div>
+      
+      <div className="flex justify-between items-center min-h-[200px] relative">
+        {entregasPagina.map((entrega, index) => {
+          const isAbove = index % 2 === 0; // Alternar posição: pares acima, ímpares abaixo
           
-          <div className="flex justify-between items-center min-h-[120px] relative">
-            {entregas.slice(0, 8).map((entrega, index) => (
-              <div key={index} className="flex flex-col items-center relative z-10">
-                {/* Ponto na timeline */}
-                <div className={`w-4 h-4 rounded-full bg-white border-4 ${
-                  entrega.tipo === 'marco1' ? 'border-blue-500' :
-                  entrega.tipo === 'marco2' ? 'border-green-500' : 'border-purple-500'
-                } mb-2`}></div>
-                
-                {/* Caixa de informação */}
-                <div className={`p-2 rounded-lg border-2 max-w-[120px] text-center ${entrega.cor}`}>
+          return (
+            <div key={index} className="flex flex-col items-center relative z-10 w-full max-w-[180px]">
+              {/* Caixa de informação - acima ou abaixo */}
+              <div className={`${isAbove ? 'order-1 mb-4' : 'order-3 mt-4'}`}>
+                <div className={`p-3 rounded-lg border-2 max-w-[160px] text-center shadow-sm ${entrega.cor}`}>
                   <div className="text-xs font-bold mb-1">
                     {new Date(entrega.data).toLocaleDateString('pt-BR')}
                   </div>
-                  <div className="text-xs font-medium truncate" title={entrega.titulo}>
+                  <div className="text-xs font-medium leading-tight mb-1" title={entrega.titulo}>
                     {entrega.titulo}
                   </div>
-                  <div className="text-xs opacity-75 truncate" title={entrega.projeto}>
-                    {entrega.projeto}
+                  <div className="text-xs opacity-75 leading-tight" title={entrega.projeto}>
+                    {entrega.projeto.length > 20 ? entrega.projeto.substring(0, 20) + '...' : entrega.projeto}
                   </div>
                 </div>
-                
-                {/* Linha vertical conectora */}
-                <div className={`w-0.5 h-6 mt-2 ${
-                  entrega.tipo === 'marco1' ? 'bg-blue-500' :
-                  entrega.tipo === 'marco2' ? 'bg-green-500' : 'bg-purple-500'
-                }`}></div>
               </div>
-            ))}
-          </div>
-          
-          {entregas.length > 8 && (
-            <div className="text-center mt-4 text-sm text-gray-500">
-              E mais {entregas.length - 8} entregas...
+              
+              {/* Linha vertical conectora */}
+              <div className={`order-2 w-0.5 ${isAbove ? 'h-8' : 'h-8'} ${
+                entrega.tipo === 'marco1' ? 'bg-blue-500' :
+                entrega.tipo === 'marco2' ? 'bg-green-500' : 'bg-purple-500'
+              }`}></div>
+              
+              {/* Ponto na timeline */}
+              <div className={`order-2 w-6 h-6 rounded-full bg-white border-4 ${
+                entrega.tipo === 'marco1' ? 'border-blue-500' :
+                entrega.tipo === 'marco2' ? 'border-green-500' : 'border-purple-500'
+              } shadow-md ${isAbove ? '-mb-3' : '-mt-3'}`}></div>
             </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+          );
+        })}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="space-y-6">
+      {Array.from({ length: totalPaginas }, (_, i) => {
+        const inicio = i * entregasPorPagina;
+        const fim = inicio + entregasPorPagina;
+        const entregasPagina = entregas.slice(inicio, fim);
+        
+        return (
+          <Card key={i}>
+            <CardHeader>
+              <CardTitle>
+                Timeline de Entregas
+                {totalPaginas > 1 && ` - Página ${i + 1} de ${totalPaginas}`}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {renderTimeline(entregasPagina, i + 1)}
+            </CardContent>
+          </Card>
+        );
+      })}
+    </div>
   );
 }
