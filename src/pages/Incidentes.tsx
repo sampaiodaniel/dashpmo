@@ -6,8 +6,6 @@ import { IncidentesHeader } from '@/components/incidentes/IncidentesHeader';
 import { IncidentesMetricas } from '@/components/incidentes/IncidentesMetricas';
 import { TabelaIncidentesRecentes } from '@/components/incidentes/TabelaIncidentesRecentes';
 import { GraficoEvolutivoIncidentes } from '@/components/incidentes/GraficoEvolutivoIncidentes';
-import { IncidentesFilters } from '@/components/incidentes/IncidentesFilters';
-import { IncidentesCarteiraFilter } from '@/components/incidentes/IncidentesCarteiraFilter';
 import { IncidentesFiltersCompact } from '@/components/incidentes/IncidentesFiltersCompact';
 import { useIncidentes } from '@/hooks/useIncidentes';
 import { useEffect, useState } from 'react';
@@ -17,15 +15,11 @@ export default function Incidentes() {
   const { usuario, isLoading } = useAuth();
   const { data: incidentes, isLoading: isLoadingIncidentes } = useIncidentes();
   
-  // Filtros para a tabela
-  const [responsavelTabelaSelecionado, setResponsavelTabelaSelecionado] = useState('todos');
-  const [carteiraTabelaSelecionada, setCarteiraTabelaSelecionada] = useState('todas');
-  
-  // Filtros para o gráfico
-  const [carteiraGraficoSelecionada, setCarteiraGraficoSelecionada] = useState('todas');
+  // Filtros únicos para toda a página
+  const [responsavelSelecionado, setResponsavelSelecionado] = useState('todos');
+  const [carteiraSelecionada, setCarteiraSelecionada] = useState('todas');
 
   useEffect(() => {
-    // Inserir dados históricos se necessário
     if (usuario) {
       seedIncidentesCanais();
     }
@@ -54,7 +48,6 @@ export default function Incidentes() {
       return { criticos: 0, emAndamento: 0, resolvidos: 0, total: 0 };
     }
 
-    // Somar os valores de todos os registros mais recentes por carteira
     const criticos = incidentes.reduce((sum, inc) => sum + (inc.criticos || 0), 0);
     const emAndamento = incidentes.reduce((sum, inc) => sum + (inc.atual || 0), 0);
     const resolvidos = incidentes.reduce((sum, inc) => sum + (inc.saida || 0), 0);
@@ -68,7 +61,10 @@ export default function Incidentes() {
   return (
     <Layout>
       <div className="space-y-6">
-        <IncidentesHeader />
+        <div>
+          <h1 className="text-3xl font-bold text-pmo-primary">Incidentes</h1>
+          <p className="text-pmo-gray mt-2">Gestão e acompanhamento de incidentes</p>
+        </div>
         
         <IncidentesMetricas 
           criticos={metricas.criticos}
@@ -78,23 +74,21 @@ export default function Incidentes() {
         />
 
         <IncidentesFiltersCompact
-          responsavelSelecionado={responsavelTabelaSelecionado}
-          carteiraSelecionada={carteiraTabelaSelecionada}
-          onResponsavelChange={setResponsavelTabelaSelecionado}
-          onCarteiraChange={setCarteiraTabelaSelecionada}
+          responsavelSelecionado={responsavelSelecionado}
+          carteiraSelecionada={carteiraSelecionada}
+          onResponsavelChange={setResponsavelSelecionado}
+          onCarteiraChange={setCarteiraSelecionada}
         />
         
         <TabelaIncidentesRecentes 
-          carteiraSelecionada={carteiraTabelaSelecionada}
-          responsavelSelecionado={responsavelTabelaSelecionado}
+          carteiraSelecionada={carteiraSelecionada}
+          responsavelSelecionado={responsavelSelecionado}
         />
 
-        <IncidentesCarteiraFilter
-          carteiraSelecionada={carteiraGraficoSelecionada}
-          onCarteiraChange={setCarteiraGraficoSelecionada}
+        <GraficoEvolutivoIncidentes 
+          carteiraFiltro={carteiraSelecionada}
+          responsavelFiltro={responsavelSelecionado}
         />
-
-        <GraficoEvolutivoIncidentes carteiraFiltro={carteiraGraficoSelecionada} />
       </div>
     </Layout>
   );

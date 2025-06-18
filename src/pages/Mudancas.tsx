@@ -1,27 +1,25 @@
 
-import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
 import { MudancasHeader } from '@/components/mudancas/MudancasHeader';
-import { MudancasMetricas } from '@/components/mudancas/MudancasMetricas';
 import { MudancasList } from '@/components/mudancas/MudancasList';
-import { MudancasFilters } from '@/components/mudancas/MudancasFilters';
-import { MudancasSearchBar } from '@/components/mudancas/MudancasSearchBar';
-import { useMudancasList } from '@/hooks/useMudancasList';
-import { useMudancasFiltradas, MudancasFilters as MudancasFiltersType } from '@/hooks/useMudancasFiltradas';
-import { Loading } from '@/components/ui/loading';
+import { MudancasMetricas } from '@/components/mudancas/MudancasMetricas';
 
 export default function Mudancas() {
   const { usuario, isLoading } = useAuth();
-  const { data: mudancas, isLoading: isLoadingMudancas } = useMudancasList();
-  const [filtros, setFiltros] = useState<MudancasFiltersType>({});
-  const [termoBusca, setTermoBusca] = useState('');
-  
-  const mudancasFiltradas = useMudancasFiltradas(mudancas, filtros, termoBusca);
 
   if (isLoading) {
-    return <Loading />;
+    return (
+      <div className="min-h-screen bg-pmo-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-pmo-primary rounded-xl flex items-center justify-center mx-auto mb-4">
+            <span className="text-white font-bold text-xl">DashPMO</span>
+          </div>
+          <div className="text-pmo-gray">Carregando...</div>
+        </div>
+      </div>
+    );
   }
 
   if (!usuario) {
@@ -31,32 +29,14 @@ export default function Mudancas() {
   return (
     <Layout>
       <div className="space-y-6">
-        <MudancasHeader onMudancaCriada={() => {}} />
-        
-        <MudancasMetricas 
-          mudancas={mudancas || []}
-          onFiltrarPendentes={() => {}}
-          onFiltrarEmAnalise={() => {}}
-        />
+        <div>
+          <h1 className="text-3xl font-bold text-pmo-primary">Replanejamento / CRs</h1>
+          <p className="text-pmo-gray mt-2">Gestão de mudanças e replanejamentos de projetos</p>
+        </div>
 
-        <MudancasFilters 
-          filtros={filtros}
-          onFiltrosChange={setFiltros}
-        />
-
-        <MudancasSearchBar
-          termoBusca={termoBusca}
-          onTermoBuscaChange={setTermoBusca}
-          totalResults={mudancasFiltradas.length}
-        />
-
-        {isLoadingMudancas ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="text-pmo-gray">Carregando mudanças...</div>
-          </div>
-        ) : (
-          <MudancasList mudancas={mudancasFiltradas} />
-        )}
+        <MudancasMetricas />
+        <MudancasHeader />
+        <MudancasList />
       </div>
     </Layout>
   );

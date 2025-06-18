@@ -1,70 +1,59 @@
 
-import { BarChart3, Clock, CheckCircle } from "lucide-react";
+import { useStatusFiltroMetricas } from '@/hooks/useStatusFiltroMetricas';
+import { CheckCircle, Clock, AlertCircle } from 'lucide-react';
 
-interface StatusAprovacaoMetricasProps {
-  totalStatus: number;
-  statusPendentes: number;
-  statusRevisados: number;
-  filtroAtivo: string | null;
-  onFiltroClick: (tipo: string) => void;
-}
+export function StatusAprovacaoMetricas() {
+  const { metricas, isLoading } = useStatusFiltroMetricas();
 
-export function StatusAprovacaoMetricas({ 
-  totalStatus, 
-  statusPendentes, 
-  statusRevisados,
-  filtroAtivo,
-  onFiltroClick 
-}: StatusAprovacaoMetricasProps) {
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="bg-white rounded-lg border border-gray-200 p-6 animate-pulse">
+            <div className="h-4 bg-gray-200 rounded mb-2"></div>
+            <div className="h-8 bg-gray-200 rounded"></div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (!metricas) return null;
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-      <div 
-        className={`cursor-pointer transition-all ${filtroAtivo === 'totalStatus' ? 'ring-2 ring-pmo-primary' : ''}`}
-        onClick={() => onFiltroClick('totalStatus')}
-      >
-        <div className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-pmo-gray">Total de Status</p>
-              <p className="text-2xl font-bold text-pmo-primary">{totalStatus}</p>
-            </div>
-            <div className="p-2 bg-pmo-primary/10 rounded-lg">
-              <BarChart3 className="h-5 w-5 text-pmo-primary" />
-            </div>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <p className="text-sm font-medium text-pmo-gray">Total de Status</p>
+            <p className="text-3xl font-bold text-pmo-primary">{metricas.total}</p>
+          </div>
+          <div className="p-3 bg-pmo-primary/10 rounded-lg">
+            <AlertCircle className="h-6 w-6 text-pmo-primary" />
           </div>
         </div>
       </div>
 
-      <div 
-        className={`cursor-pointer transition-all ${filtroAtivo === 'statusPendentes' ? 'ring-2 ring-pmo-primary' : ''}`}
-        onClick={() => onFiltroClick('statusPendentes')}
-      >
-        <div className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-pmo-gray">Em Revisão</p>
-              <p className="text-2xl font-bold text-pmo-warning">{statusPendentes}</p>
-            </div>
-            <div className="p-2 bg-pmo-warning/10 rounded-lg">
-              <Clock className="h-5 w-5 text-pmo-warning" />
-            </div>
+      <div className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <p className="text-sm font-medium text-pmo-gray">Não Revisados</p>
+            <p className="text-3xl font-bold text-yellow-600">{metricas.naoRevisados}</p>
+          </div>
+          <div className="p-3 bg-yellow-50 rounded-lg">
+            <Clock className="h-6 w-6 text-yellow-600" />
           </div>
         </div>
       </div>
 
-      <div 
-        className={`cursor-pointer transition-all ${filtroAtivo === 'statusRevisados' ? 'ring-2 ring-pmo-primary' : ''}`}
-        onClick={() => onFiltroClick('statusRevisados')}
-      >
-        <div className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-pmo-gray">Revisados</p>
-              <p className="text-2xl font-bold text-pmo-success">{statusRevisados}</p>
-            </div>
-            <div className="p-2 bg-pmo-success/10 rounded-lg">
-              <CheckCircle className="h-5 w-5 text-pmo-success" />
-            </div>
+      <div className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <p className="text-sm font-medium text-pmo-gray">Revisados</p>
+            <p className="text-3xl font-bold text-green-600">{metricas.revisados}</p>
+          </div>
+          <div className="p-3 bg-green-50 rounded-lg">
+            <CheckCircle className="h-6 w-6 text-green-600" />
           </div>
         </div>
       </div>
