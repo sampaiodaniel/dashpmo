@@ -1,3 +1,4 @@
+
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
@@ -32,8 +33,19 @@ export default function Licoes() {
   };
 
   const totalLicoes = licoes?.length || 0;
-  const boasPraticas = licoes?.filter(l => l.categoria_licao === 'Boa Prática').length || 0;
-  const pontosAtencao = licoes?.filter(l => l.categoria_licao === 'Ponto de Atenção').length || 0;
+  // For now, let's categorize by some logic or use different criteria
+  // Since we don't have 'Boa Prática' and 'Ponto de Atenção' as categoria_licao values,
+  // let's use a different approach or count by existing categories
+  const boasPraticas = licoes?.filter(l => 
+    l.categoria_licao === 'Qualidade' || 
+    l.categoria_licao === 'Processo' || 
+    l.categoria_licao === 'Conhecimento'
+  ).length || 0;
+  const pontosAtencao = licoes?.filter(l => 
+    l.categoria_licao === 'Riscos' || 
+    l.categoria_licao === 'Mudanças' || 
+    l.categoria_licao === 'Técnica'
+  ).length || 0;
 
   return (
     <Layout>
