@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, AlertTriangle, Target, User, Crown } from 'lucide-react';
+import { Calendar, AlertTriangle, Target, User, Crown, FileText } from 'lucide-react';
 import { ProjetoAtividades } from './ProjetoAtividades';
 import { ProjetoMilestones } from './ProjetoMilestones';
 
@@ -87,20 +87,36 @@ export function ProjetoDetalhes({ projeto }: ProjetoDetalhesProps) {
       {/* Atividades - vem primeiro agora */}
       <ProjetoAtividades ultimoStatus={ultimoStatus} />
 
-      {/* Pontos de Atenção - ainda mais compacto */}
-      <Card className="bg-white border border-[#E5E7EB]">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base font-semibold text-[#1B365D] flex items-center gap-2">
-            <AlertTriangle className="h-4 w-4 text-[#F59E0B]" />
-            Pontos de Atenção
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="pt-0 pb-3">
-          <p className="text-xs text-[#6B7280] leading-tight">
-            {ultimoStatus.observacoes_pontos_atencao || 'Nenhum ponto de atenção reportado'}
-          </p>
-        </CardContent>
-      </Card>
+      {/* Pontos de Atenção e Backlog lado a lado */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Card className="bg-white border border-[#E5E7EB]">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base font-semibold text-[#1B365D] flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-[#F59E0B]" />
+              Pontos de Atenção
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0 pb-3">
+            <p className="text-xs text-[#6B7280] leading-tight">
+              {ultimoStatus.observacoes_pontos_atencao || 'Nenhum ponto de atenção reportado'}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-white border border-[#E5E7EB]">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base font-semibold text-[#1B365D] flex items-center gap-2">
+              <FileText className="h-4 w-4 text-[#F59E0B]" />
+              Backlog
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0 pb-3">
+            <p className="text-xs text-[#6B7280] leading-tight">
+              {ultimoStatus.backlog || 'Nenhum item de backlog reportado'}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Milestones */}
       <ProjetoMilestones ultimoStatus={ultimoStatus} />

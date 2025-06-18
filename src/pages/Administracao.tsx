@@ -1,7 +1,8 @@
+
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from 'react';
 import { SeedTestData } from '@/components/admin/SeedTestData';
 import { AtualizarProjetosTipo } from '@/components/admin/AtualizarProjetosTipo';
@@ -18,9 +19,10 @@ import { CleanupCanaisIncidents } from '@/components/admin/CleanupCanaisIncident
 export default function Administracao() {
   const { usuario, isLoading } = useAuth();
   const [activeTab, setActiveTab] = useState("usuarios");
-	const { usuarios, isLoading: isLoadingUsuarios } = useUsuarios();
-  const { responsaveisASA, isLoading: isLoadingResponsaveisASA } = useResponsaveisASA();
-  const { tiposProjeto, isLoading: isLoadingTiposProjeto } = useTiposProjeto();
+  
+  const { data: usuarios, isLoading: isLoadingUsuarios } = useUsuarios();
+  const { data: responsaveisASA, isLoading: isLoadingResponsaveisASA } = useResponsaveisASA();
+  const { data: tiposProjeto, isLoading: isLoadingTiposProjeto } = useTiposProjeto();
 
   if (isLoading) {
     return (
@@ -39,7 +41,8 @@ export default function Administracao() {
     return <LoginForm />;
   }
 
-  if (usuario.tipo_usuario !== 'admin') {
+  // Corrigir verificação de tipo de usuário
+  if (usuario.tipo_usuario !== 'Admin') {
     return (
       <Layout>
         <div className="text-center py-12">
@@ -68,37 +71,28 @@ export default function Administracao() {
             <TabsTrigger value="manutencao">Manutenção</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="usuarios" className="space-y-6">
-            <UserTable 
-              usuarios={usuarios}
-              isLoading={isLoadingUsuarios}
-            />
+          <TabsContent value="usuarios" className="mt-6">
+            <UserTable usuarios={usuarios || []} isLoading={isLoadingUsuarios} />
           </TabsContent>
 
-          <TabsContent value="responsaveis-asa" className="space-y-6">
-            <ResponsaveisASATable 
-              responsaveisASA={responsaveisASA}
-              isLoading={isLoadingResponsaveisASA}
-            />
+          <TabsContent value="responsaveis-asa" className="mt-6">
+            <ResponsaveisASATable responsaveisASA={responsaveisASA || []} isLoading={isLoadingResponsaveisASA} />
           </TabsContent>
 
-          <TabsContent value="tipos-projeto" className="space-y-6">
-            <TiposProjetoTable 
-              tiposProjeto={tiposProjeto}
-              isLoading={isLoadingTiposProjeto}
-            />
+          <TabsContent value="tipos-projeto" className="mt-6">
+            <TiposProjetoTable tiposProjeto={tiposProjeto || []} isLoading={isLoadingTiposProjeto} />
           </TabsContent>
 
-          <TabsContent value="configuracoes" className="space-y-6">
+          <TabsContent value="configuracoes" className="mt-6">
             <ConfiguracoesForm />
           </TabsContent>
 
-          <TabsContent value="logs" className="space-y-6">
+          <TabsContent value="logs" className="mt-6">
             <LogsViewer />
           </TabsContent>
 
-          <TabsContent value="manutencao" className="space-y-6">
-            <div className="grid gap-6">
+          <TabsContent value="manutencao" className="mt-6">
+            <div className="space-y-6">
               <SeedTestData />
               <AtualizarProjetosTipo />
               <CleanupCanaisIncidents />

@@ -1,9 +1,8 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { MetricasVisuais } from './MetricasVisuais';
-import { TimelineEntregas } from './TimelineEntregas';
 import { GraficosIndicadores } from './GraficosIndicadores';
+import { TimelineEntregas } from './TimelineEntregas';
+import { IshikawaDiagram } from './IshikawaDiagram';
 
 interface DadosRelatorioVisual {
   carteira?: string;
@@ -19,113 +18,125 @@ interface RelatorioVisualContentProps {
 }
 
 export function RelatorioVisualContent({ dados }: RelatorioVisualContentProps) {
-  const { carteira, responsavel, projetos, statusProjetos, incidentes, dataGeracao } = dados;
+  // Filtrar projetos com último status aprovado
+  const projetosComStatus = dados.projetos.map(projeto => {
+    const statusAprovados = dados.statusProjetos.filter(status => 
+      status.projeto_id === projeto.id && status.aprovado
+    );
+    
+    const ultimoStatus = statusAprovados.sort((a, b) => 
+      new Date(b.data_aprovacao || b.data_criacao).getTime() - 
+      new Date(a.data_aprovacao || a.data_criacao).getTime()
+    )[0];
+
+    return {
+      ...projeto,
+      ultimoStatus
+    };
+  }).filter(projeto => projeto.ultimoStatus);
 
   return (
-    <div className="space-y-6 p-6 bg-white">
+    <div className="space-y-8 bg-gradient-to-br from-[#F8FAFC] to-[#F1F5F9] p-6">
       {/* Header do Relatório */}
-      <div className="text-center space-y-4 border-b pb-6">
-        <div className="flex justify-center">
-          <div className="w-16 h-16 bg-pmo-primary rounded-xl flex items-center justify-center">
-            <span className="text-white font-bold text-xl">PMO</span>
-          </div>
-        </div>
-        
-        <div>
-          <h1 className="text-3xl font-bold text-pmo-primary">
-            Relatório Executivo Visual
-          </h1>
-          <h2 className="text-xl text-gray-600 mt-2">
-            {carteira ? `Carteira: ${carteira}` : `Responsável: ${responsavel}`}
-          </h2>
-          <p className="text-sm text-gray-500 mt-1">
-            Gerado em {dataGeracao.toLocaleDateString('pt-BR')} às {dataGeracao.toLocaleTimeString('pt-BR')}
-          </p>
-        </div>
+      <div className="text-center border-b border-[#E5E7EB] pb-6">
+        <h1 className="text-3xl font-bold text-[#1B365D] mb-2">
+          Relatório Visual Executivo
+        </h1>
+        <p className="text-[#6B7280]">
+          {dados.carteira ? `Carteira: ${dados.carteira}` : `Responsável: ${dados.responsavel}`}
+        </p>
+        <p className="text-sm text-[#6B7280]">
+          Gerado em: {dados.dataGeracao.toLocaleDateString('pt-BR')} às {dados.dataGeracao.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+        </p>
       </div>
 
-      {/* Métricas Visuais */}
-      <MetricasVisuais 
-        projetos={projetos}
-        statusProjetos={statusProjetos}
-        incidentes={incidentes}
-      />
+      {/* Métricas Visuais - substituindo dados vazios */}
+      <MetricasVisuais projetos={projetosComStatus} />
 
-      {/* Gráficos de Indicadores */}
-      <GraficosIndicadores 
-        statusProjetos={statusProjetos}
-        incidentes={incidentes}
-      />
+      {/* Gráficos de Indicadores - removendo distribuição de status vazia */}
+      <GraficosIndicadores projetos={projetosComStatus} incidentes={dados.incidentes} />
 
-      {/* Timeline das Entregas */}
-      <TimelineEntregas statusProjetos={statusProjetos} />
+      {/* Timeline de Entregas */}
+      <TimelineEntregas projetos={projetosComStatus} />
 
-      {/* Detalhes dos Projetos */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Detalhes dos Projetos</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {projetos.map((projeto, index) => {
-              const ultimoStatus = statusProjetos.find(s => s.projeto_id === projeto.id);
-              
-              return (
-                <div key={projeto.id} className="border rounded-lg p-4">
-                  <div className="flex justify-between items-start mb-3">
-                    <div>
-                      <h4 className="font-semibold text-lg">{projeto.nome_projeto}</h4>
-                      <p className="text-sm text-gray-600">{projeto.descricao}</p>
-                    </div>
-                    <div className="flex flex-col items-end gap-2">
-                      {ultimoStatus && (
-                        <>
-                          <Badge variant={
-                            ultimoStatus.status_geral === 'Verde' ? 'default' :
-                            ultimoStatus.status_geral === 'Amarelo' ? 'secondary' : 'destructive'
-                          }>
-                            {ultimoStatus.status_geral}
-                          </Badge>
-                          <span className="text-sm text-gray-500">
-                            {ultimoStatus.progresso_estimado}% concluído
-                          </span>
-                        </>
-                      )}
-                    </div>
-                  </div>
+      {/* Diagramas Ishikawa para cada projeto */}
+      <div className="space-y-6">
+        <h2 className="text-2xl font-bold text-[#1B365D] border-b border-[#E5E7EB] pb-2">
+          Detalhamento por Projeto
+        </h2>
+        
+        {projetosComStatus.map((projeto) => (
+          <div key={projeto.id} className="space-y-4">
+            {/* Informações básicas do projeto */}
+            <div className="bg-white p-6 rounded-xl border-l-4 border-[#1B365D]">
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-[#1B365D] mb-2">{projeto.nome_projeto}</h3>
+                  {projeto.descricao_projeto && (
+                    <p className="text-[#6B7280] mb-4">{projeto.descricao_projeto}</p>
+                  )}
                   
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                     <div>
-                      <span className="font-medium text-gray-600">Responsável ASA:</span>
-                      <p>{projeto.responsavel_asa}</p>
+                      <span className="text-[#6B7280]">Responsável ASA:</span>
+                      <div className="font-medium text-[#1B365D]">{projeto.responsavel_asa || 'Não informado'}</div>
                     </div>
                     <div>
-                      <span className="font-medium text-gray-600">Responsável CWI:</span>
-                      <p>{projeto.responsavel_cwi}</p>
+                      <span className="text-[#6B7280]">Chefe do Projeto:</span>
+                      <div className="font-medium text-[#1B365D]">{projeto.gp_responsavel}</div>
                     </div>
                     <div>
-                      <span className="font-medium text-gray-600">GP Responsável:</span>
-                      <p>{projeto.gp_responsavel_cwi}</p>
+                      <span className="text-[#6B7280]">Status Geral:</span>
+                      <div className="font-medium text-[#1B365D]">{projeto.ultimoStatus?.status_geral}</div>
                     </div>
                     <div>
-                      <span className="font-medium text-gray-600">Finalização:</span>
-                      <p>{projeto.finalizacao_prevista ? 
-                        new Date(projeto.finalizacao_prevista).toLocaleDateString('pt-BR') : 
-                        'Não definida'
-                      }</p>
+                      <span className="text-[#6B7280]">Situação:</span>
+                      <div className={`inline-flex w-6 h-6 rounded-full ${
+                        projeto.ultimoStatus?.status_visao_gp === 'Verde' ? 'bg-green-500' :
+                        projeto.ultimoStatus?.status_visao_gp === 'Amarelo' ? 'bg-yellow-500' :
+                        projeto.ultimoStatus?.status_visao_gp === 'Vermelho' ? 'bg-red-500' : 'bg-gray-400'
+                      }`} title={`Status: ${projeto.ultimoStatus?.status_visao_gp}`}></div>
                     </div>
                   </div>
                 </div>
-              );
-            })}
+              </div>
+
+              {/* Atividades da semana */}
+              {projeto.ultimoStatus?.realizado_semana_atual && (
+                <div className="mb-4">
+                  <h4 className="font-semibold text-[#1B365D] mb-2">Realizado na Semana</h4>
+                  <p className="text-sm text-[#6B7280]">{projeto.ultimoStatus.realizado_semana_atual}</p>
+                </div>
+              )}
+
+              {/* Pontos de atenção e backlog */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {projeto.ultimoStatus?.observacoes_pontos_atencao && (
+                  <div>
+                    <h4 className="font-semibold text-[#1B365D] mb-2">Pontos de Atenção</h4>
+                    <p className="text-sm text-[#6B7280]">{projeto.ultimoStatus.observacoes_pontos_atencao}</p>
+                  </div>
+                )}
+                
+                {projeto.ultimoStatus?.backlog && (
+                  <div>
+                    <h4 className="font-semibold text-[#1B365D] mb-2">Backlog</h4>
+                    <p className="text-sm text-[#6B7280]">{projeto.ultimoStatus.backlog}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Diagrama Ishikawa das entregas */}
+            <IshikawaDiagram projeto={projeto} ultimoStatus={projeto.ultimoStatus} />
           </div>
-        </CardContent>
-      </Card>
+        ))}
+      </div>
 
       {/* Footer */}
-      <div className="text-center text-xs text-gray-400 pt-4 border-t">
-        <p>Relatório gerado automaticamente pelo Sistema PMO</p>
-        <p>© {new Date().getFullYear()} - Todos os direitos reservados</p>
+      <div className="text-center border-t border-[#E5E7EB] pt-6 text-sm text-[#6B7280]">
+        <p>PMO - Sistema de Gestão de Projetos</p>
+        <p>Relatório gerado automaticamente em {dados.dataGeracao.toLocaleString('pt-BR')}</p>
       </div>
     </div>
   );

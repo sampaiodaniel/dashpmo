@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -32,25 +31,19 @@ export function useRelatorioVisual() {
     },
   });
 
-  // Buscar responsáveis disponíveis
+  // Buscar responsáveis ASA do painel de administração
   const { data: responsaveis = [] } = useQuery({
-    queryKey: ['responsaveis-relatorio'],
+    queryKey: ['responsaveis-asa-relatorio'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('projetos')
-        .select('responsavel_asa, responsavel_cwi, gp_responsavel_cwi')
-        .not('responsavel_asa', 'is', null);
+        .from('responsaveis_asa')
+        .select('nome')
+        .eq('ativo', true)
+        .order('nome');
 
       if (error) throw error;
 
-      const responsaveisUnicos = new Set();
-      data.forEach(p => {
-        if (p.responsavel_asa) responsaveisUnicos.add(p.responsavel_asa);
-        if (p.responsavel_cwi) responsaveisUnicos.add(p.responsavel_cwi);
-        if (p.gp_responsavel_cwi) responsaveisUnicos.add(p.gp_responsavel_cwi);
-      });
-
-      return Array.from(responsaveisUnicos).sort();
+      return data.map(r => r.nome);
     },
   });
 

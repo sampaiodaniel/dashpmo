@@ -1,139 +1,65 @@
 
-import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { useAuth } from './useAuth';
-import { useLogger } from '@/utils/logger';
-import type { LicaoAprendida, CategoriaLicao, StatusAplicacao } from '@/types/pmo';
+import { LicaoAprendida, CategoriaLicao, StatusAplicacao } from '@/types/pmo';
 
 export function useLicoesAprendidas() {
-  const { usuario } = useAuth();
-  const queryClient = useQueryClient();
-  const { log } = useLogger();
-  const [isCreating, setIsCreating] = useState(false);
-
-  const { data: licoes = [], isLoading, error } = useQuery({
+  return useQuery({
     queryKey: ['licoes-aprendidas'],
     queryFn: async () => {
-      console.log('🔍 Buscando lições aprendidas...');
-      
       const { data, error } = await supabase
         .from('licoes_aprendidas')
         .select(`
           *,
-          projeto:projetos(
-            id,
-            nome_projeto,
-            area_responsavel,
-            responsavel_interno,
-            gp_responsavel,
-            criado_por,
-            data_criacao
-          )
+          projeto:projetos(id, nome_projeto, area_responsavel)
         `)
         .order('data_criacao', { ascending: false });
 
       if (error) {
-        console.error('❌ Erro ao buscar lições:', error);
+        console.error('Erro ao buscar lições aprendidas:', error);
         throw error;
       }
 
-      console.log('✅ Lições carregadas:', data?.length || 0);
-      
-      // Converter datas de string para Date quando necessário
-      const licoesProcessadas = data?.map(licao => ({
+      // Converter data_registro de string para Date
+      return (data || []).map(licao => ({
         ...licao,
-        data_registro: new Date(licao.data_registro),
-        data_criacao: new Date(licao.data_criacao),
-        projeto: licao.projeto ? {
-          ...licao.projeto,
-          data_criacao: new Date(licao.projeto.data_criacao)
-        } : null
-      })) || [];
-      
-      return licoesProcessadas as LicaoAprendida[];
+        data_registro: new Date(licao.data_registro)
+      })) as LicaoAprendida[];
     },
   });
+}
 
-  const criarLicaoMutation = useMutation({
-    mutationFn: async (dados: {
-      projeto_id: number;
-      responsavel_registro: string;
-      categoria_licao: CategoriaLicao;
-      situacao_ocorrida: string;
-      licao_aprendida: string;
-      impacto_gerado: string;
-      acao_recomendada: string;
-      tags_busca?: string;
-      status_aplicacao: StatusAplicacao;
-      data_registro: string;
-    }) => {
-      if (!usuario) {
-        throw new Error('Usuário não autenticado');
-      }
+export function useLicoesOperations() {
+  const queryClient = useQueryClient();
 
-      console.log('📝 Criando lição aprendida:', dados);
-
-      const licaoData = {
-        projeto_id: dados.projeto_id,
-        responsavel_registro: dados.responsavel_registro,
-        categoria_licao: dados.categoria_licao,
-        situacao_ocorrida: dados.situacao_ocorrida,
-        licao_aprendida: dados.licao_aprendida,
-        impacto_gerado: dados.impacto_gerado,
-        acao_recomendada: dados.acao_recomendada,
-        tags_busca: dados.tags_busca || null,
-        status_aplicacao: dados.status_aplicacao,
-        data_registro: dados.data_registro,
-        criado_por: usuario.nome,
+  const createLicao = useMutation({
+    mutationFn: async (licaoData: Omit<LicaoAprendida, 'id' | 'data_criacao'>) => {
+      // Converter Date para string antes de enviar
+      const dataToInsert = {
+        ...licaoData,
+        data_registro: licaoData.data_registro instanceof Date 
+          ? licaoData.data_registro.toISOString().split('T')[0]
+          : licaoData.data_registro,
+        // Mapear status_aplicacao para valores aceitos pelo banco
+        status_aplicacao: licaoData.status_aplicacao === 'Em andamento' ? 'Não aplicada' : licaoData.status_aplicacao
       };
 
       const { data, error } = await supabase
         .from('licoes_aprendidas')
-        .insert(licaoData)
+        .insert([dataToInsert])
         .select(`
           *,
-          projeto:projetos(
-            id,
-            nome_projeto,
-            area_responsavel,
-            responsavel_interno,
-            gp_responsavel,
-            criado_por,
-            data_criacao
-          )
+          projeto:projetos(id, nome_projeto, area_responsavel)
         `)
         .single();
 
-      if (error) {
-        console.error('❌ Erro ao criar lição:', error);
-        throw error;
-      }
+      if (error) throw error;
 
-      console.log('✅ Lição criada:', data);
-
-      // Registrar log
-      log(
-        'licoes',
-        'criacao',
-        'licao_aprendida',
-        data.id,
-        `Lição: ${dados.licao_aprendida.substring(0, 50)}...`,
-        {
-          categoria: dados.categoria_licao,
-          projeto_id: dados.projeto_id
-        }
-      );
-
+      // Converter data_registro de volta para Date
       return {
         ...data,
-        data_registro: new Date(data.data_registro),
-        data_criacao: new Date(data.data_criacao),
-        projeto: data.projeto ? {
-          ...data.projeto,
-          data_criacao: new Date(data.projeto.data_criacao)
-        } : null
+        data_registro: new Date(data.data_registro)
       } as LicaoAprendida;
     },
     onSuccess: () => {
@@ -144,83 +70,46 @@ export function useLicoesAprendidas() {
       });
     },
     onError: (error) => {
-      console.error('Erro ao criar lição:', error);
+      console.error('Erro ao criar lição aprendida:', error);
       toast({
         title: "Erro",
-        description: "Erro ao criar lição aprendida. Tente novamente.",
+        description: "Erro ao criar lição aprendida",
         variant: "destructive",
       });
     },
   });
 
-  const atualizarLicaoMutation = useMutation({
-    mutationFn: async (dados: {
-      id: number;
-      projeto_id?: number;
-      responsavel_registro?: string;
-      categoria_licao?: CategoriaLicao;
-      situacao_ocorrida?: string;
-      licao_aprendida?: string;
-      impacto_gerado?: string;
-      acao_recomendada?: string;
-      tags_busca?: string;
-      status_aplicacao?: StatusAplicacao;
-      data_registro?: string;
-    }) => {
-      if (!usuario) {
-        throw new Error('Usuário não autenticado');
-      }
+  const updateLicao = useMutation({
+    mutationFn: async ({ id, ...updates }: Partial<LicaoAprendida> & { id: number }) => {
+      // Converter Date para string e mapear status se necessário
+      const dataToUpdate = {
+        ...updates,
+        ...(updates.data_registro && {
+          data_registro: updates.data_registro instanceof Date 
+            ? updates.data_registro.toISOString().split('T')[0]
+            : updates.data_registro
+        }),
+        ...(updates.status_aplicacao && {
+          status_aplicacao: updates.status_aplicacao === 'Em andamento' ? 'Não aplicada' : updates.status_aplicacao
+        })
+      };
 
-      console.log('📝 Atualizando lição aprendida:', dados);
-
-      const { id, ...updateData } = dados;
-      
       const { data, error } = await supabase
         .from('licoes_aprendidas')
-        .update(updateData)
+        .update(dataToUpdate)
         .eq('id', id)
         .select(`
           *,
-          projeto:projetos(
-            id,
-            nome_projeto,
-            area_responsavel,
-            responsavel_interno,
-            gp_responsavel,
-            criado_por,
-            data_criacao
-          )
+          projeto:projetos(id, nome_projeto, area_responsavel)
         `)
         .single();
 
-      if (error) {
-        console.error('❌ Erro ao atualizar lição:', error);
-        throw error;
-      }
+      if (error) throw error;
 
-      console.log('✅ Lição atualizada:', data);
-
-      // Registrar log
-      log(
-        'licoes',
-        'edicao',
-        'licao_aprendida',
-        data.id,
-        `Lição: ${data.licao_aprendida?.substring(0, 50)}...`,
-        {
-          categoria: data.categoria_licao,
-          projeto_id: data.projeto_id
-        }
-      );
-
+      // Converter data_registro de volta para Date
       return {
         ...data,
-        data_registro: new Date(data.data_registro),
-        data_criacao: new Date(data.data_criacao),
-        projeto: data.projeto ? {
-          ...data.projeto,
-          data_criacao: new Date(data.projeto.data_criacao)
-        } : null
+        data_registro: new Date(data.data_registro)
       } as LicaoAprendida;
     },
     onSuccess: () => {
@@ -231,68 +120,44 @@ export function useLicoesAprendidas() {
       });
     },
     onError: (error) => {
-      console.error('Erro ao atualizar lição:', error);
+      console.error('Erro ao atualizar lição aprendida:', error);
       toast({
         title: "Erro",
-        description: "Erro ao atualizar lição aprendida. Tente novamente.",
+        description: "Erro ao atualizar lição aprendida",
         variant: "destructive",
       });
     },
   });
 
-  const excluirLicaoMutation = useMutation({
+  const deleteLicao = useMutation({
     mutationFn: async (id: number) => {
-      console.log('🗑️ Excluindo lição aprendida:', id);
-
       const { error } = await supabase
         .from('licoes_aprendidas')
         .delete()
         .eq('id', id);
 
-      if (error) {
-        console.error('❌ Erro ao excluir lição:', error);
-        throw error;
-      }
-
-      console.log('✅ Lição excluída');
-
-      // Registrar log
-      log(
-        'licoes',
-        'exclusao',
-        'licao_aprendida',
-        id,
-        'Lição aprendida excluída'
-      );
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['licoes-aprendidas'] });
       toast({
         title: "Sucesso",
-        description: "Lição aprendida excluída com sucesso!",
+        description: "Lição aprendida removida com sucesso!",
       });
     },
     onError: (error) => {
-      console.error('Erro ao excluir lição:', error);
+      console.error('Erro ao remover lição aprendida:', error);
       toast({
         title: "Erro",
-        description: "Erro ao excluir lição aprendida. Tente novamente.",
+        description: "Erro ao remover lição aprendida",
         variant: "destructive",
       });
     },
   });
 
   return {
-    licoes,
-    isLoading,
-    error,
-    isCreating,
-    setIsCreating,
-    criarLicao: criarLicaoMutation.mutate,
-    atualizarLicao: atualizarLicaoMutation.mutate,
-    excluirLicao: excluirLicaoMutation.mutate,
-    isCreatingLicao: criarLicaoMutation.isPending,
-    isUpdatingLicao: atualizarLicaoMutation.isPending,
-    isDeletingLicao: excluirLicaoMutation.isPending,
+    createLicao,
+    updateLicao,
+    deleteLicao,
   };
 }
