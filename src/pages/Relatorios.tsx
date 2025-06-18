@@ -1,19 +1,23 @@
 
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
+import { Button } from '@/components/ui/button';
+import { FileText, BarChart3, TrendingUp, Webhook } from 'lucide-react';
 import { RelatorioASAViewer } from '@/components/relatorios/RelatorioASAViewer';
 import { RelatorioVisualViewer } from '@/components/relatorios/RelatorioVisualViewer';
 import { RelatorioConsolidadoContent } from '@/components/relatorios/consolidado/RelatorioConsolidadoContent';
 import { ReportWebhookModal } from '@/components/relatorios/ReportWebhookModal';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FileText, BarChart3, Users, Webhook } from 'lucide-react';
-import { useState } from 'react';
 
 export default function Relatorios() {
   const { usuario, isLoading } = useAuth();
+  const [tipoRelatorio, setTipoRelatorio] = useState<'asa' | 'visual' | 'consolidado' | null>(null);
   const [webhookModalAberto, setWebhookModalAberto] = useState(false);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   if (isLoading) {
     return (
@@ -32,65 +36,126 @@ export default function Relatorios() {
     return <LoginForm />;
   }
 
+  if (tipoRelatorio === 'asa') {
+    return (
+      <Layout>
+        <RelatorioASAViewer 
+          isOpen={true}
+          onClose={() => setTipoRelatorio(null)}
+          dados={{}}
+        />
+      </Layout>
+    );
+  }
+
+  if (tipoRelatorio === 'visual') {
+    return (
+      <Layout>
+        <RelatorioVisualViewer 
+          isOpen={true}
+          onClose={() => setTipoRelatorio(null)}
+          dados={{}}
+        />
+      </Layout>
+    );
+  }
+
+  if (tipoRelatorio === 'consolidado') {
+    return (
+      <Layout>
+        <RelatorioConsolidadoContent dados={{}} />
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between pl-0">
-          <div>
-            <h1 className="text-3xl font-bold text-pmo-primary">Relatórios</h1>
-            <p className="text-pmo-gray mt-2">Relatórios executivos e análises de projetos</p>
-          </div>
-          <Button 
-            onClick={() => setWebhookModalAberto(true)}
-            variant="outline"
-            className="flex items-center gap-2"
-          >
-            <Webhook className="h-4 w-4" />
-            Configurar Webhook
-          </Button>
+        <div>
+          <h1 className="text-3xl font-bold text-pmo-primary">Relatórios</h1>
+          <p className="text-pmo-gray mt-2">Geração de relatórios e análises</p>
         </div>
 
-        <Tabs defaultValue="asa" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="asa" className="flex items-center gap-2">
-              <FileText className="h-4 w-4" />
-              Relatório ASA
-            </TabsTrigger>
-            <TabsTrigger value="visual" className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4" />
-              Relatório Visual
-            </TabsTrigger>
-            <TabsTrigger value="consolidado" className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              Relatório Consolidado
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="asa">
-            <div className="text-center py-12 text-pmo-gray">
-              <p>Relatório ASA será implementado aqui</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-pmo-primary/10 rounded-lg">
+                <FileText className="h-6 w-6 text-pmo-primary" />
+              </div>
             </div>
-          </TabsContent>
+            <h3 className="text-lg font-semibold text-pmo-primary mb-2">Relatório ASA</h3>
+            <p className="text-pmo-gray text-sm mb-4">
+              Relatório executivo formatado para apresentação ASA
+            </p>
+            <Button 
+              onClick={() => setTipoRelatorio('asa')}
+              className="w-full bg-pmo-primary hover:bg-pmo-secondary text-white"
+            >
+              Gerar Relatório
+            </Button>
+          </div>
 
-          <TabsContent value="visual">
-            <div className="text-center py-12 text-pmo-gray">
-              <p>Relatório Visual será implementado aqui</p>
+          <div className="bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-pmo-primary/10 rounded-lg">
+                <BarChart3 className="h-6 w-6 text-pmo-primary" />
+              </div>
             </div>
-          </TabsContent>
+            <h3 className="text-lg font-semibold text-pmo-primary mb-2">Relatório Visual</h3>
+            <p className="text-pmo-gray text-sm mb-4">
+              Relatório com gráficos e visualizações de dados
+            </p>
+            <Button 
+              onClick={() => setTipoRelatorio('visual')}
+              className="w-full bg-pmo-primary hover:bg-pmo-secondary text-white"
+            >
+              Gerar Relatório
+            </Button>
+          </div>
 
-          <TabsContent value="consolidado">
-            <div className="text-center py-12 text-pmo-gray">
-              <p>Relatório Consolidado será implementado aqui</p>
+          <div className="bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-pmo-primary/10 rounded-lg">
+                <TrendingUp className="h-6 w-6 text-pmo-primary" />
+              </div>
             </div>
-          </TabsContent>
-        </Tabs>
+            <h3 className="text-lg font-semibold text-pmo-primary mb-2">Relatório Consolidado</h3>
+            <p className="text-pmo-gray text-sm mb-4">
+              Relatório completo com todas as informações
+            </p>
+            <Button 
+              onClick={() => setTipoRelatorio('consolidado')}
+              className="w-full bg-pmo-primary hover:bg-pmo-secondary text-white"
+            >
+              Gerar Relatório
+            </Button>
+          </div>
+        </div>
 
-        <ReportWebhookModal 
-          isOpen={webhookModalAberto}
-          onClose={() => setWebhookModalAberto(false)}
-        />
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-pmo-primary mb-2">Webhook de Relatórios</h3>
+              <p className="text-pmo-gray text-sm">
+                Configure webhooks para envio automático de relatórios
+              </p>
+            </div>
+            <Button 
+              onClick={() => setWebhookModalAberto(true)}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <Webhook className="h-4 w-4" />
+              Configurar
+            </Button>
+          </div>
+        </div>
       </div>
+
+      <ReportWebhookModal 
+        isOpen={webhookModalAberto}
+        onClose={() => setWebhookModalAberto(false)}
+      />
     </Layout>
   );
 }
-

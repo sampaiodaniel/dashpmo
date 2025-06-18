@@ -1,5 +1,4 @@
 
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Layout } from '@/components/layout/Layout';
@@ -38,7 +37,7 @@ export default function Administracao() {
   return (
     <Layout>
       <div className="space-y-6">
-        <div className="pl-0">
+        <div>
           <h1 className="text-3xl font-bold text-pmo-primary">Administração</h1>
           <p className="text-pmo-gray mt-2">Configurações e gestão do sistema</p>
         </div>
@@ -92,4 +91,3 @@ export default function Administracao() {
     </Layout>
   );
 }
-

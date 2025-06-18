@@ -67,7 +67,10 @@ export function ProjetoStatus({ projeto }: ProjetoStatusProps) {
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
           <FileText className="h-5 w-5 text-pmo-primary" />
-          <h2 className="text-xl font-semibold text-pmo-primary">Último Status</h2>
+          <h2 className="text-2xl font-bold text-black">Último Status</h2>
+          <Badge variant={ultimoStatus.aprovado ? "default" : "destructive"} className="text-xs">
+            {ultimoStatus.aprovado ? "Revisado" : "Não Revisado"}
+          </Badge>
         </div>
         <div className="flex items-center gap-2">
           {ultimoStatus.aprovado && (
@@ -90,14 +93,8 @@ export function ProjetoStatus({ projeto }: ProjetoStatusProps) {
           </Button>
         </div>
       </div>
-
-      <div className="mb-3">
-        <Badge variant={ultimoStatus.aprovado ? "default" : "destructive"} className="text-xs">
-          {ultimoStatus.aprovado ? "Revisado" : "Não Revisado"}
-        </Badge>
-      </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div>
           <h3 className="font-medium text-pmo-gray mb-2">Status Geral</h3>
           <Badge className={getStatusGeralColor(ultimoStatus.status_geral)}>
@@ -110,6 +107,13 @@ export function ProjetoStatus({ projeto }: ProjetoStatusProps) {
           <Badge className={getStatusColor(ultimoStatus.status_visao_gp)}>
             {ultimoStatus.status_visao_gp}
           </Badge>
+        </div>
+
+        <div>
+          <h3 className="font-medium text-pmo-gray mb-2">Progresso Estimado</h3>
+          <p className="text-gray-700">
+            {ultimoStatus.progresso_estimado || 'Não informado'}
+          </p>
         </div>
         
         <div>

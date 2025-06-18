@@ -1,5 +1,4 @@
 
-
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
@@ -30,7 +29,7 @@ function DashboardContent() {
 
   return (
     <div className="space-y-6 text-left">
-      <div className="text-left pl-0">
+      <div className="text-left">
         <h1 className="text-3xl font-bold text-pmo-primary text-left">Dashboard</h1>
         <p className="text-pmo-gray mt-2 text-left">Visão geral dos projetos e indicadores</p>
       </div>
@@ -92,4 +91,3 @@ export default function Dashboard() {
 
 // Export DashboardContent para uso na página Index
 export { DashboardContent };
-

@@ -1,5 +1,4 @@
 
-
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
@@ -34,9 +33,6 @@ export default function Licoes() {
   };
 
   const totalLicoes = licoes?.length || 0;
-  // For now, let's categorize by some logic or use different criteria
-  // Since we don't have 'Boa Prática' and 'Ponto de Atenção' as categoria_licao values,
-  // let's use a different approach or count by existing categories
   const boasPraticas = licoes?.filter(l => 
     l.categoria_licao === 'Qualidade' || 
     l.categoria_licao === 'Processo' || 
@@ -51,7 +47,7 @@ export default function Licoes() {
   return (
     <Layout>
       <div className="space-y-6">
-        <div className="pl-0">
+        <div>
           <h1 className="text-3xl font-bold text-pmo-primary">Lições Aprendidas</h1>
           <p className="text-pmo-gray mt-2">Gestão de conhecimento e aprendizados dos projetos</p>
         </div>
@@ -67,4 +63,3 @@ export default function Licoes() {
     </Layout>
   );
 }
-

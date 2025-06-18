@@ -1,6 +1,7 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { useIncidentes } from '@/hooks/useIncidentes';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { useIncidentesHistorico } from '@/hooks/useIncidentesHistorico';
 import { useMemo } from 'react';
 
 interface GraficoEvolutivoIncidentesProps {
@@ -9,32 +10,47 @@ interface GraficoEvolutivoIncidentesProps {
 }
 
 export function GraficoEvolutivoIncidentes({ carteiraFiltro, responsavelFiltro }: GraficoEvolutivoIncidentesProps) {
-  const { data: incidentes, isLoading } = useIncidentes();
+  const { data: historico, isLoading } = useIncidentesHistorico();
 
   const dadosGrafico = useMemo(() => {
-    if (!incidentes) return [];
+    if (!historico) return [];
 
-    // Filter data based on carteira and responsavel filters
-    let dadosFiltrados = incidentes;
+    // Filter data based on carteira filter
+    let dadosFiltrados = historico;
     
     if (carteiraFiltro !== 'todas') {
       dadosFiltrados = dadosFiltrados.filter(inc => inc.carteira === carteiraFiltro);
     }
 
-    // For responsavel filter, you might need to add logic based on your data structure
-    // This is a placeholder - adjust according to your actual data model
-    if (responsavelFiltro !== 'todos') {
-      // Add responsavel filtering logic here when the data structure supports it
-    }
+    // Group by date and aggregate data
+    const dadosAgrupados = dadosFiltrados.reduce((acc, item) => {
+      const data = item.data_registro;
+      if (!acc[data]) {
+        acc[data] = {
+          data,
+          entrada: 0,
+          saida: 0,
+          atual: 0,
+          criticos: 0
+        };
+      }
+      
+      acc[data].entrada += item.entrada || 0;
+      acc[data].saida += item.saida || 0;
+      acc[data].atual += item.atual || 0;
+      acc[data].criticos += item.criticos || 0;
+      
+      return acc;
+    }, {} as Record<string, any>);
 
-    return dadosFiltrados.map(inc => ({
-      carteira: inc.carteira,
-      entrada: inc.entrada || 0,
-      saida: inc.saida || 0,
-      atual: inc.atual || 0,
-      criticos: inc.criticos || 0
+    // Convert to array and sort by date
+    return Object.values(dadosAgrupados).sort((a: any, b: any) => 
+      new Date(a.data).getTime() - new Date(b.data).getTime()
+    ).map((item: any) => ({
+      ...item,
+      data: new Date(item.data).toLocaleDateString('pt-BR')
     }));
-  }, [incidentes, carteiraFiltro, responsavelFiltro]);
+  }, [historico, carteiraFiltro]);
 
   if (isLoading) {
     return (
@@ -59,17 +75,45 @@ export function GraficoEvolutivoIncidentes({ carteiraFiltro, responsavelFiltro }
       <CardContent>
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={dadosGrafico}>
+            <LineChart data={dadosGrafico}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="carteira" />
+              <XAxis dataKey="data" />
               <YAxis />
               <Tooltip />
               <Legend />
-              <Bar dataKey="entrada" stackId="a" fill="#3b82f6" name="Entrada" />
-              <Bar dataKey="atual" stackId="a" fill="#f59e0b" name="Atual" />
-              <Bar dataKey="saida" stackId="a" fill="#10b981" name="Saída" />
-              <Bar dataKey="criticos" fill="#ef4444" name="Críticos" />
-            </BarChart>
+              <Line 
+                type="monotone" 
+                dataKey="entrada" 
+                stroke="#3b82f6" 
+                strokeWidth={2}
+                dot={{ r: 4 }}
+                name="Entrada" 
+              />
+              <Line 
+                type="monotone" 
+                dataKey="atual" 
+                stroke="#f59e0b" 
+                strokeWidth={2}
+                dot={{ r: 4 }}
+                name="Atual" 
+              />
+              <Line 
+                type="monotone" 
+                dataKey="saida" 
+                stroke="#10b981" 
+                strokeWidth={2}
+                dot={{ r: 4 }}
+                name="Saída" 
+              />
+              <Line 
+                type="monotone" 
+                dataKey="criticos" 
+                stroke="#ef4444" 
+                strokeWidth={2}
+                dot={{ r: 4 }}
+                name="Críticos" 
+              />
+            </LineChart>
           </ResponsiveContainer>
         </div>
       </CardContent>
