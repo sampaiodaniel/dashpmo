@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -14,18 +15,19 @@ import { useToast } from '@/hooks/use-toast';
 
 interface Mudanca {
   id: number;
-  titulo: string;
+  projeto_id: number;
+  tipo_mudanca: string;
+  solicitante: string;
   descricao: string;
-  impacto: string;
-  risco: string;
-  data_implementacao: string;
+  justificativa_negocio: string;
+  impacto_prazo_dias: number;
+  data_solicitacao: string;
   status_aprovacao: string;
-  criado_por: string;
-  aprovado_por: string;
-  motivo_rejeicao: string;
-  detalhes_infra: string;
-  plano_rollback: string;
+  responsavel_aprovacao: string;
+  data_aprovacao: string;
   observacoes: string;
+  criado_por: string;
+  data_criacao: string;
 }
 
 export default function MudancaDetalhes() {
@@ -48,9 +50,9 @@ export default function MudancaDetalhes() {
       }
 
       const { data, error } = await supabase
-        .from('mudancas')
+        .from('mudancas_replanejamento')
         .select('*')
-        .eq('id', id)
+        .eq('id', parseInt(id))
         .single();
 
       if (error) {
@@ -58,7 +60,7 @@ export default function MudancaDetalhes() {
         throw new Error('Erro ao carregar detalhes da mudança');
       }
 
-      setMudanca(data);
+      setMudanca(data as Mudanca);
       return data;
     },
   });
@@ -74,9 +76,13 @@ export default function MudancaDetalhes() {
     }
 
     const { error } = await supabase
-      .from('mudancas')
-      .update({ status_aprovacao: 'Aprovada', aprovado_por: usuario?.nome })
-      .eq('id', id);
+      .from('mudancas_replanejamento')
+      .update({ 
+        status_aprovacao: 'Aprovada', 
+        responsavel_aprovacao: usuario?.nome,
+        data_aprovacao: new Date().toISOString().split('T')[0]
+      })
+      .eq('id', parseInt(id));
 
     if (error) {
       console.error('Erro ao aprovar mudança:', error);
@@ -114,9 +120,14 @@ export default function MudancaDetalhes() {
     }
 
     const { error } = await supabase
-      .from('mudancas')
-      .update({ status_aprovacao: 'Rejeitada', aprovado_por: usuario?.nome, motivo_rejeicao: motivo })
-      .eq('id', id);
+      .from('mudancas_replanejamento')
+      .update({ 
+        status_aprovacao: 'Rejeitada', 
+        responsavel_aprovacao: usuario?.nome, 
+        observacoes: motivo,
+        data_aprovacao: new Date().toISOString().split('T')[0]
+      })
+      .eq('id', parseInt(id));
 
     if (error) {
       console.error('Erro ao rejeitar mudança:', error);
@@ -161,18 +172,25 @@ export default function MudancaDetalhes() {
 
         <Card className="mb-4">
           <CardHeader>
-            <CardTitle>{mudanca.titulo}</CardTitle>
+            <CardTitle>{mudanca.tipo_mudanca}</CardTitle>
             <CardDescription>
               <div className="flex items-center space-x-2">
-                <span>Data de Implementação:</span>
+                <span>Data de Solicitação:</span>
                 <Calendar className="h-4 w-4" />
                 <span>
-                  {format(new Date(mudanca.data_implementacao), "PPP", { locale: ptBR })}
+                  {format(new Date(mudanca.data_solicitacao), "PPP", { locale: ptBR })}
                 </span>
               </div>
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4">
+            <div className="space-y-1">
+              <h3 className="text-sm font-medium">Solicitante</h3>
+              <p className="text-gray-600">{mudanca.solicitante}</p>
+            </div>
+
+            <Separator />
+
             <div className="space-y-1">
               <h3 className="text-sm font-medium">Descrição</h3>
               <p className="text-gray-600">{mudanca.descricao}</p>
@@ -181,36 +199,15 @@ export default function MudancaDetalhes() {
             <Separator />
 
             <div className="space-y-1">
-              <h3 className="text-sm font-medium">Impacto</h3>
-              <p className="text-gray-600">{mudanca.impacto}</p>
+              <h3 className="text-sm font-medium">Justificativa de Negócio</h3>
+              <p className="text-gray-600">{mudanca.justificativa_negocio}</p>
             </div>
 
             <Separator />
 
             <div className="space-y-1">
-              <h3 className="text-sm font-medium">Risco</h3>
-              <p className="text-gray-600">{mudanca.risco}</p>
-            </div>
-
-            <Separator />
-
-            <div className="space-y-1">
-              <h3 className="text-sm font-medium">Detalhes da Infraestrutura</h3>
-              <p className="text-gray-600">{mudanca.detalhes_infra}</p>
-            </div>
-
-            <Separator />
-
-            <div className="space-y-1">
-              <h3 className="text-sm font-medium">Plano de Rollback</h3>
-              <p className="text-gray-600">{mudanca.plano_rollback}</p>
-            </div>
-
-            <Separator />
-
-            <div className="space-y-1">
-              <h3 className="text-sm font-medium">Observações</h3>
-              <p className="text-gray-600">{mudanca.observacoes}</p>
+              <h3 className="text-sm font-medium">Impacto no Prazo (dias)</h3>
+              <p className="text-gray-600">{mudanca.impacto_prazo_dias}</p>
             </div>
 
             <Separator />
@@ -223,22 +220,34 @@ export default function MudancaDetalhes() {
             <Separator />
 
             <div className="space-y-1">
+              <h3 className="text-sm font-medium">Responsável pela Aprovação</h3>
+              <p className="text-gray-600">{mudanca.responsavel_aprovacao || 'Pendente'}</p>
+            </div>
+
+            <Separator />
+
+            <div className="space-y-1">
+              <h3 className="text-sm font-medium">Data da Aprovação</h3>
+              <p className="text-gray-600">
+                {mudanca.data_aprovacao 
+                  ? format(new Date(mudanca.data_aprovacao), "PPP", { locale: ptBR })
+                  : 'Pendente'
+                }
+              </p>
+            </div>
+
+            <Separator />
+
+            <div className="space-y-1">
+              <h3 className="text-sm font-medium">Observações</h3>
+              <p className="text-gray-600">{mudanca.observacoes || 'N/A'}</p>
+            </div>
+
+            <Separator />
+
+            <div className="space-y-1">
               <h3 className="text-sm font-medium">Criado por</h3>
               <p className="text-gray-600">{mudanca.criado_por}</p>
-            </div>
-
-            <Separator />
-
-            <div className="space-y-1">
-              <h3 className="text-sm font-medium">Aprovado por</h3>
-              <p className="text-gray-600">{mudanca.aprovado_por || 'Pendente'}</p>
-            </div>
-
-            <Separator />
-
-            <div className="space-y-1">
-              <h3 className="text-sm font-medium">Motivo da Rejeição</h3>
-              <p className="text-gray-600">{mudanca.motivo_rejeicao || 'N/A'}</p>
             </div>
           </CardContent>
         </Card>
