@@ -1,16 +1,22 @@
 
+import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
 import { LicoesList } from '@/components/licoes/LicoesList';
 import { LicoesMetricas } from '@/components/licoes/LicoesMetricas';
+import { LicoesFilters } from '@/components/licoes/LicoesFilters';
+import { LicoesSearchBar } from '@/components/licoes/LicoesSearchBar';
 import { useLicoesAprendidas } from '@/hooks/useLicoesAprendidas';
+import { useLicoesFiltradas } from '@/hooks/useLicoesFiltradas';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 
 export default function Licoes() {
   const { usuario, isLoading } = useAuth();
   const { data: licoes, isLoading: isLoadingLicoes, refetch } = useLicoesAprendidas();
+  const [filtros, setFiltros] = useState({});
+  const [termoBusca, setTermoBusca] = useState('');
 
   if (isLoading) {
     return (
@@ -45,6 +51,47 @@ export default function Licoes() {
     l.categoria_licao === 'Técnica'
   ).length || 0;
 
+  // Filtrar lições
+  const licoesFiltradas = licoes?.filter(licao => {
+    // Filtro por busca
+    if (termoBusca.trim()) {
+      const termo = termoBusca.toLowerCase();
+      if (!(
+        licao.licao_aprendida?.toLowerCase().includes(termo) ||
+        licao.situacao_ocorrida?.toLowerCase().includes(termo) ||
+        licao.acao_recomendada?.toLowerCase().includes(termo) ||
+        licao.tags_busca?.toLowerCase().includes(termo) ||
+        licao.responsavel_registro?.toLowerCase().includes(termo)
+      )) {
+        return false;
+      }
+    }
+
+    // Filtro por categoria
+    if (filtros.categoria && filtros.categoria !== '' && licao.categoria_licao !== filtros.categoria) {
+      return false;
+    }
+
+    // Filtro por status
+    if (filtros.status && filtros.status !== '' && licao.status_aplicacao !== filtros.status) {
+      return false;
+    }
+
+    return true;
+  }) || [];
+
+  const handleFiltrarBoasPraticas = () => {
+    setFiltros({ categoria: 'Qualidade' });
+  };
+
+  const handleFiltrarPontosAtencao = () => {
+    setFiltros({ categoria: 'Riscos' });
+  };
+
+  const handleFiltrarTodas = () => {
+    setFiltros({});
+  };
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -66,8 +113,23 @@ export default function Licoes() {
           totalLicoes={totalLicoes}
           boasPraticas={boasPraticas}
           pontosAtencao={pontosAtencao}
+          onFiltrarBoasPraticas={handleFiltrarBoasPraticas}
+          onFiltrarPontosAtencao={handleFiltrarPontosAtencao}
+          onFiltrarTodas={handleFiltrarTodas}
         />
-        <LicoesList licoes={licoes || []} />
+
+        <LicoesFilters
+          filters={filtros}
+          onFiltersChange={setFiltros}
+        />
+
+        <LicoesSearchBar
+          termoBusca={termoBusca}
+          onTermoBuscaChange={setTermoBusca}
+          totalResults={licoesFiltradas.length}
+        />
+        
+        <LicoesList licoes={licoesFiltradas} />
       </div>
     </Layout>
   );

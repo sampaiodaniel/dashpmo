@@ -13,6 +13,7 @@ import { useProjetosFiltros } from '@/hooks/useProjetosFiltros';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { Projeto } from '@/types/pmo';
+import { Badge } from '@/components/ui/badge';
 
 export default function Projetos() {
   const { usuario, isLoading, isAdmin } = useAuth();
@@ -76,6 +77,65 @@ export default function Projetos() {
     console.log('Histórico projeto:', projeto);
   };
 
+  // Função para obter classes exatas dos badges das carteiras
+  const getCarteiraBadgeClasses = (carteira: string) => {
+    switch (carteira) {
+      case 'Cadastro':
+        return 'bg-blue-50 text-blue-700 border-blue-200';
+      case 'Canais':
+        return 'bg-orange-50 text-orange-700 border-orange-200';
+      case 'Core Bancário':
+        return 'bg-slate-50 text-slate-700 border-slate-200';
+      case 'Crédito':
+        return 'bg-green-50 text-green-700 border-green-200';
+      case 'Cripto':
+        return 'bg-yellow-50 text-yellow-700 border-yellow-200';
+      case 'Empréstimos':
+        return 'bg-purple-50 text-purple-700 border-purple-200';
+      case 'Fila Rápida':
+        return 'bg-red-50 text-red-700 border-red-200';
+      case 'Investimentos 1':
+        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      case 'Investimentos 2':
+        return 'bg-teal-50 text-teal-700 border-teal-200';
+      case 'Onboarding':
+        return 'bg-indigo-50 text-indigo-700 border-indigo-200';
+      case 'Open Finance':
+        return 'bg-cyan-50 text-cyan-700 border-cyan-200';
+      default:
+        return 'bg-gray-50 text-gray-700 border-gray-200';
+    }
+  };
+
+  const getCarteiraIcon = (carteira: string) => {
+    switch (carteira) {
+      case 'Cadastro':
+        return '👤';
+      case 'Canais':
+        return '📱';
+      case 'Core Bancário':
+        return '🏦';
+      case 'Crédito':
+        return '💳';
+      case 'Cripto':
+        return '₿';
+      case 'Empréstimos':
+        return '💰';
+      case 'Fila Rápida':
+        return '⚡';
+      case 'Investimentos 1':
+        return '📈';
+      case 'Investimentos 2':
+        return '📊';
+      case 'Onboarding':
+        return '🚀';
+      case 'Open Finance':
+        return '🔗';
+      default:
+        return '📁';
+    }
+  };
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -110,36 +170,18 @@ export default function Projetos() {
             Carregando projetos...
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
             {projetosFiltrados.map((projeto: Projeto) => (
-              <div key={projeto.id} className="bg-white rounded-lg shadow-sm border p-6">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-xl font-semibold text-pmo-primary">
-                        {projeto.nome_projeto}
-                      </h3>
-                      <span className="text-sm text-pmo-gray bg-gray-100 px-2 py-1 rounded">
-                        {projeto.area_responsavel}
-                      </span>
-                    </div>
-                    <p className="text-pmo-gray mb-4 leading-relaxed">
-                      {projeto.descricao_projeto}
-                    </p>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                      <div>
-                        <span className="font-medium text-pmo-gray">GP Responsável:</span>
-                        <p className="text-gray-700">{projeto.gp_responsavel}</p>
-                      </div>
-                      <div>
-                        <span className="font-medium text-pmo-gray">Responsável ASA:</span>
-                        <p className="text-gray-700">{projeto.responsavel_asa}</p>
-                      </div>
-                      <div>
-                        <span className="font-medium text-pmo-gray">Tipo:</span>
-                        <p className="text-gray-700">{projeto.tipo_projeto_id}</p>
-                      </div>
-                    </div>
+              <div key={projeto.id} className="border-b border-gray-200 p-6 hover:bg-gray-50 last:border-b-0">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-3 flex-1">
+                    <h3 className="text-lg font-semibold text-[#1B365D]">
+                      {projeto.nome_projeto}
+                    </h3>
+                    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border ${getCarteiraBadgeClasses(projeto.area_responsavel || 'Crédito')}`}>
+                      <span className="text-sm">{getCarteiraIcon(projeto.area_responsavel || 'Crédito')}</span>
+                      {projeto.area_responsavel || 'Crédito'}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <ProjetoAcoes 
@@ -155,6 +197,64 @@ export default function Projetos() {
                     )}
                   </div>
                 </div>
+
+                <p className="text-pmo-gray mb-4 leading-relaxed">
+                  {projeto.descricao_projeto}
+                </p>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm mb-4">
+                  <div>
+                    <span className="font-medium text-pmo-gray">GP Responsável:</span>
+                    <p className="text-gray-700">{projeto.gp_responsavel}</p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-pmo-gray">Responsável ASA:</span>
+                    <p className="text-gray-700">{projeto.responsavel_asa}</p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-pmo-gray">Tipo:</span>
+                    <p className="text-gray-700">{projeto.tipo_projeto_id}</p>
+                  </div>
+                </div>
+
+                {/* Último Status */}
+                {projeto.ultimoStatus && (
+                  <div className="bg-gray-50 rounded-lg p-4 mt-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-sm font-medium text-pmo-gray">Último Status</h4>
+                      <div className="flex items-center gap-2">
+                        {!projeto.ultimoStatus.aprovado && (
+                          <Badge className="bg-yellow-100 text-yellow-800">
+                            Em Revisão
+                          </Badge>
+                        )}
+                        {projeto.ultimoStatus.aprovado && (
+                          <Badge className="bg-green-100 text-green-800">
+                            Revisado
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                      <div>
+                        <span className="font-medium">Status Geral:</span>
+                        <p>{projeto.ultimoStatus.status_geral}</p>
+                      </div>
+                      <div>
+                        <span className="font-medium">Visão GP:</span>
+                        <p>{projeto.ultimoStatus.status_visao_gp}</p>
+                      </div>
+                      <div>
+                        <span className="font-medium">Progresso:</span>
+                        <p>{(projeto.ultimoStatus as any).progresso_estimado || 0}%</p>
+                      </div>
+                      <div>
+                        <span className="font-medium">Atualizado em:</span>
+                        <p>{projeto.ultimoStatus.data_atualizacao.toLocaleDateString()}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>

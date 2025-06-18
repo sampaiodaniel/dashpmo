@@ -1,10 +1,14 @@
 
+import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
 import { MudancasList } from '@/components/mudancas/MudancasList';
 import { MudancasMetricas } from '@/components/mudancas/MudancasMetricas';
+import { MudancasFilters } from '@/components/mudancas/MudancasFilters';
+import { MudancasSearchBar } from '@/components/mudancas/MudancasSearchBar';
 import { useMudancas } from '@/hooks/useMudancas';
+import { useMudancasFiltradas } from '@/hooks/useMudancasFiltradas';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -12,6 +16,10 @@ import { Link } from 'react-router-dom';
 export default function Mudancas() {
   const { usuario, isLoading } = useAuth();
   const { data: mudancas, isLoading: isLoadingMudancas, refetch } = useMudancas();
+  const [filtros, setFiltros] = useState({});
+  const [termoBusca, setTermoBusca] = useState('');
+
+  const mudancasFiltradas = useMudancasFiltradas(mudancas, filtros, termoBusca);
 
   if (isLoading) {
     return (
@@ -34,6 +42,14 @@ export default function Mudancas() {
     refetch();
   };
 
+  const handleFiltrarPendentes = () => {
+    setFiltros({ statusAprovacao: 'Pendente' });
+  };
+
+  const handleFiltrarEmAnalise = () => {
+    setFiltros({ statusAprovacao: 'Em Análise' });
+  };
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -50,8 +66,24 @@ export default function Mudancas() {
           </Link>
         </div>
 
-        <MudancasMetricas mudancas={mudancas} />
-        <MudancasList mudancas={mudancas || []} />
+        <MudancasMetricas 
+          mudancas={mudancas} 
+          onFiltrarPendentes={handleFiltrarPendentes}
+          onFiltrarEmAnalise={handleFiltrarEmAnalise}
+        />
+
+        <MudancasFilters 
+          filtros={filtros}
+          onFiltrosChange={setFiltros}
+        />
+
+        <MudancasSearchBar 
+          termoBusca={termoBusca}
+          onTermoBuscaChange={setTermoBusca}
+          totalResults={mudancasFiltradas.length}
+        />
+        
+        <MudancasList mudancas={mudancasFiltradas} />
       </div>
     </Layout>
   );
