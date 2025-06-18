@@ -16,6 +16,7 @@ export function useLicoesAprendidas() {
         .select(`
           *,
           projeto:projetos (
+            id,
             nome_projeto,
             area_responsavel
           )
@@ -46,12 +47,19 @@ export function useCriarLicao() {
     mutationFn: async (licao: Omit<LicaoAprendida, 'id' | 'data_criacao'>) => {
       console.log('📝 Criando lição aprendida:', licao);
 
+      // Converter Date para string antes de enviar
+      const licaoData = {
+        ...licao,
+        data_registro: licao.data_registro.toISOString().split('T')[0]
+      };
+
       const { data, error } = await supabase
         .from('licoes_aprendidas')
-        .insert([licao])
+        .insert([licaoData])
         .select(`
           *,
           projeto:projetos (
+            id,
             nome_projeto,
             area_responsavel
           )
@@ -112,13 +120,23 @@ export function useAtualizarLicao() {
     }) => {
       console.log('📝 Atualizando lição:', id, updates);
 
+      // Converter Dates para strings se necessário
+      const updatesData = { ...updates };
+      if (updatesData.data_registro instanceof Date) {
+        updatesData.data_registro = updatesData.data_registro.toISOString().split('T')[0] as any;
+      }
+      if (updatesData.data_criacao instanceof Date) {
+        delete updatesData.data_criacao; // Não atualizar data de criação
+      }
+
       const { data, error } = await supabase
         .from('licoes_aprendidas')
-        .update(updates)
+        .update(updatesData)
         .eq('id', id)
         .select(`
           *,
           projeto:projetos (
+            id,
             nome_projeto,
             area_responsavel
           )
@@ -139,7 +157,7 @@ export function useAtualizarLicao() {
         'licao_aprendida',
         id,
         `Lição do projeto ${data.projeto?.nome_projeto || 'N/A'}`,
-        updates
+        updatesData
       );
 
       return data;

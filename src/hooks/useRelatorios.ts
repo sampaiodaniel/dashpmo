@@ -16,7 +16,7 @@ export function useRelatorios() {
       
       // Registrar log da geração do relatório
       log(
-        'relatorios',
+        'dashboard',
         'criacao',
         'relatorio',
         undefined,

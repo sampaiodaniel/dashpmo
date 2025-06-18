@@ -16,8 +16,13 @@ export function useMudancas() {
         .select(`
           *,
           projeto:projetos (
+            id,
             nome_projeto,
-            area_responsavel
+            area_responsavel,
+            responsavel_interno,
+            gp_responsavel,
+            criado_por,
+            data_criacao
           )
         `)
         .order('data_criacao', { ascending: false });
@@ -47,14 +52,25 @@ export function useCriarMudanca() {
     mutationFn: async (mudanca: Omit<MudancaReplanejamento, 'id' | 'data_criacao' | 'data_aprovacao' | 'responsavel_aprovacao'>) => {
       console.log('📝 Criando mudança:', mudanca);
 
+      // Converter Date para string antes de enviar
+      const mudancaData = {
+        ...mudanca,
+        data_solicitacao: mudanca.data_solicitacao.toISOString().split('T')[0]
+      };
+
       const { data, error } = await supabase
         .from('mudancas_replanejamento')
-        .insert([mudanca])
+        .insert([mudancaData])
         .select(`
           *,
           projeto:projetos (
+            id,
             nome_projeto,
-            area_responsavel
+            area_responsavel,
+            responsavel_interno,
+            gp_responsavel,
+            criado_por,
+            data_criacao
           )
         `)
         .single();
@@ -72,7 +88,7 @@ export function useCriarMudanca() {
         'criacao',
         'mudanca_replanejamento',
         data.id,
-        `Mudança no projeto ${data.projeto?.nome_projeto || 'N/A'}`,
+        `Mudança do projeto ${data.projeto?.nome_projeto || 'N/A'}`,
         {
           tipo_mudanca: data.tipo_mudanca,
           impacto_prazo_dias: data.impacto_prazo_dias,
@@ -86,14 +102,14 @@ export function useCriarMudanca() {
       queryClient.invalidateQueries({ queryKey: ['mudancas'] });
       toast({
         title: "Sucesso",
-        description: "Mudança de replanejamento criada com sucesso!",
+        description: "Mudança criada com sucesso!",
       });
     },
     onError: (error) => {
       console.error('❌ Erro ao criar mudança:', error);
       toast({
         title: "Erro",
-        description: "Erro ao criar mudança de replanejamento",
+        description: "Erro ao criar mudança",
         variant: "destructive",
       });
     },
@@ -114,15 +130,32 @@ export function useAtualizarMudanca() {
     }) => {
       console.log('📝 Atualizando mudança:', id, updates);
 
+      // Converter Dates para strings se necessário
+      const updatesData = { ...updates };
+      if (updatesData.data_solicitacao instanceof Date) {
+        updatesData.data_solicitacao = updatesData.data_solicitacao.toISOString().split('T')[0] as any;
+      }
+      if (updatesData.data_aprovacao instanceof Date) {
+        updatesData.data_aprovacao = updatesData.data_aprovacao.toISOString().split('T')[0] as any;
+      }
+      if (updatesData.data_criacao instanceof Date) {
+        delete updatesData.data_criacao; // Não atualizar data de criação
+      }
+
       const { data, error } = await supabase
         .from('mudancas_replanejamento')
-        .update(updates)
+        .update(updatesData)
         .eq('id', id)
         .select(`
           *,
           projeto:projetos (
+            id,
             nome_projeto,
-            area_responsavel
+            area_responsavel,
+            responsavel_interno,
+            gp_responsavel,
+            criado_por,
+            data_criacao
           )
         `)
         .single();
@@ -140,8 +173,8 @@ export function useAtualizarMudanca() {
         'edicao',
         'mudanca_replanejamento',
         id,
-        `Mudança no projeto ${data.projeto?.nome_projeto || 'N/A'}`,
-        updates
+        `Mudança do projeto ${data.projeto?.nome_projeto || 'N/A'}`,
+        updatesData
       );
 
       return data;
@@ -203,9 +236,10 @@ export function useExcluirMudanca() {
           'exclusao',
           'mudanca_replanejamento',
           id,
-          `Mudança no projeto ${mudancaData.projeto?.nome_projeto || 'N/A'}`,
+          `Mudança do projeto ${mudancaData.projeto?.nome_projeto || 'N/A'}`,
           {
             tipo_mudanca: mudancaData.tipo_mudanca,
+            impacto_prazo_dias: mudancaData.impacto_prazo_dias,
             solicitante: mudancaData.solicitante
           }
         );
