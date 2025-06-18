@@ -12,6 +12,8 @@ import { StatusInformacaoSection } from '@/components/forms/status/StatusInforma
 import { DetalhesStatusSection } from '@/components/forms/status/DetalhesStatusSection';
 import { EntregasDinamicasNovo } from '@/components/forms/EntregasDinamicasNovo';
 import { calcularMatrizRisco } from '@/utils/riskMatrixCalculator';
+import { useEffect } from 'react';
+import { cleanupSistemaIncidents } from '@/utils/cleanupSistemaIncidents';
 
 export default function NovoStatus() {
   const { usuario, isLoading } = useAuth();
@@ -28,6 +30,11 @@ export default function NovoStatus() {
     handleProjetoChange,
     handleProgressoChange
   } = useNovoStatusForm();
+
+  // Executar limpeza de incidentes criados pelo Sistema ao carregar a página
+  useEffect(() => {
+    cleanupSistemaIncidents();
+  }, []);
 
   // Valores atuais dos campos de risco para calcular a matriz
   const impactoAtual = form.watch('impacto_riscos');
