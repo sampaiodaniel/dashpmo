@@ -3,12 +3,33 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { StatusProjeto } from '@/types/pmo';
 import { formatarData } from '@/utils/dateFormatting';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ProximasEntregasSectionProps {
   status: StatusProjeto;
 }
 
 export function ProximasEntregasSection({ status }: ProximasEntregasSectionProps) {
+  // Buscar entregas extras da tabela entregas_status
+  const { data: entregasExtras = [] } = useQuery({
+    queryKey: ['entregas-status', status.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('entregas_status')
+        .select('*')
+        .eq('status_id', status.id)
+        .order('ordem', { ascending: true });
+
+      if (error) {
+        console.error('Erro ao buscar entregas extras:', error);
+        return [];
+      }
+
+      return data || [];
+    },
+  });
+
   const entregas = [];
   
   // Adicionar entregas principais
@@ -39,17 +60,15 @@ export function ProximasEntregasSection({ status }: ProximasEntregasSectionProps
     });
   }
 
-  // Adicionar entregas extras se houver
-  if (status.entregas_extras) {
-    status.entregas_extras.forEach((entrega: any) => {
-      entregas.push({
-        nome: entrega.nome_entrega,
-        data: entrega.data_entrega,
-        entregaveis: entrega.entregaveis,
-        ordem: entrega.ordem
-      });
+  // Adicionar entregas extras vindas da tabela entregas_status
+  entregasExtras.forEach((entrega: any) => {
+    entregas.push({
+      nome: entrega.nome_entrega,
+      data: entrega.data_entrega,
+      entregaveis: entrega.entregaveis,
+      ordem: entrega.ordem
     });
-  }
+  });
 
   if (entregas.length === 0) {
     return null;
