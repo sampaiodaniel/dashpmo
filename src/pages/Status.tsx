@@ -3,15 +3,28 @@ import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
 import { StatusList } from '@/components/status/StatusList';
-import { StatusAprovacaoMetricas } from '@/components/status/StatusAprovacaoMetricas';
+import { StatusMetricas } from '@/components/status/StatusMetricas';
 import { useStatusList } from '@/hooks/useStatusList';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useMemo } from 'react';
 
 export default function Status() {
   const { usuario, isLoading } = useAuth();
   const { data: statusList, isLoading: isLoadingStatus, refetch } = useStatusList();
+
+  const metricas = useMemo(() => {
+    if (!statusList) {
+      return { totalStatus: 0, naoRevisados: 0, revisados: 0 };
+    }
+
+    const totalStatus = statusList.length;
+    const naoRevisados = statusList.filter(s => !s.aprovado).length;
+    const revisados = statusList.filter(s => s.aprovado).length;
+
+    return { totalStatus, naoRevisados, revisados };
+  }, [statusList]);
 
   if (isLoading) {
     return (
@@ -50,7 +63,12 @@ export default function Status() {
           </Link>
         </div>
 
-        <StatusAprovacaoMetricas />
+        <StatusMetricas 
+          totalStatus={metricas.totalStatus}
+          naoRevisados={metricas.naoRevisados}
+          revisados={metricas.revisados}
+        />
+        
         <StatusList status={statusList || []} onStatusUpdate={handleStatusUpdate} />
       </div>
     </Layout>

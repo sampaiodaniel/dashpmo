@@ -20,14 +20,12 @@ export default function Projetos() {
   const [modalAberto, setModalAberto] = useState(false);
   
   const {
-    projetosFiltrados,
-    filtroCarteira,
-    filtroStatus,
-    filtroResponsavel,
-    filtroTipo,
+    metricas,
+    filtroAtivo,
     filtros,
-    handleFiltroChange,
-  } = useProjetosFiltros(projetos || []);
+    aplicarFiltro,
+    setFiltros
+  } = useProjetosFiltros(projetos);
 
   if (isLoading) {
     return (
@@ -55,6 +53,14 @@ export default function Projetos() {
     setModalAberto(false);
   };
 
+  // Filtrar projetos baseado nos filtros aplicados
+  const projetosFiltrados = projetos?.filter(projeto => {
+    if (!filtros.incluirFechados && !projeto.status_ativo) {
+      return false;
+    }
+    return true;
+  }) || [];
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -72,12 +78,15 @@ export default function Projetos() {
           </Button>
         </div>
 
-        <ProjetosKPIs projetos={projetosFiltrados} />
+        <ProjetosKPIs 
+          metricas={metricas} 
+          filtroAtivo={filtroAtivo}
+          onFiltroClick={aplicarFiltro}
+        />
         
         <ProjetoFilters 
           filtros={filtros}
-          onFiltroChange={handleFiltroChange}
-          totalProjetos={projetosFiltrados.length || 0}
+          onFiltroChange={setFiltros}
         />
 
         {isLoadingProjetos ? (
@@ -95,7 +104,7 @@ export default function Projetos() {
                         {projeto.nome_projeto}
                       </h3>
                       <span className="text-sm text-pmo-gray bg-gray-100 px-2 py-1 rounded">
-                        {projeto.carteira}
+                        {projeto.area_responsavel}
                       </span>
                     </div>
                     <p className="text-pmo-gray mb-4 leading-relaxed">
@@ -112,13 +121,13 @@ export default function Projetos() {
                       </div>
                       <div>
                         <span className="font-medium text-pmo-gray">Tipo:</span>
-                        <p className="text-gray-700">{projeto.tipo_projeto}</p>
+                        <p className="text-gray-700">{projeto.tipo_projeto_id}</p>
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <ProjetoAcoes projeto={projeto} onProjetoAtualizado={refetch} />
-                    {isAdmin() && <ProjetoAcoesAdmin projeto={projeto} onProjetoAtualizado={refetch} />}
+                    <ProjetoAcoes projeto={projeto} />
+                    {isAdmin() && <ProjetoAcoesAdmin projeto={projeto} />}
                   </div>
                 </div>
               </div>
@@ -127,9 +136,9 @@ export default function Projetos() {
         )}
 
         <CriarProjetoModal 
-          aberto={modalAberto}
-          onFechar={() => setModalAberto(false)}
-          onProjetoCriado={handleProjetoCriado}
+          isOpen={modalAberto}
+          onClose={() => setModalAberto(false)}
+          onSuccess={handleProjetoCriado}
         />
       </div>
     </Layout>
