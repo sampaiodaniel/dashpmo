@@ -9,7 +9,7 @@ interface DadosRelatorioVisual {
   projetos: any[];
   statusProjetos: any[];
   incidentes: any[];
-  dataGeracao: Date;
+  dataGeracao: Date | string;
 }
 
 interface RelatorioVisualContentProps {
@@ -17,6 +17,9 @@ interface RelatorioVisualContentProps {
 }
 
 export function RelatorioVisualContent({ dados }: RelatorioVisualContentProps) {
+  // Garantir que dataGeracao seja um objeto Date válido
+  const dataGeracao = dados.dataGeracao instanceof Date ? dados.dataGeracao : new Date(dados.dataGeracao);
+  
   // Filtrar projetos com último status aprovado
   const projetosComStatus = dados.projetos.map(projeto => {
     const statusAprovados = dados.statusProjetos.filter(status => 
@@ -45,7 +48,7 @@ export function RelatorioVisualContent({ dados }: RelatorioVisualContentProps) {
           {dados.carteira ? `Carteira: ${dados.carteira}` : `Responsável: ${dados.responsavel}`}
         </p>
         <p className="text-sm text-[#6B7280]">
-          Gerado em: {dados.dataGeracao.toLocaleDateString('pt-BR')} às {dados.dataGeracao.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+          Gerado em: {dataGeracao.toLocaleDateString('pt-BR')} às {dataGeracao.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
         </p>
       </div>
 
@@ -153,7 +156,7 @@ export function RelatorioVisualContent({ dados }: RelatorioVisualContentProps) {
       {/* Footer */}
       <div className="text-center border-t border-[#E5E7EB] pt-6 text-sm text-[#6B7280]">
         <p>PMO - Sistema de Gestão de Projetos</p>
-        <p>Relatório gerado automaticamente em {dados.dataGeracao.toLocaleString('pt-BR')}</p>
+        <p>Relatório gerado automaticamente em {dataGeracao.toLocaleString('pt-BR')}</p>
       </div>
     </div>
   );

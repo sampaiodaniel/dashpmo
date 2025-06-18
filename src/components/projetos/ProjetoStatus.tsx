@@ -1,13 +1,22 @@
 
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { ExternalLink } from 'lucide-react';
 import { getStatusColor, getStatusGeralColor, Projeto } from '@/types/pmo';
+import { useNavigate } from 'react-router-dom';
 
 interface ProjetoStatusProps {
   projeto: Projeto;
 }
 
 export function ProjetoStatus({ projeto }: ProjetoStatusProps) {
+  const navigate = useNavigate();
+  
   if (!projeto.ultimoStatus) return null;
+
+  const handleVerDetalhes = () => {
+    navigate(`/status/${projeto.ultimoStatus.id}`);
+  };
 
   return (
     <div className="bg-white rounded-lg shadow-sm border p-6">
@@ -35,11 +44,22 @@ export function ProjetoStatus({ projeto }: ProjetoStatusProps) {
           </p>
         </div>
         
-        <div>
-          <h3 className="font-medium text-pmo-gray mb-2">Aprovado</h3>
-          <Badge variant={projeto.ultimoStatus.aprovado ? "default" : "destructive"}>
-            {projeto.ultimoStatus.aprovado ? "Sim" : "Não"}
-          </Badge>
+        <div className="flex flex-col gap-2">
+          <h3 className="font-medium text-pmo-gray mb-2">Revisado</h3>
+          <div className="flex items-center gap-2">
+            <Badge variant={projeto.ultimoStatus.aprovado ? "default" : "destructive"}>
+              {projeto.ultimoStatus.aprovado ? "Sim" : "Não"}
+            </Badge>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleVerDetalhes}
+              className="flex items-center gap-1"
+            >
+              <ExternalLink className="h-3 w-3" />
+              Ver detalhes
+            </Button>
+          </div>
         </div>
       </div>
 

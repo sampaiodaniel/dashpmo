@@ -48,9 +48,6 @@ export function DashboardOverviewTable({ filtros, carteirasPermitidas }: Dashboa
               <th className="text-center p-3 font-medium text-pmo-gray">Baixo</th>
               <th className="text-center p-3 font-medium text-pmo-gray">Médio</th>
               <th className="text-center p-3 font-medium text-pmo-gray">Alto</th>
-              <th className="text-center p-3 font-medium text-pmo-gray">Em Dia</th>
-              <th className="text-center p-3 font-medium text-pmo-gray">Com Atraso</th>
-              <th className="text-center p-3 font-medium text-pmo-gray">Entregues</th>
             </tr>
           </thead>
           <tbody>
@@ -62,9 +59,6 @@ export function DashboardOverviewTable({ filtros, carteirasPermitidas }: Dashboa
                 <td className="text-center p-3">{carteira.baixo}</td>
                 <td className="text-center p-3">{carteira.medio}</td>
                 <td className="text-center p-3">{carteira.alto}</td>
-                <td className="text-center p-3">{carteira.emDia}</td>
-                <td className="text-center p-3">{carteira.comAtraso}</td>
-                <td className="text-center p-3">{carteira.entregues}</td>
               </tr>
             ))}
           </tbody>

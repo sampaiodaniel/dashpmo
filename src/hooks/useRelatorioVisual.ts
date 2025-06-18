@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -98,7 +99,7 @@ export function useRelatorioVisual() {
         projetos,
         statusProjetos: statusProjetos || [],
         incidentes: incidentes || [],
-        dataGeracao: new Date()
+        dataGeracao: new Date() // Garantir que seja sempre um objeto Date
       };
 
       console.log('✅ Relatório visual gerado:', dados);
@@ -169,7 +170,7 @@ export function useRelatorioVisual() {
         projetos,
         statusProjetos: statusProjetos || [],
         incidentes: incidentes || [],
-        dataGeracao: new Date()
+        dataGeracao: new Date() // Garantir que seja sempre um objeto Date
       };
 
       console.log('✅ Relatório visual gerado:', dados);

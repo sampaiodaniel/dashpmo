@@ -4,7 +4,6 @@ import { DashboardMetricas, FiltrosDashboard } from '@/types/pmo';
 import { getResponsavelHierarchy } from './dashboard/useDashboardHierarchy';
 import { fetchDashboardProjects } from './dashboard/useDashboardProjects';
 import { fetchProjectStatus } from './dashboard/useDashboardStatus';
-import { fetchActiveMudancas } from './dashboard/useDashboardMudancas';
 import { 
   calculateProjectMetrics, 
   calculateProximosMarcos, 
@@ -30,19 +29,14 @@ export function useDashboardMetricas(filtros?: FiltrosDashboard) {
       // Buscar status dos projetos
       const statusData = await fetchProjectStatus(projetos);
 
-      // Buscar mudanças ativas
-      const mudancas = await fetchActiveMudancas(projetos);
-
       // Calcular métricas
       const metricas = calculateProjectMetrics(projetos, statusData);
       const proximosMarcos = calculateProximosMarcos(projetos, metricas.statusPorProjeto);
       const projetosCriticos = calculateProjetosCriticos(projetos, metricas.statusPorProjeto);
-      const mudancasAtivas = mudancas.length;
 
       console.log('📈 Métricas calculadas:', {
         totalProjetos: metricas.totalProjetos,
         projetosCriticos,
-        mudancasAtivas,
         proximosMarcos: proximosMarcos.length
       });
 
@@ -53,7 +47,7 @@ export function useDashboardMetricas(filtros?: FiltrosDashboard) {
         projetosPorSaude: metricas.projetosPorSaude,
         proximosMarcos,
         projetosCriticos,
-        mudancasAtivas,
+        mudancasAtivas: 0, // Removido a busca por mudanças ativas
         carteirasPermitidas: hierarchy.carteirasPermitidas.map(c => c.toString()) // Converter para string[] para compatibilidade
       };
     },
