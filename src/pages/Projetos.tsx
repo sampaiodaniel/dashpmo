@@ -5,7 +5,6 @@ import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
 import { ProjetoFilters } from '@/components/projetos/ProjetoFilters';
 import { ProjetosKPIs } from '@/components/projetos/ProjetosKPIs';
-import { ProjetoAcoes } from '@/components/projetos/ProjetoAcoes';
 import { ProjetoAcoesAdmin } from '@/components/projetos/ProjetoAcoesAdmin';
 import { CriarProjetoModal } from '@/components/forms/CriarProjetoModal';
 import { useProjetos } from '@/hooks/useProjetos';
@@ -14,11 +13,13 @@ import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { Projeto } from '@/types/pmo';
 import { Badge } from '@/components/ui/badge';
+import { useNavigate } from 'react-router-dom';
 
 export default function Projetos() {
   const { usuario, isLoading, isAdmin } = useAuth();
   const { data: projetos, isLoading: isLoadingProjetos, refetch } = useProjetos();
   const [modalAberto, setModalAberto] = useState(false);
+  const navigate = useNavigate();
   
   const {
     metricas,
@@ -66,16 +67,6 @@ export default function Projetos() {
   const responsaveis = Array.from(new Set(
     projetos?.map(p => p.responsavel_interno).filter(Boolean) || []
   ));
-
-  const handleEditarProjeto = (projeto: Projeto) => {
-    // TODO: Implement edit functionality
-    console.log('Editar projeto:', projeto);
-  };
-
-  const handleHistoricoProjeto = (projeto: Projeto) => {
-    // TODO: Implement history functionality
-    console.log('Histórico projeto:', projeto);
-  };
 
   // Função para obter classes exatas dos badges das carteiras
   const getCarteiraBadgeClasses = (carteira: string) => {
@@ -136,6 +127,10 @@ export default function Projetos() {
     }
   };
 
+  const handleProjetoClick = (projeto: Projeto) => {
+    navigate(`/projetos/${projeto.id}`);
+  };
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -172,7 +167,11 @@ export default function Projetos() {
         ) : (
           <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
             {projetosFiltrados.map((projeto: Projeto) => (
-              <div key={projeto.id} className="border-b border-gray-200 p-6 hover:bg-gray-50 last:border-b-0">
+              <div 
+                key={projeto.id} 
+                className="border-b border-gray-200 p-6 hover:bg-gray-50 last:border-b-0 cursor-pointer"
+                onClick={() => handleProjetoClick(projeto)}
+              >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3 flex-1">
                     <h3 className="text-lg font-semibold text-[#1B365D]">
@@ -184,16 +183,13 @@ export default function Projetos() {
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <ProjetoAcoes 
-                      projeto={projeto} 
-                      onEditarClick={() => handleEditarProjeto(projeto)}
-                      onHistoricoClick={() => handleHistoricoProjeto(projeto)}
-                    />
                     {isAdmin() && (
-                      <ProjetoAcoesAdmin 
-                        projeto={projeto} 
-                        onProjetoAtualizado={refetch}
-                      />
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <ProjetoAcoesAdmin 
+                          projeto={projeto} 
+                          onProjetoAtualizado={refetch}
+                        />
+                      </div>
                     )}
                   </div>
                 </div>
@@ -241,7 +237,7 @@ export default function Projetos() {
                         <p>{projeto.ultimoStatus.status_geral}</p>
                       </div>
                       <div>
-                        <span className="font-medium">Visão GP:</span>
+                        <span className="font-medium">Visão Chefe do Projeto:</span>
                         <p>{projeto.ultimoStatus.status_visao_gp}</p>
                       </div>
                       <div>

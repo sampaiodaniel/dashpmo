@@ -35,20 +35,18 @@ export function KpiBox({ title, value, icon, color, className }: KpiBoxProps) {
     <div className={cn(
       "bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow",
       styles.border,
-      "border-l-4 p-4 h-20",
+      "border-l-4 p-3 h-14",
       className
     )}>
       <div className="flex items-center gap-3 h-full">
         <div className={cn("flex-shrink-0", styles.iconBg)}>
           {icon}
         </div>
-        <div className="flex flex-col justify-center">
-          <div className={cn("text-2xl font-bold leading-none mb-1", styles.text)}>
-            {value}
-          </div>
-          <div className="text-sm text-gray-600 font-normal leading-none">
-            {title}
-          </div>
+        <div className={cn("text-xl font-bold", styles.text)}>
+          {value}
+        </div>
+        <div className="text-sm text-gray-600 font-normal">
+          {title}
         </div>
       </div>
     </div>

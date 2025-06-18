@@ -104,7 +104,7 @@ export function ProjetoStatus({ projeto }: ProjetoStatusProps) {
         
         <div>
           <h3 className="font-medium text-pmo-gray mb-3">Visão Chefe do Projeto</h3>
-          <div className="flex items-center">
+          <div className="flex items-start">
             <Badge className={getStatusColor(ultimoStatus.status_visao_gp)}>
               {ultimoStatus.status_visao_gp}
             </Badge>
