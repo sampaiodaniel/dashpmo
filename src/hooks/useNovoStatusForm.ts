@@ -8,6 +8,7 @@ import { useAuth } from './useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useProjetos } from './useProjetos';
 import { useCarteiraOverview } from './useCarteiraOverview';
+import { useLogger } from '@/utils/logger';
 
 const statusFormSchema = z.object({
   projeto_id: z.number().min(1, "Projeto é obrigatório"),
@@ -20,13 +21,10 @@ const statusFormSchema = z.object({
   bloqueios_atuais: z.string().optional(),
   observacoes_gerais: z.string().optional(),
   marco1_nome: z.string().min(1, "Nome da entrega do Marco 1 é obrigatório"),
-  marco1_data: z.string().refine((val) => val === 'TBD' || val.length > 0, "Data de entrega do Marco 1 é obrigatória"),
   marco1_responsavel: z.string().min(1, "Entregáveis do Marco 1 são obrigatórios"),
   marco2_nome: z.string().optional(),
-  marco2_data: z.string().optional(),
   marco2_responsavel: z.string().optional(),
   marco3_nome: z.string().optional(),
-  marco3_data: z.string().optional(),
   marco3_responsavel: z.string().optional(),
 });
 
@@ -36,6 +34,7 @@ export function useNovoStatusForm() {
   const navigate = useNavigate();
   const { usuario } = useAuth();
   const { toast } = useToast();
+  const { log } = useLogger();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [carteiraSelecionada, setCarteiraSelecionada] = useState('');
   const [projetoSelecionado, setProjetoSelecionado] = useState<number | null>(null);
@@ -60,13 +59,10 @@ export function useNovoStatusForm() {
       bloqueios_atuais: '',
       observacoes_gerais: '',
       marco1_nome: '',
-      marco1_data: '',
       marco1_responsavel: '',
       marco2_nome: '',
-      marco2_data: '',
       marco2_responsavel: '',
       marco3_nome: '',
-      marco3_data: '',
       marco3_responsavel: '',
     },
   });
@@ -97,6 +93,8 @@ export function useNovoStatusForm() {
     setIsSubmitting(true);
 
     try {
+      const projeto = projetos?.find(p => p.id === projetoSelecionado);
+      
       const statusData = {
         criado_por: usuario.nome,
         aprovado: false,
@@ -110,13 +108,10 @@ export function useNovoStatusForm() {
         probabilidade_riscos: data.probabilidade_riscos as "Baixo" | "Médio" | "Alto",
         impacto_riscos: data.impacto_riscos as "Baixo" | "Médio" | "Alto",
         entrega1: data.marco1_nome,
-        data_marco1: data.marco1_data || null,
         entregaveis1: data.marco1_responsavel,
         entrega2: data.marco2_nome || null,
-        data_marco2: data.marco2_data || null,
         entregaveis2: data.marco2_responsavel || null,
         entrega3: data.marco3_nome || null,
-        data_marco3: data.marco3_data || null,
         entregaveis3: data.marco3_responsavel || null,
         progresso_estimado: progressoEstimado,
       };
@@ -139,6 +134,20 @@ export function useNovoStatusForm() {
       }
 
       console.log('Status criado com sucesso:', insertedData);
+
+      // Registrar log da criação
+      log(
+        'status',
+        'criacao',
+        'status_projeto',
+        insertedData[0]?.id,
+        `Status do projeto ${projeto?.nome_projeto || 'N/A'}`,
+        {
+          projeto_id: projetoSelecionado,
+          status_geral: data.status_geral,
+          status_visao_gp: data.status_visao_gp
+        }
+      );
 
       toast({
         title: "Status criado com sucesso!",

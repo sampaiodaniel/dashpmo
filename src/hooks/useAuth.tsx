@@ -3,6 +3,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import { supabase } from '@/integrations/supabase/client';
 import { Usuario } from '@/types/pmo';
 import { toast } from '@/components/ui/use-toast';
+import { useLogger } from '@/utils/logger';
 
 interface AuthContextType {
   usuario: Usuario | null;
@@ -126,6 +127,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUsuario(user);
       localStorage.setItem('pmo-user', JSON.stringify(user));
       
+      // Registrar log de login
+      try {
+        await supabase.rpc('registrar_log_alteracao', {
+          p_usuario_id: user.id,
+          p_usuario_nome: user.nome,
+          p_modulo: 'usuarios',
+          p_acao: 'login',
+          p_entidade_tipo: 'usuario',
+          p_entidade_id: user.id,
+          p_entidade_nome: user.nome,
+          p_detalhes_alteracao: { email: user.email },
+          p_ip_usuario: null,
+          p_user_agent: navigator.userAgent
+        });
+      } catch (logError) {
+        console.error('Erro ao registrar log de login:', logError);
+      }
+      
       toast({
         title: "Login realizado com sucesso",
         description: `Bem-vindo, ${user.nome}!`,
@@ -146,6 +165,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
+    const currentUser = usuario;
+    
+    // Registrar log de logout antes de limpar os dados
+    if (currentUser) {
+      try {
+        supabase.rpc('registrar_log_alteracao', {
+          p_usuario_id: currentUser.id,
+          p_usuario_nome: currentUser.nome,
+          p_modulo: 'usuarios',
+          p_acao: 'logout',
+          p_entidade_tipo: 'usuario',
+          p_entidade_id: currentUser.id,
+          p_entidade_nome: currentUser.nome,
+          p_detalhes_alteracao: null,
+          p_ip_usuario: null,
+          p_user_agent: navigator.userAgent
+        });
+      } catch (logError) {
+        console.error('Erro ao registrar log de logout:', logError);
+      }
+    }
+    
     setUsuario(null);
     localStorage.removeItem('pmo-user');
     toast({

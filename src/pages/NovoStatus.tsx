@@ -1,3 +1,4 @@
+
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
@@ -15,7 +16,6 @@ import { StatusGeralSelect } from '@/components/forms/StatusGeralSelect';
 import { StatusVisaoGPSelect } from '@/components/forms/StatusVisaoGPSelect';
 import { NivelRiscoSelect } from '@/components/forms/NivelRiscoSelect';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { DateFieldWithTBD } from '@/components/forms/DateFieldWithTBD';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
 
@@ -52,16 +52,6 @@ export default function NovoStatus() {
     handleProgressoChange
   } = useNovoStatusForm();
 
-  // Estados para controlar TBD nos marcos
-  const [marco1TBD, setMarco1TBD] = useState(false);
-  const [marco2TBD, setMarco2TBD] = useState(false);
-  const [marco3TBD, setMarco3TBD] = useState(false);
-
-  // Estados para as datas dos marcos
-  const [dataMarco1, setDataMarco1] = useState<Date | null>(null);
-  const [dataMarco2, setDataMarco2] = useState<Date | null>(null);
-  const [dataMarco3, setDataMarco3] = useState<Date | null>(null);
-
   // Valores atuais dos campos de risco para calcular a matriz
   const impactoAtual = form.watch('impacto_riscos');
   const probabilidadeAtual = form.watch('probabilidade_riscos');
@@ -69,72 +59,6 @@ export default function NovoStatus() {
 
   // Gerar opções de progresso de 5 em 5%
   const progressoOptions = Array.from({ length: 21 }, (_, i) => i * 5);
-
-  // Funções para lidar com mudanças de data dos marcos
-  const handleMarco1DateChange = (date: Date | null) => {
-    setDataMarco1(date);
-    if (marco1TBD) {
-      form.setValue('marco1_data', 'TBD');
-    } else {
-      form.setValue('marco1_data', date ? date.toISOString().split('T')[0] : '');
-    }
-  };
-
-  const handleMarco1TBDChange = (isTBD: boolean) => {
-    setMarco1TBD(isTBD);
-    if (isTBD) {
-      form.setValue('marco1_data', 'TBD');
-      setDataMarco1(null);
-    }
-  };
-
-  const handleMarco2DateChange = (date: Date | null) => {
-    setDataMarco2(date);
-    if (marco2TBD) {
-      form.setValue('marco2_data', 'TBD');
-    } else {
-      form.setValue('marco2_data', date ? date.toISOString().split('T')[0] : '');
-    }
-  };
-
-  const handleMarco2TBDChange = (isTBD: boolean) => {
-    setMarco2TBD(isTBD);
-    if (isTBD) {
-      form.setValue('marco2_data', 'TBD');
-      setDataMarco2(null);
-    }
-  };
-
-  const handleMarco3DateChange = (date: Date | null) => {
-    setDataMarco3(date);
-    if (marco3TBD) {
-      form.setValue('marco3_data', 'TBD');
-    } else {
-      form.setValue('marco3_data', date ? date.toISOString().split('T')[0] : '');
-    }
-  };
-
-  const handleMarco3TBDChange = (isTBD: boolean) => {
-    setMarco3TBD(isTBD);
-    if (isTBD) {
-      form.setValue('marco3_data', 'TBD');
-      setDataMarco3(null);
-    }
-  };
-
-  // Função customizada para submit que lida com TBD
-  const handleFormSubmit = async (data: any) => {
-    // Processar dados dos marcos com TBD
-    const processedData = {
-      ...data,
-      marco1_data: marco1TBD ? 'TBD' : (dataMarco1 ? dataMarco1.toISOString().split('T')[0] : ''),
-      marco2_data: marco2TBD ? 'TBD' : (dataMarco2 ? dataMarco2.toISOString().split('T')[0] : ''),
-      marco3_data: marco3TBD ? 'TBD' : (dataMarco3 ? dataMarco3.toISOString().split('T')[0] : ''),
-    };
-
-    console.log('Dados do formulário processados:', processedData);
-    await onSubmit(processedData);
-  };
 
   if (isLoading) {
     return (
@@ -170,7 +94,7 @@ export default function NovoStatus() {
         </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             {/* Projeto Selection */}
             <Card>
               <CardHeader>
@@ -364,7 +288,7 @@ export default function NovoStatus() {
               </CardContent>
             </Card>
 
-            {/* Próximas Entregas com DateFieldWithTBD */}
+            {/* Próximas Entregas sem date picker */}
             <Card>
               <CardHeader>
                 <CardTitle>Próximas Entregas</CardTitle>
@@ -373,157 +297,102 @@ export default function NovoStatus() {
                 {/* Marco 1 */}
                 <div className="border rounded-lg p-4 space-y-4">
                   <h4 className="font-medium text-pmo-primary">Marco 1</h4>
-                  <div className="grid grid-cols-3 gap-4 items-end">
-                    <div className="col-span-2">
-                      <div className="space-y-4">
-                        <div>
-                          <Label htmlFor="entregaveis1">Entregáveis *</Label>
-                          <FormField
-                            control={form.control}
-                            name="marco1_responsavel"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormControl>
-                                  <Textarea {...field} placeholder="Descreva os entregáveis..." rows={4} required />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="entrega1">Nome da Entrega *</Label>
-                        <FormField
-                          control={form.control}
-                          name="marco1_nome"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormControl>
-                                <Input {...field} placeholder="Nome da entrega" className="bg-white" required />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
+                  <div className="grid grid-cols-1 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="marco1_nome"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nome da Entrega *</FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="Nome da entrega" required />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                      <DateFieldWithTBD
-                        label="Data de Entrega"
-                        value={dataMarco1}
-                        onChange={handleMarco1DateChange}
-                        onTBDChange={handleMarco1TBDChange}
-                        isTBD={marco1TBD}
-                        required
-                        placeholder="Selecione a data"
-                      />
-                    </div>
+                    <FormField
+                      control={form.control}
+                      name="marco1_responsavel"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Entregáveis *</FormLabel>
+                          <FormControl>
+                            <Textarea {...field} placeholder="Descreva os entregáveis..." required />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
                 </div>
 
                 {/* Marco 2 */}
                 <div className="border rounded-lg p-4 space-y-4">
                   <h4 className="font-medium text-pmo-primary">Marco 2</h4>
-                  <div className="grid grid-cols-3 gap-4 items-end">
-                    <div className="col-span-2">
-                      <div className="space-y-4">
-                        <div>
-                          <Label htmlFor="entregaveis2">Entregáveis</Label>
-                          <FormField
-                            control={form.control}
-                            name="marco2_responsavel"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormControl>
-                                  <Textarea {...field} placeholder="Descreva os entregáveis..." rows={4} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="entrega2">Nome da Entrega</Label>
-                        <FormField
-                          control={form.control}
-                          name="marco2_nome"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormControl>
-                                <Input {...field} placeholder="Nome da entrega" className="bg-white" />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
+                  <div className="grid grid-cols-1 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="marco2_nome"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nome da Entrega</FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="Nome da entrega" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                      <DateFieldWithTBD
-                        label="Data de Entrega"
-                        value={dataMarco2}
-                        onChange={handleMarco2DateChange}
-                        onTBDChange={handleMarco2TBDChange}
-                        isTBD={marco2TBD}
-                        placeholder="Selecione a data"
-                      />
-                    </div>
+                    <FormField
+                      control={form.control}
+                      name="marco2_responsavel"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Entregáveis</FormLabel>
+                          <FormControl>
+                            <Textarea {...field} placeholder="Descreva os entregáveis..." />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
                 </div>
 
                 {/* Marco 3 */}
                 <div className="border rounded-lg p-4 space-y-4">
                   <h4 className="font-medium text-pmo-primary">Marco 3</h4>
-                  <div className="grid grid-cols-3 gap-4 items-end">
-                    <div className="col-span-2">
-                      <div className="space-y-4">
-                        <div>
-                          <Label htmlFor="entregaveis3">Entregáveis</Label>
-                          <FormField
-                            control={form.control}
-                            name="marco3_responsavel"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormControl>
-                                  <Textarea {...field} placeholder="Descreva os entregáveis..." rows={4} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="entrega3">Nome da Entrega</Label>
-                        <FormField
-                          control={form.control}
-                          name="marco3_nome"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormControl>
-                                <Input {...field} placeholder="Nome da entrega" className="bg-white" />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
+                  <div className="grid grid-cols-1 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="marco3_nome"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nome da Entrega</FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="Nome da entrega" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                      <DateFieldWithTBD
-                        label="Data de Entrega"
-                        value={dataMarco3}
-                        onChange={handleMarco3DateChange}
-                        onTBDChange={handleMarco3TBDChange}
-                        isTBD={marco3TBD}
-                        placeholder="Selecione a data"
-                      />
-                    </div>
+                    <FormField
+                      control={form.control}
+                      name="marco3_responsavel"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Entregáveis</FormLabel>
+                          <FormControl>
+                            <Textarea {...field} placeholder="Descreva os entregáveis..." />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
                 </div>
               </CardContent>

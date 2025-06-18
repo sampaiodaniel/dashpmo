@@ -1,321 +1,295 @@
 
-import { useState, useRef, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import { useState } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Camera, User, Lock } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
-import { usePerfilUsuario } from '@/hooks/usePerfilUsuario';
-import { usePerfilOperations } from '@/hooks/usePerfilOperations';
-
-const perfilSchema = z.object({
-  nome: z.string().min(1, 'Nome é obrigatório'),
-  sobrenome: z.string().min(1, 'Sobrenome é obrigatório'),
-});
-
-const senhaSchema = z.object({
-  senhaAtual: z.string().min(1, 'Senha atual é obrigatória'),
-  novaSenha: z.string().min(6, 'Nova senha deve ter pelo menos 6 caracteres'),
-  confirmarSenha: z.string().min(6, 'Confirmação é obrigatória'),
-}).refine((data) => data.novaSenha === data.confirmarSenha, {
-  message: "As senhas não coincidem",
-  path: ["confirmarSenha"],
-});
-
-type PerfilFormData = z.infer<typeof perfilSchema>;
-type SenhaFormData = z.infer<typeof senhaSchema>;
+import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useLogger } from '@/utils/logger';
 
 export function ConfiguracoesPerfil() {
-  const { usuario } = useAuth();
-  const { data: perfil, refetch } = usePerfilUsuario(usuario?.id || 0);
-  const { createOrUpdatePerfil, uploadFoto, alterarSenha } = usePerfilOperations();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const perfilForm = useForm<PerfilFormData>({
-    resolver: zodResolver(perfilSchema),
-    defaultValues: {
-      nome: '',
-      sobrenome: '',
-    },
+  const { usuario, refreshUsuario } = useAuth();
+  const { log } = useLogger();
+  const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    nome: usuario?.nome || '',
+    email: usuario?.email || '',
+    senhaAtual: '',
+    novaSenha: '',
+    confirmarSenha: ''
   });
 
-  const senhaForm = useForm<SenhaFormData>({
-    resolver: zodResolver(senhaSchema),
-    defaultValues: {
-      senhaAtual: '',
-      novaSenha: '',
-      confirmarSenha: '',
-    },
-  });
-
-  // Atualizar formulário quando perfil carrega
-  useEffect(() => {
-    if (perfil) {
-      console.log('Perfil carregado, atualizando form:', perfil);
-      perfilForm.reset({
-        nome: perfil.nome || '',
-        sobrenome: perfil.sobrenome || '',
-      });
-    }
-  }, [perfil, perfilForm]);
-
-  const onSubmitPerfil = async (data: PerfilFormData) => {
-    if (!usuario) {
-      console.error('Usuário não encontrado');
-      return;
-    }
-
-    console.log('Dados do formulário de perfil:', data);
-
-    try {
-      await createOrUpdatePerfil.mutateAsync({
-        usuario_id: usuario.id,
-        nome: data.nome,
-        sobrenome: data.sobrenome,
-        // Manter foto atual se existir
-        foto_url: perfil?.foto_url
-      });
-      
-      // Refetch para atualizar os dados exibidos
-      await refetch();
-    } catch (error) {
-      console.error('Erro ao salvar perfil:', error);
-    }
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const onSubmitSenha = async (data: SenhaFormData) => {
+  const handleSalvarPerfil = async () => {
     if (!usuario) return;
 
-    await alterarSenha.mutateAsync({
-      usuarioId: usuario.id,
-      senhaAtual: data.senhaAtual,
-      novaSenha: data.novaSenha,
-    });
+    setIsLoading(true);
+    
+    try {
+      const updates: any = {};
+      
+      if (formData.nome !== usuario.nome) {
+        updates.nome = formData.nome;
+      }
+      
+      if (formData.email !== usuario.email) {
+        updates.email = formData.email;
+      }
 
-    senhaForm.reset();
+      if (Object.keys(updates).length > 0) {
+        const { error } = await supabase
+          .from('usuarios')
+          .update(updates)
+          .eq('id', usuario.id);
+
+        if (error) {
+          console.error('Erro ao atualizar perfil:', error);
+          toast({
+            title: "Erro",
+            description: "Erro ao atualizar perfil",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        // Registrar log da alteração de perfil
+        log(
+          'usuarios',
+          'edicao',
+          'usuario',
+          usuario.id,
+          usuario.nome,
+          {
+            campos_alterados: Object.keys(updates),
+            valores_anteriores: {
+              nome: usuario.nome,
+              email: usuario.email
+            }
+          }
+        );
+
+        await refreshUsuario();
+        
+        toast({
+          title: "Sucesso",
+          description: "Perfil atualizado com sucesso!",
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao salvar perfil:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao salvar perfil",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file || !usuario) {
-      console.log('Arquivo ou usuário não encontrado');
+  const handleAlterarSenha = async () => {
+    if (!usuario) return;
+
+    if (!formData.senhaAtual || !formData.novaSenha || !formData.confirmarSenha) {
+      toast({
+        title: "Erro",
+        description: "Preencha todos os campos de senha",
+        variant: "destructive",
+      });
       return;
     }
 
-    console.log('Iniciando upload de arquivo:', file.name);
-
-    try {
-      const fotoUrl = await uploadFoto.mutateAsync({ file, usuarioId: usuario.id });
-      
-      console.log('Upload concluído, URL:', fotoUrl);
-      
-      // Atualizar perfil com nova foto mantendo dados existentes
-      await createOrUpdatePerfil.mutateAsync({
-        usuario_id: usuario.id,
-        foto_url: fotoUrl,
-        nome: perfil?.nome,
-        sobrenome: perfil?.sobrenome
+    if (formData.novaSenha !== formData.confirmarSenha) {
+      toast({
+        title: "Erro",
+        description: "A nova senha e confirmação não coincidem",
+        variant: "destructive",
       });
-      
-      // Refetch para atualizar a foto no header
-      await refetch();
+      return;
+    }
+
+    setIsLoading(true);
+    
+    try {
+      // Verificar senha atual
+      const { data: userData, error: userError } = await supabase
+        .from('usuarios')
+        .select('senha_hash')
+        .eq('id', usuario.id)
+        .single();
+
+      if (userError || !userData) {
+        toast({
+          title: "Erro",
+          description: "Erro ao verificar senha atual",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const senhaAtualHash = btoa(formData.senhaAtual);
+      if (userData.senha_hash !== senhaAtualHash) {
+        toast({
+          title: "Erro",
+          description: "Senha atual incorreta",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Atualizar senha
+      const novaSenhaHash = btoa(formData.novaSenha);
+      const { error } = await supabase
+        .from('usuarios')
+        .update({ senha_hash: novaSenhaHash })
+        .eq('id', usuario.id);
+
+      if (error) {
+        console.error('Erro ao atualizar senha:', error);
+        toast({
+          title: "Erro",
+          description: "Erro ao atualizar senha",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Registrar log da alteração de senha
+      log(
+        'usuarios',
+        'edicao',
+        'usuario',
+        usuario.id,
+        usuario.nome,
+        {
+          acao_especifica: 'alteracao_senha'
+        }
+      );
+
+      // Limpar campos de senha
+      setFormData(prev => ({
+        ...prev,
+        senhaAtual: '',
+        novaSenha: '',
+        confirmarSenha: ''
+      }));
+
+      toast({
+        title: "Sucesso",
+        description: "Senha alterada com sucesso!",
+      });
     } catch (error) {
-      console.error('Erro ao fazer upload:', error);
+      console.error('Erro ao alterar senha:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao alterar senha",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const getInitials = () => {
-    if (perfil?.nome && perfil?.sobrenome) {
-      return `${perfil.nome[0]}${perfil.sobrenome[0]}`.toUpperCase();
-    }
-    return usuario?.nome.split(' ').map(n => n[0]).join('').toUpperCase() || 'U';
-  };
-
-  const getDisplayName = () => {
-    if (perfil?.nome && perfil?.sobrenome) {
-      return `${perfil.nome} ${perfil.sobrenome}`;
-    }
-    return usuario?.nome || 'Usuário';
-  };
+  if (!usuario) {
+    return <div>Carregando...</div>;
+  }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      {/* Header com Avatar e Nome */}
-      <div className="bg-white rounded-lg border p-6">
-        <div className="flex items-center gap-6">
-          <div className="relative">
-            <Avatar className="h-24 w-24">
-              <AvatarImage src={perfil?.foto_url} />
-              <AvatarFallback className="bg-pmo-secondary text-white text-2xl">
-                {getInitials()}
-              </AvatarFallback>
-            </Avatar>
-            <Button
-              size="sm"
-              variant="outline"
-              className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full p-0"
-              onClick={() => fileInputRef.current?.click()}
-            >
-              <Camera className="h-4 w-4" />
-            </Button>
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold text-pmo-primary">{getDisplayName()}</h2>
-            <p className="text-gray-600">{usuario?.email}</p>
-          </div>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleFileUpload}
-            className="hidden"
-          />
-        </div>
-      </div>
-
-      <div>
-        <h1 className="text-3xl font-bold text-pmo-primary">Configurações</h1>
-        <p className="text-gray-600 mt-2">Gerencie suas informações pessoais e configurações da conta</p>
-      </div>
-
-      {/* Informações Pessoais */}
+    <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <User className="h-5 w-5" />
-            Informações Pessoais
-          </CardTitle>
-          <CardDescription>
-            Atualize suas informações pessoais
-          </CardDescription>
+          <CardTitle>Informações do Perfil</CardTitle>
         </CardHeader>
-        <CardContent>
-          <Form {...perfilForm}>
-            <form onSubmit={perfilForm.handleSubmit(onSubmitPerfil)} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={perfilForm.control}
-                  name="nome"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nome</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Seu nome" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={perfilForm.control}
-                  name="sobrenome"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Sobrenome</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Seu sobrenome" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Email</Label>
-                <Input value={usuario?.email} disabled className="bg-gray-50" />
-                <p className="text-xs text-gray-500">O email não pode ser alterado</p>
-              </div>
-
-              <Button 
-                type="submit" 
-                disabled={createOrUpdatePerfil.isPending}
-                className="bg-pmo-primary hover:bg-pmo-secondary"
-              >
-                {createOrUpdatePerfil.isPending ? 'Salvando...' : 'Salvar Informações'}
-              </Button>
-            </form>
-          </Form>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="nome">Nome</Label>
+              <Input
+                id="nome"
+                value={formData.nome}
+                onChange={(e) => handleInputChange('nome', e.target.value)}
+                placeholder="Seu nome"
+              />
+            </div>
+            <div>
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => handleInputChange('email', e.target.value)}
+                placeholder="seu@email.com"
+              />
+            </div>
+          </div>
+          
+          <div className="flex justify-end">
+            <Button 
+              onClick={handleSalvarPerfil}
+              disabled={isLoading}
+            >
+              {isLoading ? 'Salvando...' : 'Salvar Perfil'}
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
-      <Separator />
-
-      {/* Alterar Senha */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Lock className="h-5 w-5" />
-            Alterar Senha
-          </CardTitle>
-          <CardDescription>
-            Altere sua senha de acesso ao sistema
-          </CardDescription>
+          <CardTitle>Alterar Senha</CardTitle>
         </CardHeader>
-        <CardContent>
-          <Form {...senhaForm}>
-            <form onSubmit={senhaForm.handleSubmit(onSubmitSenha)} className="space-y-4">
-              <FormField
-                control={senhaForm.control}
-                name="senhaAtual"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Senha Atual</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder="Digite sua senha atual" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+        <CardContent className="space-y-4">
+          <div>
+            <Label htmlFor="senhaAtual">Senha Atual</Label>
+            <Input
+              id="senhaAtual"
+              type="password"
+              value={formData.senhaAtual}
+              onChange={(e) => handleInputChange('senhaAtual', e.target.value)}
+              placeholder="Digite sua senha atual"
+            />
+          </div>
+          
+          <Separator />
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="novaSenha">Nova Senha</Label>
+              <Input
+                id="novaSenha"
+                type="password"
+                value={formData.novaSenha}
+                onChange={(e) => handleInputChange('novaSenha', e.target.value)}
+                placeholder="Digite a nova senha"
               />
-
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={senhaForm.control}
-                  name="novaSenha"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nova Senha</FormLabel>
-                      <FormControl>
-                        <Input type="password" placeholder="Digite a nova senha" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={senhaForm.control}
-                  name="confirmarSenha"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Confirmar Nova Senha</FormLabel>
-                      <FormControl>
-                        <Input type="password" placeholder="Confirme a nova senha" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <Button 
-                type="submit" 
-                disabled={alterarSenha.isPending}
-                className="bg-pmo-primary hover:bg-pmo-secondary"
-              >
-                {alterarSenha.isPending ? 'Alterando...' : 'Alterar Senha'}
-              </Button>
-            </form>
-          </Form>
+            </div>
+            <div>
+              <Label htmlFor="confirmarSenha">Confirmar Nova Senha</Label>
+              <Input
+                id="confirmarSenha"
+                type="password"
+                value={formData.confirmarSenha}
+                onChange={(e) => handleInputChange('confirmarSenha', e.target.value)}
+                placeholder="Confirme a nova senha"
+              />
+            </div>
+          </div>
+          
+          <div className="flex justify-end">
+            <Button 
+              onClick={handleAlterarSenha}
+              disabled={isLoading}
+              variant="outline"
+            >
+              {isLoading ? 'Alterando...' : 'Alterar Senha'}
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>

@@ -2,15 +2,15 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { useAutoLog } from './useLogsAlteracoes';
 import { useAuth } from './useAuth';
 import { useNavigate } from 'react-router-dom';
+import { useLogger } from '@/utils/logger';
 
 export function useStatusOperations() {
   const queryClient = useQueryClient();
-  const { logAction } = useAutoLog();
   const { usuario } = useAuth();
   const navigate = useNavigate();
+  const { log } = useLogger();
 
   const revisar = useMutation({
     mutationFn: async ({ statusId, revisadoPor }: { statusId: number; revisadoPor: string }) => {
@@ -34,7 +34,7 @@ export function useStatusOperations() {
 
       // Registrar log da revisão
       if (usuario && data) {
-        logAction(
+        log(
           'status',
           'aprovacao',
           'status_projeto',
@@ -44,9 +44,7 @@ export function useStatusOperations() {
             status_geral: data.status_geral,
             status_visao_gp: data.status_visao_gp,
             revisado_por: revisadoPor
-          },
-          usuario.id,
-          usuario.nome
+          }
         );
       }
 
@@ -91,7 +89,7 @@ export function useStatusOperations() {
 
       // Registrar log da rejeição
       if (usuario && data) {
-        logAction(
+        log(
           'status',
           'exclusao',
           'status_projeto',
@@ -101,9 +99,7 @@ export function useStatusOperations() {
             status_geral: data.status_geral,
             status_visao_gp: data.status_visao_gp,
             motivo: 'Status rejeitado'
-          },
-          usuario.id,
-          usuario.nome
+          }
         );
       }
 

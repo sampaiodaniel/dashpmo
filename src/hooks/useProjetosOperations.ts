@@ -1,14 +1,15 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Database } from '@/integrations/supabase/types';
+import { useLogger } from '@/utils/logger';
 
 type ProjetoInsert = Database['public']['Tables']['projetos']['Insert'];
 type ProjetoUpdate = Database['public']['Tables']['projetos']['Update'];
 
 export function useProjetosOperations() {
   const [isLoading, setIsLoading] = useState(false);
+  const { log } = useLogger();
 
   const criarProjeto = async (projeto: Omit<ProjetoInsert, 'criado_por'>) => {
     setIsLoading(true);
@@ -36,6 +37,21 @@ export function useProjetosOperations() {
       }
 
       console.log('✅ Projeto criado com sucesso:', data);
+      
+      // Registrar log da criação
+      log(
+        'projetos',
+        'criacao',
+        'projeto',
+        data.id,
+        data.nome_projeto,
+        {
+          area_responsavel: data.area_responsavel,
+          responsavel_interno: data.responsavel_interno,
+          gp_responsavel: data.gp_responsavel
+        }
+      );
+
       toast({
         title: "Sucesso",
         description: "Projeto criado com sucesso!",
@@ -59,10 +75,12 @@ export function useProjetosOperations() {
     setIsLoading(true);
     
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('projetos')
         .update(updates)
-        .eq('id', projetoId);
+        .eq('id', projetoId)
+        .select()
+        .single();
 
       if (error) {
         console.error('Erro ao atualizar projeto:', error);
@@ -73,6 +91,16 @@ export function useProjetosOperations() {
         });
         return false;
       }
+
+      // Registrar log da edição
+      log(
+        'projetos',
+        'edicao',
+        'projeto',
+        projetoId,
+        data.nome_projeto,
+        updates
+      );
 
       return true;
     } catch (error) {
@@ -92,6 +120,13 @@ export function useProjetosOperations() {
     setIsLoading(true);
     
     try {
+      // Primeiro buscar dados do projeto para o log
+      const { data: projetoData } = await supabase
+        .from('projetos')
+        .select('nome_projeto')
+        .eq('id', projetoId)
+        .single();
+
       // Primeiro verificar se há status vinculados
       const { data: statusVinculados, error: statusError } = await supabase
         .from('status_projeto')
@@ -133,6 +168,16 @@ export function useProjetosOperations() {
         });
         return false;
       }
+
+      // Registrar log da exclusão
+      log(
+        'projetos',
+        'exclusao',
+        'projeto',
+        projetoId,
+        projetoData?.nome_projeto || 'Projeto removido',
+        null
+      );
 
       return true;
     } catch (error) {

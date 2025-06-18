@@ -1,9 +1,11 @@
 
 import { useState } from 'react';
 import { toast } from '@/components/ui/use-toast';
+import { useLogger } from '@/utils/logger';
 
 export function useRelatorios() {
   const [isLoading, setIsLoading] = useState(false);
+  const { log } = useLogger();
 
   const gerarRelatorio = async (tipo: 'dashboard' | 'semanal' | 'cronograma') => {
     setIsLoading(true);
@@ -11,6 +13,19 @@ export function useRelatorios() {
     try {
       // Simular geração de relatório
       await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Registrar log da geração do relatório
+      log(
+        'relatorios',
+        'criacao',
+        'relatorio',
+        undefined,
+        `Relatório ${tipo}`,
+        {
+          tipo_relatorio: tipo,
+          formato: 'PDF'
+        }
+      );
       
       toast({
         title: "Sucesso",
