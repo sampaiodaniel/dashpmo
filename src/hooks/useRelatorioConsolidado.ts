@@ -2,7 +2,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
 
 export interface DadosRelatorioConsolidado {
   carteira?: string;
@@ -16,41 +15,42 @@ export interface DadosRelatorioConsolidado {
 export function useRelatorioConsolidado() {
   const [isLoading, setIsLoading] = useState(false);
 
-  const { data: carteiras } = useQuery({
-    queryKey: ['carteiras-consolidado'],
+  // Buscar carteiras disponíveis
+  const { data: carteiras = [] } = useQuery({
+    queryKey: ['carteiras-relatorio-consolidado'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('projetos')
         .select('carteira_primaria')
         .not('carteira_primaria', 'is', null);
-      
+
       if (error) throw error;
-      
-      const carteirasUnicas = [...new Set(data.map(p => p.carteira_primaria))].filter(Boolean);
+
+      const carteirasUnicas = [...new Set(data.map(p => p.carteira_primaria))];
       return carteirasUnicas.sort();
-    }
+    },
   });
 
-  const { data: responsaveis } = useQuery({
-    queryKey: ['responsaveis-consolidado'],
+  // Buscar responsáveis ASA do painel de administração
+  const { data: responsaveis = [] } = useQuery({
+    queryKey: ['responsaveis-asa-relatorio-consolidado'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('projetos')
-        .select('responsavel_asa')
-        .not('responsavel_asa', 'is', null);
-      
+        .from('responsaveis_asa')
+        .select('nome')
+        .eq('ativo', true)
+        .order('nome');
+
       if (error) throw error;
-      
-      const responsaveisUnicos = [...new Set(data.map(p => p.responsavel_asa))].filter(Boolean);
-      return responsaveisUnicos.sort();
-    }
+
+      return data.map(r => r.nome);
+    },
   });
 
   const gerarRelatorioCarteira = async (carteira: string): Promise<DadosRelatorioConsolidado | null> => {
     setIsLoading(true);
-    
     try {
-      console.log('🔄 Gerando relatório consolidado para carteira:', carteira);
+      console.log('🔍 Gerando relatório consolidado para carteira:', carteira);
 
       // Buscar projetos da carteira
       const { data: projetos, error: projetosError } = await supabase
@@ -59,32 +59,25 @@ export function useRelatorioConsolidado() {
         .eq('carteira_primaria', carteira)
         .eq('status_ativo', true);
 
-      if (projetosError) {
-        console.error('Erro ao buscar projetos:', projetosError);
-        throw projetosError;
-      }
+      if (projetosError) throw projetosError;
 
       if (!projetos || projetos.length === 0) {
-        toast({
-          title: "Aviso",
-          description: "Nenhum projeto encontrado para esta carteira",
-          variant: "destructive",
-        });
         return null;
       }
 
-      // Buscar status dos projetos
-      const projetosIds = projetos.map(p => p.id);
+      const projetoIds = projetos.map(p => p.id);
+
+      // Buscar status mais recentes dos projetos
       const { data: statusProjetos, error: statusError } = await supabase
         .from('status_projeto')
-        .select('*')
-        .in('projeto_id', projetosIds)
+        .select(`
+          *,
+          projeto:projetos(id, nome_projeto)
+        `)
+        .in('projeto_id', projetoIds)
         .order('data_criacao', { ascending: false });
 
-      if (statusError) {
-        console.error('Erro ao buscar status:', statusError);
-        throw statusError;
-      }
+      if (statusError) throw statusError;
 
       // Buscar incidentes da carteira
       const { data: incidentes, error: incidentesError } = await supabase
@@ -93,35 +86,21 @@ export function useRelatorioConsolidado() {
         .eq('carteira', carteira)
         .order('data_registro', { ascending: false });
 
-      if (incidentesError) {
-        console.error('Erro ao buscar incidentes:', incidentesError);
-        throw incidentesError;
-      }
+      if (incidentesError) throw incidentesError;
 
       const dados: DadosRelatorioConsolidado = {
         carteira,
-        projetos: projetos || [],
+        projetos,
         statusProjetos: statusProjetos || [],
         incidentes: incidentes || [],
         dataGeracao: new Date()
       };
 
       console.log('✅ Relatório consolidado gerado:', dados);
-
-      toast({
-        title: "Sucesso",
-        description: "Relatório consolidado gerado com sucesso!",
-      });
-
       return dados;
 
     } catch (error) {
-      console.error('Erro ao gerar relatório consolidado:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao gerar relatório consolidado",
-        variant: "destructive",
-      });
+      console.error('❌ Erro ao gerar relatório consolidado:', error);
       return null;
     } finally {
       setIsLoading(false);
@@ -130,81 +109,59 @@ export function useRelatorioConsolidado() {
 
   const gerarRelatorioResponsavel = async (responsavel: string): Promise<DadosRelatorioConsolidado | null> => {
     setIsLoading(true);
-    
     try {
-      console.log('🔄 Gerando relatório consolidado para responsável:', responsavel);
+      console.log('🔍 Gerando relatório consolidado para responsável:', responsavel);
 
       // Buscar projetos do responsável
       const { data: projetos, error: projetosError } = await supabase
         .from('projetos')
         .select('*')
-        .eq('responsavel_asa', responsavel)
+        .or(`responsavel_asa.eq.${responsavel},responsavel_cwi.eq.${responsavel},gp_responsavel_cwi.eq.${responsavel}`)
         .eq('status_ativo', true);
 
-      if (projetosError) {
-        console.error('Erro ao buscar projetos:', projetosError);
-        throw projetosError;
-      }
+      if (projetosError) throw projetosError;
 
       if (!projetos || projetos.length === 0) {
-        toast({
-          title: "Aviso",
-          description: "Nenhum projeto encontrado para este responsável",
-          variant: "destructive",
-        });
         return null;
       }
 
-      // Buscar status dos projetos
-      const projetosIds = projetos.map(p => p.id);
+      const projetoIds = projetos.map(p => p.id);
+      const carteiras = [...new Set(projetos.map(p => p.carteira_primaria).filter(Boolean))];
+
+      // Buscar status mais recentes dos projetos
       const { data: statusProjetos, error: statusError } = await supabase
         .from('status_projeto')
-        .select('*')
-        .in('projeto_id', projetosIds)
+        .select(`
+          *,
+          projeto:projetos(id, nome_projeto)
+        `)
+        .in('projeto_id', projetoIds)
         .order('data_criacao', { ascending: false });
 
-      if (statusError) {
-        console.error('Erro ao buscar status:', statusError);
-        throw statusError;
-      }
+      if (statusError) throw statusError;
 
-      // Buscar incidentes das carteiras dos projetos do responsável
-      const carteiras = [...new Set(projetos.map(p => p.carteira_primaria))].filter(Boolean);
+      // Buscar incidentes das carteiras relacionadas
       const { data: incidentes, error: incidentesError } = await supabase
         .from('incidentes')
         .select('*')
         .in('carteira', carteiras)
         .order('data_registro', { ascending: false });
 
-      if (incidentesError) {
-        console.error('Erro ao buscar incidentes:', incidentesError);
-        throw incidentesError;
-      }
+      if (incidentesError) throw incidentesError;
 
       const dados: DadosRelatorioConsolidado = {
         responsavel,
-        projetos: projetos || [],
+        projetos,
         statusProjetos: statusProjetos || [],
         incidentes: incidentes || [],
         dataGeracao: new Date()
       };
 
       console.log('✅ Relatório consolidado gerado:', dados);
-
-      toast({
-        title: "Sucesso",
-        description: "Relatório consolidado gerado com sucesso!",
-      });
-
       return dados;
 
     } catch (error) {
-      console.error('Erro ao gerar relatório consolidado:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao gerar relatório consolidado",
-        variant: "destructive",
-      });
+      console.error('❌ Erro ao gerar relatório consolidado:', error);
       return null;
     } finally {
       setIsLoading(false);
@@ -212,10 +169,10 @@ export function useRelatorioConsolidado() {
   };
 
   return {
-    carteiras: carteiras || [],
-    responsaveis: responsaveis || [],
+    carteiras,
+    responsaveis,
     gerarRelatorioCarteira,
     gerarRelatorioResponsavel,
-    isLoading
+    isLoading,
   };
 }

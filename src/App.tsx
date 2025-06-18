@@ -48,6 +48,7 @@ function App() {
               <Route path="/status" element={<Status />} />
               <Route path="/status/:id" element={<StatusDetalhes />} />
               <Route path="/status/novo" element={<NovoStatus />} />
+              <Route path="/novo-status" element={<NovoStatus />} />
               <Route path="/status/editar/:id" element={<EditarStatus />} />
               <Route path="/aprovacoes" element={<Aprovacoes />} />
               <Route path="/incidentes" element={<Incidentes />} />

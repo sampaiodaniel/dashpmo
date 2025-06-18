@@ -1,8 +1,8 @@
 
-import { MetricasVisuais } from '../visual/MetricasVisuais';
-import { GraficosIndicadores } from '../visual/GraficosIndicadores';
+import { RelatorioHeader } from '../asa/RelatorioHeader';
 import { ProjetosOverview } from '../asa/ProjetosOverview';
 import { ProjetoDetalhes } from '../asa/ProjetoDetalhes';
+import { RelatorioFooter } from '../asa/RelatorioFooter';
 
 interface DadosRelatorioConsolidado {
   carteira?: string;
@@ -35,27 +35,18 @@ export function RelatorioConsolidadoContent({ dados }: RelatorioConsolidadoConte
     };
   }).filter(projeto => projeto.ultimoStatus);
 
+  const tituloRelatorio = dados.carteira 
+    ? `Relatório Consolidado - Carteira ${dados.carteira}`
+    : `Relatório Consolidado - ${dados.responsavel}`;
+
   return (
     <div className="space-y-8 bg-white p-8 min-h-screen">
       {/* Header do Relatório */}
-      <div className="text-center border-b-2 border-[#1B365D] pb-6">
-        <div className="flex items-center justify-center gap-4 mb-4">
-          <div className="w-16 h-16 bg-[#1B365D] rounded-xl flex items-center justify-center">
-            <span className="text-white font-bold text-xl">PMO</span>
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold text-[#1B365D]">
-              Relatório Consolidado
-            </h1>
-            <p className="text-[#6B7280]">
-              {dados.carteira ? `Carteira: ${dados.carteira}` : `Responsável: ${dados.responsavel}`}
-            </p>
-          </div>
-        </div>
-        <p className="text-sm text-[#6B7280]">
-          Gerado em: {dados.dataGeracao.toLocaleDateString('pt-BR')} às {dados.dataGeracao.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-        </p>
-      </div>
+      <RelatorioHeader 
+        titulo={tituloRelatorio}
+        subtitulo={dados.carteira ? `Carteira: ${dados.carteira}` : `Responsável: ${dados.responsavel}`}
+        dataGeracao={dados.dataGeracao}
+      />
 
       {/* Overview dos Projetos */}
       <ProjetosOverview projetos={projetosComStatus} />
@@ -72,10 +63,7 @@ export function RelatorioConsolidadoContent({ dados }: RelatorioConsolidadoConte
       </div>
 
       {/* Footer */}
-      <div className="text-center border-t border-[#E5E7EB] pt-6 text-sm text-[#6B7280]">
-        <p>PMO - Sistema de Gestão de Projetos</p>
-        <p>Relatório consolidado gerado automaticamente em {dados.dataGeracao.toLocaleString('pt-BR')}</p>
-      </div>
+      <RelatorioFooter dataGeracao={dados.dataGeracao} />
     </div>
   );
 }
