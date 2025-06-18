@@ -41,18 +41,31 @@ export function StatusCard({ status }: StatusCardProps) {
     }
   };
 
+  // Usar a mesma função de badge que a lista de projetos
   const getCarteiraBadgeClasses = (carteira: string) => {
     switch (carteira) {
-      case 'Crédito':
+      case 'Cadastro':
         return 'bg-blue-50 text-blue-700 border-blue-200';
-      case 'Empréstimos':
-        return 'bg-purple-50 text-purple-700 border-purple-200';
-      case 'Investimentos':
-        return 'bg-green-50 text-green-700 border-green-200';
       case 'Canais':
         return 'bg-orange-50 text-orange-700 border-orange-200';
-      case 'Operacional':
-        return 'bg-gray-50 text-gray-700 border-gray-200';
+      case 'Core Bancário':
+        return 'bg-slate-50 text-slate-700 border-slate-200';
+      case 'Crédito':
+        return 'bg-green-50 text-green-700 border-green-200';
+      case 'Cripto':
+        return 'bg-yellow-50 text-yellow-700 border-yellow-200';
+      case 'Empréstimos':
+        return 'bg-purple-50 text-purple-700 border-purple-200';
+      case 'Fila Rápida':
+        return 'bg-red-50 text-red-700 border-red-200';
+      case 'Investimentos 1':
+        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      case 'Investimentos 2':
+        return 'bg-teal-50 text-teal-700 border-teal-200';
+      case 'Onboarding':
+        return 'bg-indigo-50 text-indigo-700 border-indigo-200';
+      case 'Open Finance':
+        return 'bg-cyan-50 text-cyan-700 border-cyan-200';
       default:
         return 'bg-gray-50 text-gray-700 border-gray-200';
     }
@@ -60,16 +73,28 @@ export function StatusCard({ status }: StatusCardProps) {
 
   const getCarteiraIcon = (carteira: string) => {
     switch (carteira) {
-      case 'Crédito':
-        return '💳';
-      case 'Empréstimos':
-        return '💰';
-      case 'Investimentos':
-        return '📈';
+      case 'Cadastro':
+        return '👤';
       case 'Canais':
         return '📱';
-      case 'Operacional':
-        return '⚙️';
+      case 'Core Bancário':
+        return '🏦';
+      case 'Crédito':
+        return '💳';
+      case 'Cripto':
+        return '₿';
+      case 'Empréstimos':
+        return '💰';
+      case 'Fila Rápida':
+        return '⚡';
+      case 'Investimentos 1':
+        return '📈';
+      case 'Investimentos 2':
+        return '📊';
+      case 'Onboarding':
+        return '🚀';
+      case 'Open Finance':
+        return '🔗';
       default:
         return '📁';
     }

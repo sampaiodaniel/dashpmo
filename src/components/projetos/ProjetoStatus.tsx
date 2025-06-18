@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { ExternalLink } from 'lucide-react';
 import { getStatusColor, getStatusGeralColor, Projeto } from '@/types/pmo';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ProjetoStatusProps {
   projeto: Projeto;
@@ -12,61 +14,101 @@ interface ProjetoStatusProps {
 export function ProjetoStatus({ projeto }: ProjetoStatusProps) {
   const navigate = useNavigate();
   
-  if (!projeto.ultimoStatus) return null;
+  // Buscar o último status, mesmo que não revisado
+  const { data: ultimoStatus } = useQuery({
+    queryKey: ['ultimo-status', projeto.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('status_projeto')
+        .select('*')
+        .eq('projeto_id', projeto.id)
+        .order('data_atualizacao', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Erro ao buscar último status:', error);
+        return null;
+      }
+
+      if (!data) return null;
+
+      return {
+        ...data,
+        data_atualizacao: new Date(data.data_atualizacao),
+        data_criacao: new Date(data.data_criacao),
+        data_marco1: data.data_marco1 ? new Date(data.data_marco1) : undefined,
+        data_marco2: data.data_marco2 ? new Date(data.data_marco2) : undefined,
+        data_marco3: data.data_marco3 ? new Date(data.data_marco3) : undefined,
+        data_aprovacao: data.data_aprovacao ? new Date(data.data_aprovacao) : undefined,
+      };
+    },
+  });
+
+  if (!ultimoStatus) return null;
 
   const handleVerDetalhes = () => {
-    navigate(`/status/${projeto.ultimoStatus.id}`);
+    navigate(`/status/${ultimoStatus.id}`);
+  };
+
+  // Função para formatar texto com quebras de linha em bullets
+  const formatarComoBullets = (texto: string) => {
+    return texto.split('\n').filter(linha => linha.trim()).map((linha, index) => (
+      <li key={index} className="text-gray-700">{linha.trim()}</li>
+    ));
   };
 
   return (
     <div className="bg-white rounded-lg shadow-sm border p-6">
-      <h2 className="text-xl font-semibold text-pmo-primary mb-4">Último Status</h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-semibold text-pmo-primary">Último Status</h2>
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={handleVerDetalhes}
+          className="flex items-center gap-1"
+        >
+          <ExternalLink className="h-3 w-3" />
+          Ver detalhes
+        </Button>
+      </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <h3 className="font-medium text-pmo-gray mb-2">Status Geral</h3>
-          <Badge className={getStatusGeralColor(projeto.ultimoStatus.status_geral)}>
-            {projeto.ultimoStatus.status_geral}
+          <Badge className={getStatusGeralColor(ultimoStatus.status_geral)}>
+            {ultimoStatus.status_geral}
           </Badge>
         </div>
         
         <div>
           <h3 className="font-medium text-pmo-gray mb-2">Visão GP</h3>
-          <Badge className={getStatusColor(projeto.ultimoStatus.status_visao_gp)}>
-            {projeto.ultimoStatus.status_visao_gp}
+          <Badge className={getStatusColor(ultimoStatus.status_visao_gp)}>
+            {ultimoStatus.status_visao_gp}
           </Badge>
         </div>
         
         <div>
           <h3 className="font-medium text-pmo-gray mb-2">Atualizado em</h3>
           <p className="text-gray-700">
-            {projeto.ultimoStatus.data_atualizacao.toLocaleDateString('pt-BR')}
+            {ultimoStatus.data_atualizacao.toLocaleDateString('pt-BR')}
           </p>
         </div>
         
         <div className="flex flex-col gap-2">
           <h3 className="font-medium text-pmo-gray mb-2">Revisado</h3>
-          <div className="flex items-center gap-2">
-            <Badge variant={projeto.ultimoStatus.aprovado ? "default" : "destructive"}>
-              {projeto.ultimoStatus.aprovado ? "Sim" : "Não"}
-            </Badge>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={handleVerDetalhes}
-              className="flex items-center gap-1"
-            >
-              <ExternalLink className="h-3 w-3" />
-              Ver detalhes
-            </Button>
-          </div>
+          <Badge variant={ultimoStatus.aprovado ? "default" : "destructive"}>
+            {ultimoStatus.aprovado ? "Sim" : "Não"}
+          </Badge>
         </div>
       </div>
 
-      {projeto.ultimoStatus.realizado_semana_atual && (
+      {ultimoStatus.realizado_semana_atual && (
         <div className="mt-6">
           <h3 className="font-medium text-pmo-gray mb-2">Realizado na Semana</h3>
-          <p className="text-gray-700">{projeto.ultimoStatus.realizado_semana_atual}</p>
+          <ul className="list-disc list-inside space-y-1">
+            {formatarComoBullets(ultimoStatus.realizado_semana_atual)}
+          </ul>
         </div>
       )}
     </div>

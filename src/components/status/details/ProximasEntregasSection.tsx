@@ -32,13 +32,14 @@ export function ProximasEntregasSection({ status }: ProximasEntregasSectionProps
 
   const entregas = [];
   
-  // Adicionar entregas principais (sem duplicação)
+  // Adicionar entregas principais apenas uma vez
   if (status.entrega1) {
     entregas.push({
       nome: status.entrega1,
       data: status.data_marco1,
       entregaveis: status.entregaveis1,
-      ordem: 1
+      ordem: 1,
+      tipo: 'principal'
     });
   }
   
@@ -47,7 +48,8 @@ export function ProximasEntregasSection({ status }: ProximasEntregasSectionProps
       nome: status.entrega2,
       data: status.data_marco2,
       entregaveis: status.entregaveis2,
-      ordem: 2
+      ordem: 2,
+      tipo: 'principal'
     });
   }
   
@@ -56,7 +58,8 @@ export function ProximasEntregasSection({ status }: ProximasEntregasSectionProps
       nome: status.entrega3,
       data: status.data_marco3,
       entregaveis: status.entregaveis3,
-      ordem: 3
+      ordem: 3,
+      tipo: 'principal'
     });
   }
 
@@ -66,22 +69,28 @@ export function ProximasEntregasSection({ status }: ProximasEntregasSectionProps
       nome: entrega.nome_entrega,
       data: entrega.data_entrega,
       entregaveis: entrega.entregaveis,
-      ordem: entrega.ordem
+      ordem: entrega.ordem,
+      tipo: 'extra'
     });
   });
 
-  if (entregas.length === 0) {
+  // Remover duplicatas baseado no nome da entrega
+  const entregasUnicas = entregas.filter((entrega, index, arr) => 
+    arr.findIndex(e => e.nome === entrega.nome) === index
+  );
+
+  if (entregasUnicas.length === 0) {
     return null;
   }
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-left">Próximas Entregas ({entregas.length})</CardTitle>
+        <CardTitle className="text-left">Próximas Entregas ({entregasUnicas.length})</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4 text-left">
-        {entregas.map((entrega, index) => (
-          <div key={index} className="border rounded-lg p-4 space-y-2">
+        {entregasUnicas.map((entrega, index) => (
+          <div key={`${entrega.tipo}-${entrega.ordem}-${index}`} className="border rounded-lg p-4 space-y-2">
             <div className="flex items-center justify-between">
               <h4 className="font-medium text-pmo-primary text-left">{entrega.nome}</h4>
               <Badge variant="outline">Entrega {entrega.ordem}</Badge>
