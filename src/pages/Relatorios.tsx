@@ -1,4 +1,3 @@
-
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
@@ -67,21 +66,27 @@ export default function Relatorios() {
           </TabsList>
 
           <TabsContent value="asa">
-            <RelatorioASAViewer />
+            <div className="text-center py-12 text-pmo-gray">
+              <p>Relatório ASA será implementado aqui</p>
+            </div>
           </TabsContent>
 
           <TabsContent value="visual">
-            <RelatorioVisualViewer />
+            <div className="text-center py-12 text-pmo-gray">
+              <p>Relatório Visual será implementado aqui</p>
+            </div>
           </TabsContent>
 
           <TabsContent value="consolidado">
-            <RelatorioConsolidadoContent />
+            <div className="text-center py-12 text-pmo-gray">
+              <p>Relatório Consolidado será implementado aqui</p>
+            </div>
           </TabsContent>
         </Tabs>
 
         <ReportWebhookModal 
-          aberto={webhookModalAberto}
-          onFechar={() => setWebhookModalAberto(false)}
+          isOpen={webhookModalAberto}
+          onClose={() => setWebhookModalAberto(false)}
         />
       </div>
     </Layout>

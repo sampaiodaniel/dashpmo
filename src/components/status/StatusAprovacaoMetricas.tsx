@@ -1,9 +1,11 @@
 
+import { useStatusList } from '@/hooks/useStatusList';
 import { useStatusFiltroMetricas } from '@/hooks/useStatusFiltroMetricas';
 import { CheckCircle, Clock, AlertCircle } from 'lucide-react';
 
 export function StatusAprovacaoMetricas() {
-  const { metricas, isLoading } = useStatusFiltroMetricas();
+  const { data: statusList, isLoading } = useStatusList();
+  const { metricas } = useStatusFiltroMetricas(statusList);
 
   if (isLoading) {
     return (
@@ -18,15 +20,13 @@ export function StatusAprovacaoMetricas() {
     );
   }
 
-  if (!metricas) return null;
-
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow">
         <div className="flex items-center justify-between mb-4">
           <div>
             <p className="text-sm font-medium text-pmo-gray">Total de Status</p>
-            <p className="text-3xl font-bold text-pmo-primary">{metricas.total}</p>
+            <p className="text-3xl font-bold text-pmo-primary">{metricas.totalStatus}</p>
           </div>
           <div className="p-3 bg-pmo-primary/10 rounded-lg">
             <AlertCircle className="h-6 w-6 text-pmo-primary" />
@@ -38,7 +38,7 @@ export function StatusAprovacaoMetricas() {
         <div className="flex items-center justify-between mb-4">
           <div>
             <p className="text-sm font-medium text-pmo-gray">Não Revisados</p>
-            <p className="text-3xl font-bold text-yellow-600">{metricas.naoRevisados}</p>
+            <p className="text-3xl font-bold text-yellow-600">{metricas.statusPendentes}</p>
           </div>
           <div className="p-3 bg-yellow-50 rounded-lg">
             <Clock className="h-6 w-6 text-yellow-600" />
@@ -50,7 +50,7 @@ export function StatusAprovacaoMetricas() {
         <div className="flex items-center justify-between mb-4">
           <div>
             <p className="text-sm font-medium text-pmo-gray">Revisados</p>
-            <p className="text-3xl font-bold text-green-600">{metricas.revisados}</p>
+            <p className="text-3xl font-bold text-green-600">{metricas.statusRevisados}</p>
           </div>
           <div className="p-3 bg-green-50 rounded-lg">
             <CheckCircle className="h-6 w-6 text-green-600" />

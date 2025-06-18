@@ -5,9 +5,11 @@ import { Layout } from '@/components/layout/Layout';
 import { StatusHeader } from '@/components/status/StatusHeader';
 import { StatusList } from '@/components/status/StatusList';
 import { StatusAprovacaoMetricas } from '@/components/status/StatusAprovacaoMetricas';
+import { useStatusList } from '@/hooks/useStatusList';
 
 export default function Status() {
   const { usuario, isLoading } = useAuth();
+  const { data: statusList, isLoading: isLoadingStatus, refetch } = useStatusList();
 
   if (isLoading) {
     return (
@@ -26,6 +28,10 @@ export default function Status() {
     return <LoginForm />;
   }
 
+  const handleStatusUpdate = () => {
+    refetch();
+  };
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -36,7 +42,7 @@ export default function Status() {
 
         <StatusAprovacaoMetricas />
         <StatusHeader />
-        <StatusList />
+        <StatusList status={statusList || []} onStatusUpdate={handleStatusUpdate} />
       </div>
     </Layout>
   );

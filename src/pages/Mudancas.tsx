@@ -1,13 +1,14 @@
-
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
 import { MudancasHeader } from '@/components/mudancas/MudancasHeader';
 import { MudancasList } from '@/components/mudancas/MudancasList';
 import { MudancasMetricas } from '@/components/mudancas/MudancasMetricas';
+import { useMudancas } from '@/hooks/useMudancas';
 
 export default function Mudancas() {
   const { usuario, isLoading } = useAuth();
+  const { data: mudancas, isLoading: isLoadingMudancas, refetch } = useMudancas();
 
   if (isLoading) {
     return (
@@ -26,6 +27,10 @@ export default function Mudancas() {
     return <LoginForm />;
   }
 
+  const handleMudancaCriada = () => {
+    refetch();
+  };
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -34,9 +39,9 @@ export default function Mudancas() {
           <p className="text-pmo-gray mt-2">Gestão de mudanças e replanejamentos de projetos</p>
         </div>
 
-        <MudancasMetricas />
-        <MudancasHeader />
-        <MudancasList />
+        <MudancasMetricas mudancas={mudancas} />
+        <MudancasHeader onMudancaCriada={handleMudancaCriada} />
+        <MudancasList mudancas={mudancas || []} />
       </div>
     </Layout>
   );
