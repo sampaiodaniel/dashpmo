@@ -65,7 +65,7 @@ export default function NovoStatus() {
               Voltar
             </Button>
           </Link>
-          <div>
+          <div className="text-left">
             <h1 className="text-3xl font-bold text-pmo-primary">Novo Status</h1>
             <p className="text-pmo-gray mt-2">Criar novo status de projeto</p>
           </div>

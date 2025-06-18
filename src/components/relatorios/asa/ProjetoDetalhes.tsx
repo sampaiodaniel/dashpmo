@@ -78,7 +78,7 @@ export function ProjetoDetalhes({ projeto }: ProjetoDetalhesProps) {
           <div className="flex items-center gap-2 ml-4">
             <div 
               className={`w-8 h-8 rounded-full ${getStatusIndicatorColor(ultimoStatus.status_visao_gp)}`}
-              title={`Status GP: ${ultimoStatus.status_visao_gp}`}
+              title={`Visão Chefe do Projeto: ${ultimoStatus.status_visao_gp}`}
             ></div>
           </div>
         </div>

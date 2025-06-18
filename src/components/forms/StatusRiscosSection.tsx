@@ -48,7 +48,7 @@ export function StatusRiscosSection({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="status-visao">Visão GP *</Label>
+          <Label htmlFor="status-visao">Visão Chefe do Projeto *</Label>
           <Select value={statusVisaoGp} onValueChange={onStatusVisaoGpChange}>
             <SelectTrigger>
               <SelectValue placeholder="Selecione a visão..." />

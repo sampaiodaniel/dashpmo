@@ -64,10 +64,10 @@ export function ProjetoStatus({ projeto }: ProjetoStatusProps) {
 
   return (
     <div className="bg-white rounded-lg shadow-sm border p-6">
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <FileText className="h-5 w-5 text-pmo-primary" />
-          <h2 className="text-2xl font-bold text-black">Último Status</h2>
+          <h2 className="text-2xl text-black">Último Status</h2>
           <Badge variant={ultimoStatus.aprovado ? "default" : "destructive"} className="text-xs">
             {ultimoStatus.aprovado ? "Revisado" : "Não Revisado"}
           </Badge>
@@ -94,30 +94,32 @@ export function ProjetoStatus({ projeto }: ProjetoStatusProps) {
         </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <h3 className="font-medium text-pmo-gray mb-2">Status Geral</h3>
+          <h3 className="font-medium text-pmo-gray mb-3">Status Geral</h3>
           <Badge className={getStatusGeralColor(ultimoStatus.status_geral)}>
             {ultimoStatus.status_geral}
           </Badge>
         </div>
         
         <div>
-          <h3 className="font-medium text-pmo-gray mb-2">Visão GP</h3>
-          <Badge className={getStatusColor(ultimoStatus.status_visao_gp)}>
-            {ultimoStatus.status_visao_gp}
-          </Badge>
+          <h3 className="font-medium text-pmo-gray mb-3">Visão Chefe do Projeto</h3>
+          <div className="flex items-center">
+            <Badge className={getStatusColor(ultimoStatus.status_visao_gp)}>
+              {ultimoStatus.status_visao_gp}
+            </Badge>
+          </div>
         </div>
 
         <div>
-          <h3 className="font-medium text-pmo-gray mb-2">Progresso Estimado</h3>
+          <h3 className="font-medium text-pmo-gray mb-3">Progresso Estimado</h3>
           <p className="text-gray-700">
-            {ultimoStatus.progresso_estimado || 'Não informado'}
+            {ultimoStatus.progresso_estimado || 0}%
           </p>
         </div>
         
         <div>
-          <h3 className="font-medium text-pmo-gray mb-2">Atualizado em</h3>
+          <h3 className="font-medium text-pmo-gray mb-3">Atualizado em</h3>
           <p className="text-gray-700">
             {ultimoStatus.data_atualizacao.toLocaleDateString('pt-BR')}
           </p>

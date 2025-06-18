@@ -28,7 +28,7 @@ export function StatusInformacoes({ status }: StatusInformacoesProps) {
             <p className="text-gray-700">{status.status_geral}</p>
           </div>
           <div>
-            <span className="text-sm font-medium text-pmo-gray">Visão GP:</span>
+            <span className="text-sm font-medium text-pmo-gray">Visão Chefe do Projeto:</span>
             <div className="flex items-center gap-2">
               <div className={`w-3 h-3 rounded-full ${getStatusVisaoColor(status.status_visao_gp)}`}></div>
               <span>{status.status_visao_gp}</span>
