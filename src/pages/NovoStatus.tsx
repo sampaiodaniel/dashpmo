@@ -12,8 +12,6 @@ import { StatusInformacaoSection } from '@/components/forms/status/StatusInforma
 import { DetalhesStatusSection } from '@/components/forms/status/DetalhesStatusSection';
 import { EntregasDinamicasNovo } from '@/components/forms/EntregasDinamicasNovo';
 import { calcularMatrizRisco } from '@/utils/riskMatrixCalculator';
-import { useEffect } from 'react';
-import { cleanupSistemaIncidents } from '@/utils/cleanupSistemaIncidents';
 
 export default function NovoStatus() {
   const { usuario, isLoading } = useAuth();
@@ -31,11 +29,6 @@ export default function NovoStatus() {
     handleProgressoChange
   } = useNovoStatusForm();
 
-  // Executar limpeza de incidentes criados pelo Sistema ao carregar a página
-  useEffect(() => {
-    cleanupSistemaIncidents();
-  }, []);
-
   // Valores atuais dos campos de risco para calcular a matriz
   const impactoAtual = form.watch('impacto_riscos');
   const probabilidadeAtual = form.watch('probabilidade_riscos');
@@ -47,7 +40,7 @@ export default function NovoStatus() {
         <div className="text-center">
           <div className="w-16 h-16 bg-pmo-primary rounded-xl flex items-center justify-center mx-auto mb-4">
             <img 
-              src="/lovable-uploads/fdc350e6-9710-407a-8086-69dd3e7945bb.png" 
+              src="/lovable-uploads/6c358334-3676-4b13-819e-8d121a26b6eb.png" 
               alt="DashPMO" 
               className="h-8 w-8"
             />

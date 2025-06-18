@@ -71,7 +71,11 @@ export default function StatusDetalhes() {
       <Layout>
         <div className="text-center py-8 text-pmo-gray">
           <div className="flex items-center justify-center mb-4">
-            <img src="/lovable-uploads/4edf43e8-5e62-424c-9464-7188816ca0f8.png" alt="Loading" className="w-8 h-8" />
+            <img 
+              src="/lovable-uploads/6c358334-3676-4b13-819e-8d121a26b6eb.png" 
+              alt="DashPMO" 
+              className="w-8 h-8" 
+            />
           </div>
           <div>Carregando status...</div>
         </div>

@@ -32,7 +32,7 @@ export function ProximasEntregasSection({ status }: ProximasEntregasSectionProps
 
   const entregas = [];
   
-  // Adicionar entregas principais
+  // Adicionar entregas principais (sem duplicação)
   if (status.entrega1) {
     entregas.push({
       nome: status.entrega1,
@@ -83,18 +83,18 @@ export function ProximasEntregasSection({ status }: ProximasEntregasSectionProps
         {entregas.map((entrega, index) => (
           <div key={index} className="border rounded-lg p-4 space-y-2">
             <div className="flex items-center justify-between">
-              <h4 className="font-medium text-pmo-primary">{entrega.nome}</h4>
+              <h4 className="font-medium text-pmo-primary text-left">{entrega.nome}</h4>
               <Badge variant="outline">Entrega {entrega.ordem}</Badge>
             </div>
             
             {entrega.data && (
-              <p className="text-sm text-pmo-gray">
+              <p className="text-sm text-pmo-gray text-left">
                 <span className="font-medium">Data prevista:</span> {formatarData(entrega.data)}
               </p>
             )}
             
             {entrega.entregaveis && (
-              <div>
+              <div className="text-left">
                 <span className="text-sm font-medium text-pmo-gray">Entregáveis:</span>
                 <p className="text-sm text-gray-700 mt-1 whitespace-pre-wrap">
                   {entrega.entregaveis}

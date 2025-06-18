@@ -34,7 +34,8 @@ export function Layout({ children }: LayoutProps) {
         
         <main className="flex-1">
           <div className={cn(
-            location.pathname === "/projetos" ? "p-3 pl-6" : "p-6 pl-8"
+            "p-6",
+            location.pathname === "/projetos" && "p-3 pl-6"
           )}>
             {children}
           </div>
