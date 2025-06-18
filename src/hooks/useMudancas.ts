@@ -49,15 +49,20 @@ export function useMudancasOperations() {
 
   const createMudanca = useMutation({
     mutationFn: async (mudancaData: Omit<MudancaReplanejamento, 'id' | 'data_criacao'>) => {
+      // Preparar dados limpos para inserção, removendo propriedades que não pertencem à tabela
+      const { projeto, ...cleanData } = mudancaData;
+      
       const dataToInsert = {
-        ...mudancaData,
-        tipo_mudanca: tipoMudancaMap[mudancaData.tipo_mudanca] || mudancaData.tipo_mudanca,
-        data_solicitacao: mudancaData.data_solicitacao instanceof Date 
-          ? mudancaData.data_solicitacao.toISOString().split('T')[0]
-          : mudancaData.data_solicitacao,
-        data_aprovacao: mudancaData.data_aprovacao && mudancaData.data_aprovacao instanceof Date
-          ? mudancaData.data_aprovacao.toISOString().split('T')[0]
-          : mudancaData.data_aprovacao
+        ...cleanData,
+        tipo_mudanca: tipoMudancaMap[cleanData.tipo_mudanca] || cleanData.tipo_mudanca,
+        data_solicitacao: cleanData.data_solicitacao instanceof Date 
+          ? cleanData.data_solicitacao.toISOString().split('T')[0]
+          : cleanData.data_solicitacao,
+        data_aprovacao: cleanData.data_aprovacao 
+          ? (cleanData.data_aprovacao instanceof Date
+              ? cleanData.data_aprovacao.toISOString().split('T')[0]
+              : cleanData.data_aprovacao)
+          : undefined
       };
 
       const { data, error } = await supabase
@@ -97,22 +102,25 @@ export function useMudancasOperations() {
 
   const updateMudanca = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<MudancaReplanejamento> & { id: number }) => {
-      const dataToUpdate: any = { ...updates };
+      // Remover propriedades que não pertencem à tabela
+      const { projeto, ...cleanUpdates } = updates;
       
-      if (updates.tipo_mudanca) {
-        dataToUpdate.tipo_mudanca = tipoMudancaMap[updates.tipo_mudanca] || updates.tipo_mudanca;
+      const dataToUpdate: any = { ...cleanUpdates };
+      
+      if (cleanUpdates.tipo_mudanca) {
+        dataToUpdate.tipo_mudanca = tipoMudancaMap[cleanUpdates.tipo_mudanca] || cleanUpdates.tipo_mudanca;
       }
       
-      if (updates.data_solicitacao) {
-        dataToUpdate.data_solicitacao = updates.data_solicitacao instanceof Date 
-          ? updates.data_solicitacao.toISOString().split('T')[0]
-          : updates.data_solicitacao;
+      if (cleanUpdates.data_solicitacao) {
+        dataToUpdate.data_solicitacao = cleanUpdates.data_solicitacao instanceof Date 
+          ? cleanUpdates.data_solicitacao.toISOString().split('T')[0]
+          : cleanUpdates.data_solicitacao;
       }
       
-      if (updates.data_aprovacao) {
-        dataToUpdate.data_aprovacao = updates.data_aprovacao instanceof Date 
-          ? updates.data_aprovacao.toISOString().split('T')[0]
-          : updates.data_aprovacao;
+      if (cleanUpdates.data_aprovacao) {
+        dataToUpdate.data_aprovacao = cleanUpdates.data_aprovacao instanceof Date 
+          ? cleanUpdates.data_aprovacao.toISOString().split('T')[0]
+          : cleanUpdates.data_aprovacao;
       }
 
       const { data, error } = await supabase
