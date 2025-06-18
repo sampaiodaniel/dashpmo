@@ -55,13 +55,13 @@ export default function Projetos() {
     setModalAberto(false);
   };
 
-  // Filtrar projetos baseado nos filtros aplicados
+  // Filtrar projetos baseado nos filtros aplicados e ordenar alfabeticamente
   const projetosFiltrados = projetos?.filter(projeto => {
     if (!filtros.incluirFechados && !projeto.status_ativo) {
       return false;
     }
     return true;
-  }) || [];
+  }).sort((a, b) => a.nome_projeto.localeCompare(b.nome_projeto)) || [];
 
   // Extract unique responsaveis from projetos
   const responsaveis = Array.from(new Set(
@@ -194,22 +194,14 @@ export default function Projetos() {
                   </div>
                 </div>
 
-                <p className="text-pmo-gray mb-4 leading-relaxed">
-                  {projeto.descricao_projeto}
-                </p>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm mb-4">
-                  <div>
-                    <span className="font-medium text-pmo-gray">GP Responsável:</span>
-                    <p className="text-gray-700">{projeto.gp_responsavel}</p>
-                  </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mb-4">
                   <div>
                     <span className="font-medium text-pmo-gray">Responsável ASA:</span>
                     <p className="text-gray-700">{projeto.responsavel_asa}</p>
                   </div>
                   <div>
-                    <span className="font-medium text-pmo-gray">Tipo:</span>
-                    <p className="text-gray-700">{projeto.tipo_projeto_id}</p>
+                    <span className="font-medium text-pmo-gray">Chefe do Projeto:</span>
+                    <p className="text-gray-700">{projeto.gp_responsavel}</p>
                   </div>
                 </div>
 

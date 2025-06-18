@@ -4,22 +4,22 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 interface StatusRiscosSectionProps {
   statusGeral: string;
-  statusVisaoGp: string;
+  statusVisaoGP: string;
   impactoRiscos: string;
   probabilidadeRiscos: string;
   onStatusGeralChange: (value: string) => void;
-  onStatusVisaoGpChange: (value: string) => void;
+  onStatusVisaoGPChange: (value: string) => void;
   onImpactoRiscosChange: (value: string) => void;
   onProbabilidadeRiscosChange: (value: string) => void;
 }
 
 export function StatusRiscosSection({
   statusGeral,
-  statusVisaoGp,
+  statusVisaoGP,
   impactoRiscos,
   probabilidadeRiscos,
   onStatusGeralChange,
-  onStatusVisaoGpChange,
+  onStatusVisaoGPChange,
   onImpactoRiscosChange,
   onProbabilidadeRiscosChange,
 }: StatusRiscosSectionProps) {
@@ -29,29 +29,26 @@ export function StatusRiscosSection({
       
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="status-geral">Status Geral *</Label>
+          <Label htmlFor="status-geral">Status Geral</Label>
           <Select value={statusGeral} onValueChange={onStatusGeralChange}>
             <SelectTrigger>
-              <SelectValue placeholder="Selecione o status..." />
+              <SelectValue placeholder="Selecione o status geral" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="Aguardando Aprovação">Aguardando Aprovação</SelectItem>
-              <SelectItem value="Aguardando Homologação">Aguardando Homologação</SelectItem>
-              <SelectItem value="Cancelado">Cancelado</SelectItem>
+              <SelectItem value="No Prazo">No Prazo</SelectItem>
+              <SelectItem value="Atrasado">Atrasado</SelectItem>
+              <SelectItem value="Em Risco">Em Risco</SelectItem>
+              <SelectItem value="Bloqueado">Bloqueado</SelectItem>
               <SelectItem value="Concluído">Concluído</SelectItem>
-              <SelectItem value="Em Andamento">Em Andamento</SelectItem>
-              <SelectItem value="Em Especificação">Em Especificação</SelectItem>
-              <SelectItem value="Pausado">Pausado</SelectItem>
-              <SelectItem value="Planejamento">Planejamento</SelectItem>
             </SelectContent>
           </Select>
         </div>
-
+        
         <div className="space-y-2">
-          <Label htmlFor="status-visao">Visão Chefe do Projeto *</Label>
-          <Select value={statusVisaoGp} onValueChange={onStatusVisaoGpChange}>
+          <Label htmlFor="status-visao-gp">Visão Chefe do Projeto</Label>
+          <Select value={statusVisaoGP} onValueChange={onStatusVisaoGPChange}>
             <SelectTrigger>
-              <SelectValue placeholder="Selecione a visão..." />
+              <SelectValue placeholder="Selecione a visão" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="Verde">Verde</SelectItem>
@@ -60,14 +57,12 @@ export function StatusRiscosSection({
             </SelectContent>
           </Select>
         </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
+        
         <div className="space-y-2">
-          <Label htmlFor="impacto">Impacto Riscos *</Label>
-          <Select value={impactoRiscos} onValueChange={onImpactoRiscosChange}>
+          <Label htmlFor="probabilidade-riscos">Probabilidade de Riscos</Label>
+          <Select value={probabilidadeRiscos} onValueChange={onProbabilidadeRiscosChange}>
             <SelectTrigger>
-              <SelectValue placeholder="Selecione..." />
+              <SelectValue placeholder="Selecione a probabilidade" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="Baixo">Baixo</SelectItem>
@@ -76,12 +71,12 @@ export function StatusRiscosSection({
             </SelectContent>
           </Select>
         </div>
-
+        
         <div className="space-y-2">
-          <Label htmlFor="probabilidade">Probabilidade Riscos *</Label>
-          <Select value={probabilidadeRiscos} onValueChange={onProbabilidadeRiscosChange}>
+          <Label htmlFor="impacto-riscos">Impacto de Riscos</Label>
+          <Select value={impactoRiscos} onValueChange={onImpactoRiscosChange}>
             <SelectTrigger>
-              <SelectValue placeholder="Selecione..." />
+              <SelectValue placeholder="Selecione o impacto" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="Baixo">Baixo</SelectItem>
