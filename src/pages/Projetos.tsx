@@ -224,9 +224,8 @@ export default function Projetos() {
                         <div className="mt-4 p-3 bg-gray-50 rounded-lg">
                           <div className="flex items-center gap-2 mb-2">
                             <FileText className="h-4 w-4 text-pmo-gray" />
-                            <span className="text-sm font-medium text-pmo-gray">Último Status:</span>
-                            <span className="text-xs text-pmo-gray">
-                              {projeto.ultimoStatus.data_atualizacao.toLocaleDateString('pt-BR')}
+                            <span className="text-sm font-medium text-pmo-gray">
+                              Último Status: {projeto.ultimoStatus.data_atualizacao.toLocaleDateString('pt-BR')} - {projeto.ultimoStatus.aprovado ? 'Revisado OK' : 'Não Revisado'}
                             </span>
                           </div>
                           {projeto.ultimoStatus.realizado_semana_atual && (

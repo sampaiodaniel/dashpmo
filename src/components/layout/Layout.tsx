@@ -22,7 +22,7 @@ export function Layout({ children }: LayoutProps) {
   };
 
   return (
-    <div className="min-h-screen bg-pmo-background flex">
+    <div className="min-h-screen bg-pmo-background flex flex-col">
       {/* Sidebar fixo */}
       <div className="fixed left-0 top-0 h-full z-40">
         <Sidebar />
@@ -40,6 +40,15 @@ export function Layout({ children }: LayoutProps) {
             {children}
           </div>
         </main>
+
+        {/* Footer discreto */}
+        <footer className="py-3 px-6 border-t border-gray-200 bg-white">
+          <div className="text-right">
+            <p className="text-xs text-gray-400">
+              © 2025 ASA. Todos os direitos reservados. | DashPMO - Sistema desenvolvido por Daniel Sampaio de Almeida - daniel.almeida@cwi.com.br
+            </p>
+          </div>
+        </footer>
       </div>
     </div>
   );

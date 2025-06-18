@@ -41,7 +41,7 @@ export function StatusCard({ status }: StatusCardProps) {
     }
   };
 
-  // Usar a mesma função de badge que a lista de projetos
+  // Função para obter classes exatas dos badges das carteiras como na lista de projetos
   const getCarteiraBadgeClasses = (carteira: string) => {
     switch (carteira) {
       case 'Cadastro':

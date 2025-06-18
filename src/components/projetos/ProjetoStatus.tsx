@@ -1,7 +1,7 @@
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, FileText } from 'lucide-react';
 import { getStatusColor, getStatusGeralColor, Projeto } from '@/types/pmo';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -60,15 +60,20 @@ export function ProjetoStatus({ projeto }: ProjetoStatusProps) {
 
   return (
     <div className="bg-white rounded-lg shadow-sm border p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold text-pmo-primary">Último Status</h2>
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-3">
+          <FileText className="h-5 w-5 text-pmo-primary" />
+          <h2 className="text-xl font-semibold text-pmo-primary">Último Status</h2>
+          <Badge variant={ultimoStatus.aprovado ? "default" : "destructive"} className="text-xs">
+            {ultimoStatus.aprovado ? "Revisado" : "Não Revisado"}
+          </Badge>
+        </div>
         <Button 
-          variant="outline" 
-          size="sm"
           onClick={handleVerDetalhes}
-          className="flex items-center gap-1"
+          className="bg-pmo-primary hover:bg-pmo-secondary text-white flex items-center gap-2"
+          size="sm"
         >
-          <ExternalLink className="h-3 w-3" />
+          <ExternalLink className="h-4 w-4" />
           Ver detalhes
         </Button>
       </div>
@@ -93,13 +98,6 @@ export function ProjetoStatus({ projeto }: ProjetoStatusProps) {
           <p className="text-gray-700">
             {ultimoStatus.data_atualizacao.toLocaleDateString('pt-BR')}
           </p>
-        </div>
-        
-        <div className="flex flex-col gap-2">
-          <h3 className="font-medium text-pmo-gray mb-2">Revisado</h3>
-          <Badge variant={ultimoStatus.aprovado ? "default" : "destructive"}>
-            {ultimoStatus.aprovado ? "Sim" : "Não"}
-          </Badge>
         </div>
       </div>
 

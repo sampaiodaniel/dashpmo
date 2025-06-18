@@ -15,7 +15,7 @@ export function RelatorioFooter({ dados }: RelatorioFooterProps) {
         <div className="flex items-center justify-between mb-4">
           <div className="text-left">
             <p className="font-bold text-lg text-[#1B365D] mb-2">ASA Investments</p>
-            <p className="font-medium text-[#A6926B] mb-1">Gestão de Projetos de TI</p>
+            <p className="font-medium text-[#A6926B] mb-1">Daniel Sampaio de Almeida - PMO/CWI</p>
             <p className="text-[#6B7280]">Relatório gerado em {dados.dataRelatorio}</p>
           </div>
           <div className="text-right">
