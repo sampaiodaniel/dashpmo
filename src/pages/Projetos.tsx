@@ -61,6 +61,21 @@ export default function Projetos() {
     return true;
   }) || [];
 
+  // Extract unique responsaveis from projetos
+  const responsaveis = Array.from(new Set(
+    projetos?.map(p => p.responsavel_interno).filter(Boolean) || []
+  ));
+
+  const handleEditarProjeto = (projeto: Projeto) => {
+    // TODO: Implement edit functionality
+    console.log('Editar projeto:', projeto);
+  };
+
+  const handleHistoricoProjeto = (projeto: Projeto) => {
+    // TODO: Implement history functionality
+    console.log('Histórico projeto:', projeto);
+  };
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -87,6 +102,7 @@ export default function Projetos() {
         <ProjetoFilters 
           filtros={filtros}
           onFiltroChange={setFiltros}
+          responsaveis={responsaveis}
         />
 
         {isLoadingProjetos ? (
@@ -126,8 +142,17 @@ export default function Projetos() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <ProjetoAcoes projeto={projeto} />
-                    {isAdmin() && <ProjetoAcoesAdmin projeto={projeto} />}
+                    <ProjetoAcoes 
+                      projeto={projeto} 
+                      onEditarClick={() => handleEditarProjeto(projeto)}
+                      onHistoricoClick={() => handleHistoricoProjeto(projeto)}
+                    />
+                    {isAdmin() && (
+                      <ProjetoAcoesAdmin 
+                        projeto={projeto} 
+                        onProjetoAtualizado={refetch}
+                      />
+                    )}
                   </div>
                 </div>
               </div>
@@ -136,9 +161,7 @@ export default function Projetos() {
         )}
 
         <CriarProjetoModal 
-          isOpen={modalAberto}
-          onClose={() => setModalAberto(false)}
-          onSuccess={handleProjetoCriado}
+          onProjetoCriado={handleProjetoCriado}
         />
       </div>
     </Layout>
