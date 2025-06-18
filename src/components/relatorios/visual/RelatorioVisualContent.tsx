@@ -97,15 +97,15 @@ export function RelatorioVisualContent({ dados }: RelatorioVisualContentProps) {
                 </div>
               </div>
 
-              {/* Realizado na semana com quebra de linhas */}
+              {/* Realizado na semana com quebra de linhas e bullets */}
               {projeto.ultimoStatus?.realizado_semana_atual && (
                 <div className="mb-4">
                   <h4 className="font-semibold text-[#1B365D] mb-2">Realizado na Semana</h4>
                   <div className="space-y-1">
-                    {projeto.ultimoStatus.realizado_semana_atual.split('\n').map((item: string, i: number) => (
-                      <div key={i} className="text-sm text-[#6B7280] leading-tight">
-                        <span className="font-medium text-[#1B365D] mr-2">•</span>
-                        <span>{item.trim()}</span>
+                    {projeto.ultimoStatus.realizado_semana_atual.split('\n').filter((item: string) => item.trim()).map((item: string, i: number) => (
+                      <div key={i} className="text-sm text-[#6B7280] leading-tight flex items-start">
+                        <span className="font-medium text-[#1B365D] mr-2 mt-1 flex-shrink-0">•</span>
+                        <span className="flex-1">{item.trim()}</span>
                       </div>
                     ))}
                   </div>
@@ -118,10 +118,10 @@ export function RelatorioVisualContent({ dados }: RelatorioVisualContentProps) {
                   <div>
                     <h4 className="font-semibold text-[#1B365D] mb-2">Pontos de Atenção</h4>
                     <div className="space-y-1">
-                      {projeto.ultimoStatus.observacoes_pontos_atencao.split('\n').map((item: string, i: number) => (
-                        <div key={i} className="text-sm text-[#6B7280] leading-tight">
-                          <span className="font-medium text-[#F59E0B] mr-2">⚠️</span>
-                          <span>{item.trim()}</span>
+                      {projeto.ultimoStatus.observacoes_pontos_atencao.split('\n').filter((item: string) => item.trim()).map((item: string, i: number) => (
+                        <div key={i} className="text-sm text-[#6B7280] leading-tight flex items-start">
+                          <span className="font-medium text-[#F59E0B] mr-2 mt-1 flex-shrink-0">⚠️</span>
+                          <span className="flex-1">{item.trim()}</span>
                         </div>
                       ))}
                     </div>
@@ -132,10 +132,10 @@ export function RelatorioVisualContent({ dados }: RelatorioVisualContentProps) {
                   <div>
                     <h4 className="font-semibold text-[#1B365D] mb-2">Backlog</h4>
                     <div className="space-y-1">
-                      {projeto.ultimoStatus.backlog.split('\n').map((item: string, i: number) => (
-                        <div key={i} className="text-sm text-[#6B7280] leading-tight">
-                          <span className="font-medium text-[#6B7280] mr-2">→</span>
-                          <span>{item.trim()}</span>
+                      {projeto.ultimoStatus.backlog.split('\n').filter((item: string) => item.trim()).map((item: string, i: number) => (
+                        <div key={i} className="text-sm text-[#6B7280] leading-tight flex items-start">
+                          <span className="font-medium text-[#6B7280] mr-2 mt-1 flex-shrink-0">→</span>
+                          <span className="flex-1">{item.trim()}</span>
                         </div>
                       ))}
                     </div>

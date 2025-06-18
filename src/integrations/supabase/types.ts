@@ -80,6 +80,44 @@ export type Database = {
           },
         ]
       }
+      entregas_status: {
+        Row: {
+          data_criacao: string | null
+          data_entrega: string | null
+          entregaveis: string | null
+          id: number
+          nome_entrega: string
+          ordem: number
+          status_id: number
+        }
+        Insert: {
+          data_criacao?: string | null
+          data_entrega?: string | null
+          entregaveis?: string | null
+          id?: number
+          nome_entrega: string
+          ordem?: number
+          status_id: number
+        }
+        Update: {
+          data_criacao?: string | null
+          data_entrega?: string | null
+          entregaveis?: string | null
+          id?: number
+          nome_entrega?: string
+          ordem?: number
+          status_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "entregas_status_status_id_fkey"
+            columns: ["status_id"]
+            isOneToOne: false
+            referencedRelation: "status_projeto"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       incidentes: {
         Row: {
           anterior: number | null

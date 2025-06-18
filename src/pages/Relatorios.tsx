@@ -6,6 +6,7 @@ import { FileText, Calendar, Send, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useRelatorioASA, DadosRelatorioASA } from '@/hooks/useRelatorioASA';
 import { useRelatorioVisual } from '@/hooks/useRelatorioVisual';
+import { useRelatorioConsolidado } from '@/hooks/useRelatorioConsolidado';
 import { ReportWebhookModal } from '@/components/relatorios/ReportWebhookModal';
 import { RelatorioASAViewer } from '@/components/relatorios/RelatorioASAViewer';
 import { RelatorioVisualViewer } from '@/components/relatorios/RelatorioVisualViewer';
@@ -32,6 +33,11 @@ export default function Relatorios() {
     gerarRelatorioResponsavel: gerarVisualResponsavel,
     isLoading: gerandoRelatorioVisual 
   } = useRelatorioVisual();
+  const { 
+    carteiras: carteirasConsolidado, 
+    responsaveis: responsaveisConsolidado,
+    isLoading: gerandoRelatorioConsolidado 
+  } = useRelatorioConsolidado();
   
   const [showWebhookModal, setShowWebhookModal] = useState(false);
   const [showRelatorioASAViewer, setShowRelatorioASAViewer] = useState(false);
@@ -46,6 +52,11 @@ export default function Relatorios() {
   const [filtroTipo, setFiltroTipo] = useState<'carteira' | 'responsavel'>('carteira');
   const [carteiraSelecionadaVisual, setCarteiraSelecionadaVisual] = useState<string>('');
   const [responsavelSelecionado, setResponsavelSelecionado] = useState<string>('');
+  
+  // States para Consolidado
+  const [filtroTipoConsolidado, setFiltroTipoConsolidado] = useState<'carteira' | 'responsavel'>('carteira');
+  const [carteiraSelecionadaConsolidado, setCarteiraSelecionadaConsolidado] = useState<string>('');
+  const [responsavelSelecionadoConsolidado, setResponsavelSelecionadoConsolidado] = useState<string>('');
   
   const [relatoriosRecentes, setRelatoriosRecentes] = useState<RelatorioRecente[]>([]);
 
@@ -136,6 +147,19 @@ export default function Relatorios() {
     }
   };
 
+  const handleGerarRelatorioConsolidado = () => {
+    let url = '/relatorio-consolidado?';
+    
+    if (filtroTipoConsolidado === 'carteira' && carteiraSelecionadaConsolidado) {
+      url += `tipo=carteira&valor=${encodeURIComponent(carteiraSelecionadaConsolidado)}`;
+    } else if (filtroTipoConsolidado === 'responsavel' && responsavelSelecionadoConsolidado) {
+      url += `tipo=responsavel&valor=${encodeURIComponent(responsavelSelecionadoConsolidado)}`;
+    }
+    
+    // Abrir em nova aba
+    window.open(url, '_blank');
+  };
+
   const handleVisualizarRelatorio = (relatorio: RelatorioRecente) => {
     if (relatorio.dados) {
       if (relatorio.tipo === 'ASA Carteira') {
@@ -157,8 +181,9 @@ export default function Relatorios() {
         </div>
 
         <Tabs defaultValue="visual" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="visual">Relatório Visual</TabsTrigger>
+            <TabsTrigger value="consolidado">Relatório Consolidado</TabsTrigger>
             <TabsTrigger value="asa">Relatório ASA</TabsTrigger>
             <TabsTrigger value="webhook">Report Webhook</TabsTrigger>
           </TabsList>
@@ -224,6 +249,74 @@ export default function Relatorios() {
                     >
                       <BarChart3 className="h-4 w-4 mr-2" />
                       {gerandoRelatorioVisual ? 'Gerando...' : 'Gerar Relatório'}
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="consolidado" className="space-y-6">
+            <Card className="hover:shadow-md transition-shadow">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-pmo-primary" />
+                  Relatório Consolidado
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-pmo-gray mb-4">
+                  Relatório consolidado com visualização por carteira ou responsável (nova aba)
+                </p>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <Select value={filtroTipoConsolidado} onValueChange={(value: 'carteira' | 'responsavel') => setFiltroTipoConsolidado(value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Filtrar por" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="carteira">Por Carteira</SelectItem>
+                        <SelectItem value="responsavel">Por Responsável</SelectItem>
+                      </SelectContent>
+                    </Select>
+
+                    {filtroTipoConsolidado === 'carteira' ? (
+                      <Select value={carteiraSelecionadaConsolidado} onValueChange={setCarteiraSelecionadaConsolidado}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione uma carteira" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {carteirasConsolidado.map((carteira) => (
+                            <SelectItem key={carteira} value={carteira}>
+                              {carteira}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Select value={responsavelSelecionadoConsolidado} onValueChange={setResponsavelSelecionadoConsolidado}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione um responsável" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {responsaveisConsolidado.map((responsavel) => (
+                            <SelectItem key={responsavel} value={responsavel}>
+                              {responsavel}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+
+                    <Button 
+                      onClick={handleGerarRelatorioConsolidado}
+                      disabled={gerandoRelatorioConsolidado || 
+                        (filtroTipoConsolidado === 'carteira' && !carteiraSelecionadaConsolidado) ||
+                        (filtroTipoConsolidado === 'responsavel' && !responsavelSelecionadoConsolidado)
+                      }
+                    >
+                      <FileText className="h-4 w-4 mr-2" />
+                      {gerandoRelatorioConsolidado ? 'Gerando...' : 'Gerar Relatório'}
                     </Button>
                   </div>
                 </div>
