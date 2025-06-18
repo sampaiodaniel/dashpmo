@@ -28,10 +28,10 @@ function DashboardContent() {
   if (!metricas) return null;
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-pmo-primary">Dashboard</h1>
-        <p className="text-pmo-gray mt-2">Visão geral dos projetos e indicadores</p>
+    <div className="space-y-6 text-left">
+      <div className="text-left">
+        <h1 className="text-3xl font-bold text-pmo-primary text-left">Dashboard</h1>
+        <p className="text-pmo-gray mt-2 text-left">Visão geral dos projetos e indicadores</p>
       </div>
 
       {/* Filtros do Dashboard */}
@@ -66,7 +66,11 @@ export default function Dashboard() {
       <div className="min-h-screen bg-pmo-background flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 bg-pmo-primary rounded-xl flex items-center justify-center mx-auto mb-4">
-            <span className="text-white font-bold text-xl">Dash</span>
+            <img 
+              src="/lovable-uploads/6e48c2c5-9581-4a4e-8e6c-f3610c1742bd.png" 
+              alt="DashPMO" 
+              className="w-8 h-8" 
+            />
           </div>
           <div className="text-pmo-gray">Carregando...</div>
         </div>

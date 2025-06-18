@@ -77,9 +77,9 @@ export function ProximasEntregasSection({ status }: ProximasEntregasSectionProps
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Próximas Entregas ({entregas.length})</CardTitle>
+        <CardTitle className="text-left">Próximas Entregas ({entregas.length})</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 text-left">
         {entregas.map((entrega, index) => (
           <div key={index} className="border rounded-lg p-4 space-y-2">
             <div className="flex items-center justify-between">
@@ -96,7 +96,7 @@ export function ProximasEntregasSection({ status }: ProximasEntregasSectionProps
             {entrega.entregaveis && (
               <div className="text-left">
                 <span className="text-sm font-medium text-pmo-gray">Entregáveis:</span>
-                <p className="text-sm text-gray-700 mt-1 whitespace-pre-wrap">
+                <p className="text-sm text-gray-700 mt-1 whitespace-pre-wrap text-left">
                   {entrega.entregaveis}
                 </p>
               </div>
