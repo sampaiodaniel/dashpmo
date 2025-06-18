@@ -30,6 +30,8 @@ export function useIncidentes() {
         throw error;
       }
 
+      console.log('Todos os registros encontrados:', data);
+
       // Agrupar por carteira e pegar o mais recente de cada uma
       const registrosPorCarteira = new Map();
       
@@ -59,14 +61,21 @@ export function useIncidenteOperations() {
       // Verificar se já existe um registro para esta carteira e data
       const dataRegistro = data.data_registro || new Date().toISOString().split('T')[0];
       
-      const { data: existente } = await supabase
+      console.log(`Verificando registros existentes para carteira: ${data.carteira} e data: ${dataRegistro}`);
+      
+      const { data: existente, error: checkError } = await supabase
         .from('incidentes')
         .select('id')
         .eq('carteira', data.carteira)
-        .eq('data_registro', dataRegistro)
-        .single();
+        .eq('data_registro', dataRegistro);
 
-      if (existente) {
+      if (checkError) {
+        console.error('Erro ao verificar registros existentes:', checkError);
+        throw checkError;
+      }
+
+      if (existente && existente.length > 0) {
+        console.log('Registro existente encontrado:', existente);
         throw new Error(`Já existe um registro para a carteira ${data.carteira} na data ${dataRegistro}`);
       }
 
@@ -83,7 +92,7 @@ export function useIncidenteOperations() {
           .eq('carteira', data.carteira)
           .order('data_registro', { ascending: false })
           .limit(1)
-          .single();
+          .maybeSingle();
 
         anteriorCalculado = ultimoRegistro?.atual || 0;
         atualCalculado = anteriorCalculado + data.entrada - data.saida;
@@ -181,8 +190,22 @@ export function useIncidenteOperations() {
 
   const excluirIncidente = useMutation({
     mutationFn: async (id: number) => {
-      console.log('Excluindo registro de incidente:', id);
+      console.log('Excluindo registro de incidente com ID:', id);
       
+      // Primeiro verificar se o registro existe
+      const { data: existing, error: checkError } = await supabase
+        .from('incidentes')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (checkError) {
+        console.error('Erro ao verificar registro existente:', checkError);
+        throw checkError;
+      }
+
+      console.log('Registro a ser excluído:', existing);
+
       const { error } = await supabase
         .from('incidentes')
         .delete()
@@ -193,7 +216,20 @@ export function useIncidenteOperations() {
         throw error;
       }
 
-      console.log('Incidente excluído com sucesso');
+      console.log('Incidente excluído com sucesso. ID:', id);
+      
+      // Verificar se realmente foi excluído
+      const { data: verification } = await supabase
+        .from('incidentes')
+        .select('id')
+        .eq('id', id);
+
+      if (verification && verification.length > 0) {
+        console.error('Registro ainda existe após tentativa de exclusão!');
+        throw new Error('Falha na exclusão do registro');
+      }
+
+      console.log('Exclusão verificada com sucesso');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['incidentes-recentes'] });
