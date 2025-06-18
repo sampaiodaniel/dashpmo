@@ -44,7 +44,7 @@ export function Layout({ children }: LayoutProps) {
         {/* Footer discreto */}
         <footer className="py-3 px-6 border-t border-gray-200 bg-white">
           <div className="text-right">
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-gray-300">
               © 2025 ASA. Todos os direitos reservados. | DashPMO - Sistema desenvolvido por Daniel Sampaio de Almeida - daniel.almeida@cwi.com.br
             </p>
           </div>

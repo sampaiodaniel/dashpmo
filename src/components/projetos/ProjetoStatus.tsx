@@ -1,7 +1,7 @@
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ExternalLink, FileText } from 'lucide-react';
+import { ExternalLink, FileText, Plus } from 'lucide-react';
 import { getStatusColor, getStatusGeralColor, Projeto } from '@/types/pmo';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -51,6 +51,10 @@ export function ProjetoStatus({ projeto }: ProjetoStatusProps) {
     navigate(`/status/${ultimoStatus.id}`);
   };
 
+  const handleNovoStatus = () => {
+    navigate(`/status/novo?projeto=${projeto.id}`);
+  };
+
   // Função para formatar texto com quebras de linha em bullets
   const formatarComoBullets = (texto: string) => {
     return texto.split('\n').filter(linha => linha.trim()).map((linha, index) => (
@@ -64,18 +68,33 @@ export function ProjetoStatus({ projeto }: ProjetoStatusProps) {
         <div className="flex items-center gap-3">
           <FileText className="h-5 w-5 text-pmo-primary" />
           <h2 className="text-xl font-semibold text-pmo-primary">Último Status</h2>
-          <Badge variant={ultimoStatus.aprovado ? "default" : "destructive"} className="text-xs">
-            {ultimoStatus.aprovado ? "Revisado" : "Não Revisado"}
-          </Badge>
         </div>
-        <Button 
-          onClick={handleVerDetalhes}
-          className="bg-pmo-primary hover:bg-pmo-secondary text-white flex items-center gap-2"
-          size="sm"
-        >
-          <ExternalLink className="h-4 w-4" />
-          Ver detalhes
-        </Button>
+        <div className="flex items-center gap-2">
+          {ultimoStatus.aprovado && (
+            <Button 
+              onClick={handleNovoStatus}
+              className="bg-pmo-primary hover:bg-pmo-secondary text-white flex items-center gap-2"
+              size="sm"
+            >
+              <Plus className="h-4 w-4" />
+              Novo Status
+            </Button>
+          )}
+          <Button 
+            onClick={handleVerDetalhes}
+            className="bg-pmo-primary hover:bg-pmo-secondary text-white flex items-center gap-2"
+            size="sm"
+          >
+            <ExternalLink className="h-4 w-4" />
+            Ver detalhes
+          </Button>
+        </div>
+      </div>
+
+      <div className="mb-3">
+        <Badge variant={ultimoStatus.aprovado ? "default" : "destructive"} className="text-xs">
+          {ultimoStatus.aprovado ? "Revisado" : "Não Revisado"}
+        </Badge>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

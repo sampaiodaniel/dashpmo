@@ -55,20 +55,32 @@ export function useProjetos(filtros?: FiltrosProjeto) {
 
       console.log('Projetos encontrados:', data?.length || 0);
       
-      // Convert data_criacao from string to Date
-      const projetos = data?.map(projeto => ({
-        ...projeto,
-        data_criacao: new Date(projeto.data_criacao),
-        ultimoStatus: projeto.ultimoStatus && projeto.ultimoStatus.length > 0 ? {
-          ...projeto.ultimoStatus[0],
-          data_atualizacao: new Date(projeto.ultimoStatus[0].data_atualizacao),
-          data_criacao: new Date(projeto.ultimoStatus[0].data_criacao),
-          data_marco1: projeto.ultimoStatus[0].data_marco1 ? new Date(projeto.ultimoStatus[0].data_marco1) : undefined,
-          data_marco2: projeto.ultimoStatus[0].data_marco2 ? new Date(projeto.ultimoStatus[0].data_marco2) : undefined,
-          data_marco3: projeto.ultimoStatus[0].data_marco3 ? new Date(projeto.ultimoStatus[0].data_marco3) : undefined,
-          data_aprovacao: projeto.ultimoStatus[0].data_aprovacao ? new Date(projeto.ultimoStatus[0].data_aprovacao) : undefined
-        } : undefined
-      })) || [];
+      // Convert data_criacao from string to Date and get the most recent status
+      const projetos = await Promise.all(data?.map(async (projeto) => {
+        // Buscar o último status do projeto (mais recente)
+        const { data: ultimoStatusData } = await supabase
+          .from('status_projeto')
+          .select('*')
+          .eq('projeto_id', projeto.id)
+          .order('data_atualizacao', { ascending: false })
+          .limit(1);
+
+        const ultimoStatus = ultimoStatusData?.[0] ? {
+          ...ultimoStatusData[0],
+          data_atualizacao: new Date(ultimoStatusData[0].data_atualizacao),
+          data_criacao: new Date(ultimoStatusData[0].data_criacao),
+          data_marco1: ultimoStatusData[0].data_marco1 ? new Date(ultimoStatusData[0].data_marco1) : undefined,
+          data_marco2: ultimoStatusData[0].data_marco2 ? new Date(ultimoStatusData[0].data_marco2) : undefined,
+          data_marco3: ultimoStatusData[0].data_marco3 ? new Date(ultimoStatusData[0].data_marco3) : undefined,
+          data_aprovacao: ultimoStatusData[0].data_aprovacao ? new Date(ultimoStatusData[0].data_aprovacao) : undefined
+        } : undefined;
+
+        return {
+          ...projeto,
+          data_criacao: new Date(projeto.data_criacao),
+          ultimoStatus
+        };
+      }) || []);
 
       return projetos;
     },
