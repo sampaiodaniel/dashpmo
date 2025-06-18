@@ -133,7 +133,89 @@ export function useIncidenteOperations() {
     },
   });
 
+  const editarIncidente = useMutation({
+    mutationFn: async (data: { id: number } & Partial<IncidenteData>) => {
+      console.log('Editando registro de incidente:', data);
+      
+      const { data: result, error } = await supabase
+        .from('incidentes')
+        .update({
+          carteira: data.carteira,
+          anterior: data.anterior,
+          entrada: data.entrada,
+          saida: data.saida,
+          atual: data.atual,
+          mais_15_dias: data.mais_15_dias,
+          criticos: data.criticos,
+          data_registro: data.data_registro
+        })
+        .eq('id', data.id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Erro ao editar incidente:', error);
+        throw error;
+      }
+
+      console.log('Incidente editado com sucesso:', result);
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['incidentes-recentes'] });
+      queryClient.invalidateQueries({ queryKey: ['incidentes-historico'] });
+      toast({
+        title: "Sucesso",
+        description: "Registro de incidente editado com sucesso!",
+      });
+    },
+    onError: (error: Error) => {
+      console.error('Erro ao editar incidente:', error);
+      toast({
+        title: "Erro",
+        description: error.message || "Erro ao editar registro de incidente. Tente novamente.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const excluirIncidente = useMutation({
+    mutationFn: async (id: number) => {
+      console.log('Excluindo registro de incidente:', id);
+      
+      const { error } = await supabase
+        .from('incidentes')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        console.error('Erro ao excluir incidente:', error);
+        throw error;
+      }
+
+      console.log('Incidente excluído com sucesso');
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['incidentes-recentes'] });
+      queryClient.invalidateQueries({ queryKey: ['incidentes-historico'] });
+      toast({
+        title: "Sucesso",
+        description: "Registro de incidente excluído com sucesso!",
+      });
+    },
+    onError: (error: Error) => {
+      console.error('Erro ao excluir incidente:', error);
+      toast({
+        title: "Erro",
+        description: error.message || "Erro ao excluir registro de incidente. Tente novamente.",
+        variant: "destructive",
+      });
+    },
+  });
+
   return {
     criarIncidente,
+    editarIncidente,
+    excluirIncidente,
   };
 }

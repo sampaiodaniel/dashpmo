@@ -1,12 +1,12 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useIncidenteOperations, useIncidentes } from '@/hooks/useIncidentes';
-import { useAuth } from '@/hooks/useAuth';
+import { useIncidenteOperations } from '@/hooks/useIncidentes';
+import { IncidenteHistorico } from '@/hooks/useIncidentesHistorico';
 
 const CARTEIRAS = [
   'Cadastro',
@@ -22,80 +22,56 @@ const CARTEIRAS = [
   'Open Finance'
 ];
 
-interface NovoRegistroIncidenteModalProps {
+interface EditarIncidenteModalProps {
+  incidente: IncidenteHistorico;
   isOpen: boolean;
   onClose: () => void;
 }
 
-export function NovoRegistroIncidenteModal({ isOpen, onClose }: NovoRegistroIncidenteModalProps) {
-  const [carteira, setCarteira] = useState('');
-  const [entrada, setEntrada] = useState('');
-  const [saida, setSaida] = useState('');
-  const [atual, setAtual] = useState('');
-  const [mais15Dias, setMais15Dias] = useState('');
-  const [criticos, setCriticos] = useState('');
-  const [dataRegistro, setDataRegistro] = useState(new Date().toISOString().split('T')[0]);
+export function EditarIncidenteModal({ incidente, isOpen, onClose }: EditarIncidenteModalProps) {
+  const [carteira, setCarteira] = useState(incidente.carteira);
+  const [anterior, setAnterior] = useState(incidente.anterior.toString());
+  const [entrada, setEntrada] = useState(incidente.entrada.toString());
+  const [saida, setSaida] = useState(incidente.saida.toString());
+  const [atual, setAtual] = useState(incidente.atual.toString());
+  const [mais15Dias, setMais15Dias] = useState(incidente.mais_15_dias.toString());
+  const [criticos, setCriticos] = useState(incidente.criticos.toString());
+  const [dataRegistro, setDataRegistro] = useState(incidente.data_registro);
 
-  const { usuario } = useAuth();
-  const { criarIncidente } = useIncidenteOperations();
-  const { data: incidentesRecentes } = useIncidentes();
+  const { editarIncidente } = useIncidenteOperations();
 
-  // Buscar o último registro da carteira selecionada para mostrar o "anterior"
-  const ultimoRegistroCarteira = incidentesRecentes?.find(inc => inc.carteira === carteira);
-  const anteriorCalculado = ultimoRegistroCarteira?.atual || 0;
-  
-  // Se o usuário não preencheu o "atual", calcular automaticamente
-  const entradaNum = parseInt(entrada) || 0;
-  const saidaNum = parseInt(saida) || 0;
-  const atualNum = parseInt(atual) || 0;
-  
-  // Mostrar valor calculado se o campo atual estiver vazio
-  const atualCalculadoAutomatico = atual === '' ? anteriorCalculado + entradaNum - saidaNum : atualNum;
+  useEffect(() => {
+    if (incidente) {
+      setCarteira(incidente.carteira);
+      setAnterior(incidente.anterior.toString());
+      setEntrada(incidente.entrada.toString());
+      setSaida(incidente.saida.toString());
+      setAtual(incidente.atual.toString());
+      setMais15Dias(incidente.mais_15_dias.toString());
+      setCriticos(incidente.criticos.toString());
+      setDataRegistro(incidente.data_registro);
+    }
+  }, [incidente]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!carteira || !usuario) {
-      console.log('Dados faltando:', { carteira, usuario: !!usuario });
-      return;
-    }
-
     try {
-      console.log('Iniciando criação do incidente...');
-      
-      // Usar o valor do campo "atual" se preenchido, senão usar o calculado
-      const valorAtual = atual !== '' ? atualNum : anteriorCalculado + entradaNum - saidaNum;
-      
-      const dadosIncidente = {
+      await editarIncidente.mutateAsync({
+        id: incidente.id,
         carteira,
-        anterior: anteriorCalculado,
-        entrada: entradaNum,
-        saida: saidaNum,
-        atual: valorAtual,
+        anterior: parseInt(anterior) || 0,
+        entrada: parseInt(entrada) || 0,
+        saida: parseInt(saida) || 0,
+        atual: parseInt(atual) || 0,
         mais_15_dias: parseInt(mais15Dias) || 0,
         criticos: parseInt(criticos) || 0,
-        data_registro: dataRegistro,
-        criado_por: usuario.nome
-      };
-      
-      console.log('Dados do incidente a serem criados:', dadosIncidente);
-      
-      await criarIncidente.mutateAsync(dadosIncidente);
-      
-      console.log('Incidente criado com sucesso, limpando formulário...');
-      
-      // Limpar formulário
-      setCarteira('');
-      setEntrada('');
-      setSaida('');
-      setAtual('');
-      setMais15Dias('');
-      setCriticos('');
-      setDataRegistro(new Date().toISOString().split('T')[0]);
+        data_registro: dataRegistro
+      });
       
       onClose();
     } catch (error) {
-      console.error('Erro ao criar incidente:', error);
+      console.error('Erro ao editar incidente:', error);
     }
   };
 
@@ -103,7 +79,7 @@ export function NovoRegistroIncidenteModal({ isOpen, onClose }: NovoRegistroInci
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Novo Registro de Incidente</DialogTitle>
+          <DialogTitle>Editar Registro de Incidente</DialogTitle>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -134,19 +110,17 @@ export function NovoRegistroIncidenteModal({ isOpen, onClose }: NovoRegistroInci
             />
           </div>
 
-          {carteira && (
-            <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-              <div className="text-sm text-blue-800 mb-2">
-                <strong>Valores de Referência:</strong>
-              </div>
-              <div className="text-sm text-blue-700">
-                Anterior: <strong>{anteriorCalculado}</strong> (atual da última semana)
-              </div>
-              <div className="text-sm text-blue-700">
-                Cálculo Automático: <strong>{atualCalculadoAutomatico}</strong> (anterior + entradas - saídas)
-              </div>
-            </div>
-          )}
+          <div>
+            <Label htmlFor="anterior">Anterior</Label>
+            <Input
+              id="anterior"
+              type="number"
+              min="0"
+              value={anterior}
+              onChange={(e) => setAnterior(e.target.value)}
+              required
+            />
+          </div>
 
           <div>
             <Label htmlFor="entrada">Entradas (Novos Incidentes)</Label>
@@ -173,18 +147,15 @@ export function NovoRegistroIncidenteModal({ isOpen, onClose }: NovoRegistroInci
           </div>
 
           <div>
-            <Label htmlFor="atual">Atual (deixe vazio para calcular automaticamente)</Label>
+            <Label htmlFor="atual">Atual</Label>
             <Input
               id="atual"
               type="number"
               min="0"
               value={atual}
               onChange={(e) => setAtual(e.target.value)}
-              placeholder={`Automático: ${atualCalculadoAutomatico}`}
+              required
             />
-            <p className="text-xs text-gray-500 mt-1">
-              Se não preenchido, será calculado como: anterior + entradas - saídas
-            </p>
           </div>
 
           <div>
@@ -218,9 +189,9 @@ export function NovoRegistroIncidenteModal({ isOpen, onClose }: NovoRegistroInci
             <Button 
               type="submit" 
               className="flex-1"
-              disabled={criarIncidente.isPending || !carteira}
+              disabled={editarIncidente.isPending}
             >
-              {criarIncidente.isPending ? 'Criando...' : 'Criar Registro'}
+              {editarIncidente.isPending ? 'Salvando...' : 'Salvar Alterações'}
             </Button>
           </div>
         </form>

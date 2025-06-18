@@ -19,6 +19,7 @@ import EditarMudanca from "./pages/EditarMudanca";
 import Licoes from "./pages/Licoes";
 import LicaoDetalhes from "./pages/LicaoDetalhes";
 import Incidentes from "./pages/Incidentes";
+import IncidentesRegistros from "./pages/IncidentesRegistros";
 import Aprovacoes from "./pages/Aprovacoes";
 import Relatorios from "./pages/Relatorios";
 import RelatorioCompartilhado from "./pages/RelatorioCompartilhado";
@@ -51,6 +52,7 @@ function App() {
               <Route path="/licoes" element={<Licoes />} />
               <Route path="/licoes/:id" element={<LicaoDetalhes />} />
               <Route path="/incidentes" element={<Incidentes />} />
+              <Route path="/incidentes-registros" element={<IncidentesRegistros />} />
               <Route path="/aprovacoes" element={<Aprovacoes />} />
               <Route path="/relatorios" element={<Relatorios />} />
               <Route path="/relatorio-compartilhado/:id" element={<RelatorioCompartilhado />} />
