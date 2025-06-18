@@ -8,7 +8,7 @@ interface ProjetoAtividadesProps {
 export function ProjetoAtividades({ ultimoStatus }: ProjetoAtividadesProps) {
   if (!ultimoStatus) return null;
 
-  const hasActivities = ultimoStatus.realizado_semana_atual || ultimoStatus.observacoes_pontos_atencao;
+  const hasActivities = ultimoStatus.realizado_semana_atual;
 
   if (!hasActivities) return null;
 
@@ -39,53 +39,34 @@ export function ProjetoAtividades({ ultimoStatus }: ProjetoAtividadesProps) {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 gap-6">
-        {/* Itens Trabalhados na Semana - com divisão em colunas */}
-        {ultimoStatus.realizado_semana_atual && (
-          <div>
-            <h4 className="font-semibold text-[#1B365D] mb-3">Itens Trabalhados na Semana</h4>
-            <div className="bg-blue-50 border border-blue-300 p-4 rounded-lg min-h-[200px]">
-              {(() => {
-                const colunas = dividirTextoEmColunas(ultimoStatus.realizado_semana_atual);
-                return (
-                  <div className={`grid gap-4 h-full ${
-                    colunas.length === 1 ? 'grid-cols-1' : 
-                    colunas.length === 2 ? 'grid-cols-2' : 'grid-cols-3'
-                  }`}>
-                    {colunas.map((coluna, colIndex) => (
-                      <div key={colIndex} className="space-y-1">
-                        {coluna.map((item: string, i: number) => (
-                          <div key={i} className="text-xs text-blue-700 leading-tight">
-                            <span className="font-medium text-[#1B365D] mr-2">•</span>
-                            <span>{item.trim()}</span>
-                          </div>
-                        ))}
-                      </div>
-                    ))}
-                  </div>
-                );
-              })()}
-            </div>
+      {/* Itens Trabalhados na Semana - ocupando toda a largura */}
+      {ultimoStatus.realizado_semana_atual && (
+        <div>
+          <h4 className="font-semibold text-[#1B365D] mb-3">Itens Trabalhados na Semana</h4>
+          <div className="bg-blue-50 border border-blue-300 p-4 rounded-lg min-h-[200px]">
+            {(() => {
+              const colunas = dividirTextoEmColunas(ultimoStatus.realizado_semana_atual);
+              return (
+                <div className={`grid gap-4 h-full ${
+                  colunas.length === 1 ? 'grid-cols-1' : 
+                  colunas.length === 2 ? 'grid-cols-2' : 'grid-cols-3'
+                }`}>
+                  {colunas.map((coluna, colIndex) => (
+                    <div key={colIndex} className="space-y-1">
+                      {coluna.map((item: string, i: number) => (
+                        <div key={i} className="text-xs text-blue-700 leading-tight">
+                          <span className="font-medium text-[#1B365D] mr-2">•</span>
+                          <span>{item.trim()}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
           </div>
-        )}
-
-        {/* Pontos de Atenção */}
-        {ultimoStatus.observacoes_pontos_atencao && (
-          <div>
-            <h4 className="font-semibold text-[#F59E0B] mb-3">Pontos de Atenção</h4>
-            <div className="bg-orange-50 border border-orange-300 p-4 rounded-lg min-h-[200px]">
-              <div className="space-y-1">
-                {ultimoStatus.observacoes_pontos_atencao.split('\n').map((item: string, i: number) => (
-                  <div key={i} className="text-xs text-orange-700 leading-tight">
-                    <span className="font-medium text-[#F59E0B] mr-2">⚠️</span>
-                    <span>{item.trim()}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Bloqueios - apenas se existir */}
       {ultimoStatus.bloqueios_atuais && (

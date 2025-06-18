@@ -1,8 +1,8 @@
 
 import { MetricasVisuais } from './MetricasVisuais';
 import { GraficosIndicadores } from './GraficosIndicadores';
-import { TimelineEntregas } from './TimelineEntregas';
 import { IshikawaDiagram } from './IshikawaDiagram';
+import { TimelineEntregas } from './TimelineEntregas';
 
 interface DadosRelatorioVisual {
   carteira?: string;
@@ -50,16 +50,13 @@ export function RelatorioVisualContent({ dados }: RelatorioVisualContentProps) {
         </p>
       </div>
 
-      {/* Métricas Visuais - substituindo dados vazios */}
+      {/* Métricas Visuais */}
       <MetricasVisuais projetos={projetosComStatus} />
 
-      {/* Gráficos de Indicadores - removendo distribuição de status vazia */}
+      {/* Gráficos de Indicadores */}
       <GraficosIndicadores projetos={projetosComStatus} incidentes={dados.incidentes} />
 
-      {/* Timeline de Entregas */}
-      <TimelineEntregas projetos={projetosComStatus} />
-
-      {/* Diagramas Ishikawa para cada projeto */}
+      {/* Detalhamento por Projeto */}
       <div className="space-y-6">
         <h2 className="text-2xl font-bold text-[#1B365D] border-b border-[#E5E7EB] pb-2">
           Detalhamento por Projeto
@@ -101,11 +98,18 @@ export function RelatorioVisualContent({ dados }: RelatorioVisualContentProps) {
                 </div>
               </div>
 
-              {/* Atividades da semana */}
+              {/* Realizado na semana com quebra de linhas */}
               {projeto.ultimoStatus?.realizado_semana_atual && (
                 <div className="mb-4">
                   <h4 className="font-semibold text-[#1B365D] mb-2">Realizado na Semana</h4>
-                  <p className="text-sm text-[#6B7280]">{projeto.ultimoStatus.realizado_semana_atual}</p>
+                  <div className="space-y-1">
+                    {projeto.ultimoStatus.realizado_semana_atual.split('\n').map((item: string, i: number) => (
+                      <div key={i} className="text-sm text-[#6B7280] leading-tight">
+                        <span className="font-medium text-[#1B365D] mr-2">•</span>
+                        <span>{item.trim()}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
 
@@ -114,18 +118,35 @@ export function RelatorioVisualContent({ dados }: RelatorioVisualContentProps) {
                 {projeto.ultimoStatus?.observacoes_pontos_atencao && (
                   <div>
                     <h4 className="font-semibold text-[#1B365D] mb-2">Pontos de Atenção</h4>
-                    <p className="text-sm text-[#6B7280]">{projeto.ultimoStatus.observacoes_pontos_atencao}</p>
+                    <div className="space-y-1">
+                      {projeto.ultimoStatus.observacoes_pontos_atencao.split('\n').map((item: string, i: number) => (
+                        <div key={i} className="text-sm text-[#6B7280] leading-tight">
+                          <span className="font-medium text-[#F59E0B] mr-2">⚠️</span>
+                          <span>{item.trim()}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
                 
                 {projeto.ultimoStatus?.backlog && (
                   <div>
                     <h4 className="font-semibold text-[#1B365D] mb-2">Backlog</h4>
-                    <p className="text-sm text-[#6B7280]">{projeto.ultimoStatus.backlog}</p>
+                    <div className="space-y-1">
+                      {projeto.ultimoStatus.backlog.split('\n').map((item: string, i: number) => (
+                        <div key={i} className="text-sm text-[#6B7280] leading-tight">
+                          <span className="font-medium text-[#6B7280] mr-2">→</span>
+                          <span>{item.trim()}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
             </div>
+
+            {/* Timeline de entregas do projeto específico */}
+            <TimelineEntregas projetos={[projeto]} />
 
             {/* Diagrama Ishikawa das entregas */}
             <IshikawaDiagram projeto={projeto} ultimoStatus={projeto.ultimoStatus} />
