@@ -123,7 +123,7 @@ export function useNovoStatusForm() {
 
       const { data: novoStatus, error } = await supabase
         .from('status_projeto')
-        .insert([statusData])
+        .insert(statusData)
         .select('*, projeto:projetos(*)')
         .single();
 

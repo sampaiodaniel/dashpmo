@@ -1,21 +1,26 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { MudancaReplanejamento } from '@/types/pmo';
 import { toast } from '@/hooks/use-toast';
+import { useAuth } from './useAuth';
 import { useLogger } from '@/utils/logger';
+import type { MudancaReplanejamento, TipoMudanca, StatusAprovacao } from '@/types/pmo';
 
 export function useMudancas() {
-  return useQuery({
-    queryKey: ['mudancas'],
-    queryFn: async (): Promise<MudancaReplanejamento[]> => {
-      console.log('📋 Buscando mudanças...');
+  const { usuario } = useAuth();
+  const queryClient = useQueryClient();
+  const { log } = useLogger();
 
+  const { data: mudancas = [], isLoading, error } = useQuery({
+    queryKey: ['mudancas-replanejamento'],
+    queryFn: async () => {
+      console.log('🔍 Buscando mudanças de replanejamento...');
+      
       const { data, error } = await supabase
         .from('mudancas_replanejamento')
         .select(`
           *,
-          projeto:projetos (
+          projeto:projetos(
             id,
             nome_projeto,
             area_responsavel,
@@ -33,46 +38,61 @@ export function useMudancas() {
         throw error;
       }
 
-      console.log('✅ Mudanças encontradas:', data?.length || 0);
+      console.log('✅ Mudanças carregadas:', data?.length || 0);
       
-      return data?.map(mudanca => ({
+      // Converter datas de string para Date quando necessário
+      const mudancasProcessadas = data?.map(mudanca => ({
         ...mudanca,
         data_solicitacao: new Date(mudanca.data_solicitacao),
         data_aprovacao: mudanca.data_aprovacao ? new Date(mudanca.data_aprovacao) : null,
-        data_criacao: new Date(mudanca.data_criacao)
+        data_criacao: new Date(mudanca.data_criacao),
+        projeto: mudanca.projeto ? {
+          ...mudanca.projeto,
+          data_criacao: new Date(mudanca.projeto.data_criacao)
+        } : null
       })) || [];
+      
+      return mudancasProcessadas as MudancaReplanejamento[];
     },
   });
-}
 
-export function useCriarMudanca() {
-  const queryClient = useQueryClient();
-  const { log } = useLogger();
+  const criarMudancaMutation = useMutation({
+    mutationFn: async (dados: {
+      projeto_id: number;
+      solicitante: string;
+      tipo_mudanca: TipoMudanca;
+      descricao: string;
+      justificativa_negocio: string;
+      impacto_prazo_dias: number;
+      status_aprovacao: StatusAprovacao;
+      observacoes?: string;
+      data_solicitacao: string;
+    }) => {
+      if (!usuario) {
+        throw new Error('Usuário não autenticado');
+      }
 
-  return useMutation({
-    mutationFn: async (mudanca: Omit<MudancaReplanejamento, 'id' | 'data_criacao' | 'data_aprovacao' | 'responsavel_aprovacao'>) => {
-      console.log('📝 Criando mudança:', mudanca);
+      console.log('📝 Criando mudança de replanejamento:', dados);
 
-      // Preparar dados para inserção (remover campos que não existem na tabela)
       const mudancaData = {
-        projeto_id: mudanca.projeto_id,
-        solicitante: mudanca.solicitante,
-        tipo_mudanca: mudanca.tipo_mudanca,
-        descricao: mudanca.descricao,
-        justificativa_negocio: mudanca.justificativa_negocio,
-        impacto_prazo_dias: mudanca.impacto_prazo_dias,
-        status_aprovacao: mudanca.status_aprovacao,
-        observacoes: mudanca.observacoes,
-        criado_por: mudanca.criado_por,
-        data_solicitacao: mudanca.data_solicitacao.toISOString().split('T')[0]
+        projeto_id: dados.projeto_id,
+        solicitante: dados.solicitante,
+        tipo_mudanca: dados.tipo_mudanca,
+        descricao: dados.descricao,
+        justificativa_negocio: dados.justificativa_negocio,
+        impacto_prazo_dias: dados.impacto_prazo_dias,
+        status_aprovacao: dados.status_aprovacao,
+        observacoes: dados.observacoes || null,
+        data_solicitacao: dados.data_solicitacao,
+        criado_por: usuario.nome,
       };
 
       const { data, error } = await supabase
         .from('mudancas_replanejamento')
-        .insert([mudancaData])
+        .insert(mudancaData)
         .select(`
           *,
-          projeto:projetos (
+          projeto:projetos(
             id,
             nome_projeto,
             area_responsavel,
@@ -90,83 +110,80 @@ export function useCriarMudanca() {
         throw error;
       }
 
-      console.log('✅ Mudança criada com sucesso:', data);
-      
-      // Registrar log da criação
+      console.log('✅ Mudança criada:', data);
+
+      // Registrar log
       log(
         'mudancas',
         'criacao',
         'mudanca_replanejamento',
         data.id,
-        `Mudança do projeto ${data.projeto?.nome_projeto || 'N/A'}`,
+        `Mudança: ${dados.descricao.substring(0, 50)}...`,
         {
-          tipo_mudanca: data.tipo_mudanca,
-          impacto_prazo_dias: data.impacto_prazo_dias,
-          solicitante: data.solicitante
+          tipo_mudanca: dados.tipo_mudanca,
+          projeto_id: dados.projeto_id,
+          impacto_dias: dados.impacto_prazo_dias
         }
       );
 
-      return data;
+      return {
+        ...data,
+        data_solicitacao: new Date(data.data_solicitacao),
+        data_aprovacao: data.data_aprovacao ? new Date(data.data_aprovacao) : null,
+        data_criacao: new Date(data.data_criacao),
+        projeto: data.projeto ? {
+          ...data.projeto,
+          data_criacao: new Date(data.projeto.data_criacao)
+        } : null
+      } as MudancaReplanejamento;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['mudancas'] });
+      queryClient.invalidateQueries({ queryKey: ['mudancas-replanejamento'] });
       toast({
         title: "Sucesso",
-        description: "Mudança criada com sucesso!",
+        description: "Mudança de replanejamento criada com sucesso!",
       });
     },
     onError: (error) => {
-      console.error('❌ Erro ao criar mudança:', error);
+      console.error('Erro ao criar mudança:', error);
       toast({
         title: "Erro",
-        description: "Erro ao criar mudança",
+        description: "Erro ao criar mudança de replanejamento. Tente novamente.",
         variant: "destructive",
       });
     },
   });
-}
 
-export function useAtualizarMudanca() {
-  const queryClient = useQueryClient();
-  const { log } = useLogger();
-
-  return useMutation({
-    mutationFn: async ({ 
-      id, 
-      updates 
-    }: { 
-      id: number; 
-      updates: Partial<MudancaReplanejamento> 
+  const atualizarMudancaMutation = useMutation({
+    mutationFn: async (dados: {
+      id: number;
+      projeto_id?: number;
+      solicitante?: string;
+      tipo_mudanca?: TipoMudanca;
+      descricao?: string;
+      justificativa_negocio?: string;
+      impacto_prazo_dias?: number;
+      status_aprovacao?: StatusAprovacao;
+      observacoes?: string;
+      data_solicitacao?: string;
+      data_aprovacao?: string;
+      responsavel_aprovacao?: string;
     }) => {
-      console.log('📝 Atualizando mudança:', id, updates);
-
-      // Preparar dados para atualização (remover campos que não existem na tabela)
-      const updatesData: any = {};
-      
-      if (updates.projeto_id !== undefined) updatesData.projeto_id = updates.projeto_id;
-      if (updates.solicitante !== undefined) updatesData.solicitante = updates.solicitante;
-      if (updates.tipo_mudanca !== undefined) updatesData.tipo_mudanca = updates.tipo_mudanca;
-      if (updates.descricao !== undefined) updatesData.descricao = updates.descricao;
-      if (updates.justificativa_negocio !== undefined) updatesData.justificativa_negocio = updates.justificativa_negocio;
-      if (updates.impacto_prazo_dias !== undefined) updatesData.impacto_prazo_dias = updates.impacto_prazo_dias;
-      if (updates.status_aprovacao !== undefined) updatesData.status_aprovacao = updates.status_aprovacao;
-      if (updates.responsavel_aprovacao !== undefined) updatesData.responsavel_aprovacao = updates.responsavel_aprovacao;
-      if (updates.observacoes !== undefined) updatesData.observacoes = updates.observacoes;
-      
-      if (updates.data_solicitacao instanceof Date) {
-        updatesData.data_solicitacao = updates.data_solicitacao.toISOString().split('T')[0];
-      }
-      if (updates.data_aprovacao instanceof Date) {
-        updatesData.data_aprovacao = updates.data_aprovacao.toISOString().split('T')[0];
+      if (!usuario) {
+        throw new Error('Usuário não autenticado');
       }
 
+      console.log('📝 Atualizando mudança de replanejamento:', dados);
+
+      const { id, ...updateData } = dados;
+      
       const { data, error } = await supabase
         .from('mudancas_replanejamento')
-        .update(updatesData)
+        .update(updateData)
         .eq('id', id)
         .select(`
           *,
-          projeto:projetos (
+          projeto:projetos(
             id,
             nome_projeto,
             area_responsavel,
@@ -184,57 +201,53 @@ export function useAtualizarMudanca() {
         throw error;
       }
 
-      console.log('✅ Mudança atualizada com sucesso:', data);
-      
-      // Registrar log da edição
+      console.log('✅ Mudança atualizada:', data);
+
+      // Registrar log
       log(
         'mudancas',
         'edicao',
         'mudanca_replanejamento',
-        id,
-        `Mudança do projeto ${data.projeto?.nome_projeto || 'N/A'}`,
-        updatesData
+        data.id,
+        `Mudança: ${data.descricao?.substring(0, 50)}...`,
+        {
+          tipo_mudanca: data.tipo_mudanca,
+          projeto_id: data.projeto_id,
+          status_aprovacao: data.status_aprovacao
+        }
       );
 
-      return data;
+      return {
+        ...data,
+        data_solicitacao: new Date(data.data_solicitacao),
+        data_aprovacao: data.data_aprovacao ? new Date(data.data_aprovacao) : null,
+        data_criacao: new Date(data.data_criacao),
+        projeto: data.projeto ? {
+          ...data.projeto,
+          data_criacao: new Date(data.projeto.data_criacao)
+        } : null
+      } as MudancaReplanejamento;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['mudancas'] });
+      queryClient.invalidateQueries({ queryKey: ['mudancas-replanejamento'] });
       toast({
         title: "Sucesso",
-        description: "Mudança atualizada com sucesso!",
+        description: "Mudança de replanejamento atualizada com sucesso!",
       });
     },
     onError: (error) => {
-      console.error('❌ Erro ao atualizar mudança:', error);
+      console.error('Erro ao atualizar mudança:', error);
       toast({
         title: "Erro",
-        description: "Erro ao atualizar mudança",
+        description: "Erro ao atualizar mudança de replanejamento. Tente novamente.",
         variant: "destructive",
       });
     },
   });
-}
 
-export function useExcluirMudanca() {
-  const queryClient = useQueryClient();
-  const { log } = useLogger();
-
-  return useMutation({
+  const excluirMudancaMutation = useMutation({
     mutationFn: async (id: number) => {
-      console.log('🗑️ Excluindo mudança:', id);
-
-      // Primeiro buscar dados para o log
-      const { data: mudancaData } = await supabase
-        .from('mudancas_replanejamento')
-        .select(`
-          *,
-          projeto:projetos (
-            nome_projeto
-          )
-        `)
-        .eq('id', id)
-        .single();
+      console.log('🗑️ Excluindo mudança de replanejamento:', id);
 
       const { error } = await supabase
         .from('mudancas_replanejamento')
@@ -246,38 +259,43 @@ export function useExcluirMudanca() {
         throw error;
       }
 
-      console.log('✅ Mudança excluída com sucesso');
-      
-      // Registrar log da exclusão
-      if (mudancaData) {
-        log(
-          'mudancas',
-          'exclusao',
-          'mudanca_replanejamento',
-          id,
-          `Mudança do projeto ${mudancaData.projeto?.nome_projeto || 'N/A'}`,
-          {
-            tipo_mudanca: mudancaData.tipo_mudanca,
-            impacto_prazo_dias: mudancaData.impacto_prazo_dias,
-            solicitante: mudancaData.solicitante
-          }
-        );
-      }
+      console.log('✅ Mudança excluída');
+
+      // Registrar log
+      log(
+        'mudancas',
+        'exclusao',
+        'mudanca_replanejamento',
+        id,
+        'Mudança de replanejamento excluída'
+      );
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['mudancas'] });
+      queryClient.invalidateQueries({ queryKey: ['mudancas-replanejamento'] });
       toast({
         title: "Sucesso",
-        description: "Mudança excluída com sucesso!",
+        description: "Mudança de replanejamento excluída com sucesso!",
       });
     },
     onError: (error) => {
-      console.error('❌ Erro ao excluir mudança:', error);
+      console.error('Erro ao excluir mudança:', error);
       toast({
         title: "Erro",
-        description: "Erro ao excluir mudança",
+        description: "Erro ao excluir mudança de replanejamento. Tente novamente.",
         variant: "destructive",
       });
     },
   });
+
+  return {
+    mudancas,
+    isLoading,
+    error,
+    criarMudanca: criarMudancaMutation.mutate,
+    atualizarMudanca: atualizarMudancaMutation.mutate,
+    excluirMudanca: excluirMudancaMutation.mutate,
+    isCreatingMudanca: criarMudancaMutation.isPending,
+    isUpdatingMudanca: atualizarMudancaMutation.isPending,
+    isDeletingMudanca: excluirMudancaMutation.isPending,
+  };
 }

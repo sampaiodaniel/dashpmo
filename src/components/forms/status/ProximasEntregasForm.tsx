@@ -17,7 +17,11 @@ export function ProximasEntregasForm({ form }: ProximasEntregasFormProps) {
 
   const handleMarcoDateChange = (marcoNumber: number, date: Date | null) => {
     if (date) {
-      form.setValue(`marco${marcoNumber}_data`, date.toISOString().split('T')[0]);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const dateString = `${year}-${month}-${day}`;
+      form.setValue(`marco${marcoNumber}_data`, dateString);
     } else {
       form.setValue(`marco${marcoNumber}_data`, '');
     }
@@ -30,6 +34,8 @@ export function ProximasEntregasForm({ form }: ProximasEntregasFormProps) {
     
     if (isTBD) {
       form.setValue(`marco${marcoNumber}_data`, 'TBD');
+    } else {
+      form.setValue(`marco${marcoNumber}_data`, '');
     }
   };
 

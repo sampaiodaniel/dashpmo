@@ -1,24 +1,33 @@
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
-import { AdminUsuarios } from '@/components/admin/AdminUsuarios';
-import { AdminResponsaveisASA } from '@/components/admin/AdminResponsaveisASA';
-import { AdminConfiguracoes } from '@/components/admin/AdminConfiguracoes';
-import { AdminLogs } from '@/components/admin/AdminLogs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useState } from 'react';
 import { SeedTestData } from '@/components/admin/SeedTestData';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Settings, Users, Building, Shield, Activity, Database } from 'lucide-react';
 import { AtualizarProjetosTipo } from '@/components/admin/AtualizarProjetosTipo';
+import { useUsuarios } from '@/hooks/useUsuarios';
+import { UserTable } from '@/components/admin/UserTable';
+import { useResponsaveisASA } from '@/hooks/useResponsaveisASA';
+import { ResponsaveisASATable } from '@/components/admin/ResponsaveisASATable';
+import { TiposProjetoTable } from '@/components/admin/TiposProjetoTable';
+import { useTiposProjeto } from '@/hooks/useTiposProjeto';
+import { ConfiguracoesForm } from '@/components/admin/ConfiguracoesForm';
+import { LogsViewer } from '@/components/admin/LogsViewer';
+import { CleanupCanaisIncidents } from '@/components/admin/CleanupCanaisIncidents';
 
 export default function Administracao() {
-  const { usuario, isLoading: authLoading, isAdmin } = useAuth();
+  const { usuario, isLoading } = useAuth();
+  const [activeTab, setActiveTab] = useState("usuarios");
+	const { usuarios, isLoading: isLoadingUsuarios } = useUsuarios();
+  const { responsaveisASA, isLoading: isLoadingResponsaveisASA } = useResponsaveisASA();
+  const { tiposProjeto, isLoading: isLoadingTiposProjeto } = useTiposProjeto();
 
-  if (authLoading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-pmo-background flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 bg-pmo-primary rounded-xl flex items-center justify-center mx-auto mb-4">
-            <span className="text-white font-bold text-xl">DashPMO</span>
+            <span className="text-white font-bold text-xl">PMO</span>
           </div>
           <div className="text-pmo-gray">Carregando...</div>
         </div>
@@ -30,15 +39,12 @@ export default function Administracao() {
     return <LoginForm />;
   }
 
-  if (!isAdmin) {
+  if (usuario.tipo_usuario !== 'admin') {
     return (
       <Layout>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <Shield className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Acesso Restrito</h2>
-            <p className="text-gray-600">Você não tem permissão para acessar esta área.</p>
-          </div>
+        <div className="text-center py-12">
+          <h1 className="text-2xl font-bold text-pmo-primary mb-4">Acesso Negado</h1>
+          <p className="text-pmo-gray">Você não tem permissão para acessar esta área.</p>
         </div>
       </Layout>
     );
@@ -47,82 +53,56 @@ export default function Administracao() {
   return (
     <Layout>
       <div className="space-y-6">
-        {/* Header */}
         <div>
           <h1 className="text-3xl font-bold text-pmo-primary">Administração</h1>
           <p className="text-pmo-gray mt-2">Configurações e gerenciamento do sistema</p>
         </div>
 
-        {/* Atualização de Tipos de Projeto */}
-        <AtualizarProjetosTipo />
-
-        {/* Menu de Navegação */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div>
-            <h2 className="text-xl font-bold text-pmo-primary">Gerenciamento de Usuários</h2>
-            <p className="text-pmo-gray mt-2">Criação, edição e visualização de usuários</p>
-          </div>
-          <div>
-            <h2 className="text-xl font-bold text-pmo-primary">Responsáveis ASA</h2>
-            <p className="text-pmo-gray mt-2">Gerenciamento de responsáveis ASA</p>
-          </div>
-          <div>
-            <h2 className="text-xl font-bold text-pmo-primary">Configurações</h2>
-            <p className="text-pmo-gray mt-2">Configurações do sistema</p>
-          </div>
-          <div>
-            <h2 className="text-xl font-bold text-pmo-primary">Logs</h2>
-            <p className="text-pmo-gray mt-2">Visualização de logs do sistema</p>
-          </div>
-          <div>
-            <h2 className="text-xl font-bold text-pmo-primary">Dados de Teste</h2>
-            <p className="text-pmo-gray mt-2">Criação e visualização de dados de teste</p>
-          </div>
-        </div>
-
-        {/* Conteúdo das Seções */}
-        <Tabs defaultValue="usuarios" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="usuarios" className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              Usuários
-            </TabsTrigger>
-            <TabsTrigger value="responsaveis" className="flex items-center gap-2">
-              <Building className="h-4 w-4" />
-              Responsáveis ASA
-            </TabsTrigger>
-            <TabsTrigger value="configuracoes" className="flex items-center gap-2">
-              <Settings className="h-4 w-4" />
-              Configurações
-            </TabsTrigger>
-            <TabsTrigger value="logs" className="flex items-center gap-2">
-              <Activity className="h-4 w-4" />
-              Logs
-            </TabsTrigger>
-            <TabsTrigger value="dados" className="flex items-center gap-2">
-              <Database className="h-4 w-4" />
-              Dados de Teste
-            </TabsTrigger>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-6">
+            <TabsTrigger value="usuarios">Usuários</TabsTrigger>
+            <TabsTrigger value="responsaveis-asa">Responsáveis ASA</TabsTrigger>
+            <TabsTrigger value="tipos-projeto">Tipos de Projeto</TabsTrigger>
+            <TabsTrigger value="configuracoes">Configurações</TabsTrigger>
+            <TabsTrigger value="logs">Logs</TabsTrigger>
+            <TabsTrigger value="manutencao">Manutenção</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="usuarios">
-            <AdminUsuarios />
+          <TabsContent value="usuarios" className="space-y-6">
+            <UserTable 
+              usuarios={usuarios}
+              isLoading={isLoadingUsuarios}
+            />
           </TabsContent>
 
-          <TabsContent value="responsaveis">
-            <AdminResponsaveisASA />
+          <TabsContent value="responsaveis-asa" className="space-y-6">
+            <ResponsaveisASATable 
+              responsaveisASA={responsaveisASA}
+              isLoading={isLoadingResponsaveisASA}
+            />
           </TabsContent>
 
-          <TabsContent value="configuracoes">
-            <AdminConfiguracoes />
+          <TabsContent value="tipos-projeto" className="space-y-6">
+            <TiposProjetoTable 
+              tiposProjeto={tiposProjeto}
+              isLoading={isLoadingTiposProjeto}
+            />
           </TabsContent>
 
-          <TabsContent value="logs">
-            <AdminLogs />
+          <TabsContent value="configuracoes" className="space-y-6">
+            <ConfiguracoesForm />
           </TabsContent>
 
-          <TabsContent value="dados">
-            <SeedTestData />
+          <TabsContent value="logs" className="space-y-6">
+            <LogsViewer />
+          </TabsContent>
+
+          <TabsContent value="manutencao" className="space-y-6">
+            <div className="grid gap-6">
+              <SeedTestData />
+              <AtualizarProjetosTipo />
+              <CleanupCanaisIncidents />
+            </div>
           </TabsContent>
         </Tabs>
       </div>

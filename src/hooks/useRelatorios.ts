@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 import { useLogger } from '@/utils/logger';
 
 export function useRelatorios() {
@@ -16,7 +16,7 @@ export function useRelatorios() {
       
       // Registrar log da geração do relatório
       log(
-        'relatorios',
+        'relatorios' as any,
         'criacao',
         'relatorio',
         undefined,
