@@ -58,7 +58,7 @@ export function ProximasEntregasForm({ form }: ProximasEntregasFormProps) {
             />
             
             <DateFieldWithTBD
-              label="Data de Entrega"
+              label="Data de Entrega *"
               value={form.watch('marco1_data') && form.watch('marco1_data') !== 'TBD' ? new Date(form.watch('marco1_data')) : null}
               onChange={(date) => handleMarcoDateChange(1, date)}
               onTBDChange={(isTBD) => handleMarcoTBDChange(1, isTBD)}

@@ -47,9 +47,18 @@ export function useCriarLicao() {
     mutationFn: async (licao: Omit<LicaoAprendida, 'id' | 'data_criacao'>) => {
       console.log('📝 Criando lição aprendida:', licao);
 
-      // Converter Date para string antes de enviar
+      // Preparar dados para inserção (remover campos que não existem na tabela)
       const licaoData = {
-        ...licao,
+        projeto_id: licao.projeto_id,
+        responsavel_registro: licao.responsavel_registro,
+        categoria_licao: licao.categoria_licao,
+        situacao_ocorrida: licao.situacao_ocorrida,
+        licao_aprendida: licao.licao_aprendida,
+        impacto_gerado: licao.impacto_gerado,
+        acao_recomendada: licao.acao_recomendada,
+        status_aplicacao: licao.status_aplicacao,
+        tags_busca: licao.tags_busca,
+        criado_por: licao.criado_por,
         data_registro: licao.data_registro.toISOString().split('T')[0]
       };
 
@@ -120,13 +129,21 @@ export function useAtualizarLicao() {
     }) => {
       console.log('📝 Atualizando lição:', id, updates);
 
-      // Converter Dates para strings se necessário
-      const updatesData = { ...updates };
-      if (updatesData.data_registro instanceof Date) {
-        updatesData.data_registro = updatesData.data_registro.toISOString().split('T')[0] as any;
-      }
-      if (updatesData.data_criacao instanceof Date) {
-        delete updatesData.data_criacao; // Não atualizar data de criação
+      // Preparar dados para atualização (remover campos que não existem na tabela)
+      const updatesData: any = {};
+      
+      if (updates.projeto_id !== undefined) updatesData.projeto_id = updates.projeto_id;
+      if (updates.responsavel_registro !== undefined) updatesData.responsavel_registro = updates.responsavel_registro;
+      if (updates.categoria_licao !== undefined) updatesData.categoria_licao = updates.categoria_licao;
+      if (updates.situacao_ocorrida !== undefined) updatesData.situacao_ocorrida = updates.situacao_ocorrida;
+      if (updates.licao_aprendida !== undefined) updatesData.licao_aprendida = updates.licao_aprendida;
+      if (updates.impacto_gerado !== undefined) updatesData.impacto_gerado = updates.impacto_gerado;
+      if (updates.acao_recomendada !== undefined) updatesData.acao_recomendada = updates.acao_recomendada;
+      if (updates.status_aplicacao !== undefined) updatesData.status_aplicacao = updates.status_aplicacao;
+      if (updates.tags_busca !== undefined) updatesData.tags_busca = updates.tags_busca;
+      
+      if (updates.data_registro instanceof Date) {
+        updatesData.data_registro = updates.data_registro.toISOString().split('T')[0];
       }
 
       const { data, error } = await supabase

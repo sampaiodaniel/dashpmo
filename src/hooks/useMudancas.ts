@@ -22,7 +22,8 @@ export function useMudancas() {
             responsavel_interno,
             gp_responsavel,
             criado_por,
-            data_criacao
+            data_criacao,
+            status_ativo
           )
         `)
         .order('data_criacao', { ascending: false });
@@ -52,9 +53,17 @@ export function useCriarMudanca() {
     mutationFn: async (mudanca: Omit<MudancaReplanejamento, 'id' | 'data_criacao' | 'data_aprovacao' | 'responsavel_aprovacao'>) => {
       console.log('📝 Criando mudança:', mudanca);
 
-      // Converter Date para string antes de enviar
+      // Preparar dados para inserção (remover campos que não existem na tabela)
       const mudancaData = {
-        ...mudanca,
+        projeto_id: mudanca.projeto_id,
+        solicitante: mudanca.solicitante,
+        tipo_mudanca: mudanca.tipo_mudanca,
+        descricao: mudanca.descricao,
+        justificativa_negocio: mudanca.justificativa_negocio,
+        impacto_prazo_dias: mudanca.impacto_prazo_dias,
+        status_aprovacao: mudanca.status_aprovacao,
+        observacoes: mudanca.observacoes,
+        criado_por: mudanca.criado_por,
         data_solicitacao: mudanca.data_solicitacao.toISOString().split('T')[0]
       };
 
@@ -70,7 +79,8 @@ export function useCriarMudanca() {
             responsavel_interno,
             gp_responsavel,
             criado_por,
-            data_criacao
+            data_criacao,
+            status_ativo
           )
         `)
         .single();
@@ -130,16 +140,24 @@ export function useAtualizarMudanca() {
     }) => {
       console.log('📝 Atualizando mudança:', id, updates);
 
-      // Converter Dates para strings se necessário
-      const updatesData = { ...updates };
-      if (updatesData.data_solicitacao instanceof Date) {
-        updatesData.data_solicitacao = updatesData.data_solicitacao.toISOString().split('T')[0] as any;
+      // Preparar dados para atualização (remover campos que não existem na tabela)
+      const updatesData: any = {};
+      
+      if (updates.projeto_id !== undefined) updatesData.projeto_id = updates.projeto_id;
+      if (updates.solicitante !== undefined) updatesData.solicitante = updates.solicitante;
+      if (updates.tipo_mudanca !== undefined) updatesData.tipo_mudanca = updates.tipo_mudanca;
+      if (updates.descricao !== undefined) updatesData.descricao = updates.descricao;
+      if (updates.justificativa_negocio !== undefined) updatesData.justificativa_negocio = updates.justificativa_negocio;
+      if (updates.impacto_prazo_dias !== undefined) updatesData.impacto_prazo_dias = updates.impacto_prazo_dias;
+      if (updates.status_aprovacao !== undefined) updatesData.status_aprovacao = updates.status_aprovacao;
+      if (updates.responsavel_aprovacao !== undefined) updatesData.responsavel_aprovacao = updates.responsavel_aprovacao;
+      if (updates.observacoes !== undefined) updatesData.observacoes = updates.observacoes;
+      
+      if (updates.data_solicitacao instanceof Date) {
+        updatesData.data_solicitacao = updates.data_solicitacao.toISOString().split('T')[0];
       }
-      if (updatesData.data_aprovacao instanceof Date) {
-        updatesData.data_aprovacao = updatesData.data_aprovacao.toISOString().split('T')[0] as any;
-      }
-      if (updatesData.data_criacao instanceof Date) {
-        delete updatesData.data_criacao; // Não atualizar data de criação
+      if (updates.data_aprovacao instanceof Date) {
+        updatesData.data_aprovacao = updates.data_aprovacao.toISOString().split('T')[0];
       }
 
       const { data, error } = await supabase
@@ -155,7 +173,8 @@ export function useAtualizarMudanca() {
             responsavel_interno,
             gp_responsavel,
             criado_por,
-            data_criacao
+            data_criacao,
+            status_ativo
           )
         `)
         .single();
