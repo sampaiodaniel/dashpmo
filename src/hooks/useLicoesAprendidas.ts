@@ -21,11 +21,12 @@ export function useLicoesAprendidas() {
         throw error;
       }
 
-      // Converter data_registro de string para Date
+      // Converter datas de string para Date
       return (data || []).map(licao => ({
         ...licao,
-        data_registro: new Date(licao.data_registro)
-      })) as LicaoAprendida[];
+        data_registro: new Date(licao.data_registro),
+        data_criacao: licao.data_criacao ? new Date(licao.data_criacao) : new Date()
+      }));
     },
   });
 }
@@ -56,11 +57,12 @@ export function useLicoesOperations() {
 
       if (error) throw error;
 
-      // Converter data_registro de volta para Date
+      // Converter datas de volta para Date
       return {
         ...data,
-        data_registro: new Date(data.data_registro)
-      } as LicaoAprendida;
+        data_registro: new Date(data.data_registro),
+        data_criacao: data.data_criacao ? new Date(data.data_criacao) : new Date()
+      };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['licoes-aprendidas'] });
@@ -82,17 +84,17 @@ export function useLicoesOperations() {
   const updateLicao = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<LicaoAprendida> & { id: number }) => {
       // Converter Date para string e mapear status se necessário
-      const dataToUpdate = {
-        ...updates,
-        ...(updates.data_registro && {
-          data_registro: updates.data_registro instanceof Date 
-            ? updates.data_registro.toISOString().split('T')[0]
-            : updates.data_registro
-        }),
-        ...(updates.status_aplicacao && {
-          status_aplicacao: updates.status_aplicacao === 'Em andamento' ? 'Não aplicada' : updates.status_aplicacao
-        })
-      };
+      const dataToUpdate: any = { ...updates };
+      
+      if (updates.data_registro) {
+        dataToUpdate.data_registro = updates.data_registro instanceof Date 
+          ? updates.data_registro.toISOString().split('T')[0]
+          : updates.data_registro;
+      }
+      
+      if (updates.status_aplicacao) {
+        dataToUpdate.status_aplicacao = updates.status_aplicacao === 'Em andamento' ? 'Não aplicada' : updates.status_aplicacao;
+      }
 
       const { data, error } = await supabase
         .from('licoes_aprendidas')
@@ -106,11 +108,12 @@ export function useLicoesOperations() {
 
       if (error) throw error;
 
-      // Converter data_registro de volta para Date
+      // Converter datas de volta para Date
       return {
         ...data,
-        data_registro: new Date(data.data_registro)
-      } as LicaoAprendida;
+        data_registro: new Date(data.data_registro),
+        data_criacao: data.data_criacao ? new Date(data.data_criacao) : new Date()
+      };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['licoes-aprendidas'] });

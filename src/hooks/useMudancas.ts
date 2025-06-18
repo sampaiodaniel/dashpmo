@@ -54,12 +54,15 @@ export function useMudancasOperations() {
         tipo_mudanca: tipoMudancaMap[mudancaData.tipo_mudanca] || mudancaData.tipo_mudanca,
         data_solicitacao: mudancaData.data_solicitacao instanceof Date 
           ? mudancaData.data_solicitacao.toISOString().split('T')[0]
-          : mudancaData.data_solicitacao
+          : mudancaData.data_solicitacao,
+        data_aprovacao: mudancaData.data_aprovacao && mudancaData.data_aprovacao instanceof Date
+          ? mudancaData.data_aprovacao.toISOString().split('T')[0]
+          : mudancaData.data_aprovacao
       };
 
       const { data, error } = await supabase
         .from('mudancas_replanejamento')
-        .insert([dataToInsert])
+        .insert(dataToInsert)
         .select(`
           *,
           projeto:projetos(id, nome_projeto, area_responsavel)
@@ -94,22 +97,23 @@ export function useMudancasOperations() {
 
   const updateMudanca = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<MudancaReplanejamento> & { id: number }) => {
-      const dataToUpdate = {
-        ...updates,
-        ...(updates.tipo_mudanca && {
-          tipo_mudanca: tipoMudancaMap[updates.tipo_mudanca] || updates.tipo_mudanca
-        }),
-        ...(updates.data_solicitacao && {
-          data_solicitacao: updates.data_solicitacao instanceof Date 
-            ? updates.data_solicitacao.toISOString().split('T')[0]
-            : updates.data_solicitacao
-        }),
-        ...(updates.data_aprovacao && {
-          data_aprovacao: updates.data_aprovacao instanceof Date 
-            ? updates.data_aprovacao.toISOString().split('T')[0]
-            : updates.data_aprovacao
-        })
-      };
+      const dataToUpdate: any = { ...updates };
+      
+      if (updates.tipo_mudanca) {
+        dataToUpdate.tipo_mudanca = tipoMudancaMap[updates.tipo_mudanca] || updates.tipo_mudanca;
+      }
+      
+      if (updates.data_solicitacao) {
+        dataToUpdate.data_solicitacao = updates.data_solicitacao instanceof Date 
+          ? updates.data_solicitacao.toISOString().split('T')[0]
+          : updates.data_solicitacao;
+      }
+      
+      if (updates.data_aprovacao) {
+        dataToUpdate.data_aprovacao = updates.data_aprovacao instanceof Date 
+          ? updates.data_aprovacao.toISOString().split('T')[0]
+          : updates.data_aprovacao;
+      }
 
       const { data, error } = await supabase
         .from('mudancas_replanejamento')

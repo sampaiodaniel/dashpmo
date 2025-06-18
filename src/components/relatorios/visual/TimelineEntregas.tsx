@@ -2,44 +2,49 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface TimelineEntregasProps {
-  statusProjetos: any[];
+  projetos: any[];
 }
 
-export function TimelineEntregas({ statusProjetos }: TimelineEntregasProps) {
-  // Coletar todas as entregas com datas
+export function TimelineEntregas({ projetos }: TimelineEntregasProps) {
+  // Coletar todas as entregas com datas dos projetos
   const entregas = [];
   
-  statusProjetos.forEach(status => {
-    if (status.data_marco1 && status.entrega1) {
-      entregas.push({
-        data: status.data_marco1,
-        titulo: status.entrega1,
-        projeto: status.projeto?.nome_projeto || 'Projeto',
-        tipo: 'marco1',
-        cor: 'bg-blue-100 border-blue-300 text-blue-700'
-      });
-    }
-    
-    if (status.data_marco2 && status.entrega2) {
-      entregas.push({
-        data: status.data_marco2,
-        titulo: status.entrega2,
-        projeto: status.projeto?.nome_projeto || 'Projeto',
-        tipo: 'marco2',
-        cor: 'bg-green-100 border-green-300 text-green-700'
-      });
-    }
-    
-    if (status.data_marco3 && status.entrega3) {
-      entregas.push({
-        data: status.data_marco3,
-        titulo: status.entrega3,
-        projeto: status.projeto?.nome_projeto || 'Projeto',
-        tipo: 'marco3',
-        cor: 'bg-purple-100 border-purple-300 text-purple-700'
-      });
-    }
-  });
+  if (projetos && projetos.length > 0) {
+    projetos.forEach(projeto => {
+      const status = projeto.ultimoStatus;
+      if (!status) return;
+      
+      if (status.data_marco1 && status.entrega1) {
+        entregas.push({
+          data: status.data_marco1,
+          titulo: status.entrega1,
+          projeto: projeto.nome_projeto || 'Projeto',
+          tipo: 'marco1',
+          cor: 'bg-blue-100 border-blue-300 text-blue-700'
+        });
+      }
+      
+      if (status.data_marco2 && status.entrega2) {
+        entregas.push({
+          data: status.data_marco2,
+          titulo: status.entrega2,
+          projeto: projeto.nome_projeto || 'Projeto',
+          tipo: 'marco2',
+          cor: 'bg-green-100 border-green-300 text-green-700'
+        });
+      }
+      
+      if (status.data_marco3 && status.entrega3) {
+        entregas.push({
+          data: status.data_marco3,
+          titulo: status.entrega3,
+          projeto: projeto.nome_projeto || 'Projeto',
+          tipo: 'marco3',
+          cor: 'bg-purple-100 border-purple-300 text-purple-700'
+        });
+      }
+    });
+  }
 
   // Ordenar por data
   entregas.sort((a, b) => new Date(a.data).getTime() - new Date(b.data).getTime());
