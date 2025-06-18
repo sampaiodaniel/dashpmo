@@ -3,6 +3,7 @@ import { RelatorioHeader } from '../asa/RelatorioHeader';
 import { ProjetosOverview } from '../asa/ProjetosOverview';
 import { ProjetoDetalhes } from '../asa/ProjetoDetalhes';
 import { RelatorioFooter } from '../asa/RelatorioFooter';
+import { DadosRelatorioASA } from '@/hooks/useRelatorioASA';
 
 interface DadosRelatorioConsolidado {
   carteira?: string;
@@ -35,18 +36,19 @@ export function RelatorioConsolidadoContent({ dados }: RelatorioConsolidadoConte
     };
   }).filter(projeto => projeto.ultimoStatus);
 
-  const tituloRelatorio = dados.carteira 
-    ? `Relatório Consolidado - Carteira ${dados.carteira}`
-    : `Relatório Consolidado - ${dados.responsavel}`;
+  // Criar objeto compatível com os componentes ASA
+  const dadosASAFormat: DadosRelatorioASA = {
+    carteira: dados.carteira || 'Consolidado',
+    dataRelatorio: dados.dataGeracao.toLocaleDateString('pt-BR'),
+    projetos: projetosComStatus,
+    statusProjetos: dados.statusProjetos,
+    incidentes: dados.incidentes
+  };
 
   return (
     <div className="space-y-8 bg-white p-8 min-h-screen">
       {/* Header do Relatório */}
-      <RelatorioHeader 
-        titulo={tituloRelatorio}
-        subtitulo={dados.carteira ? `Carteira: ${dados.carteira}` : `Responsável: ${dados.responsavel}`}
-        dataGeracao={dados.dataGeracao}
-      />
+      <RelatorioHeader dados={dadosASAFormat} />
 
       {/* Overview dos Projetos */}
       <ProjetosOverview projetos={projetosComStatus} />
@@ -63,7 +65,7 @@ export function RelatorioConsolidadoContent({ dados }: RelatorioConsolidadoConte
       </div>
 
       {/* Footer */}
-      <RelatorioFooter dataGeracao={dados.dataGeracao} />
+      <RelatorioFooter dados={dadosASAFormat} />
     </div>
   );
 }
