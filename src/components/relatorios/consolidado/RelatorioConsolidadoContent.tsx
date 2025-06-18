@@ -36,12 +36,13 @@ export function RelatorioConsolidadoContent({ dados }: RelatorioConsolidadoConte
     };
   }).filter(projeto => projeto.ultimoStatus);
 
-  // Criar objeto compatível com os componentes ASA (sem statusProjetos que não existe no tipo)
+  // Criar objeto compatível com os componentes ASA
   const dadosASAFormat: DadosRelatorioASA = {
     carteira: dados.carteira || 'Consolidado',
     dataRelatorio: dados.dataGeracao.toLocaleDateString('pt-BR'),
     projetos: projetosComStatus,
-    incidentes: dados.incidentes
+    incidentes: dados.incidentes,
+    resumoCarteira: `Relatório consolidado contendo ${projetosComStatus.length} projetos ativos`
   };
 
   return (

@@ -1,105 +1,127 @@
-
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { LoginForm } from '@/components/auth/LoginForm';
-import { Layout } from '@/components/layout/Layout';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useState } from 'react';
-import { SeedTestData } from '@/components/admin/SeedTestData';
-import { AtualizarProjetosTipo } from '@/components/admin/AtualizarProjetosTipo';
-import { useUsuarios } from '@/hooks/useUsuarios';
-import { UserTable } from '@/components/admin/UserTable';
-import { useResponsaveisASA } from '@/hooks/useResponsaveisASA';
-import { ResponsaveisASATable } from '@/components/admin/ResponsaveisASATable';
-import { TiposProjetoTable } from '@/components/admin/TiposProjetoTable';
-import { useTiposProjeto } from '@/hooks/useTiposProjeto';
-import { ConfiguracoesForm } from '@/components/admin/ConfiguracoesForm';
-import { LogsViewer } from '@/components/admin/LogsViewer';
-import { CleanupCanaisIncidents } from '@/components/admin/CleanupCanaisIncidents';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Label } from '@/components/ui/label';
+import { Switch } from "@/components/ui/switch"
+import { UserPlus, User, Users } from 'lucide-react';
 
 export default function Administracao() {
-  const { usuario, isLoading } = useAuth();
-  const [activeTab, setActiveTab] = useState("usuarios");
-  
-  const { data: usuarios, isLoading: isLoadingUsuarios } = useUsuarios();
-  const { data: responsaveisASA, isLoading: isLoadingResponsaveisASA } = useResponsaveisASA();
-  const { data: tiposProjeto, isLoading: isLoadingTiposProjeto } = useTiposProjeto();
+  const { usuario, isAdmin } = useAuth();
+  const [activeTab, setActiveTab] = useState('usuarios');
 
-  if (isLoading) {
+  useEffect(() => {
+    // Rolar para o topo ao montar o componente
+    window.scrollTo(0, 0);
+  }, []);
+
+  // Verificar se o usuário é admin
+  if (!usuario || !isAdmin()) {
     return (
-      <div className="min-h-screen bg-pmo-background flex items-center justify-center">
+      <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <div className="w-16 h-16 bg-pmo-primary rounded-xl flex items-center justify-center mx-auto mb-4">
-            <span className="text-white font-bold text-xl">PMO</span>
-          </div>
-          <div className="text-pmo-gray">Carregando...</div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            Acesso Restrito
+          </h2>
+          <p className="text-gray-600">
+            Você não tem permissão para acessar esta área.
+          </p>
         </div>
       </div>
-    );
-  }
-
-  if (!usuario) {
-    return <LoginForm />;
-  }
-
-  // Corrigir verificação de tipo de usuário
-  if (usuario.tipo_usuario !== 'Admin') {
-    return (
-      <Layout>
-        <div className="text-center py-12">
-          <h1 className="text-2xl font-bold text-pmo-primary mb-4">Acesso Negado</h1>
-          <p className="text-pmo-gray">Você não tem permissão para acessar esta área.</p>
-        </div>
-      </Layout>
     );
   }
 
   return (
-    <Layout>
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold text-pmo-primary">Administração</h1>
-          <p className="text-pmo-gray mt-2">Configurações e gerenciamento do sistema</p>
-        </div>
+    <div className="container mx-auto py-10">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold">Administração do Sistema</CardTitle>
+          <CardDescription>Gerencie usuários e configurações do sistema.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex space-x-4 mb-6">
+            <Button variant={activeTab === 'usuarios' ? 'default' : 'outline'} onClick={() => setActiveTab('usuarios')}>
+              <Users className="mr-2 h-4 w-4" />
+              Usuários
+            </Button>
+          </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-6">
-            <TabsTrigger value="usuarios">Usuários</TabsTrigger>
-            <TabsTrigger value="responsaveis-asa">Responsáveis ASA</TabsTrigger>
-            <TabsTrigger value="tipos-projeto">Tipos de Projeto</TabsTrigger>
-            <TabsTrigger value="configuracoes">Configurações</TabsTrigger>
-            <TabsTrigger value="logs">Logs</TabsTrigger>
-            <TabsTrigger value="manutencao">Manutenção</TabsTrigger>
-          </TabsList>
+          {activeTab === 'usuarios' && (
+            <div>
+              <h3 className="text-xl font-semibold mb-4">Lista de Usuários</h3>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nome</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Tipo</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <TableRow>
+                    <TableCell>João Silva</TableCell>
+                    <TableCell>joao@example.com</TableCell>
+                    <TableCell>Administrador</TableCell>
+                    <TableCell>Ativo</TableCell>
+                    <TableCell className="text-right">
+                      <Button variant="ghost" size="sm">
+                        Editar
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>Maria Oliveira</TableCell>
+                    <TableCell>maria@example.com</TableCell>
+                    <TableCell>Usuário</TableCell>
+                    <TableCell>Inativo</TableCell>
+                    <TableCell className="text-right">
+                      <Button variant="ghost" size="sm">
+                        Editar
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
 
-          <TabsContent value="usuarios" className="mt-6">
-            <UserTable usuarios={usuarios || []} isLoading={isLoadingUsuarios} />
-          </TabsContent>
-
-          <TabsContent value="responsaveis-asa" className="mt-6">
-            <ResponsaveisASATable responsaveisASA={responsaveisASA || []} isLoading={isLoadingResponsaveisASA} />
-          </TabsContent>
-
-          <TabsContent value="tipos-projeto" className="mt-6">
-            <TiposProjetoTable tiposProjeto={tiposProjeto || []} isLoading={isLoadingTiposProjeto} />
-          </TabsContent>
-
-          <TabsContent value="configuracoes" className="mt-6">
-            <ConfiguracoesForm />
-          </TabsContent>
-
-          <TabsContent value="logs" className="mt-6">
-            <LogsViewer />
-          </TabsContent>
-
-          <TabsContent value="manutencao" className="mt-6">
-            <div className="space-y-6">
-              <SeedTestData />
-              <AtualizarProjetosTipo />
-              <CleanupCanaisIncidents />
+              <div className="mt-6">
+                <h4 className="text-lg font-semibold mb-2">Adicionar Novo Usuário</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="nome">Nome</Label>
+                    <Input type="text" id="nome" placeholder="Nome completo" />
+                  </div>
+                  <div>
+                    <Label htmlFor="email">Email</Label>
+                    <Input type="email" id="email" placeholder="Email do usuário" />
+                  </div>
+                  <div>
+                    <Label htmlFor="tipo">Tipo de Usuário</Label>
+                    <Input type="text" id="tipo" placeholder="Tipo (admin, usuário)" />
+                  </div>
+                  <div>
+                    <Label htmlFor="status">Status</Label>
+                    <Switch id="status" />
+                  </div>
+                </div>
+                <Button className="mt-4">
+                  <UserPlus className="mr-2 h-4 w-4" />
+                  Adicionar Usuário
+                </Button>
+              </div>
             </div>
-          </TabsContent>
-        </Tabs>
-      </div>
-    </Layout>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 }

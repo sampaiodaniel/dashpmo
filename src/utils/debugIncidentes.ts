@@ -11,7 +11,7 @@ export async function investigarCriacaoIncidentes() {
       .from('incidentes')
       .select('*')
       .eq('carteira', 'Canais')
-      .order('data_criacao', { ascending: false });
+      .order('data_registro', { ascending: false });
 
     if (error) {
       console.error('❌ Erro ao buscar incidentes de Canais:', error);
@@ -36,7 +36,7 @@ export async function investigarCriacaoIncidentes() {
     const ultimosMinutos = new Date(agora.getTime() - 5 * 60 * 1000); // Últimos 5 minutos
     
     const incidentesRecentes = canaisIncidentes?.filter(inc => 
-      new Date(inc.data_criacao || inc.data_registro) > ultimosMinutos
+      new Date(inc.data_registro) > ultimosMinutos
     );
 
     if (incidentesRecentes && incidentesRecentes.length > 0) {

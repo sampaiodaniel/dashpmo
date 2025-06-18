@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useMudancasOperations } from '@/hooks/useMudancasOperations';
 
 export function useMudancaActions(onMudancaClick?: (mudancaId: number) => void) {
-  const { canApprove } = useAuth();
+  const { isAdmin } = useAuth();
   const navigate = useNavigate();
   const { aprovarMudanca, rejeitarMudanca } = useMudancasOperations();
 
@@ -43,7 +43,7 @@ export function useMudancaActions(onMudancaClick?: (mudancaId: number) => void) 
   };
 
   return {
-    canApprove,
+    canApprove: isAdmin(),
     handleAprovar,
     handleRejeitar,
     handleEditar,

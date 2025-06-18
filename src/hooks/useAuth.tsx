@@ -46,8 +46,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           console.log('Token inválido ou usuário inativo, fazendo logout...');
           logout();
         } else {
-          setUsuario(data);
-          console.log('✅ Usuário autenticado:', data.nome);
+          // Mapear tipos de usuário do banco para a interface
+          const usuarioMapeado: Usuario = {
+            id: data.id,
+            nome: data.nome,
+            email: data.email,
+            tipo_usuario: data.tipo_usuario === 'Admin' ? 'admin' : 
+                         data.tipo_usuario === 'GP' ? 'usuario' : 'visualizador',
+            areas_acesso: data.areas_acesso || []
+          };
+          setUsuario(usuarioMapeado);
+          console.log('✅ Usuário autenticado:', usuarioMapeado.nome);
         }
       }
     } catch (error) {
@@ -91,13 +100,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .update({ ultimo_login: new Date().toISOString() })
         .eq('id', data.id);
 
+      // Mapear tipos de usuário do banco para a interface
+      const usuarioMapeado: Usuario = {
+        id: data.id,
+        nome: data.nome,
+        email: data.email,
+        tipo_usuario: data.tipo_usuario === 'Admin' ? 'admin' : 
+                     data.tipo_usuario === 'GP' ? 'usuario' : 'visualizador',
+        areas_acesso: data.areas_acesso || []
+      };
+
       // Salvar no localStorage
       const token = `pmo_${data.id}_${Date.now()}`;
       localStorage.setItem('pmo_token', token);
-      localStorage.setItem('pmo_user', JSON.stringify(data));
+      localStorage.setItem('pmo_user', JSON.stringify(usuarioMapeado));
       
-      setUsuario(data);
-      console.log('✅ Login realizado com sucesso:', data.nome);
+      setUsuario(usuarioMapeado);
+      console.log('✅ Login realizado com sucesso:', usuarioMapeado.nome);
       
       // INVESTIGAÇÃO: Verificar criação de incidentes após login
       verificarCriacaoNoLogin();
