@@ -8,14 +8,20 @@ import { LicoesMetricas } from '@/components/licoes/LicoesMetricas';
 import { LicoesFilters } from '@/components/licoes/LicoesFilters';
 import { LicoesSearchBar } from '@/components/licoes/LicoesSearchBar';
 import { useLicoesAprendidas } from '@/hooks/useLicoesAprendidas';
-import { useLicoesFiltradas } from '@/hooks/useLicoesFiltradas';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
+
+interface LicoesFiltersType {
+  categoria?: string;
+  status?: string;
+  responsavel?: string;
+  projeto?: string;
+}
 
 export default function Licoes() {
   const { usuario, isLoading } = useAuth();
   const { data: licoes, isLoading: isLoadingLicoes, refetch } = useLicoesAprendidas();
-  const [filtros, setFiltros] = useState({});
+  const [filtros, setFiltros] = useState<LicoesFiltersType>({});
   const [termoBusca, setTermoBusca] = useState('');
 
   if (isLoading) {
