@@ -42,7 +42,7 @@ export default function Relatorios() {
         <RelatorioASAViewer 
           isOpen={true}
           onClose={() => setTipoRelatorio(null)}
-          dados={{}}
+          dados={null}
         />
       </Layout>
     );
@@ -54,7 +54,7 @@ export default function Relatorios() {
         <RelatorioVisualViewer 
           isOpen={true}
           onClose={() => setTipoRelatorio(null)}
-          dados={{}}
+          dados={null}
         />
       </Layout>
     );
@@ -63,7 +63,12 @@ export default function Relatorios() {
   if (tipoRelatorio === 'consolidado') {
     return (
       <Layout>
-        <RelatorioConsolidadoContent dados={{}} />
+        <RelatorioConsolidadoContent dados={{
+          projetos: [],
+          statusProjetos: [],
+          incidentes: [],
+          dataGeracao: new Date()
+        }} />
       </Layout>
     );
   }
@@ -71,7 +76,7 @@ export default function Relatorios() {
   return (
     <Layout>
       <div className="space-y-6">
-        <div>
+        <div className="text-left">
           <h1 className="text-3xl font-bold text-pmo-primary">Relatórios</h1>
           <p className="text-pmo-gray mt-2">Geração de relatórios e análises</p>
         </div>
