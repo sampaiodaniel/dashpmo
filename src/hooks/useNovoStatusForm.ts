@@ -12,10 +12,10 @@ import { useLogger } from '@/utils/logger';
 
 const statusFormSchema = z.object({
   projeto_id: z.number().min(1, "Projeto é obrigatório"),
-  status_geral: z.enum(['Verde', 'Amarelo', 'Vermelho'], {
+  status_geral: z.enum(['Planejamento', 'Em Andamento', 'Pausado', 'Concluído', 'Cancelado', 'Aguardando Aprovação', 'Aguardando Homologação', 'Em Especificação'], {
     required_error: "Status geral é obrigatório",
   }),
-  status_visao_gp: z.enum(['Conforme', 'Atenção', 'Crítico'], {
+  status_visao_gp: z.enum(['Verde', 'Amarelo', 'Vermelho'], {
     required_error: "Visão GP é obrigatória",
   }),
   progresso_estimado: z.number().min(0).max(100),

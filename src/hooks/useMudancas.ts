@@ -74,10 +74,21 @@ export function useMudancas() {
 
       console.log('📝 Criando mudança de replanejamento:', dados);
 
+      // Mapear tipos de mudança para valores aceitos pelo banco
+      const mapTipoMudanca = (tipo: TipoMudanca): string => {
+        switch (tipo) {
+          case 'Escopo': return 'Mudança Escopo';
+          case 'Prazo': return 'Replanejamento Cronograma';
+          case 'Recurso': return 'Novo Requisito';
+          case 'Orçamento': return 'Melhoria';
+          default: return tipo;
+        }
+      };
+
       const mudancaData = {
         projeto_id: dados.projeto_id,
         solicitante: dados.solicitante,
-        tipo_mudanca: dados.tipo_mudanca,
+        tipo_mudanca: mapTipoMudanca(dados.tipo_mudanca),
         descricao: dados.descricao,
         justificativa_negocio: dados.justificativa_negocio,
         impacto_prazo_dias: dados.impacto_prazo_dias,
@@ -175,11 +186,28 @@ export function useMudancas() {
 
       console.log('📝 Atualizando mudança de replanejamento:', dados);
 
-      const { id, ...updateData } = dados;
+      const { id, tipo_mudanca, ...updateData } = dados;
+      
+      // Mapear tipos de mudança para valores aceitos pelo banco
+      const mapTipoMudanca = (tipo?: TipoMudanca): string | undefined => {
+        if (!tipo) return undefined;
+        switch (tipo) {
+          case 'Escopo': return 'Mudança Escopo';
+          case 'Prazo': return 'Replanejamento Cronograma';
+          case 'Recurso': return 'Novo Requisito';
+          case 'Orçamento': return 'Melhoria';
+          default: return tipo;
+        }
+      };
+
+      const finalUpdateData = {
+        ...updateData,
+        ...(tipo_mudanca && { tipo_mudanca: mapTipoMudanca(tipo_mudanca) })
+      };
       
       const { data, error } = await supabase
         .from('mudancas_replanejamento')
-        .update(updateData)
+        .update(finalUpdateData)
         .eq('id', id)
         .select(`
           *,

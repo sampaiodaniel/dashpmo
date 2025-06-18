@@ -1,3 +1,4 @@
+
 export interface Usuario {
   id: number;
   nome: string;
@@ -122,6 +123,8 @@ export type CategoriaLicao =
   | 'Mudanças'
   | 'Conhecimento';
 
+export type StatusAplicacao = 'Aplicada' | 'Em andamento' | 'Não aplicada';
+
 export interface LicaoAprendida {
   id: number;
   projeto_id?: number;
@@ -132,7 +135,7 @@ export interface LicaoAprendida {
   licao_aprendida: string;
   impacto_gerado: string;
   acao_recomendada: string;
-  status_aplicacao: 'Aplicada' | 'Em andamento' | 'Não aplicada';
+  status_aplicacao: StatusAplicacao;
   tags_busca?: string;
   criado_por: string;
   data_criacao: Date;

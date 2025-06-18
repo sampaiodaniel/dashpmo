@@ -40,7 +40,19 @@ export function useLicoesAprendidas() {
       }
 
       console.log('✅ Lições carregadas:', data?.length || 0);
-      return data as LicaoAprendida[];
+      
+      // Converter datas de string para Date quando necessário
+      const licoesProcessadas = data?.map(licao => ({
+        ...licao,
+        data_registro: new Date(licao.data_registro),
+        data_criacao: new Date(licao.data_criacao),
+        projeto: licao.projeto ? {
+          ...licao.projeto,
+          data_criacao: new Date(licao.projeto.data_criacao)
+        } : null
+      })) || [];
+      
+      return licoesProcessadas as LicaoAprendida[];
     },
   });
 
@@ -114,7 +126,15 @@ export function useLicoesAprendidas() {
         }
       );
 
-      return data as LicaoAprendida;
+      return {
+        ...data,
+        data_registro: new Date(data.data_registro),
+        data_criacao: new Date(data.data_criacao),
+        projeto: data.projeto ? {
+          ...data.projeto,
+          data_criacao: new Date(data.projeto.data_criacao)
+        } : null
+      } as LicaoAprendida;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['licoes-aprendidas'] });
@@ -193,7 +213,15 @@ export function useLicoesAprendidas() {
         }
       );
 
-      return data as LicaoAprendida;
+      return {
+        ...data,
+        data_registro: new Date(data.data_registro),
+        data_criacao: new Date(data.data_criacao),
+        projeto: data.projeto ? {
+          ...data.projeto,
+          data_criacao: new Date(data.projeto.data_criacao)
+        } : null
+      } as LicaoAprendida;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['licoes-aprendidas'] });
