@@ -1,5 +1,5 @@
 
-import { MetricCard } from "@/components/dashboard/MetricCard";
+
 import { BarChart3, Play } from "lucide-react";
 
 interface ProjetosKPIsProps {
@@ -50,3 +50,4 @@ export function ProjetosKPIs({ metricas, filtroAtivo, onFiltroClick }: ProjetosK
     </div>
   );
 }
+

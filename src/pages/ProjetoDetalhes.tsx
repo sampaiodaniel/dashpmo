@@ -1,4 +1,5 @@
 
+
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
@@ -56,7 +57,7 @@ export default function ProjetoDetalhes() {
   return (
     <Layout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between pl-0">
           <div className="flex items-center gap-4">
             <Button onClick={() => navigate('/projetos')} variant="outline" size="sm">
               <ArrowLeft className="h-4 w-4 mr-2" />
@@ -91,3 +92,4 @@ export default function ProjetoDetalhes() {
     </Layout>
   );
 }
+

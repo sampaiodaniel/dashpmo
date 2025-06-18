@@ -1,4 +1,5 @@
 
+
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
@@ -50,7 +51,7 @@ export default function Licoes() {
   return (
     <Layout>
       <div className="space-y-6">
-        <div>
+        <div className="pl-0">
           <h1 className="text-3xl font-bold text-pmo-primary">Lições Aprendidas</h1>
           <p className="text-pmo-gray mt-2">Gestão de conhecimento e aprendizados dos projetos</p>
         </div>
@@ -66,3 +67,4 @@ export default function Licoes() {
     </Layout>
   );
 }
+

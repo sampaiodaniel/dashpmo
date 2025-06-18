@@ -1,6 +1,6 @@
 
-import { MetricCard } from '@/components/dashboard/MetricCard';
-import { BarChart3, AlertTriangle, Clock } from 'lucide-react';
+
+import { CheckCircle, Clock, AlertTriangle } from 'lucide-react';
 import { DashboardMetricas } from '@/types/pmo';
 
 interface DashboardMetricsGridProps {
@@ -17,7 +17,7 @@ export function DashboardMetricsGrid({ metricas }: DashboardMetricsGridProps) {
             <p className="text-3xl font-bold text-pmo-primary">{metricas.totalProjetos}</p>
           </div>
           <div className="p-3 bg-pmo-primary/10 rounded-lg">
-            <BarChart3 className="h-6 w-6 text-pmo-primary" />
+            <AlertTriangle className="h-6 w-6 text-pmo-primary" />
           </div>
         </div>
       </div>
@@ -37,7 +37,7 @@ export function DashboardMetricsGrid({ metricas }: DashboardMetricsGridProps) {
       <div className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <p className="text-sm font-medium text-pmo-gray">Marcos Próximos</p>
+            <p className="text-sm font-medium text-pmo-gray">Próximos Marcos</p>
             <p className="text-3xl font-bold text-green-600">{metricas.proximosMarcos.length}</p>
           </div>
           <div className="p-3 bg-green-50 rounded-lg">
@@ -48,3 +48,4 @@ export function DashboardMetricsGrid({ metricas }: DashboardMetricsGridProps) {
     </div>
   );
 }
+

@@ -1,3 +1,4 @@
+
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
@@ -34,7 +35,7 @@ export default function Mudancas() {
   return (
     <Layout>
       <div className="space-y-6">
-        <div>
+        <div className="pl-0">
           <h1 className="text-3xl font-bold text-pmo-primary">Replanejamento / CRs</h1>
           <p className="text-pmo-gray mt-2">Gestão de mudanças e replanejamentos de projetos</p>
         </div>
@@ -46,3 +47,4 @@ export default function Mudancas() {
     </Layout>
   );
 }
+

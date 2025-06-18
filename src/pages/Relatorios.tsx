@@ -1,3 +1,4 @@
+
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
@@ -34,7 +35,7 @@ export default function Relatorios() {
   return (
     <Layout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between pl-0">
           <div>
             <h1 className="text-3xl font-bold text-pmo-primary">Relatórios</h1>
             <p className="text-pmo-gray mt-2">Relatórios executivos e análises de projetos</p>
@@ -92,3 +93,4 @@ export default function Relatorios() {
     </Layout>
   );
 }
+
