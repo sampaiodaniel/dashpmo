@@ -19,10 +19,10 @@ export function ProjetoAtividades({ ultimoStatus }: ProjetoAtividadesProps) {
     const linhas = texto.split('\n').filter(linha => linha.trim());
     const totalLinhas = linhas.length;
     
-    if (totalLinhas <= 6) {
-      // Poucas linhas - uma coluna
+    if (totalLinhas <= 4) {
+      // Poucas linhas - uma coluna, altura menor
       return [linhas];
-    } else if (totalLinhas <= 12) {
+    } else if (totalLinhas <= 8) {
       // Médio número de linhas - duas colunas
       const meio = Math.ceil(totalLinhas / 2);
       return [linhas.slice(0, meio), linhas.slice(meio)];
@@ -37,33 +37,35 @@ export function ProjetoAtividades({ ultimoStatus }: ProjetoAtividadesProps) {
     }
   };
 
+  const colunas = dividirTextoEmColunas(ultimoStatus.realizado_semana_atual);
+  const totalLinhas = ultimoStatus.realizado_semana_atual?.split('\n').filter((linha: string) => linha.trim()).length || 0;
+  
+  // Altura dinâmica baseada no número de linhas
+  const alturaMinima = totalLinhas <= 4 ? 'min-h-[120px]' : 
+                     totalLinhas <= 8 ? 'min-h-[160px]' : 'min-h-[200px]';
+
   return (
     <div className="space-y-6">
       {/* Itens Trabalhados na Semana - ocupando toda a largura */}
       {ultimoStatus.realizado_semana_atual && (
         <div>
           <h4 className="font-semibold text-[#1B365D] mb-3">Itens Trabalhados na Semana</h4>
-          <div className="bg-blue-50 border border-blue-300 p-4 rounded-lg min-h-[200px]">
-            {(() => {
-              const colunas = dividirTextoEmColunas(ultimoStatus.realizado_semana_atual);
-              return (
-                <div className={`grid gap-4 h-full ${
-                  colunas.length === 1 ? 'grid-cols-1' : 
-                  colunas.length === 2 ? 'grid-cols-2' : 'grid-cols-3'
-                }`}>
-                  {colunas.map((coluna, colIndex) => (
-                    <div key={colIndex} className="space-y-1">
-                      {coluna.map((item: string, i: number) => (
-                        <div key={i} className="text-xs text-blue-700 leading-tight">
-                          <span className="font-medium text-[#1B365D] mr-2">•</span>
-                          <span>{item.trim()}</span>
-                        </div>
-                      ))}
+          <div className={`bg-blue-50 border border-blue-300 p-4 rounded-lg ${alturaMinima}`}>
+            <div className={`grid gap-4 h-full ${
+              colunas.length === 1 ? 'grid-cols-1' : 
+              colunas.length === 2 ? 'grid-cols-2' : 'grid-cols-3'
+            }`}>
+              {colunas.map((coluna, colIndex) => (
+                <div key={colIndex} className="space-y-1">
+                  {coluna.map((item: string, i: number) => (
+                    <div key={i} className="text-xs text-blue-700 leading-tight">
+                      <span className="font-medium text-[#1B365D] mr-2">•</span>
+                      <span>{item.trim()}</span>
                     </div>
                   ))}
                 </div>
-              );
-            })()}
+              ))}
+            </div>
           </div>
         </div>
       )}

@@ -51,50 +51,56 @@ export function ProjetosOverview({ projetos }: ProjetosOverviewProps) {
       </CardHeader>
       <CardContent>
         {projetosAtivos.length > 0 ? (
-          <div className="space-y-6">
+          <div className="space-y-8">
             {responsaveisOrdenados.map((responsavel) => (
-              <div key={responsavel}>
-                <h3 className="text-lg font-semibold text-[#1B365D] mb-3 border-b border-[#E5E7EB] pb-2">
-                  {responsavel} ({projetosPorResponsavel[responsavel].length} projetos)
-                </h3>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="text-[#1B365D] font-semibold">Projeto</TableHead>
-                      <TableHead className="text-[#1B365D] font-semibold">Chefe do Projeto</TableHead>
-                      <TableHead className="text-[#1B365D] font-semibold text-right">Status</TableHead>
-                      <TableHead className="text-[#1B365D] font-semibold">Progresso</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {projetosPorResponsavel[responsavel].map((projeto) => (
-                      <TableRow key={projeto.id}>
-                        <TableCell className="font-medium text-[#1B365D]">
-                          {projeto.nome_projeto}
-                        </TableCell>
-                        <TableCell className="text-[#6B7280]">
-                          {projeto.gp_responsavel || projeto.equipe || 'Não informado'}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center justify-end gap-2">
-                            <div className={`w-8 h-8 rounded-full ${getStatusColor(projeto.ultimoStatus?.status_visao_gp || 'Cinza')}`}></div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <div className="w-20 bg-gray-200 rounded-full h-2">
-                              <div 
-                                className="bg-[#1B365D] h-2 rounded-full" 
-                                style={{ width: `${projeto.ultimoStatus?.progresso_estimado || 0}%` }}
-                              ></div>
-                            </div>
-                            <span className="text-sm text-[#6B7280]">{projeto.ultimoStatus?.progresso_estimado || 0}%</span>
-                          </div>
-                        </TableCell>
+              <div key={responsavel} className="bg-white rounded-lg border border-[#E5E7EB] overflow-hidden">
+                <div className="bg-[#F8FAFC] px-6 py-4 border-b border-[#E5E7EB]">
+                  <h3 className="text-lg font-semibold text-[#1B365D]">
+                    {responsavel} ({projetosPorResponsavel[responsavel].length} projetos)
+                  </h3>
+                </div>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-[#F8FAFC]">
+                        <TableHead className="text-[#1B365D] font-semibold w-[35%]">Projeto</TableHead>
+                        <TableHead className="text-[#1B365D] font-semibold w-[25%]">Chefe do Projeto</TableHead>
+                        <TableHead className="text-[#1B365D] font-semibold text-center w-[15%]">Status</TableHead>
+                        <TableHead className="text-[#1B365D] font-semibold w-[25%]">Progresso</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {projetosPorResponsavel[responsavel].map((projeto) => (
+                        <TableRow key={projeto.id} className="border-b border-[#F1F5F9]">
+                          <TableCell className="font-medium text-[#1B365D] py-4">
+                            {projeto.nome_projeto}
+                          </TableCell>
+                          <TableCell className="text-[#6B7280] py-4">
+                            {projeto.gp_responsavel || projeto.equipe || 'Não informado'}
+                          </TableCell>
+                          <TableCell className="text-center py-4">
+                            <div className="flex items-center justify-center">
+                              <div className={`w-8 h-8 rounded-full ${getStatusColor(projeto.ultimoStatus?.status_visao_gp || 'Cinza')}`}></div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="py-4">
+                            <div className="flex items-center gap-3">
+                              <div className="flex-1 bg-gray-200 rounded-full h-3">
+                                <div 
+                                  className="bg-[#1B365D] h-3 rounded-full transition-all duration-300" 
+                                  style={{ width: `${projeto.ultimoStatus?.progresso_estimado || 0}%` }}
+                                ></div>
+                              </div>
+                              <span className="text-sm font-medium text-[#1B365D] min-w-[45px]">
+                                {projeto.ultimoStatus?.progresso_estimado || 0}%
+                              </span>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               </div>
             ))}
           </div>

@@ -16,7 +16,7 @@ export function StatusAcoes({ status }: StatusAcoesProps) {
   const { isAdmin } = useAuth();
 
   const handleEditarStatus = () => {
-    navigate(`/status/${status.id}/editar`);
+    navigate(`/status/editar/${status.id}`);
   };
 
   return (

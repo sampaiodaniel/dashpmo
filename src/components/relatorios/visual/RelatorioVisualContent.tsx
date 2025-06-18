@@ -1,7 +1,6 @@
 
 import { MetricasVisuais } from './MetricasVisuais';
 import { GraficosIndicadores } from './GraficosIndicadores';
-import { IshikawaDiagram } from './IshikawaDiagram';
 import { TimelineEntregas } from './TimelineEntregas';
 
 interface DadosRelatorioVisual {
@@ -147,9 +146,6 @@ export function RelatorioVisualContent({ dados }: RelatorioVisualContentProps) {
 
             {/* Timeline de entregas do projeto específico */}
             <TimelineEntregas projetos={[projeto]} />
-
-            {/* Diagrama Ishikawa das entregas */}
-            <IshikawaDiagram projeto={projeto} ultimoStatus={projeto.ultimoStatus} />
           </div>
         ))}
       </div>
