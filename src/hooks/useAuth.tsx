@@ -86,10 +86,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return false;
       }
 
-      // Simular verificação de senha (em produção, usar hash bcrypt)
-      const senhaCorreta = senha === 'admin123' || senha === 'user123';
-      
-      if (!senhaCorreta) {
+      // Verificar senha - comparar com hash armazenado
+      const senhaHash = btoa(senha); // Base64 encoding simples
+      if (data.senha_hash !== senhaHash) {
         console.error('Senha incorreta');
         return false;
       }

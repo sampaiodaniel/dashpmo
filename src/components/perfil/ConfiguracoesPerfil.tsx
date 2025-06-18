@@ -11,7 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useLogger } from '@/utils/logger';
 
 export function ConfiguracoesPerfil() {
-  const { usuario, refreshUsuario } = useAuth();
+  const { usuario } = useAuth();
   const { log } = useLogger();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -74,8 +74,6 @@ export function ConfiguracoesPerfil() {
           }
         );
 
-        await refreshUsuario();
-        
         toast({
           title: "Sucesso",
           description: "Perfil atualizado com sucesso!",
