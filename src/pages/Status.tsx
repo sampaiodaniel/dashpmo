@@ -90,18 +90,15 @@ export default function Status() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div 
-            className={`cursor-pointer transition-all ${filtroAtivo === 'totalStatus' ? 'ring-2 ring-pmo-primary' : ''}`}
-            onClick={() => handleFiltroMetricaClick('totalStatus')}
-          >
-            <StatusMetricas 
-              totalStatus={metricas.totalStatus}
-              naoRevisados={metricas.statusPendentes}
-              revisados={metricas.statusRevisados}
-            />
-          </div>
-        </div>
+        <StatusMetricas 
+          totalStatus={metricas.totalStatus}
+          naoRevisados={metricas.statusPendentes}
+          revisados={metricas.statusRevisados}
+          onFiltrarTotal={() => handleFiltroMetricaClick('totalStatus')}
+          onFiltrarNaoRevisados={() => handleFiltroMetricaClick('statusPendentes')}
+          onFiltrarRevisados={() => handleFiltroMetricaClick('statusRevisados')}
+          filtroAtivo={filtroAtivo}
+        />
 
         <StatusFilters 
           filtros={filtros}
