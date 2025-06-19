@@ -55,10 +55,39 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
     setCarregando(true);
 
     try {
+      // Validar se o tipo_projeto_id existe na tabela tipos_projeto (não em configuracoes_sistema)
+      if (formData.tipo_projeto_id) {
+        const { data: tipoExiste, error: tipoError } = await supabase
+          .from('tipos_projeto')
+          .select('id')
+          .eq('id', formData.tipo_projeto_id)
+          .eq('ativo', true)
+          .maybeSingle();
+
+        if (tipoError) {
+          console.error('❌ Erro ao validar tipo de projeto:', tipoError);
+          toast({
+            title: "Erro",
+            description: "Erro ao validar tipo de projeto",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        if (!tipoExiste) {
+          console.error('❌ Tipo de projeto não encontrado ou inativo');
+          toast({
+            title: "Erro",
+            description: "Tipo de projeto selecionado não existe ou está inativo",
+            variant: "destructive",
+          });
+          return;
+        }
+      }
+
       // Convert "none" back to null/empty string for database
       const dataToSubmit = {
         nome_projeto: formData.nome_projeto,
-        // Only include tipo_projeto_id if it's a valid number AND exists in the database
         tipo_projeto_id: formData.tipo_projeto_id && formData.tipo_projeto_id > 0 ? formData.tipo_projeto_id : null,
         descricao_projeto: formData.descricao_projeto,
         responsavel_asa: formData.responsavel_asa === 'none' ? null : formData.responsavel_asa,
@@ -68,7 +97,6 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
         carteira_secundaria: formData.carteira_secundaria === 'none' ? null : formData.carteira_secundaria,
         carteira_terciaria: formData.carteira_terciaria === 'none' ? null : formData.carteira_terciaria,
         equipe: formData.equipe || null,
-        // Usar null quando for vazio, senão usar a data formatada
         finalizacao_prevista: formData.finalizacao_prevista || null,
         // Manter os campos obrigatórios do banco com valores derivados dos novos campos
         area_responsavel: (formData.carteira_primaria === 'none' ? 'Cadastro' : formData.carteira_primaria) as typeof CARTEIRAS[number],
@@ -77,21 +105,6 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
       };
 
       console.log('📝 Dados sendo enviados para atualização:', dataToSubmit);
-
-      // Verificar se o tipo_projeto_id existe antes de atualizar
-      if (dataToSubmit.tipo_projeto_id) {
-        const { data: tipoExiste } = await supabase
-          .from('tipos_projeto')
-          .select('id')
-          .eq('id', dataToSubmit.tipo_projeto_id)
-          .eq('ativo', true)
-          .single();
-
-        if (!tipoExiste) {
-          console.error('❌ Tipo de projeto não encontrado ou inativo');
-          dataToSubmit.tipo_projeto_id = null;
-        }
-      }
 
       const { error } = await supabase
         .from('projetos')
@@ -180,7 +193,7 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
                 <SelectItem key="none" value="">Nenhum</SelectItem>
                 {tiposProjeto?.filter(tipo => tipo.ativo).map((tipo) => (
                   <SelectItem key={tipo.id} value={tipo.id.toString()}>
-                    {tipo.nome}
+                    {tipo.valor}
                   </SelectItem>
                 ))}
               </SelectContent>
