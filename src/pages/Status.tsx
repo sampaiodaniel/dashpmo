@@ -1,37 +1,68 @@
 
+import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
 import { StatusList } from '@/components/status/StatusList';
 import { StatusMetricas } from '@/components/status/StatusMetricas';
-import { useStatusList } from '@/hooks/useStatusList';
+import { StatusFilters } from '@/components/status/StatusFilters';
+import { StatusSearchBar } from '@/components/status/StatusSearchBar';
+import { useStatusFiltrados } from '@/hooks/useStatusFiltrados';
+import { useStatusFiltroMetricas } from '@/hooks/useStatusFiltroMetricas';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useMemo } from 'react';
+import { StatusFilters as StatusFiltersType } from '@/components/status/filters/FilterUtils';
 
 export default function Status() {
   const { usuario, isLoading } = useAuth();
-  const { data: statusList, isLoading: isLoadingStatus, refetch } = useStatusList();
+  const [filtros, setFiltros] = useState<StatusFiltersType>({});
+  const [termoBusca, setTermoBusca] = useState('');
+  const [paginaAtual, setPaginaAtual] = useState(1);
+  const itensPorPagina = 10;
 
-  const metricas = useMemo(() => {
-    if (!statusList) {
-      return { totalStatus: 0, naoRevisados: 0, revisados: 0 };
-    }
+  const {
+    data: { status, totalItens },
+    isLoading: isLoadingStatus,
+    refetch
+  } = useStatusFiltrados({
+    filtros,
+    termoBusca,
+    paginaAtual,
+    itensPorPagina
+  });
 
-    const totalStatus = statusList.length;
-    const naoRevisados = statusList.filter(s => !s.aprovado).length;
-    const revisados = statusList.filter(s => s.aprovado).length;
+  const {
+    metricas,
+    filtroAtivo,
+    aplicarFiltroStatus
+  } = useStatusFiltroMetricas(status);
 
-    return { totalStatus, naoRevisados, revisados };
-  }, [statusList]);
+  const handleStatusUpdate = () => {
+    refetch();
+  };
+
+  const handleFiltroMetricaClick = (tipo: string) => {
+    const novosFiltros = aplicarFiltroStatus(tipo);
+    setFiltros(novosFiltros);
+    setPaginaAtual(1);
+  };
+
+  // Extract unique responsaveis from status data
+  const responsaveis = Array.from(new Set(
+    status?.map(s => s.responsavel_asa).filter(Boolean) || []
+  ));
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-pmo-background flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 bg-pmo-primary rounded-xl flex items-center justify-center mx-auto mb-4">
-            <span className="text-white font-bold text-xl">DashPMO</span>
+            <img 
+              src="/lovable-uploads/6e48c2c5-9581-4a4e-8e6c-f3610c1742bd.png" 
+              alt="DashPMO" 
+              className="w-8 h-8" 
+            />
           </div>
           <div className="text-pmo-gray">Carregando...</div>
         </div>
@@ -42,10 +73,6 @@ export default function Status() {
   if (!usuario) {
     return <LoginForm />;
   }
-
-  const handleStatusUpdate = () => {
-    refetch();
-  };
 
   return (
     <Layout>
@@ -63,13 +90,58 @@ export default function Status() {
           </Link>
         </div>
 
-        <StatusMetricas 
-          totalStatus={metricas.totalStatus}
-          naoRevisados={metricas.naoRevisados}
-          revisados={metricas.revisados}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div 
+            className={`cursor-pointer transition-all ${filtroAtivo === 'totalStatus' ? 'ring-2 ring-pmo-primary' : ''}`}
+            onClick={() => handleFiltroMetricaClick('totalStatus')}
+          >
+            <StatusMetricas 
+              totalStatus={metricas.totalStatus}
+              naoRevisados={0}
+              revisados={0}
+            />
+          </div>
+          <div 
+            className={`cursor-pointer transition-all ${filtroAtivo === 'statusPendentes' ? 'ring-2 ring-pmo-primary' : ''}`}
+            onClick={() => handleFiltroMetricaClick('statusPendentes')}
+          >
+            <StatusMetricas 
+              totalStatus={0}
+              naoRevisados={metricas.statusPendentes}
+              revisados={0}
+            />
+          </div>
+          <div 
+            className={`cursor-pointer transition-all ${filtroAtivo === 'statusRevisados' ? 'ring-2 ring-pmo-primary' : ''}`}
+            onClick={() => handleFiltroMetricaClick('statusRevisados')}
+          >
+            <StatusMetricas 
+              totalStatus={0}
+              naoRevisados={0}
+              revisados={metricas.statusRevisados}
+            />
+          </div>
+        </div>
+
+        <StatusFilters 
+          filtros={filtros}
+          onFiltroChange={setFiltros}
+          responsaveis={responsaveis}
+        />
+
+        <StatusSearchBar 
+          termoBusca={termoBusca}
+          onTermoBuscaChange={setTermoBusca}
+          totalResults={totalItens}
         />
         
-        <StatusList status={statusList || []} onStatusUpdate={handleStatusUpdate} />
+        {isLoadingStatus ? (
+          <div className="text-center py-8 text-pmo-gray">
+            Carregando status...
+          </div>
+        ) : (
+          <StatusList status={status} onStatusUpdate={handleStatusUpdate} />
+        )}
       </div>
     </Layout>
   );

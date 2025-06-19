@@ -44,41 +44,39 @@ export function ProjetoInfoGerais({ projeto }: ProjetoInfoGeraisProps) {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-600">Nome do Projeto</label>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="md:col-span-2 lg:col-span-1">
+              <label className="text-sm font-medium text-gray-600 block mb-1">Nome do Projeto</label>
               <p className="text-base text-gray-900">{projeto.nome_projeto}</p>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-600">Status</label>
-              <div>
-                <Badge variant={projeto.status_ativo ? "default" : "secondary"}>
-                  {projeto.status_ativo ? "Ativo" : "Inativo"}
-                </Badge>
-              </div>
+            <div>
+              <label className="text-sm font-medium text-gray-600 block mb-1">Status</label>
+              <Badge variant={projeto.status_ativo ? "default" : "secondary"}>
+                {projeto.status_ativo ? "Ativo" : "Inativo"}
+              </Badge>
             </div>
 
             {tipoProjeto && (
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-600">Tipo de Projeto</label>
+              <div>
+                <label className="text-sm font-medium text-gray-600 block mb-1">Tipo de Projeto</label>
                 <div className="flex items-center gap-2">
                   <FileType className="h-4 w-4 text-gray-500" />
-                  <span className="text-base text-gray-900">{tipoProjeto.valor}</span>
+                  <span className="text-base text-gray-900">{tipoProjeto.nome}</span>
                 </div>
               </div>
             )}
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-600">Data de Criação</label>
+            <div>
+              <label className="text-sm font-medium text-gray-600 block mb-1">Data de Criação</label>
               <div className="flex items-center gap-2">
                 <Calendar className="h-4 w-4 text-gray-500" />
                 <span className="text-base text-gray-900">{projeto.data_criacao.toLocaleDateString('pt-BR')}</span>
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-600">Data Prevista de Finalização</label>
+            <div>
+              <label className="text-sm font-medium text-gray-600 block mb-1">Data Prevista de Finalização</label>
               <div className="flex items-center gap-2">
                 <Calendar className="h-4 w-4 text-gray-500" />
                 <span className="text-base text-gray-900">{formatarFinalizacaoPrevista(projeto.finalizacao_prevista)}</span>
@@ -87,15 +85,15 @@ export function ProjetoInfoGerais({ projeto }: ProjetoInfoGeraisProps) {
           </div>
 
           {projeto.descricao && (
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-600">Descrição</label>
-              <p className="text-base text-gray-900">{projeto.descricao}</p>
+            <div className="pt-2">
+              <label className="text-sm font-medium text-gray-600 block mb-2">Descrição</label>
+              <p className="text-base text-gray-900 leading-relaxed">{projeto.descricao}</p>
             </div>
           )}
 
           {projeto.equipe && (
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-600">Equipe</label>
+            <div className="pt-2">
+              <label className="text-sm font-medium text-gray-600 block mb-2">Equipe</label>
               <p className="text-base text-gray-900">{projeto.equipe}</p>
             </div>
           )}
@@ -110,34 +108,36 @@ export function ProjetoInfoGerais({ projeto }: ProjetoInfoGeraisProps) {
             Responsáveis
           </CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {projeto.responsavel_asa && (
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-600">Responsável ASA</label>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {projeto.responsavel_asa && (
+              <div>
+                <label className="text-sm font-medium text-gray-600 block mb-1">Responsável ASA</label>
+                <div className="flex items-center gap-2">
+                  <User className="h-4 w-4 text-gray-500" />
+                  <span className="text-base text-gray-900">{projeto.responsavel_asa}</span>
+                </div>
+              </div>
+            )}
+
+            <div>
+              <label className="text-sm font-medium text-gray-600 block mb-1">Chefe do Projeto</label>
               <div className="flex items-center gap-2">
-                <User className="h-4 w-4 text-gray-500" />
-                <span className="text-base text-gray-900">{projeto.responsavel_asa}</span>
+                <Users className="h-4 w-4 text-gray-500" />
+                <span className="text-base text-gray-900">{projeto.gp_responsavel}</span>
               </div>
             </div>
-          )}
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-600">Chefe do Projeto</label>
-            <div className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-gray-500" />
-              <span className="text-base text-gray-900">{projeto.gp_responsavel}</span>
-            </div>
+            {projeto.responsavel_cwi && (
+              <div>
+                <label className="text-sm font-medium text-gray-600 block mb-1">Responsável</label>
+                <div className="flex items-center gap-2">
+                  <User className="h-4 w-4 text-gray-500" />
+                  <span className="text-base text-gray-900">{projeto.responsavel_cwi}</span>
+                </div>
+              </div>
+            )}
           </div>
-
-          {projeto.responsavel_cwi && (
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-600">Responsável</label>
-              <div className="flex items-center gap-2">
-                <User className="h-4 w-4 text-gray-500" />
-                <span className="text-base text-gray-900">{projeto.responsavel_cwi}</span>
-              </div>
-            </div>
-          )}
         </CardContent>
       </Card>
 
@@ -150,22 +150,22 @@ export function ProjetoInfoGerais({ projeto }: ProjetoInfoGeraisProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-600">Carteira Primária</label>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div>
+              <label className="text-sm font-medium text-gray-600 block mb-1">Carteira Primária</label>
               <p className="text-base text-gray-900">{projeto.area_responsavel}</p>
             </div>
 
             {projeto.carteira_secundaria && (
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-600">Carteira Secundária</label>
+              <div>
+                <label className="text-sm font-medium text-gray-600 block mb-1">Carteira Secundária</label>
                 <p className="text-base text-gray-900">{projeto.carteira_secundaria}</p>
               </div>
             )}
 
             {projeto.carteira_terciaria && (
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-600">Carteira Terciária</label>
+              <div>
+                <label className="text-sm font-medium text-gray-600 block mb-1">Carteira Terciária</label>
                 <p className="text-base text-gray-900">{projeto.carteira_terciaria}</p>
               </div>
             )}

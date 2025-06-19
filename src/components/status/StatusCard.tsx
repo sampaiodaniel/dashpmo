@@ -115,7 +115,8 @@ export function StatusCard({ status }: StatusCardProps) {
             {status.projeto?.area_responsavel || 'Crédito'}
           </span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-gray-600">{status.data_atualizacao.toLocaleDateString()}</span>
           {!status.aprovado && (
             <Badge className="bg-yellow-100 text-yellow-800">
               Em Revisão
@@ -134,7 +135,7 @@ export function StatusCard({ status }: StatusCardProps) {
           Status: {status.status_geral || 'Em Andamento'}
         </Badge>
         <Badge className={getStatusColor(status.status_visao_gp)}>
-          Visão GP: {status.status_visao_gp}
+          Visão Chefe do Projeto: {status.status_visao_gp}
         </Badge>
         <Badge className={getRiskColor(status.prob_x_impact || 'Baixo')}>
           Matriz de Risco: {status.prob_x_impact || 'Baixo'}
@@ -142,8 +143,7 @@ export function StatusCard({ status }: StatusCardProps) {
       </div>
 
       <div className="flex items-center gap-6 text-sm text-gray-600">
-        <span>{status.data_atualizacao.toLocaleDateString()}</span>
-        <span><span className="font-bold">Responsável ASA:</span> {status.criado_por || 'Judice'}</span>
+        <span><span className="font-bold">Responsável ASA:</span> {status.responsavel_asa || 'Não informado'}</span>
         <span><span className="font-bold">Chefe do Projeto:</span> {status.projeto?.gp_responsavel || 'Marco'}</span>
         <span><span className="font-bold">Próxima Entrega:</span> {status.data_marco1 ? status.data_marco1.toLocaleDateString() : 'TBD (A definir)'}</span>
       </div>
