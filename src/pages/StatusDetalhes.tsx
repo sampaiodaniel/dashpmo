@@ -181,25 +181,26 @@ export default function StatusDetalhes() {
             <CardContent className="space-y-10">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                 <div>
-                  <label className="text-sm font-medium text-gray-600 block mb-4">Nome do Projeto</label>
-                  <p className="text-base text-gray-900">{status.projeto?.nome_projeto}</p>
+                  <label className="text-sm font-medium text-gray-600 block mb-4">Descrição do Projeto</label>
+                  <p className="text-base text-gray-900">{status.projeto?.descricao_projeto || status.projeto?.descricao || 'Não informada'}</p>
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-600 block mb-4">Chefe do Projeto</label>
+                  <label className="text-sm font-medium text-gray-600 block mb-4">Responsável ASA</label>
                   <div className="flex items-center gap-2">
                     <User className="h-4 w-4 text-gray-500" />
-                    <span className="text-base text-gray-900">{status.projeto?.gp_responsavel}</span>
+                    <span className="text-base text-gray-900">{status.projeto?.responsavel_asa || 'Não informado'}</span>
                   </div>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                 <div>
-                  <label className="text-sm font-medium text-gray-600 block mb-4">Descrição do Projeto</label>
-                  <p className="text-base text-gray-900 leading-relaxed">
-                    {status.projeto?.descricao_projeto || status.projeto?.descricao || 'Não informado'}
-                  </p>
+                  <label className="text-sm font-medium text-gray-600 block mb-4">Chefe do Projeto</label>
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-gray-500" />
+                    <span className="text-base text-gray-900">{status.projeto?.gp_responsavel}</span>
+                  </div>
                 </div>
 
                 {tipoProjeto && (
@@ -224,7 +225,7 @@ export default function StatusDetalhes() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-10">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
                 <div>
                   <label className="text-sm font-medium text-gray-600 block mb-4">Data do Status</label>
                   <div className="flex items-center gap-2">
@@ -245,6 +246,11 @@ export default function StatusDetalhes() {
                   <Badge className={`text-sm ${getStatusColor(status.status_visao_gp)}`}>
                     {status.status_visao_gp}
                   </Badge>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-600 block mb-4">Progresso</label>
+                  <span className="text-base text-gray-900">{status.progresso_estimado || 0}%</span>
                 </div>
               </div>
 

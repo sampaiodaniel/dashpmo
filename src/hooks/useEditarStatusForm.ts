@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { StatusProjeto } from '@/types/pmo';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
+import { useEntregasDinamicas, Entrega } from '@/hooks/useEntregasDinamicas';
 
 export function useEditarStatusForm(status: StatusProjeto) {
   const queryClient = useQueryClient();
@@ -32,6 +33,43 @@ export function useEditarStatusForm(status: StatusProjeto) {
   const [dataMarco3, setDataMarco3] = useState<Date | null>(
     (status.data_marco3 && typeof status.data_marco3 !== 'string') ? new Date(status.data_marco3) : null
   );
+
+  // Inicializar entregas dinâmicas com dados existentes
+  const entregasIniciais: Entrega[] = [];
+  if (status.entrega1) {
+    entregasIniciais.push({
+      id: '1',
+      nome: status.entrega1,
+      data: typeof status.data_marco1 === 'string' ? status.data_marco1 : (status.data_marco1 ? status.data_marco1.toISOString().split('T')[0] : ''),
+      entregaveis: status.entregaveis1 || ''
+    });
+  }
+  if (status.entrega2) {
+    entregasIniciais.push({
+      id: '2',
+      nome: status.entrega2,
+      data: typeof status.data_marco2 === 'string' ? status.data_marco2 : (status.data_marco2 ? status.data_marco2.toISOString().split('T')[0] : ''),
+      entregaveis: status.entregaveis2 || ''
+    });
+  }
+  if (status.entrega3) {
+    entregasIniciais.push({
+      id: '3',
+      nome: status.entrega3,
+      data: typeof status.data_marco3 === 'string' ? status.data_marco3 : (status.data_marco3 ? status.data_marco3.toISOString().split('T')[0] : ''),
+      entregaveis: status.entregaveis3 || ''
+    });
+  }
+
+  const {
+    entregas,
+    setEntregas,
+    adicionarEntrega,
+    removerEntrega,
+    atualizarEntrega,
+    validarEntregas,
+    obterEntregasParaSalvar
+  } = useEntregasDinamicas(entregasIniciais);
   
   const [formData, setFormData] = useState({
     status_geral: status.status_geral,
@@ -42,15 +80,6 @@ export function useEditarStatusForm(status: StatusProjeto) {
     backlog: status.backlog || '',
     bloqueios_atuais: status.bloqueios_atuais || '',
     observacoes_pontos_atencao: status.observacoes_pontos_atencao || '',
-    entregaveis1: status.entregaveis1 || '',
-    entrega1: status.entrega1 || '',
-    data_marco1: typeof status.data_marco1 === 'string' ? status.data_marco1 : (status.data_marco1 ? status.data_marco1.toISOString().split('T')[0] : ''),
-    entregaveis2: status.entregaveis2 || '',
-    entrega2: status.entrega2 || '',
-    data_marco2: typeof status.data_marco2 === 'string' ? status.data_marco2 : (status.data_marco2 ? status.data_marco2.toISOString().split('T')[0] : ''),
-    entregaveis3: status.entregaveis3 || '',
-    entrega3: status.entrega3 || '',
-    data_marco3: typeof status.data_marco3 === 'string' ? status.data_marco3 : (status.data_marco3 ? status.data_marco3.toISOString().split('T')[0] : ''),
     progresso_estimado: (status as any).progresso_estimado || 0
   });
 
@@ -60,14 +89,20 @@ export function useEditarStatusForm(status: StatusProjeto) {
 
   const handleSubmit = async (e: React.FormEvent, onSuccess: () => void) => {
     e.preventDefault();
+
+    if (!validarEntregas()) {
+      toast({
+        title: "Erro",
+        description: "A primeira entrega é obrigatória e deve ter nome e entregáveis preenchidos.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setCarregando(true);
 
     try {
-      // Função para processar data antes de salvar
-      const processarData = (dataString: string) => {
-        if (!dataString || dataString === 'TBD') return dataString || null;
-        return dataString;
-      };
+      const entregasParaSalvar = obterEntregasParaSalvar();
 
       const dataToUpdate = {
         status_geral: formData.status_geral,
@@ -77,17 +112,18 @@ export function useEditarStatusForm(status: StatusProjeto) {
         realizado_semana_atual: formData.realizado_semana_atual,
         backlog: formData.backlog,
         bloqueios_atuais: formData.bloqueios_atuais,
-        observacoes_pontos_atencao: formData.observacoes_pontos_atencao,
-        entregaveis1: formData.entregaveis1,
-        entrega1: formData.entrega1,
-        data_marco1: processarData(formData.data_marco1),
-        entregaveis2: formData.entregaveis2,
-        entrega2: formData.entrega2,
-        data_marco2: processarData(formData.data_marco2),
-        entregaveis3: formData.entregaveis3,
-        entrega3: formData.entrega3,
-        data_marco3: processarData(formData.data_marco3),
+        observacoes_pontos_atencao: formData.observacoes_pontos_at encao,
         progresso_estimado: formData.progresso_estimado,
+        // Limpar campos de entrega existentes
+        entrega1: entregasParaSalvar[0]?.nome || null,
+        data_marco1: entregasParaSalvar[0]?.data || null,
+        entregaveis1: entregasParaSalvar[0]?.entregaveis || null,
+        entrega2: entregasParaSalvar[1]?.nome || null,
+        data_marco2: entregasParaSalvar[1]?.data || null,
+        entregaveis2: entregasParaSalvar[1]?.entregaveis || null,
+        entrega3: entregasParaSalvar[2]?.nome || null,
+        data_marco3: entregasParaSalvar[2]?.data || null,
+        entregaveis3: entregasParaSalvar[2]?.entregaveis || null,
         data_atualizacao: new Date().toISOString().split('T')[0],
         // Se for admin editando status aprovado, voltar para revisão
         ...(status.aprovado && isAdmin() && {
@@ -112,6 +148,30 @@ export function useEditarStatusForm(status: StatusProjeto) {
           variant: "destructive",
         });
         return;
+      }
+
+      // Atualizar entregas dinâmicas na tabela separada
+      if (entregasParaSalvar.length > 3) {
+        // Remover entregas existentes
+        await supabase
+          .from('entregas_status')
+          .delete()
+          .eq('status_id', status.id);
+
+        // Inserir novas entregas
+        const entregasAdicionais = entregasParaSalvar.slice(3).map((entrega, index) => ({
+          status_id: status.id,
+          ordem: index + 4,
+          nome_entrega: entrega.nome,
+          data_entrega: entrega.data || null,
+          entregaveis: entrega.entregaveis
+        }));
+
+        if (entregasAdicionais.length > 0) {
+          await supabase
+            .from('entregas_status')
+            .insert(entregasAdicionais);
+        }
       }
 
       const successMessage = status.aprovado && isAdmin() 
@@ -154,6 +214,13 @@ export function useEditarStatusForm(status: StatusProjeto) {
     dataMarco3,
     setDataMarco3,
     handleInputChange,
-    handleSubmit
+    handleSubmit,
+    entregas,
+    setEntregas,
+    adicionarEntrega,
+    removerEntrega,
+    atualizarEntrega,
+    validarEntregas,
+    obterEntregasParaSalvar
   };
 }

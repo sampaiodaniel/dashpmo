@@ -1,3 +1,4 @@
+
 import { Button } from '@/components/ui/button';
 import { StatusProjeto } from '@/types/pmo';
 import { useEditarStatusForm } from '@/hooks/useEditarStatusForm';
@@ -5,7 +6,7 @@ import { useMilestoneHandlers } from '@/hooks/useMilestoneHandlers';
 import { ProjetoInformacoes } from './status/ProjetoInformacoes';
 import { StatusManagementSection } from './status/StatusManagementSection';
 import { StatusDetailsSection } from './status/StatusDetailsSection';
-import { MilestoneManagementSection } from './status/MilestoneManagementSection';
+import { EntregasDinamicas } from './EntregasDinamicas';
 
 interface EditarStatusFormProps {
   status: StatusProjeto;
@@ -30,7 +31,12 @@ export function EditarStatusForm({ status, onSuccess }: EditarStatusFormProps) {
     dataMarco3,
     setDataMarco3,
     handleInputChange,
-    handleSubmit
+    handleSubmit,
+    entregas,
+    setEntregas,
+    adicionarEntrega,
+    removerEntrega,
+    atualizarEntrega
   } = useEditarStatusForm(status);
 
   const {
@@ -70,21 +76,12 @@ export function EditarStatusForm({ status, onSuccess }: EditarStatusFormProps) {
         onInputChange={handleInputChange}
       />
 
-      <MilestoneManagementSection
-        formData={formData}
-        onInputChange={handleInputChange}
-        marco1TBD={marco1TBD}
-        marco2TBD={marco2TBD}
-        marco3TBD={marco3TBD}
-        dataMarco1={dataMarco1}
-        dataMarco2={dataMarco2}
-        dataMarco3={dataMarco3}
-        onMarco1DateChange={handleMarco1DateChange}
-        onMarco2DateChange={handleMarco2DateChange}
-        onMarco3DateChange={handleMarco3DateChange}
-        onMarco1TBDChange={handleMarco1TBDChange}
-        onMarco2TBDChange={handleMarco2TBDChange}
-        onMarco3TBDChange={handleMarco3TBDChange}
+      <EntregasDinamicas
+        entregas={entregas}
+        onEntregasChange={setEntregas}
+        onAdicionarEntrega={adicionarEntrega}
+        onRemoverEntrega={removerEntrega}
+        onAtualizarEntrega={atualizarEntrega}
       />
 
       <div className="flex justify-end gap-2">

@@ -15,9 +15,9 @@ export interface TipoProjeto {
 
 export function useTiposProjeto() {
   return useQuery({
-    queryKey: ['configuracoes-sistema', 'tipos_projeto'],
+    queryKey: ['tipos-projeto'],
     queryFn: async (): Promise<TipoProjeto[]> => {
-      console.log('Buscando tipos de projeto');
+      console.log('Buscando tipos de projeto da tabela configuracoes_sistema');
       
       const { data, error } = await supabase
         .from('configuracoes_sistema')
@@ -75,7 +75,7 @@ export function useTiposProjetoOperations() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['configuracoes-sistema'] });
+      queryClient.invalidateQueries({ queryKey: ['tipos-projeto'] });
       toast({
         title: "Sucesso",
         description: "Tipo de projeto criado com sucesso!",
@@ -110,8 +110,8 @@ export function useTiposProjetoOperations() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['configuracoes-sistema'] });
-      queryClient.refetchQueries({ queryKey: ['configuracoes-sistema'] });
+      queryClient.invalidateQueries({ queryKey: ['tipos-projeto'] });
+      queryClient.refetchQueries({ queryKey: ['tipos-projeto'] });
       toast({
         title: "Sucesso",
         description: "Tipo de projeto atualizado com sucesso!",
@@ -146,8 +146,8 @@ export function useTiposProjetoOperations() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['configuracoes-sistema'] });
-      queryClient.refetchQueries({ queryKey: ['configuracoes-sistema'] });
+      queryClient.invalidateQueries({ queryKey: ['tipos-projeto'] });
+      queryClient.refetchQueries({ queryKey: ['tipos-projeto'] });
       toast({
         title: "Sucesso",
         description: "Tipo de projeto removido com sucesso!",
