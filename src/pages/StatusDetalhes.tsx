@@ -7,20 +7,24 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Trash2 } from 'lucide-react';
 import { useStatusList } from '@/hooks/useStatusList';
 import { StatusAcoes } from '@/components/status/StatusAcoes';
-import { ProjetoInformacoes } from '@/components/status/details/ProjetoInformacoes';
-import { StatusInformacoes } from '@/components/status/details/StatusInformacoes';
 import { StatusDetalhesContent } from '@/components/status/details/StatusDetalhesContent';
 import { ProximasEntregasSection } from '@/components/status/details/ProximasEntregasSection';
 import { Loading } from '@/components/ui/loading';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Calendar, User, Building, FileType } from 'lucide-react';
+import { formatarData } from '@/utils/dateFormatting';
+import { useTiposProjeto } from '@/hooks/useTiposProjeto';
 
 export default function StatusDetalhes() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { usuario, isLoading: authLoading, isAdmin } = useAuth();
   const { data: statusList, isLoading, refetch } = useStatusList();
+  const { data: tiposProjeto } = useTiposProjeto();
   const queryClient = useQueryClient();
 
   const status = statusList?.find(s => s.id === Number(id));
@@ -114,6 +118,27 @@ export default function StatusDetalhes() {
     refetch();
   };
 
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'Verde': return 'bg-green-100 text-green-800';
+      case 'Amarelo': return 'bg-yellow-100 text-yellow-800';
+      case 'Vermelho': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getStatusGeralColor = (status: string) => {
+    switch (status) {
+      case 'No Prazo': return 'bg-green-100 text-green-800';
+      case 'Atrasado': return 'bg-red-100 text-red-800';
+      case 'Pausado': return 'bg-yellow-100 text-yellow-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  // Buscar o nome do tipo de projeto
+  const tipoProjeto = tiposProjeto?.find(tipo => tipo.id === status.projeto?.tipo_projeto_id);
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -144,9 +169,108 @@ export default function StatusDetalhes() {
           </div>
         </div>
 
-        <div className="space-y-6">
-          <ProjetoInformacoes status={status} />
-          <StatusInformacoes status={status} />
+        <div className="space-y-12">
+          {/* Informações do Projeto */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Building className="h-5 w-5" />
+                Informações do Projeto
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-10">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                <div>
+                  <label className="text-sm font-medium text-gray-600 block mb-4">Nome do Projeto</label>
+                  <p className="text-base text-gray-900">{status.projeto?.nome_projeto}</p>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-600 block mb-4">Chefe do Projeto</label>
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-gray-500" />
+                    <span className="text-base text-gray-900">{status.projeto?.gp_responsavel}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                <div>
+                  <label className="text-sm font-medium text-gray-600 block mb-4">Descrição do Projeto</label>
+                  <p className="text-base text-gray-900 leading-relaxed">
+                    {status.projeto?.descricao_projeto || status.projeto?.descricao || 'Não informado'}
+                  </p>
+                </div>
+
+                {tipoProjeto && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-600 block mb-4">Tipo de Projeto</label>
+                    <div className="flex items-center gap-2">
+                      <FileType className="h-4 w-4 text-gray-500" />
+                      <span className="text-base text-gray-900">{tipoProjeto.valor}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Status do Projeto */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="h-5 w-5" />
+                Status do Projeto
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-10">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+                <div>
+                  <label className="text-sm font-medium text-gray-600 block mb-4">Data do Status</label>
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-gray-500" />
+                    <span className="text-base text-gray-900">{formatarData(status.data_atualizacao)}</span>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-600 block mb-4">Status Geral</label>
+                  <Badge className={`text-sm ${getStatusGeralColor(status.status_geral)}`}>
+                    {status.status_geral}
+                  </Badge>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-600 block mb-4">Visão Chefe do Projeto</label>
+                  <Badge className={`text-sm ${getStatusColor(status.status_visao_gp)}`}>
+                    {status.status_visao_gp}
+                  </Badge>
+                </div>
+              </div>
+
+              {status.aprovado !== null && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                  <div>
+                    <label className="text-sm font-medium text-gray-600 block mb-4">Status de Aprovação</label>
+                    <Badge variant={status.aprovado ? "default" : "secondary"} className="text-sm">
+                      {status.aprovado ? "Revisado" : "Em Revisão"}
+                    </Badge>
+                  </div>
+
+                  {status.aprovado && status.data_aprovacao && (
+                    <div>
+                      <label className="text-sm font-medium text-gray-600 block mb-4">Data de Aprovação</label>
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-gray-500" />
+                        <span className="text-base text-gray-900">{formatarData(status.data_aprovacao)}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           <StatusDetalhesContent status={status} />
           <ProximasEntregasSection status={status} />
         </div>

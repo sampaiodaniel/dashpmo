@@ -18,12 +18,12 @@ export function useEditarProjetoForm({ projeto, onSuccess }: UseEditarProjetoFor
     nome_projeto: projeto.nome_projeto || '',
     tipo_projeto_id: projeto.tipo_projeto_id || null,
     descricao_projeto: projeto.descricao_projeto || '',
-    responsavel_asa: projeto.responsavel_asa || 'none',
+    responsavel_asa: projeto.responsavel_asa || '',
     gp_responsavel_cwi: projeto.gp_responsavel_cwi || '',
     responsavel_cwi: projeto.responsavel_cwi || '',
-    carteira_primaria: projeto.carteira_primaria || 'none',
-    carteira_secundaria: projeto.carteira_secundaria || 'none',
-    carteira_terciaria: projeto.carteira_terciaria || 'none',
+    carteira_primaria: projeto.carteira_primaria || '',
+    carteira_secundaria: projeto.carteira_secundaria || '',
+    carteira_terciaria: projeto.carteira_terciaria || '',
     equipe: projeto.equipe || '',
     finalizacao_prevista: projeto.finalizacao_prevista && projeto.finalizacao_prevista !== 'TBD' ? projeto.finalizacao_prevista : '',
   });
@@ -39,7 +39,7 @@ export function useEditarProjetoForm({ projeto, onSuccess }: UseEditarProjetoFor
     setCarregando(true);
 
     try {
-      // Validar se o tipo_projeto_id existe na tabela tipos_projeto (não em configuracoes_sistema)
+      // Validar se o tipo_projeto_id existe na tabela tipos_projeto (se não for null)
       if (formData.tipo_projeto_id) {
         const { data: tipoExiste, error: tipoError } = await supabase
           .from('tipos_projeto')
@@ -69,22 +69,22 @@ export function useEditarProjetoForm({ projeto, onSuccess }: UseEditarProjetoFor
         }
       }
 
-      // Convert "none" back to null/empty string for database
+      // Preparar dados para envio
       const dataToSubmit = {
-        nome_projeto: formData.nome_projeto,
-        tipo_projeto_id: formData.tipo_projeto_id && formData.tipo_projeto_id > 0 ? formData.tipo_projeto_id : null,
-        descricao_projeto: formData.descricao_projeto,
-        responsavel_asa: formData.responsavel_asa === 'none' ? null : formData.responsavel_asa,
-        gp_responsavel_cwi: formData.gp_responsavel_cwi || null,
-        responsavel_cwi: formData.responsavel_cwi || null,
-        carteira_primaria: formData.carteira_primaria === 'none' ? null : formData.carteira_primaria,
-        carteira_secundaria: formData.carteira_secundaria === 'none' ? null : formData.carteira_secundaria,
-        carteira_terciaria: formData.carteira_terciaria === 'none' ? null : formData.carteira_terciaria,
-        equipe: formData.equipe || null,
+        nome_projeto: formData.nome_projeto.trim(),
+        tipo_projeto_id: formData.tipo_projeto_id,
+        descricao_projeto: formData.descricao_projeto.trim() || null,
+        responsavel_asa: formData.responsavel_asa.trim() || null,
+        gp_responsavel_cwi: formData.gp_responsavel_cwi.trim() || null,
+        responsavel_cwi: formData.responsavel_cwi.trim() || null,
+        carteira_primaria: formData.carteira_primaria || null,
+        carteira_secundaria: formData.carteira_secundaria || null,
+        carteira_terciaria: formData.carteira_terciaria || null,
+        equipe: formData.equipe.trim() || null,
         finalizacao_prevista: formData.finalizacao_prevista || null,
         // Manter os campos obrigatórios do banco com valores derivados dos novos campos
-        area_responsavel: (formData.carteira_primaria === 'none' ? 'Cadastro' : formData.carteira_primaria) as typeof CARTEIRAS[number],
-        responsavel_interno: formData.responsavel_asa === 'none' ? 'Admin' : formData.responsavel_asa,
+        area_responsavel: (formData.carteira_primaria || 'Cadastro') as typeof CARTEIRAS[number],
+        responsavel_interno: formData.responsavel_asa || 'Admin',
         gp_responsavel: formData.gp_responsavel_cwi || 'Admin'
       };
 
@@ -104,6 +104,8 @@ export function useEditarProjetoForm({ projeto, onSuccess }: UseEditarProjetoFor
           errorMessage = "Erro: Tipo de projeto selecionado não existe ou está inativo";
         } else if (error.message.includes('violates not-null constraint')) {
           errorMessage = "Erro: Campos obrigatórios não preenchidos";
+        } else if (error.message.includes('check constraint')) {
+          errorMessage = "Erro: Valor inválido em um dos campos. Verifique se todos os valores estão corretos.";
         } else {
           errorMessage = `Erro ao atualizar projeto: ${error.message}`;
         }
