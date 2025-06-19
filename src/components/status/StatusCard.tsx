@@ -143,7 +143,7 @@ export function StatusCard({ status }: StatusCardProps) {
       </div>
 
       <div className="flex items-center gap-6 text-sm text-gray-600">
-        <span><span className="font-bold">Responsável ASA:</span> {status.responsavel_asa || 'Não informado'}</span>
+        <span><span className="font-bold">Responsável ASA:</span> {status.projeto?.responsavel_asa || 'Não informado'}</span>
         <span><span className="font-bold">Chefe do Projeto:</span> {status.projeto?.gp_responsavel || 'Marco'}</span>
         <span><span className="font-bold">Próxima Entrega:</span> {status.data_marco1 ? status.data_marco1.toLocaleDateString() : 'TBD (A definir)'}</span>
       </div>

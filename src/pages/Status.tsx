@@ -50,7 +50,7 @@ export default function Status() {
 
   // Extract unique responsaveis from status data
   const responsaveis = Array.from(new Set(
-    status?.map(s => s.responsavel_asa).filter(Boolean) || []
+    status?.map(s => s.projeto?.responsavel_asa).filter(Boolean) || []
   ));
 
   if (isLoading) {
