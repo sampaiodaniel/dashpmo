@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,17 +17,6 @@ interface EditarProjetoFormProps {
   projeto: Projeto;
   onSuccess: () => void;
 }
-
-// Lista fixa de GPs
-const GPS_RESPONSAVEIS = [
-  'Camila',
-  'Elias', 
-  'Fabiano',
-  'Fred',
-  'Marco',
-  'Rafael',
-  'Jefferson'
-];
 
 export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps) {
   console.log('📋 EditarProjetoForm iniciado com projeto:', projeto);
@@ -48,8 +38,8 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
     tipo_projeto_id: projeto.tipo_projeto_id || null,
     descricao_projeto: projeto.descricao_projeto || '',
     responsavel_asa: projeto.responsavel_asa || 'none',
-    gp_responsavel_cwi: projeto.gp_responsavel_cwi || 'none',
-    responsavel_cwi: projeto.responsavel_cwi || 'none',
+    gp_responsavel_cwi: projeto.gp_responsavel_cwi || '',
+    responsavel_cwi: projeto.responsavel_cwi || '',
     carteira_primaria: projeto.carteira_primaria || 'none',
     carteira_secundaria: projeto.carteira_secundaria || 'none',
     carteira_terciaria: projeto.carteira_terciaria || 'none',
@@ -72,8 +62,8 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
         tipo_projeto_id: formData.tipo_projeto_id && formData.tipo_projeto_id > 0 ? formData.tipo_projeto_id : null,
         descricao_projeto: formData.descricao_projeto,
         responsavel_asa: formData.responsavel_asa === 'none' ? '' : formData.responsavel_asa,
-        gp_responsavel_cwi: formData.gp_responsavel_cwi === 'none' ? '' : formData.gp_responsavel_cwi,
-        responsavel_cwi: formData.responsavel_cwi === 'none' ? '' : formData.responsavel_cwi,
+        gp_responsavel_cwi: formData.gp_responsavel_cwi || '',
+        responsavel_cwi: formData.responsavel_cwi || '',
         carteira_primaria: formData.carteira_primaria === 'none' ? '' : formData.carteira_primaria,
         carteira_secundaria: formData.carteira_secundaria === 'none' ? '' : formData.carteira_secundaria,
         carteira_terciaria: formData.carteira_terciaria === 'none' ? '' : formData.carteira_terciaria,
@@ -83,7 +73,7 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
         // Manter os campos obrigatórios do banco com valores derivados dos novos campos
         area_responsavel: (formData.carteira_primaria === 'none' ? 'Cadastro' : formData.carteira_primaria) as typeof CARTEIRAS[number],
         responsavel_interno: formData.responsavel_asa === 'none' ? 'Admin' : formData.responsavel_asa,
-        gp_responsavel: formData.gp_responsavel_cwi === 'none' ? 'Admin' : formData.gp_responsavel_cwi
+        gp_responsavel: formData.gp_responsavel_cwi || 'Admin'
       };
 
       console.log('📝 Dados sendo enviados para atualização:', dataToSubmit);
@@ -154,17 +144,16 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
           <div>
             <Label htmlFor="tipo_projeto_id">Tipo de Projeto</Label>
             <Select 
-              value={formData.tipo_projeto_id?.toString() || 'none'} 
-              onValueChange={(value) => handleInputChange('tipo_projeto_id', value === 'none' ? null : parseInt(value))}
+              value={formData.tipo_projeto_id?.toString() || ''} 
+              onValueChange={(value) => handleInputChange('tipo_projeto_id', value ? parseInt(value) : null)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Selecione o tipo de projeto" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">Nenhum</SelectItem>
-                {tiposProjeto?.map((tipo) => (
+                {tiposProjeto?.filter(tipo => tipo.ativo).map((tipo) => (
                   <SelectItem key={tipo.id} value={tipo.id.toString()}>
-                    {tipo.valor}
+                    {tipo.nome}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -232,36 +221,22 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
 
           <div>
             <Label htmlFor="gp_responsavel_cwi">Chefe do Projeto</Label>
-            <Select value={formData.gp_responsavel_cwi} onValueChange={(value) => handleInputChange('gp_responsavel_cwi', value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione um chefe do projeto" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">Nenhum</SelectItem>
-                {GPS_RESPONSAVEIS.map((gp) => (
-                  <SelectItem key={gp} value={gp}>
-                    {gp}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Input
+              id="gp_responsavel_cwi"
+              value={formData.gp_responsavel_cwi}
+              onChange={(e) => handleInputChange('gp_responsavel_cwi', e.target.value)}
+              placeholder="Nome do chefe do projeto"
+            />
           </div>
 
           <div>
             <Label htmlFor="responsavel_cwi">Responsável</Label>
-            <Select value={formData.responsavel_cwi} onValueChange={(value) => handleInputChange('responsavel_cwi', value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione um responsável" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">Nenhum</SelectItem>
-                {GPS_RESPONSAVEIS.map((responsavel) => (
-                  <SelectItem key={responsavel} value={responsavel}>
-                    {responsavel}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Input
+              id="responsavel_cwi"
+              value={formData.responsavel_cwi}
+              onChange={(e) => handleInputChange('responsavel_cwi', e.target.value)}
+              placeholder="Nome do responsável"
+            />
           </div>
         </CardContent>
       </Card>
