@@ -112,7 +112,7 @@ export function useEditarStatusForm(status: StatusProjeto) {
         realizado_semana_atual: formData.realizado_semana_atual,
         backlog: formData.backlog,
         bloqueios_atuais: formData.bloqueios_atuais,
-        observacoes_pontos_atencao: formData.observacoes_pontos_at encao,
+        observacoes_pontos_atencao: formData.observacoes_pontos_atencao,
         progresso_estimado: formData.progresso_estimado,
         // Limpar campos de entrega existentes
         entrega1: entregasParaSalvar[0]?.nome || null,
