@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, User, AlertTriangle, CheckCircle, Target, TrendingUp } from 'lucide-react';
 import { StatusProjeto } from '@/types/pmo';
-import { formatDate } from '@/utils/dateFormatting';
+import { formatarData } from '@/utils/dateFormatting';
 
 interface StatusDetalhesContentProps {
   status: StatusProjeto;
@@ -29,7 +29,7 @@ export function StatusDetalhesContent({ status }: StatusDetalhesContentProps) {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       {/* Informações Básicas */}
       <Card>
         <CardHeader>
@@ -38,27 +38,27 @@ export function StatusDetalhesContent({ status }: StatusDetalhesContentProps) {
             Informações Gerais
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <CardContent className="space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
             <div>
-              <label className="text-sm font-medium text-gray-600 block mb-3">Data de Atualização</label>
+              <label className="text-sm font-medium text-gray-600 block mb-4">Data de Atualização</label>
               <div className="flex items-center gap-2">
                 <Calendar className="h-4 w-4 text-gray-500" />
-                <span className="text-base text-gray-900">{formatDate(status.data_atualizacao)}</span>
+                <span className="text-base text-gray-900">{formatarData(status.data_atualizacao)}</span>
               </div>
             </div>
 
             <div>
-              <label className="text-sm font-medium text-gray-600 block mb-3">Status Geral</label>
+              <label className="text-sm font-medium text-gray-600 block mb-4">Status Geral</label>
               <Badge variant="outline" className="text-sm">
                 {status.status_geral}
               </Badge>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
             <div>
-              <label className="text-sm font-medium text-gray-600 block mb-3">Visão GP</label>
+              <label className="text-sm font-medium text-gray-600 block mb-4">Visão GP</label>
               <Badge className={`text-sm ${getStatusColor(status.status_visao_gp)}`}>
                 {status.status_visao_gp}
               </Badge>
@@ -66,7 +66,7 @@ export function StatusDetalhesContent({ status }: StatusDetalhesContentProps) {
 
             {status.progresso_estimado && (
               <div>
-                <label className="text-sm font-medium text-gray-600 block mb-3">Progresso Estimado</label>
+                <label className="text-sm font-medium text-gray-600 block mb-4">Progresso Estimado</label>
                 <div className="flex items-center gap-2">
                   <TrendingUp className="h-4 w-4 text-gray-500" />
                   <span className="text-base text-gray-900">{status.progresso_estimado}%</span>
@@ -76,9 +76,9 @@ export function StatusDetalhesContent({ status }: StatusDetalhesContentProps) {
           </div>
 
           {status.aprovado !== null && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
               <div>
-                <label className="text-sm font-medium text-gray-600 block mb-3">Status de Aprovação</label>
+                <label className="text-sm font-medium text-gray-600 block mb-4">Status de Aprovação</label>
                 <Badge variant={status.aprovado ? "default" : "secondary"} className="text-sm">
                   {status.aprovado ? "Aprovado" : "Pendente"}
                 </Badge>
@@ -86,10 +86,10 @@ export function StatusDetalhesContent({ status }: StatusDetalhesContentProps) {
 
               {status.aprovado && status.data_aprovacao && (
                 <div>
-                  <label className="text-sm font-medium text-gray-600 block mb-3">Data de Aprovação</label>
+                  <label className="text-sm font-medium text-gray-600 block mb-4">Data de Aprovação</label>
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4 text-gray-500" />
-                    <span className="text-base text-gray-900">{formatDate(status.data_aprovacao)}</span>
+                    <span className="text-base text-gray-900">{formatarData(status.data_aprovacao)}</span>
                   </div>
                 </div>
               )}
@@ -106,11 +106,11 @@ export function StatusDetalhesContent({ status }: StatusDetalhesContentProps) {
             Responsáveis
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <CardContent className="space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
             {status.responsavel_asa && (
               <div>
-                <label className="text-sm font-medium text-gray-600 block mb-3">Responsável ASA</label>
+                <label className="text-sm font-medium text-gray-600 block mb-4">Responsável ASA</label>
                 <div className="flex items-center gap-2">
                   <User className="h-4 w-4 text-gray-500" />
                   <span className="text-base text-gray-900">{status.responsavel_asa}</span>
@@ -120,7 +120,7 @@ export function StatusDetalhesContent({ status }: StatusDetalhesContentProps) {
 
             {status.gp_responsavel_cwi && (
               <div>
-                <label className="text-sm font-medium text-gray-600 block mb-3">GP Responsável</label>
+                <label className="text-sm font-medium text-gray-600 block mb-4">GP Responsável</label>
                 <div className="flex items-center gap-2">
                   <User className="h-4 w-4 text-gray-500" />
                   <span className="text-base text-gray-900">{status.gp_responsavel_cwi}</span>
@@ -130,9 +130,9 @@ export function StatusDetalhesContent({ status }: StatusDetalhesContentProps) {
           </div>
 
           {status.responsavel_cwi && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
               <div>
-                <label className="text-sm font-medium text-gray-600 block mb-3">Responsável Técnico</label>
+                <label className="text-sm font-medium text-gray-600 block mb-4">Responsável Técnico</label>
                 <div className="flex items-center gap-2">
                   <User className="h-4 w-4 text-gray-500" />
                   <span className="text-base text-gray-900">{status.responsavel_cwi}</span>
@@ -151,17 +151,17 @@ export function StatusDetalhesContent({ status }: StatusDetalhesContentProps) {
             Gestão de Riscos
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <CardContent className="space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
             <div>
-              <label className="text-sm font-medium text-gray-600 block mb-3">Probabilidade</label>
+              <label className="text-sm font-medium text-gray-600 block mb-4">Probabilidade</label>
               <Badge className={`text-sm ${getRiscoColor(status.probabilidade_riscos)}`}>
                 {status.probabilidade_riscos}
               </Badge>
             </div>
 
             <div>
-              <label className="text-sm font-medium text-gray-600 block mb-3">Impacto</label>
+              <label className="text-sm font-medium text-gray-600 block mb-4">Impacto</label>
               <Badge className={`text-sm ${getRiscoColor(status.impacto_riscos)}`}>
                 {status.impacto_riscos}
               </Badge>
@@ -169,7 +169,7 @@ export function StatusDetalhesContent({ status }: StatusDetalhesContentProps) {
 
             {status.prob_x_impact && (
               <div>
-                <label className="text-sm font-medium text-gray-600 block mb-3">Prob. x Impacto</label>
+                <label className="text-sm font-medium text-gray-600 block mb-4">Prob. x Impacto</label>
                 <Badge className={`text-sm ${getRiscoColor(status.prob_x_impact)}`}>
                   {status.prob_x_impact}
                 </Badge>
@@ -188,18 +188,18 @@ export function StatusDetalhesContent({ status }: StatusDetalhesContentProps) {
               Marcos Importantes
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <CardContent className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
               {status.data_marco1 && (
                 <div>
-                  <label className="text-sm font-medium text-gray-600 block mb-3">Marco 1</label>
-                  <div className="flex items-center gap-2 mb-3">
+                  <label className="text-sm font-medium text-gray-600 block mb-4">Marco 1</label>
+                  <div className="flex items-center gap-2 mb-4">
                     <Calendar className="h-4 w-4 text-gray-500" />
-                    <span className="text-base text-gray-900">{formatDate(status.data_marco1)}</span>
+                    <span className="text-base text-gray-900">{formatarData(status.data_marco1)}</span>
                   </div>
                   {status.entrega1 && (
                     <div>
-                      <p className="font-medium text-gray-900 mb-2">{status.entrega1}</p>
+                      <p className="font-medium text-gray-900 mb-3">{status.entrega1}</p>
                       {status.entregaveis1 && (
                         <p className="text-sm text-gray-600">{status.entregaveis1}</p>
                       )}
@@ -210,14 +210,14 @@ export function StatusDetalhesContent({ status }: StatusDetalhesContentProps) {
 
               {status.data_marco2 && (
                 <div>
-                  <label className="text-sm font-medium text-gray-600 block mb-3">Marco 2</label>
-                  <div className="flex items-center gap-2 mb-3">
+                  <label className="text-sm font-medium text-gray-600 block mb-4">Marco 2</label>
+                  <div className="flex items-center gap-2 mb-4">
                     <Calendar className="h-4 w-4 text-gray-500" />
-                    <span className="text-base text-gray-900">{formatDate(status.data_marco2)}</span>
+                    <span className="text-base text-gray-900">{formatarData(status.data_marco2)}</span>
                   </div>
                   {status.entrega2 && (
                     <div>
-                      <p className="font-medium text-gray-900 mb-2">{status.entrega2}</p>
+                      <p className="font-medium text-gray-900 mb-3">{status.entrega2}</p>
                       {status.entregaveis2 && (
                         <p className="text-sm text-gray-600">{status.entregaveis2}</p>
                       )}
@@ -228,14 +228,14 @@ export function StatusDetalhesContent({ status }: StatusDetalhesContentProps) {
 
               {status.data_marco3 && (
                 <div>
-                  <label className="text-sm font-medium text-gray-600 block mb-3">Marco 3</label>
-                  <div className="flex items-center gap-2 mb-3">
+                  <label className="text-sm font-medium text-gray-600 block mb-4">Marco 3</label>
+                  <div className="flex items-center gap-2 mb-4">
                     <Calendar className="h-4 w-4 text-gray-500" />
-                    <span className="text-base text-gray-900">{formatDate(status.data_marco3)}</span>
+                    <span className="text-base text-gray-900">{formatarData(status.data_marco3)}</span>
                   </div>
                   {status.entrega3 && (
                     <div>
-                      <p className="font-medium text-gray-900 mb-2">{status.entrega3}</p>
+                      <p className="font-medium text-gray-900 mb-3">{status.entrega3}</p>
                       {status.entregaveis3 && (
                         <p className="text-sm text-gray-600">{status.entregaveis3}</p>
                       )}
@@ -254,31 +254,31 @@ export function StatusDetalhesContent({ status }: StatusDetalhesContentProps) {
           <CardHeader>
             <CardTitle>Detalhes de Atividades</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-8">
             {status.realizado_semana_atual && (
               <div>
-                <label className="text-sm font-medium text-gray-600 block mb-3">Realizado na Semana Atual</label>
+                <label className="text-sm font-medium text-gray-600 block mb-4">Realizado na Semana Atual</label>
                 <p className="text-base text-gray-900 leading-relaxed">{status.realizado_semana_atual}</p>
               </div>
             )}
 
             {status.backlog && (
               <div>
-                <label className="text-sm font-medium text-gray-600 block mb-3">Backlog</label>
+                <label className="text-sm font-medium text-gray-600 block mb-4">Backlog</label>
                 <p className="text-base text-gray-900 leading-relaxed">{status.backlog}</p>
               </div>
             )}
 
             {status.bloqueios_atuais && (
               <div>
-                <label className="text-sm font-medium text-gray-600 block mb-3">Bloqueios Atuais</label>
+                <label className="text-sm font-medium text-gray-600 block mb-4">Bloqueios Atuais</label>
                 <p className="text-base text-gray-900 leading-relaxed">{status.bloqueios_atuais}</p>
               </div>
             )}
 
             {status.observacoes_pontos_atencao && (
               <div>
-                <label className="text-sm font-medium text-gray-600 block mb-3">Observações e Pontos de Atenção</label>
+                <label className="text-sm font-medium text-gray-600 block mb-4">Observações e Pontos de Atenção</label>
                 <p className="text-base text-gray-900 leading-relaxed">{status.observacoes_pontos_atencao}</p>
               </div>
             )}
