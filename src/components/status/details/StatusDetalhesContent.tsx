@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, User, AlertTriangle, CheckCircle, Target, TrendingUp } from 'lucide-react';
+import { Calendar, AlertTriangle, FileText } from 'lucide-react';
 import { StatusProjeto } from '@/types/pmo';
 import { formatarData } from '@/utils/dateFormatting';
 
@@ -28,14 +28,25 @@ export function StatusDetalhesContent({ status }: StatusDetalhesContentProps) {
     }
   };
 
+  // Função para preservar quebras de linha
+  const formatarTextoComQuebras = (texto: string | null) => {
+    if (!texto) return 'Nada reportado';
+    return texto.split('\n').map((linha, index) => (
+      <span key={index}>
+        {linha}
+        {index < texto.split('\n').length - 1 && <br />}
+      </span>
+    ));
+  };
+
   return (
     <div className="space-y-12">
-      {/* Informações Básicas */}
+      {/* Informações Básicas do Status */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <CheckCircle className="h-5 w-5" />
-            Informações Gerais
+            <Calendar className="h-5 w-5" />
+            Informações do Status
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-10">
@@ -64,78 +75,23 @@ export function StatusDetalhesContent({ status }: StatusDetalhesContentProps) {
               </Badge>
             </div>
 
-            {(status as any).progresso_estimado !== undefined && (
-              <div>
-                <label className="text-sm font-medium text-gray-600 block mb-4">Progresso Estimado</label>
-                <div className="flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 text-gray-500" />
-                  <span className="text-base text-gray-900">{(status as any).progresso_estimado}%</span>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {status.aprovado !== null && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+            {status.aprovado !== null && (
               <div>
                 <label className="text-sm font-medium text-gray-600 block mb-4">Status de Aprovação</label>
                 <Badge variant={status.aprovado ? "default" : "secondary"} className="text-sm">
                   {status.aprovado ? "Aprovado" : "Pendente"}
                 </Badge>
               </div>
-
-              {status.aprovado && status.data_aprovacao && (
-                <div>
-                  <label className="text-sm font-medium text-gray-600 block mb-4">Data de Aprovação</label>
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-gray-500" />
-                    <span className="text-base text-gray-900">{formatarData(status.data_aprovacao)}</span>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Responsáveis */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <User className="h-5 w-5" />
-            Responsáveis
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-10">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-            {(status as any).responsavel_asa && (
-              <div>
-                <label className="text-sm font-medium text-gray-600 block mb-4">Responsável ASA</label>
-                <div className="flex items-center gap-2">
-                  <User className="h-4 w-4 text-gray-500" />
-                  <span className="text-base text-gray-900">{(status as any).responsavel_asa}</span>
-                </div>
-              </div>
-            )}
-
-            {(status as any).gp_responsavel_cwi && (
-              <div>
-                <label className="text-sm font-medium text-gray-600 block mb-4">GP Responsável</label>
-                <div className="flex items-center gap-2">
-                  <User className="h-4 w-4 text-gray-500" />
-                  <span className="text-base text-gray-900">{(status as any).gp_responsavel_cwi}</span>
-                </div>
-              </div>
             )}
           </div>
 
-          {(status as any).responsavel_cwi && (
+          {status.aprovado && status.data_aprovacao && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
               <div>
-                <label className="text-sm font-medium text-gray-600 block mb-4">Responsável Técnico</label>
+                <label className="text-sm font-medium text-gray-600 block mb-4">Data de Aprovação</label>
                 <div className="flex items-center gap-2">
-                  <User className="h-4 w-4 text-gray-500" />
-                  <span className="text-base text-gray-900">{(status as any).responsavel_cwi}</span>
+                  <Calendar className="h-4 w-4 text-gray-500" />
+                  <span className="text-base text-gray-900">{formatarData(status.data_aprovacao)}</span>
                 </div>
               </div>
             </div>
@@ -179,112 +135,44 @@ export function StatusDetalhesContent({ status }: StatusDetalhesContentProps) {
         </CardContent>
       </Card>
 
-      {/* Marcos e Entregas */}
-      {(status.data_marco1 || status.data_marco2 || status.data_marco3) && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Target className="h-5 w-5" />
-              Marcos Importantes
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-10">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-              {status.data_marco1 && (
-                <div>
-                  <label className="text-sm font-medium text-gray-600 block mb-4">Marco 1</label>
-                  <div className="flex items-center gap-2 mb-4">
-                    <Calendar className="h-4 w-4 text-gray-500" />
-                    <span className="text-base text-gray-900">{formatarData(status.data_marco1)}</span>
-                  </div>
-                  {status.entrega1 && (
-                    <div>
-                      <p className="font-medium text-gray-900 mb-3">{status.entrega1}</p>
-                      {status.entregaveis1 && (
-                        <p className="text-sm text-gray-600">{status.entregaveis1}</p>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
+      {/* Detalhes do Status */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="h-5 w-5" />
+            Detalhes do Status
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-10">
+          <div>
+            <label className="text-sm font-medium text-gray-600 block mb-4">Itens Trabalhados na Semana</label>
+            <p className="text-base text-gray-900 leading-relaxed">
+              {formatarTextoComQuebras(status.realizado_semana_atual)}
+            </p>
+          </div>
 
-              {status.data_marco2 && (
-                <div>
-                  <label className="text-sm font-medium text-gray-600 block mb-4">Marco 2</label>
-                  <div className="flex items-center gap-2 mb-4">
-                    <Calendar className="h-4 w-4 text-gray-500" />
-                    <span className="text-base text-gray-900">{formatarData(status.data_marco2)}</span>
-                  </div>
-                  {status.entrega2 && (
-                    <div>
-                      <p className="font-medium text-gray-900 mb-3">{status.entrega2}</p>
-                      {status.entregaveis2 && (
-                        <p className="text-sm text-gray-600">{status.entregaveis2}</p>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
+          <div>
+            <label className="text-sm font-medium text-gray-600 block mb-4">Backlog</label>
+            <p className="text-base text-gray-900 leading-relaxed">
+              {formatarTextoComQuebras(status.backlog)}
+            </p>
+          </div>
 
-              {status.data_marco3 && (
-                <div>
-                  <label className="text-sm font-medium text-gray-600 block mb-4">Marco 3</label>
-                  <div className="flex items-center gap-2 mb-4">
-                    <Calendar className="h-4 w-4 text-gray-500" />
-                    <span className="text-base text-gray-900">{formatarData(status.data_marco3)}</span>
-                  </div>
-                  {status.entrega3 && (
-                    <div>
-                      <p className="font-medium text-gray-900 mb-3">{status.entrega3}</p>
-                      {status.entregaveis3 && (
-                        <p className="text-sm text-gray-600">{status.entregaveis3}</p>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+          <div>
+            <label className="text-sm font-medium text-gray-600 block mb-4">Bloqueios Atuais</label>
+            <p className="text-base text-gray-900 leading-relaxed">
+              {formatarTextoComQuebras(status.bloqueios_atuais)}
+            </p>
+          </div>
 
-      {/* Atividades e Observações */}
-      {(status.realizado_semana_atual || status.backlog || status.bloqueios_atuais || status.observacoes_pontos_atencao) && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Detalhes de Atividades</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-10">
-            {status.realizado_semana_atual && (
-              <div>
-                <label className="text-sm font-medium text-gray-600 block mb-4">Realizado na Semana Atual</label>
-                <p className="text-base text-gray-900 leading-relaxed">{status.realizado_semana_atual}</p>
-              </div>
-            )}
-
-            {status.backlog && (
-              <div>
-                <label className="text-sm font-medium text-gray-600 block mb-4">Backlog</label>
-                <p className="text-base text-gray-900 leading-relaxed">{status.backlog}</p>
-              </div>
-            )}
-
-            {status.bloqueios_atuais && (
-              <div>
-                <label className="text-sm font-medium text-gray-600 block mb-4">Bloqueios Atuais</label>
-                <p className="text-base text-gray-900 leading-relaxed">{status.bloqueios_atuais}</p>
-              </div>
-            )}
-
-            {status.observacoes_pontos_atencao && (
-              <div>
-                <label className="text-sm font-medium text-gray-600 block mb-4">Observações e Pontos de Atenção</label>
-                <p className="text-base text-gray-900 leading-relaxed">{status.observacoes_pontos_atencao}</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
+          <div>
+            <label className="text-sm font-medium text-gray-600 block mb-4">Observações ou Pontos de Atenção</label>
+            <p className="text-base text-gray-900 leading-relaxed">
+              {formatarTextoComQuebras(status.observacoes_pontos_atencao)}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

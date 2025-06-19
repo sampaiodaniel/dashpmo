@@ -58,16 +58,16 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
       // Convert "none" back to null/empty string for database
       const dataToSubmit = {
         nome_projeto: formData.nome_projeto,
-        // Only include tipo_projeto_id if it's a valid number, otherwise set to null
+        // Only include tipo_projeto_id if it's a valid number AND exists in the database
         tipo_projeto_id: formData.tipo_projeto_id && formData.tipo_projeto_id > 0 ? formData.tipo_projeto_id : null,
         descricao_projeto: formData.descricao_projeto,
-        responsavel_asa: formData.responsavel_asa === 'none' ? '' : formData.responsavel_asa,
-        gp_responsavel_cwi: formData.gp_responsavel_cwi || '',
-        responsavel_cwi: formData.responsavel_cwi || '',
-        carteira_primaria: formData.carteira_primaria === 'none' ? '' : formData.carteira_primaria,
-        carteira_secundaria: formData.carteira_secundaria === 'none' ? '' : formData.carteira_secundaria,
-        carteira_terciaria: formData.carteira_terciaria === 'none' ? '' : formData.carteira_terciaria,
-        equipe: formData.equipe,
+        responsavel_asa: formData.responsavel_asa === 'none' ? null : formData.responsavel_asa,
+        gp_responsavel_cwi: formData.gp_responsavel_cwi || null,
+        responsavel_cwi: formData.responsavel_cwi || null,
+        carteira_primaria: formData.carteira_primaria === 'none' ? null : formData.carteira_primaria,
+        carteira_secundaria: formData.carteira_secundaria === 'none' ? null : formData.carteira_secundaria,
+        carteira_terciaria: formData.carteira_terciaria === 'none' ? null : formData.carteira_terciaria,
+        equipe: formData.equipe || null,
         // Usar null quando for vazio, senão usar a data formatada
         finalizacao_prevista: formData.finalizacao_prevista || null,
         // Manter os campos obrigatórios do banco com valores derivados dos novos campos
@@ -78,6 +78,21 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
 
       console.log('📝 Dados sendo enviados para atualização:', dataToSubmit);
 
+      // Verificar se o tipo_projeto_id existe antes de atualizar
+      if (dataToSubmit.tipo_projeto_id) {
+        const { data: tipoExiste } = await supabase
+          .from('tipos_projeto')
+          .select('id')
+          .eq('id', dataToSubmit.tipo_projeto_id)
+          .eq('ativo', true)
+          .single();
+
+        if (!tipoExiste) {
+          console.error('❌ Tipo de projeto não encontrado ou inativo');
+          dataToSubmit.tipo_projeto_id = null;
+        }
+      }
+
       const { error } = await supabase
         .from('projetos')
         .update(dataToSubmit)
@@ -85,9 +100,20 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
 
       if (error) {
         console.error('❌ Erro ao atualizar projeto:', error);
+        
+        // Mensagem de erro mais específica
+        let errorMessage = "Erro ao atualizar projeto";
+        if (error.message.includes('foreign key constraint')) {
+          errorMessage = "Erro: Tipo de projeto selecionado não existe ou está inativo";
+        } else if (error.message.includes('violates not-null constraint')) {
+          errorMessage = "Erro: Campos obrigatórios não preenchidos";
+        } else {
+          errorMessage = `Erro ao atualizar projeto: ${error.message}`;
+        }
+        
         toast({
           title: "Erro",
-          description: "Erro ao atualizar projeto: " + error.message,
+          description: errorMessage,
           variant: "destructive",
         });
         return;
@@ -151,9 +177,10 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
                 <SelectValue placeholder="Selecione o tipo de projeto" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem key="none" value="">Nenhum</SelectItem>
                 {tiposProjeto?.filter(tipo => tipo.ativo).map((tipo) => (
                   <SelectItem key={tipo.id} value={tipo.id.toString()}>
-                    {tipo.valor}
+                    {tipo.nome}
                   </SelectItem>
                 ))}
               </SelectContent>
