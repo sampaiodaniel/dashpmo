@@ -97,27 +97,7 @@ export default function Status() {
           >
             <StatusMetricas 
               totalStatus={metricas.totalStatus}
-              naoRevisados={0}
-              revisados={0}
-            />
-          </div>
-          <div 
-            className={`cursor-pointer transition-all ${filtroAtivo === 'statusPendentes' ? 'ring-2 ring-pmo-primary' : ''}`}
-            onClick={() => handleFiltroMetricaClick('statusPendentes')}
-          >
-            <StatusMetricas 
-              totalStatus={0}
               naoRevisados={metricas.statusPendentes}
-              revisados={0}
-            />
-          </div>
-          <div 
-            className={`cursor-pointer transition-all ${filtroAtivo === 'statusRevisados' ? 'ring-2 ring-pmo-primary' : ''}`}
-            onClick={() => handleFiltroMetricaClick('statusRevisados')}
-          >
-            <StatusMetricas 
-              totalStatus={0}
-              naoRevisados={0}
               revisados={metricas.statusRevisados}
             />
           </div>

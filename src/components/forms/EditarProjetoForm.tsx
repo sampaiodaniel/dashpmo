@@ -68,7 +68,8 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
       // Convert "none" back to null/empty string for database
       const dataToSubmit = {
         nome_projeto: formData.nome_projeto,
-        tipo_projeto_id: formData.tipo_projeto_id,
+        // Only include tipo_projeto_id if it's a valid number, otherwise set to null
+        tipo_projeto_id: formData.tipo_projeto_id && formData.tipo_projeto_id > 0 ? formData.tipo_projeto_id : null,
         descricao_projeto: formData.descricao_projeto,
         responsavel_asa: formData.responsavel_asa === 'none' ? '' : formData.responsavel_asa,
         gp_responsavel_cwi: formData.gp_responsavel_cwi === 'none' ? '' : formData.gp_responsavel_cwi,
@@ -154,13 +155,13 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
             <Label htmlFor="tipo_projeto_id">Tipo de Projeto</Label>
             <Select 
               value={formData.tipo_projeto_id?.toString() || ''} 
-              onValueChange={(value) => handleInputChange('tipo_projeto_id', value ? parseInt(value) : null)}
+              onValueChange={(value) => handleInputChange('tipo_projeto_id', value === '' ? null : parseInt(value))}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Selecione o tipo de projeto" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="nenhum">Nenhum</SelectItem>
+                <SelectItem value="">Nenhum</SelectItem>
                 {tiposProjeto?.map((tipo) => (
                   <SelectItem key={tipo.id} value={tipo.id.toString()}>
                     {tipo.valor}

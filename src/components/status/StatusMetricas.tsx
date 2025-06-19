@@ -10,7 +10,7 @@ interface StatusMetricasProps {
 
 export function StatusMetricas({ totalStatus, naoRevisados, revisados }: StatusMetricasProps) {
   return (
-    <>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <KpiBox
         title="Total de Status"
         value={totalStatus}
@@ -31,6 +31,6 @@ export function StatusMetricas({ totalStatus, naoRevisados, revisados }: StatusM
         icon={<CheckCircle className="h-5 w-5" />}
         color="green"
       />
-    </>
+    </div>
   );
 }
