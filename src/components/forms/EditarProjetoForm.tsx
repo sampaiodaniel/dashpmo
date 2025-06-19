@@ -87,7 +87,7 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
         console.error('❌ Erro ao atualizar projeto:', error);
         toast({
           title: "Erro",
-          description: "Erro ao atualizar projeto",
+          description: "Erro ao atualizar projeto: " + error.message,
           variant: "destructive",
         });
         return;
