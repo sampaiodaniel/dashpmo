@@ -1,5 +1,5 @@
 
-import { FileText, AlertCircle, CheckCircle } from 'lucide-react';
+import { FileText, Clock, CheckCircle } from 'lucide-react';
 import { KpiBox } from '@/components/common/KpiBox';
 
 interface StatusMetricasProps {
@@ -10,7 +10,7 @@ interface StatusMetricasProps {
 
 export function StatusMetricas({ totalStatus, naoRevisados, revisados }: StatusMetricasProps) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <>
       <KpiBox
         title="Total de Status"
         value={totalStatus}
@@ -19,18 +19,18 @@ export function StatusMetricas({ totalStatus, naoRevisados, revisados }: StatusM
       />
 
       <KpiBox
-        title="Não Revisados"
+        title="Em Revisão"
         value={naoRevisados}
-        icon={<AlertCircle className="h-5 w-5" />}
+        icon={<Clock className="h-5 w-5" />}
         color="yellow"
       />
 
       <KpiBox
-        title="Revisados"
+        title="Revisado"
         value={revisados}
         icon={<CheckCircle className="h-5 w-5" />}
         color="green"
       />
-    </div>
+    </>
   );
 }

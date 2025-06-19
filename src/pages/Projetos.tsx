@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
@@ -172,7 +171,8 @@ export default function Projetos() {
                 className="border-b border-gray-200 p-6 hover:bg-gray-50 last:border-b-0 cursor-pointer"
                 onClick={() => handleProjetoClick(projeto)}
               >
-                <div className="flex items-start justify-between mb-4">
+                {/* 1ª linha: Nome do Projeto, Badge, Data atualização, Status */}
+                <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-3 flex-1">
                     <h3 className="text-lg font-semibold text-[#1B365D]">
                       {projeto.nome_projeto}
@@ -182,64 +182,61 @@ export default function Projetos() {
                       {projeto.area_responsavel || 'Crédito'}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    {isAdmin() && (
-                      <div onClick={(e) => e.stopPropagation()}>
-                        <ProjetoAcoesAdmin 
-                          projeto={projeto} 
-                          onProjetoAtualizado={refetch}
-                        />
-                      </div>
+                  <div className="flex items-center gap-4">
+                    {projeto.ultimoStatus && (
+                      <span className="text-sm text-gray-600">
+                        {projeto.ultimoStatus.data_atualizacao.toLocaleDateString()}
+                      </span>
                     )}
+                    <div className="flex items-center gap-2">
+                      {projeto.ultimoStatus && !projeto.ultimoStatus.aprovado && (
+                        <Badge className="bg-yellow-100 text-yellow-800">
+                          Em Revisão
+                        </Badge>
+                      )}
+                      {projeto.ultimoStatus && projeto.ultimoStatus.aprovado && (
+                        <Badge className="bg-green-100 text-green-800">
+                          Revisado
+                        </Badge>
+                      )}
+                      {isAdmin() && (
+                        <div onClick={(e) => e.stopPropagation()}>
+                          <ProjetoAcoesAdmin 
+                            projeto={projeto} 
+                            onProjetoAtualizado={refetch}
+                          />
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mb-4">
+                {/* 2ª linha: Responsável ASA e Chefe do Projeto */}
+                <div className="flex items-center justify-between mb-3 text-sm">
                   <div>
                     <span className="font-medium text-pmo-gray">Responsável ASA:</span>
-                    <p className="text-gray-700">{projeto.responsavel_asa}</p>
+                    <span className="ml-2 text-gray-700">{projeto.responsavel_asa}</span>
                   </div>
                   <div>
                     <span className="font-medium text-pmo-gray">Chefe do Projeto:</span>
-                    <p className="text-gray-700">{projeto.gp_responsavel}</p>
+                    <span className="ml-2 text-gray-700">{projeto.gp_responsavel}</span>
                   </div>
                 </div>
 
-                {/* Último Status */}
+                {/* 3ª linha: Status Geral, Visão do Chefe do Projeto, Progresso */}
                 {projeto.ultimoStatus && (
-                  <div className="bg-gray-50 rounded-lg p-4 mt-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="text-sm font-medium text-pmo-gray">Último Status</h4>
-                      <div className="flex items-center gap-2">
-                        {!projeto.ultimoStatus.aprovado && (
-                          <Badge className="bg-yellow-100 text-yellow-800">
-                            Em Revisão
-                          </Badge>
-                        )}
-                        {projeto.ultimoStatus.aprovado && (
-                          <Badge className="bg-green-100 text-green-800">
-                            Revisado
-                          </Badge>
-                        )}
-                      </div>
+                  <div className="flex items-center gap-6 text-sm">
+                    <div>
+                      <span className="font-medium text-pmo-gray">Status Geral:</span>
+                      <span className="ml-2 text-gray-700">{projeto.ultimoStatus.status_geral}</span>
                     </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-                      <div>
-                        <span className="font-medium">Status Geral:</span>
-                        <p>{projeto.ultimoStatus.status_geral}</p>
-                      </div>
-                      <div>
-                        <span className="font-medium">Visão Chefe do Projeto:</span>
-                        <p>{projeto.ultimoStatus.status_visao_gp}</p>
-                      </div>
-                      <div>
-                        <span className="font-medium">Progresso:</span>
-                        <p>{(projeto.ultimoStatus as any).progresso_estimado || 0}%</p>
-                      </div>
-                      <div>
-                        <span className="font-medium">Atualizado em:</span>
-                        <p>{projeto.ultimoStatus.data_atualizacao.toLocaleDateString()}</p>
-                      </div>
+                    <div>
+                      <span className="font-medium text-pmo-gray">Visão do Chefe do Projeto:</span>
+                      <span className="ml-2 text-gray-700">{projeto.ultimoStatus.status_visao_gp}</span>
+                    </div>
+                    <div>
+                      <span className="font-medium text-pmo-gray">Progresso:</span>
+                      <span className="ml-2 text-gray-700">{(projeto.ultimoStatus as any).progresso_estimado || 0}%</span>
                     </div>
                   </div>
                 )}
