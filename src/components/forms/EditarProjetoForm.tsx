@@ -154,14 +154,14 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
           <div>
             <Label htmlFor="tipo_projeto_id">Tipo de Projeto</Label>
             <Select 
-              value={formData.tipo_projeto_id?.toString() || ''} 
-              onValueChange={(value) => handleInputChange('tipo_projeto_id', value === '' ? null : parseInt(value))}
+              value={formData.tipo_projeto_id?.toString() || 'none'} 
+              onValueChange={(value) => handleInputChange('tipo_projeto_id', value === 'none' ? null : parseInt(value))}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Selecione o tipo de projeto" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Nenhum</SelectItem>
+                <SelectItem value="none">Nenhum</SelectItem>
                 {tiposProjeto?.map((tipo) => (
                   <SelectItem key={tipo.id} value={tipo.id.toString()}>
                     {tipo.valor}

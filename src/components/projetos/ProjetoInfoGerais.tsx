@@ -50,17 +50,6 @@ export function ProjetoInfoGerais({ projeto }: ProjetoInfoGeraisProps) {
             <p className="text-base text-gray-900 leading-relaxed">{projeto.descricao || projeto.descricao_projeto || 'Não informado'}</p>
           </div>
 
-          {/* Tipo de Projeto */}
-          {tipoProjeto && (
-            <div>
-              <label className="text-sm font-medium text-gray-600 block mb-2">Tipo de Projeto</label>
-              <div className="flex items-center gap-2">
-                <FileType className="h-5 w-5 text-gray-500" />
-                <span className="text-base text-gray-900">{tipoProjeto.valor}</span>
-              </div>
-            </div>
-          )}
-
           {/* Status e Datas em grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
@@ -87,13 +76,27 @@ export function ProjetoInfoGerais({ projeto }: ProjetoInfoGeraisProps) {
             </div>
           </div>
 
-          {/* Equipe */}
-          {projeto.equipe && (
-            <div>
-              <label className="text-sm font-medium text-gray-600 block mb-2">Equipe do Projeto</label>
-              <p className="text-base text-gray-900 leading-relaxed text-left">{projeto.equipe}</p>
-            </div>
-          )}
+          {/* Equipe e Tipo de Projeto em grid de 2 colunas */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Equipe */}
+            {projeto.equipe && (
+              <div>
+                <label className="text-sm font-medium text-gray-600 block mb-2">Equipe do Projeto</label>
+                <p className="text-base text-gray-900 leading-relaxed text-left">{projeto.equipe}</p>
+              </div>
+            )}
+
+            {/* Tipo de Projeto */}
+            {tipoProjeto && (
+              <div>
+                <label className="text-sm font-medium text-gray-600 block mb-2">Tipo de Projeto</label>
+                <div className="flex items-center gap-2">
+                  <FileType className="h-5 w-5 text-gray-500" />
+                  <span className="text-base text-gray-900">{tipoProjeto.valor}</span>
+                </div>
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
 

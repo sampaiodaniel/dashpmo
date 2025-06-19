@@ -2,12 +2,16 @@
 import { useState, useMemo } from 'react';
 import { StatusProjeto } from '@/types/pmo';
 import { StatusFilters } from '@/components/status/filters/FilterUtils';
+import { useStatusList } from './useStatusList';
 
 export function useStatusFiltroMetricas(statusList: StatusProjeto[] | undefined) {
   const [filtroAtivo, setFiltroAtivo] = useState<string | null>(null);
+  
+  // Buscar todos os status para cálculo das métricas, não apenas os filtrados
+  const { data: todosStatus } = useStatusList();
 
   const metricas = useMemo(() => {
-    if (!statusList) {
+    if (!todosStatus) {
       return {
         totalStatus: 0,
         statusPendentes: 0,
@@ -15,16 +19,16 @@ export function useStatusFiltroMetricas(statusList: StatusProjeto[] | undefined)
       };
     }
 
-    const totalStatus = statusList.length;
-    const statusPendentes = statusList.filter(s => s.aprovado !== true).length;
-    const statusRevisados = statusList.filter(s => s.aprovado === true).length;
+    const totalStatus = todosStatus.length;
+    const statusPendentes = todosStatus.filter(s => s.aprovado !== true).length;
+    const statusRevisados = todosStatus.filter(s => s.aprovado === true).length;
 
     return {
       totalStatus,
       statusPendentes,
       statusRevisados
     };
-  }, [statusList]);
+  }, [todosStatus]);
 
   const aplicarFiltroStatus = (tipo: string): StatusFilters => {
     if (filtroAtivo === tipo) {
