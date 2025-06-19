@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
@@ -171,72 +172,79 @@ export default function Projetos() {
                 className="border-b border-gray-200 p-6 hover:bg-gray-50 last:border-b-0 cursor-pointer"
                 onClick={() => handleProjetoClick(projeto)}
               >
-                {/* 1ª linha: Nome do Projeto, Badge, Data atualização, Status */}
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-3 flex-1">
-                    <h3 className="text-lg font-semibold text-[#1B365D]">
-                      {projeto.nome_projeto}
-                    </h3>
-                    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border ${getCarteiraBadgeClasses(projeto.area_responsavel || 'Crédito')}`}>
-                      <span className="text-sm">{getCarteiraIcon(projeto.area_responsavel || 'Crédito')}</span>
-                      {projeto.area_responsavel || 'Crédito'}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    {projeto.ultimoStatus && (
-                      <span className="text-sm text-gray-600">
-                        {projeto.ultimoStatus.data_atualizacao.toLocaleDateString()}
+                {/* Informações do Projeto */}
+                <div className="mb-4">
+                  {/* 1ª linha: Nome do Projeto, Badge e Ações Admin */}
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3 flex-1">
+                      <h3 className="text-lg font-semibold text-[#1B365D]">
+                        {projeto.nome_projeto}
+                      </h3>
+                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border ${getCarteiraBadgeClasses(projeto.area_responsavel || 'Crédito')}`}>
+                        <span className="text-sm">{getCarteiraIcon(projeto.area_responsavel || 'Crédito')}</span>
+                        {projeto.area_responsavel || 'Crédito'}
                       </span>
+                    </div>
+                    {isAdmin() && (
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <ProjetoAcoesAdmin 
+                          projeto={projeto} 
+                          onProjetoAtualizado={refetch}
+                        />
+                      </div>
                     )}
-                    <div className="flex items-center gap-2">
-                      {projeto.ultimoStatus && !projeto.ultimoStatus.aprovado && (
-                        <Badge className="bg-yellow-100 text-yellow-800">
-                          Em Revisão
-                        </Badge>
-                      )}
-                      {projeto.ultimoStatus && projeto.ultimoStatus.aprovado && (
-                        <Badge className="bg-green-100 text-green-800">
-                          Revisado
-                        </Badge>
-                      )}
-                      {isAdmin() && (
-                        <div onClick={(e) => e.stopPropagation()}>
-                          <ProjetoAcoesAdmin 
-                            projeto={projeto} 
-                            onProjetoAtualizado={refetch}
-                          />
-                        </div>
-                      )}
+                  </div>
+
+                  {/* 2ª linha: Responsável ASA e Chefe do Projeto */}
+                  <div className="flex items-center justify-between text-sm">
+                    <div>
+                      <span className="font-medium text-pmo-gray">Responsável ASA:</span>
+                      <span className="ml-2 text-gray-700">{projeto.responsavel_asa || 'Não informado'}</span>
+                    </div>
+                    <div>
+                      <span className="font-medium text-pmo-gray">Chefe do Projeto:</span>
+                      <span className="ml-2 text-gray-700">{projeto.gp_responsavel}</span>
                     </div>
                   </div>
                 </div>
 
-                {/* 2ª linha: Responsável ASA e Chefe do Projeto */}
-                <div className="flex items-center justify-between mb-3 text-sm">
-                  <div>
-                    <span className="font-medium text-pmo-gray">Responsável ASA:</span>
-                    <span className="ml-2 text-gray-700">{projeto.responsavel_asa}</span>
-                  </div>
-                  <div>
-                    <span className="font-medium text-pmo-gray">Chefe do Projeto:</span>
-                    <span className="ml-2 text-gray-700">{projeto.gp_responsavel}</span>
-                  </div>
-                </div>
-
-                {/* 3ª linha: Status Geral, Visão do Chefe do Projeto, Progresso */}
+                {/* Sub-bloco do Status com fundo cinza identado */}
                 {projeto.ultimoStatus && (
-                  <div className="flex items-center gap-6 text-sm">
-                    <div>
-                      <span className="font-medium text-pmo-gray">Status Geral:</span>
-                      <span className="ml-2 text-gray-700">{projeto.ultimoStatus.status_geral}</span>
+                  <div className="bg-gray-100 p-4 rounded-lg ml-4 border-l-4 border-pmo-primary">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-sm font-semibold text-gray-800">Último Status</h4>
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs text-gray-600">
+                          {projeto.ultimoStatus.data_atualizacao.toLocaleDateString()}
+                        </span>
+                        <div className="flex items-center gap-2">
+                          {!projeto.ultimoStatus.aprovado && (
+                            <Badge className="bg-yellow-100 text-yellow-800 text-xs">
+                              Em Revisão
+                            </Badge>
+                          )}
+                          {projeto.ultimoStatus.aprovado && (
+                            <Badge className="bg-green-100 text-green-800 text-xs">
+                              Revisado
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <span className="font-medium text-pmo-gray">Visão do Chefe do Projeto:</span>
-                      <span className="ml-2 text-gray-700">{projeto.ultimoStatus.status_visao_gp}</span>
-                    </div>
-                    <div>
-                      <span className="font-medium text-pmo-gray">Progresso:</span>
-                      <span className="ml-2 text-gray-700">{(projeto.ultimoStatus as any).progresso_estimado || 0}%</span>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                      <div>
+                        <span className="font-medium text-gray-600">Status Geral:</span>
+                        <span className="ml-2 text-gray-800">{projeto.ultimoStatus.status_geral}</span>
+                      </div>
+                      <div>
+                        <span className="font-medium text-gray-600">Visão do Chefe:</span>
+                        <span className="ml-2 text-gray-800">{projeto.ultimoStatus.status_visao_gp}</span>
+                      </div>
+                      <div>
+                        <span className="font-medium text-gray-600">Progresso:</span>
+                        <span className="ml-2 text-gray-800">{(projeto.ultimoStatus as any).progresso_estimado || 0}%</span>
+                      </div>
                     </div>
                   </div>
                 )}

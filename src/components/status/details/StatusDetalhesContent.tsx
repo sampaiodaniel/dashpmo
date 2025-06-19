@@ -29,7 +29,7 @@ export function StatusDetalhesContent({ status }: StatusDetalhesContentProps) {
   };
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-12">
       {/* Informações Básicas */}
       <Card>
         <CardHeader>
@@ -38,7 +38,7 @@ export function StatusDetalhesContent({ status }: StatusDetalhesContentProps) {
             Informações Gerais
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-8">
+        <CardContent className="space-y-10">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
             <div>
               <label className="text-sm font-medium text-gray-600 block mb-4">Data de Atualização</label>
@@ -64,12 +64,12 @@ export function StatusDetalhesContent({ status }: StatusDetalhesContentProps) {
               </Badge>
             </div>
 
-            {status.progresso_estimado && (
+            {(status as any).progresso_estimado !== undefined && (
               <div>
                 <label className="text-sm font-medium text-gray-600 block mb-4">Progresso Estimado</label>
                 <div className="flex items-center gap-2">
                   <TrendingUp className="h-4 w-4 text-gray-500" />
-                  <span className="text-base text-gray-900">{status.progresso_estimado}%</span>
+                  <span className="text-base text-gray-900">{(status as any).progresso_estimado}%</span>
                 </div>
               </div>
             )}
@@ -106,36 +106,36 @@ export function StatusDetalhesContent({ status }: StatusDetalhesContentProps) {
             Responsáveis
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-8">
+        <CardContent className="space-y-10">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-            {status.responsavel_asa && (
+            {(status as any).responsavel_asa && (
               <div>
                 <label className="text-sm font-medium text-gray-600 block mb-4">Responsável ASA</label>
                 <div className="flex items-center gap-2">
                   <User className="h-4 w-4 text-gray-500" />
-                  <span className="text-base text-gray-900">{status.responsavel_asa}</span>
+                  <span className="text-base text-gray-900">{(status as any).responsavel_asa}</span>
                 </div>
               </div>
             )}
 
-            {status.gp_responsavel_cwi && (
+            {(status as any).gp_responsavel_cwi && (
               <div>
                 <label className="text-sm font-medium text-gray-600 block mb-4">GP Responsável</label>
                 <div className="flex items-center gap-2">
                   <User className="h-4 w-4 text-gray-500" />
-                  <span className="text-base text-gray-900">{status.gp_responsavel_cwi}</span>
+                  <span className="text-base text-gray-900">{(status as any).gp_responsavel_cwi}</span>
                 </div>
               </div>
             )}
           </div>
 
-          {status.responsavel_cwi && (
+          {(status as any).responsavel_cwi && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
               <div>
                 <label className="text-sm font-medium text-gray-600 block mb-4">Responsável Técnico</label>
                 <div className="flex items-center gap-2">
                   <User className="h-4 w-4 text-gray-500" />
-                  <span className="text-base text-gray-900">{status.responsavel_cwi}</span>
+                  <span className="text-base text-gray-900">{(status as any).responsavel_cwi}</span>
                 </div>
               </div>
             </div>
@@ -151,7 +151,7 @@ export function StatusDetalhesContent({ status }: StatusDetalhesContentProps) {
             Gestão de Riscos
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-8">
+        <CardContent className="space-y-10">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
             <div>
               <label className="text-sm font-medium text-gray-600 block mb-4">Probabilidade</label>
@@ -188,7 +188,7 @@ export function StatusDetalhesContent({ status }: StatusDetalhesContentProps) {
               Marcos Importantes
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-8">
+          <CardContent className="space-y-10">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
               {status.data_marco1 && (
                 <div>
@@ -254,7 +254,7 @@ export function StatusDetalhesContent({ status }: StatusDetalhesContentProps) {
           <CardHeader>
             <CardTitle>Detalhes de Atividades</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-8">
+          <CardContent className="space-y-10">
             {status.realizado_semana_atual && (
               <div>
                 <label className="text-sm font-medium text-gray-600 block mb-4">Realizado na Semana Atual</label>

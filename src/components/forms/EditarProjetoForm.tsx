@@ -153,7 +153,7 @@ export function EditarProjetoForm({ projeto, onSuccess }: EditarProjetoFormProps
               <SelectContent>
                 {tiposProjeto?.filter(tipo => tipo.ativo).map((tipo) => (
                   <SelectItem key={tipo.id} value={tipo.id.toString()}>
-                    {tipo.nome}
+                    {tipo.valor}
                   </SelectItem>
                 ))}
               </SelectContent>
