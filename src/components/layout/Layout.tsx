@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Header } from './Header';
 import { Sidebar } from './Sidebar';
@@ -22,22 +21,29 @@ export function Layout({ children }: LayoutProps) {
   };
 
   return (
-    <div className="min-h-screen bg-pmo-background flex flex-col">
+    <div className="min-h-screen bg-white flex">
       {/* Sidebar fixo */}
       <div className="fixed left-0 top-0 h-full z-40">
         <Sidebar />
       </div>
       
       {/* Content area com margem para compensar sidebar fixo */}
-      <div className="flex-1 flex flex-col ml-64">
+      <div className="flex-1 flex flex-col ml-64 bg-white">
         <Header onToggleSidebar={toggleSidebar} />
         
-        <main className="flex-1">
+        {/* Main content com fundo cinza apenas para a área de conteúdo */}
+        <main className="flex-1 bg-pmo-background">
           <div className={cn(
-            "p-6",
-            location.pathname === "/projetos" && "p-3 pl-6"
+            "min-h-[calc(100vh-4rem)] p-6", // Altura mínima para preencher tela - altura do header
+            location.pathname === "/projetos" && "p-3 pl-6",
+            // Container responsivo para monitores grandes
+            "max-w-none", // Remove limitação de largura
+            "2xl:px-8", // Mais padding em telas muito grandes
+            "3xl:px-12" // Ainda mais padding em telas ultra grandes
           )}>
-            {children}
+            <div className="w-full mx-auto">
+              {children}
+            </div>
           </div>
         </main>
 

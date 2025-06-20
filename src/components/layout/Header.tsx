@@ -1,4 +1,3 @@
-
 import { Bell, LogOut, User, Menu } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -38,7 +37,7 @@ export function Header({ onToggleSidebar }: HeaderProps) {
   const displayInitials = displayName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
 
   return (
-    <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 sticky top-0 z-30">
+    <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 sticky top-0 z-30 w-full 2xl:px-8 3xl:px-12">
       <div className="flex items-center gap-4">
         <Button
           variant="ghost"
