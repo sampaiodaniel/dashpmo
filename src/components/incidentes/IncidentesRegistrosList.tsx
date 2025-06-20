@@ -6,8 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { MoreHorizontal, Edit, Trash2 } from 'lucide-react';
 import { useIncidentesHistorico } from '@/hooks/useIncidentesHistorico';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { formatarData } from '@/utils/dateFormatting';
 import { EditarIncidenteModal } from './EditarIncidenteModal';
 import { ExcluirIncidenteModal } from './ExcluirIncidenteModal';
 import { IncidenteHistorico } from '@/hooks/useIncidentesHistorico';
@@ -62,7 +61,7 @@ export function IncidentesRegistrosList() {
               {registros.map((registro) => (
                 <TableRow key={registro.id}>
                   <TableCell className="font-medium">
-                    {format(new Date(registro.data_registro), 'dd/MM/yyyy', { locale: ptBR })}
+                    {formatarData(registro.data_registro)}
                   </TableCell>
                   <TableCell className="font-medium text-pmo-primary">
                     {registro.carteira}

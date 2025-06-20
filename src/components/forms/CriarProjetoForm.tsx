@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { useResponsaveisASADropdown } from '@/hooks/useResponsaveisASADropdown';
 import { useTiposProjeto } from '@/hooks/useTiposProjeto';
 import { CARTEIRAS } from '@/types/pmo';
+import { DatePicker } from '@/components/ui/date-picker';
 
 interface CriarProjetoFormProps {
   formData: any;
@@ -78,12 +80,11 @@ export function CriarProjetoForm({
           </div>
 
           <div>
-            <Label htmlFor="finalizacao_prevista">Finalização Prevista</Label>
-            <Input
-              id="finalizacao_prevista"
-              type="date"
-              value={formData.finalizacao_prevista || ''}
-              onChange={(e) => onInputChange('finalizacao_prevista', e.target.value)}
+            <Label>Finalização Prevista</Label>
+            <DatePicker
+              date={formData.finalizacao_prevista}
+              onDateChange={(date) => onInputChange('finalizacao_prevista', date)}
+              placeholder="Selecione a data de finalização"
             />
             <p className="text-xs text-gray-500 mt-1">
               Deixe em branco se a data ainda for indefinida (TBD)

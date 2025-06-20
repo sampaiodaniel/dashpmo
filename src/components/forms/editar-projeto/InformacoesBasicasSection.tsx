@@ -3,6 +3,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { DatePicker } from '@/components/ui/date-picker';
 import { useTiposProjeto } from '@/hooks/useTiposProjeto';
 
 interface InformacoesBasicasSectionProps {
@@ -10,10 +11,10 @@ interface InformacoesBasicasSectionProps {
     nome_projeto: string;
     tipo_projeto_id: number | null;
     descricao_projeto: string;
-    finalizacao_prevista: string;
+    finalizacao_prevista: Date | null;
     equipe: string;
   };
-  onInputChange: (field: string, value: string | number | null) => void;
+  onInputChange: (field: string, value: string | number | Date | null) => void;
 }
 
 export function InformacoesBasicasSection({ formData, onInputChange }: InformacoesBasicasSectionProps) {
@@ -66,12 +67,11 @@ export function InformacoesBasicasSection({ formData, onInputChange }: Informaco
         </div>
 
         <div>
-          <Label htmlFor="finalizacao_prevista">Finalização Prevista</Label>
-          <Input
-            id="finalizacao_prevista"
-            type="date"
-            value={formData.finalizacao_prevista}
-            onChange={(e) => onInputChange('finalizacao_prevista', e.target.value)}
+          <Label>Finalização Prevista</Label>
+          <DatePicker
+            date={formData.finalizacao_prevista}
+            onDateChange={(date) => onInputChange('finalizacao_prevista', date)}
+            placeholder="Selecione a data de finalização"
           />
           <p className="text-xs text-gray-500 mt-1">
             Deixe em branco se a data ainda for indefinida (TBD)

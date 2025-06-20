@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
@@ -11,15 +10,17 @@ import { useStatusFiltrados } from '@/hooks/useStatusFiltrados';
 import { useStatusFiltroMetricas } from '@/hooks/useStatusFiltroMetricas';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { StatusFilters as StatusFiltersType } from '@/components/status/filters/FilterUtils';
 import { PaginationFooter } from '@/components/common/PaginationFooter';
 import { usePagination } from '@/hooks/usePagination';
+
 
 export default function Status() {
   const { usuario, isLoading } = useAuth();
   const [filtros, setFiltros] = useState<StatusFiltersType>({});
   const [termoBusca, setTermoBusca] = useState('');
+  const navigate = useNavigate();
 
   const {
     data: { status, totalItens },
@@ -64,15 +65,19 @@ export default function Status() {
     status?.map(s => s.projeto?.responsavel_asa).filter(Boolean) || []
   ));
 
+  const handleNovoStatus = () => {
+    navigate('/status/novo');
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-pmo-background flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 bg-pmo-primary rounded-xl flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-white rounded-xl flex items-center justify-center mx-auto mb-4 animate-pulse shadow-lg">
             <img 
-              src="/lovable-uploads/6e48c2c5-9581-4a4e-8e6c-f3610c1742bd.png" 
+              src="/lovable-uploads/e42353b2-fcfd-4457-bbd8-066545973f48.png" 
               alt="DashPMO" 
-              className="w-8 h-8" 
+              className="w-12 h-12" 
             />
           </div>
           <div className="text-pmo-gray">Carregando...</div>
@@ -93,12 +98,10 @@ export default function Status() {
             <h1 className="text-3xl font-bold text-pmo-primary">Status de Projetos</h1>
             <p className="text-pmo-gray mt-2">Acompanhe o status e progresso dos projetos</p>
           </div>
-          <Link to="/novo-status">
-            <Button className="bg-pmo-primary hover:bg-pmo-primary/90">
-              <Plus className="h-4 w-4 mr-2" />
-              Novo Status
-            </Button>
-          </Link>
+          <Button onClick={handleNovoStatus} className="bg-pmo-primary hover:bg-pmo-primary/90">
+            <Plus className="h-4 w-4 mr-2" />
+            Novo Status
+          </Button>
         </div>
 
         <StatusMetricas 

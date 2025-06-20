@@ -1,12 +1,12 @@
-
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { DatePicker } from '@/components/ui/date-picker';
 
 interface Milestone {
   entrega: string;
-  data: string;
+  data: Date | null;
   entregaveis: string;
 }
 
@@ -14,15 +14,15 @@ interface MilestonesSectionProps {
   marco1: Milestone;
   marco2: Milestone;
   marco3: Milestone;
-  onMarco1Change: (field: keyof Milestone, value: string) => void;
-  onMarco2Change: (field: keyof Milestone, value: string) => void;
-  onMarco3Change: (field: keyof Milestone, value: string) => void;
+  onMarco1Change: (field: keyof Milestone, value: string | Date | null) => void;
+  onMarco2Change: (field: keyof Milestone, value: string | Date | null) => void;
+  onMarco3Change: (field: keyof Milestone, value: string | Date | null) => void;
 }
 
 interface MilestoneCardProps {
   title: string;
   milestone: Milestone;
-  onChange: (field: keyof Milestone, value: string) => void;
+  onChange: (field: keyof Milestone, value: string | Date | null) => void;
   required?: boolean;
 }
 
@@ -52,10 +52,10 @@ function MilestoneCard({ title, milestone, onChange, required = false }: Milesto
           </div>
           <div>
             <Label>Data de Entrega {required && '*'}</Label>
-            <Input
-              type="date"
-              value={milestone.data}
-              onChange={(e) => onChange('data', e.target.value)}
+            <DatePicker
+              date={milestone.data}
+              onDateChange={(date) => onChange('data', date)}
+              placeholder="Selecione a data de entrega"
             />
           </div>
         </div>

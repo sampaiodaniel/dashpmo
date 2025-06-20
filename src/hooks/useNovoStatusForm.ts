@@ -44,7 +44,7 @@ export function useNovoStatusForm() {
   const [projetoSelecionado, setProjetoSelecionado] = useState<number | null>(null);
   const [progressoEstimado, setProgressoEstimado] = useState(0);
   const [entregas, setEntregas] = useState<EntregaDinamica[]>([
-    { id: '1', nome: '', data: '', entregaveis: '' }
+    { id: '1', nome: '', data: null, entregaveis: '' }
   ]);
 
   // Verificar se há um projeto especificado na URL
@@ -135,7 +135,7 @@ export function useNovoStatusForm() {
         entregasPreenchidas.push({
           id: '1',
           nome: ultimoStatus.entrega1,
-          data: ultimoStatus.data_marco1 ? new Date(ultimoStatus.data_marco1).toISOString().split('T')[0] : '',
+          data: ultimoStatus.data_marco1 ? new Date(ultimoStatus.data_marco1) : null,
           entregaveis: ultimoStatus.entregaveis1 || ''
         });
       }
@@ -144,7 +144,7 @@ export function useNovoStatusForm() {
         entregasPreenchidas.push({
           id: '2',
           nome: ultimoStatus.entrega2,
-          data: ultimoStatus.data_marco2 ? new Date(ultimoStatus.data_marco2).toISOString().split('T')[0] : '',
+          data: ultimoStatus.data_marco2 ? new Date(ultimoStatus.data_marco2) : null,
           entregaveis: ultimoStatus.entregaveis2 || ''
         });
       }
@@ -153,14 +153,14 @@ export function useNovoStatusForm() {
         entregasPreenchidas.push({
           id: '3',
           nome: ultimoStatus.entrega3,
-          data: ultimoStatus.data_marco3 ? new Date(ultimoStatus.data_marco3).toISOString().split('T')[0] : '',
+          data: ultimoStatus.data_marco3 ? new Date(ultimoStatus.data_marco3) : null,
           entregaveis: ultimoStatus.entregaveis3 || ''
         });
       }
 
       // Se não houver entregas, criar uma vazia
       if (entregasPreenchidas.length === 0) {
-        entregasPreenchidas.push({ id: '1', nome: '', data: '', entregaveis: '' });
+        entregasPreenchidas.push({ id: '1', nome: '', data: null, entregaveis: '' });
       }
 
       setEntregas(entregasPreenchidas);
@@ -216,13 +216,13 @@ export function useNovoStatusForm() {
         bloqueios_atuais: data.bloqueios_atuais || null,
         observacoes_pontos_atencao: data.observacoes_gerais || null,
         entrega1: entregas[0]?.nome || null,
-        data_marco1: entregas[0]?.data || null,
+        data_marco1: entregas[0]?.data ? entregas[0].data.toISOString().split('T')[0] : null,
         entregaveis1: entregas[0]?.entregaveis || null,
         entrega2: entregas[1]?.nome || null,
-        data_marco2: entregas[1]?.data || null,
+        data_marco2: entregas[1]?.data ? entregas[1].data.toISOString().split('T')[0] : null,
         entregaveis2: entregas[1]?.entregaveis || null,
         entrega3: entregas[2]?.nome || null,
-        data_marco3: entregas[2]?.data || null,
+        data_marco3: entregas[2]?.data ? entregas[2].data.toISOString().split('T')[0] : null,
         entregaveis3: entregas[2]?.entregaveis || null,
         criado_por: usuario.nome,
         responsavel_asa: projeto.responsavel_asa,
@@ -256,7 +256,7 @@ export function useNovoStatusForm() {
               .insert({
                 status_id: novoStatus.id,
                 nome_entrega: entrega.nome,
-                data_entrega: entrega.data || null,
+                data_entrega: entrega.data ? entrega.data.toISOString().split('T')[0] : null,
                 entregaveis: entrega.entregaveis,
                 ordem: entregas.indexOf(entrega) + 1
               });

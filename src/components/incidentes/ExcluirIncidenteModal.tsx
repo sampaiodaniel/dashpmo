@@ -4,8 +4,7 @@ import { Button } from '@/components/ui/button';
 import { AlertTriangle } from 'lucide-react';
 import { useIncidenteOperations } from '@/hooks/useIncidentes';
 import { IncidenteHistorico } from '@/hooks/useIncidentesHistorico';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { formatarData } from '@/utils/dateFormatting';
 
 interface ExcluirIncidenteModalProps {
   incidente: IncidenteHistorico;
@@ -48,7 +47,7 @@ export function ExcluirIncidenteModal({ incidente, isOpen, onClose }: ExcluirInc
             <div className="flex justify-between">
               <span className="font-medium text-red-800">Data:</span>
               <span className="text-red-700">
-                {format(new Date(incidente.data_registro), 'dd/MM/yyyy', { locale: ptBR })}
+                {formatarData(incidente.data_registro)}
               </span>
             </div>
             <div className="flex justify-between">

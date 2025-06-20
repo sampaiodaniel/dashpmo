@@ -10,8 +10,7 @@ import { CheckCircle, XCircle, Calendar, User, Building2 } from 'lucide-react';
 import { useStatusPendentes } from '@/hooks/useStatusPendentes';
 import { useStatusOperations } from '@/hooks/useStatusOperations';
 import { StatusProjeto } from '@/types/pmo';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { formatarData } from '@/utils/dateFormatting';
 
 function AprovacaoCard({ status, onStatusUpdate }: { status: StatusProjeto; onStatusUpdate: () => void }) {
   const { revisar, rejeitarStatus, isLoading } = useStatusOperations();
@@ -62,7 +61,7 @@ function AprovacaoCard({ status, onStatusUpdate }: { status: StatusProjeto; onSt
               </div>
               <div className="flex items-center gap-1">
                 <Calendar className="h-4 w-4" />
-                <span>{format(new Date(status.data_criacao), 'dd/MM/yyyy', { locale: ptBR })}</span>
+                <span>{formatarData(status.data_criacao)}</span>
               </div>
               <div className="flex items-center gap-1">
                 <User className="h-4 w-4" />

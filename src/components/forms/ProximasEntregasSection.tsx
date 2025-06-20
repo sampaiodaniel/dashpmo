@@ -1,21 +1,21 @@
-
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { DatePicker } from '@/components/ui/date-picker';
 
 interface EntregaData {
   nome: string;
   escopo: string;
-  data: string;
+  data: Date | null;
 }
 
 interface ProximasEntregasSectionProps {
   entrega1: EntregaData;
   entrega2: EntregaData;
   entrega3: EntregaData;
-  onEntrega1Change: (field: keyof EntregaData, value: string) => void;
-  onEntrega2Change: (field: keyof EntregaData, value: string) => void;
-  onEntrega3Change: (field: keyof EntregaData, value: string) => void;
+  onEntrega1Change: (field: keyof EntregaData, value: string | Date | null) => void;
+  onEntrega2Change: (field: keyof EntregaData, value: string | Date | null) => void;
+  onEntrega3Change: (field: keyof EntregaData, value: string | Date | null) => void;
 }
 
 export function ProximasEntregasSection({
@@ -32,7 +32,7 @@ export function ProximasEntregasSection({
     index 
   }: { 
     entrega: EntregaData; 
-    onChange: (field: keyof EntregaData, value: string) => void;
+    onChange: (field: keyof EntregaData, value: string | Date | null) => void;
     index: number;
   }) => (
     <div className="border rounded-lg p-4 space-y-3">
@@ -48,12 +48,11 @@ export function ProximasEntregasSection({
         </div>
         
         <div className="space-y-2">
-          <Label htmlFor={`data-entrega${index}`}>Data da Entrega</Label>
-          <Input 
-            id={`data-entrega${index}`} 
-            type="date" 
-            value={entrega.data}
-            onChange={(e) => onChange('data', e.target.value)}
+          <Label>Data da Entrega</Label>
+          <DatePicker
+            date={entrega.data}
+            onDateChange={(date) => onChange('data', date)}
+            placeholder="Selecione a data da entrega"
           />
         </div>
       </div>

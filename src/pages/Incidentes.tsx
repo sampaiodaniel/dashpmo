@@ -1,4 +1,3 @@
-
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
@@ -8,8 +7,7 @@ import { TabelaIncidentesRecentes } from '@/components/incidentes/TabelaIncident
 import { GraficoEvolutivoIncidentes } from '@/components/incidentes/GraficoEvolutivoIncidentes';
 import { IncidentesFiltersCompact } from '@/components/incidentes/IncidentesFiltersCompact';
 import { useIncidentes } from '@/hooks/useIncidentes';
-import { useEffect, useState } from 'react';
-import { seedIncidentesCanais } from '@/utils/seedIncidentesCanais';
+import { useState } from 'react';
 
 export default function Incidentes() {
   const { usuario, isLoading } = useAuth();
@@ -18,12 +16,6 @@ export default function Incidentes() {
   // Filtros únicos para toda a página
   const [responsavelSelecionado, setResponsavelSelecionado] = useState('todos');
   const [carteiraSelecionada, setCarteiraSelecionada] = useState('todas');
-
-  useEffect(() => {
-    if (usuario) {
-      seedIncidentesCanais();
-    }
-  }, [usuario]);
 
   if (isLoading) {
     return (
@@ -61,10 +53,7 @@ export default function Incidentes() {
   return (
     <Layout>
       <div className="space-y-6">
-        <div className="text-left">
-          <h1 className="text-3xl font-bold text-pmo-primary">Incidentes</h1>
-          <p className="text-pmo-gray mt-2">Gestão e acompanhamento de incidentes</p>
-        </div>
+        <IncidentesHeader />
         
         <IncidentesMetricas 
           criticos={metricas.criticos}

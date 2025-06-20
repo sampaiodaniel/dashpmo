@@ -1,17 +1,17 @@
-
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useAuth } from '@/hooks/useAuth';
 import { Separator } from '@/components/ui/separator';
 import { Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { formatarData } from '@/utils/dateFormatting';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useQuery } from '@tanstack/react-query';
 
 interface Mudanca {
   id: number;
@@ -31,22 +31,19 @@ interface Mudanca {
 }
 
 export default function MudancaDetalhes() {
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams();
   const navigate = useNavigate();
   const { usuario, isAdmin } = useAuth();
   const { toast } = useToast();
-
   const [mudanca, setMudanca] = useState<Mudanca | null>(null);
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
-
-  const { isFetching, error } = useQuery({
-    queryKey: ['mudanca', id],
+  const { data, isLoading, error, isFetching } = useQuery({
+    queryKey: ['mudanca-detalhes', id],
     queryFn: async () => {
+      console.log('Fazendo consulta para mudança com ID:', id);
+      
       if (!id) {
-        throw new Error('ID da mudança não fornecido');
+        throw new Error('ID da mudança não especificado');
       }
 
       const { data, error } = await supabase
@@ -178,7 +175,7 @@ export default function MudancaDetalhes() {
                 <span>Data de Solicitação:</span>
                 <Calendar className="h-4 w-4" />
                 <span>
-                  {format(new Date(mudanca.data_solicitacao), "PPP", { locale: ptBR })}
+                  {formatarData(mudanca.data_solicitacao)}
                 </span>
               </div>
             </CardDescription>
@@ -230,7 +227,7 @@ export default function MudancaDetalhes() {
               <h3 className="text-sm font-medium">Data da Aprovação</h3>
               <p className="text-gray-600">
                 {mudanca.data_aprovacao 
-                  ? format(new Date(mudanca.data_aprovacao), "PPP", { locale: ptBR })
+                  ? formatarData(mudanca.data_aprovacao)
                   : 'Pendente'
                 }
               </p>

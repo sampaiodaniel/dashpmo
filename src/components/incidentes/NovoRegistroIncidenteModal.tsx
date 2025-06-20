@@ -1,10 +1,10 @@
-
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DatePicker } from '@/components/ui/date-picker';
 import { useIncidenteOperations, useIncidentes } from '@/hooks/useIncidentes';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -34,7 +34,7 @@ export function NovoRegistroIncidenteModal({ isOpen, onClose }: NovoRegistroInci
   const [atual, setAtual] = useState('');
   const [mais15Dias, setMais15Dias] = useState('');
   const [criticos, setCriticos] = useState('');
-  const [dataRegistro, setDataRegistro] = useState(new Date().toISOString().split('T')[0]);
+  const [dataRegistro, setDataRegistro] = useState<Date>(new Date());
 
   const { usuario } = useAuth();
   const { criarIncidente } = useIncidenteOperations();
@@ -55,8 +55,8 @@ export function NovoRegistroIncidenteModal({ isOpen, onClose }: NovoRegistroInci
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!carteira || !usuario) {
-      console.log('Dados faltando:', { carteira, usuario: !!usuario });
+    if (!carteira || !usuario || !dataRegistro) {
+      console.log('Dados faltando:', { carteira, usuario: !!usuario, dataRegistro: !!dataRegistro });
       return;
     }
 
@@ -66,6 +66,9 @@ export function NovoRegistroIncidenteModal({ isOpen, onClose }: NovoRegistroInci
       // Usar o valor do campo "atual" se preenchido, senão usar o calculado
       const valorAtual = atual !== '' ? atualNum : anteriorCalculado + entradaNum - saidaNum;
       
+      // Converter data para formato ISO sem perder o timezone
+      const dataFormatada = dataRegistro.toISOString().split('T')[0];
+      
       const dadosIncidente = {
         carteira,
         anterior: anteriorCalculado,
@@ -74,7 +77,7 @@ export function NovoRegistroIncidenteModal({ isOpen, onClose }: NovoRegistroInci
         atual: valorAtual,
         mais_15_dias: parseInt(mais15Dias) || 0,
         criticos: parseInt(criticos) || 0,
-        data_registro: dataRegistro,
+        data_registro: dataFormatada,
         criado_por: usuario.nome
       };
       
@@ -91,7 +94,7 @@ export function NovoRegistroIncidenteModal({ isOpen, onClose }: NovoRegistroInci
       setAtual('');
       setMais15Dias('');
       setCriticos('');
-      setDataRegistro(new Date().toISOString().split('T')[0]);
+      setDataRegistro(new Date());
       
       onClose();
     } catch (error) {
@@ -124,13 +127,11 @@ export function NovoRegistroIncidenteModal({ isOpen, onClose }: NovoRegistroInci
           </div>
 
           <div>
-            <Label htmlFor="data">Data do Registro</Label>
-            <Input
-              id="data"
-              type="date"
-              value={dataRegistro}
-              onChange={(e) => setDataRegistro(e.target.value)}
-              required
+            <Label>Data do Registro</Label>
+            <DatePicker
+              date={dataRegistro}
+              onDateChange={(date) => date && setDataRegistro(date)}
+              placeholder="Selecione a data do registro"
             />
           </div>
 

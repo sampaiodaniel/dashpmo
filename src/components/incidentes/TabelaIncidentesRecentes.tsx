@@ -4,8 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { FileText } from 'lucide-react';
 import { useIncidentes } from '@/hooks/useIncidentes';
 import { useCarteirasDoResponsavel } from '@/hooks/useResponsaveisASAHierarquia';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { formatarData } from '@/utils/dateFormatting';
 import { useMemo } from 'react';
 
 interface TabelaIncidentesRecentesProps {
@@ -139,7 +138,7 @@ export function TabelaIncidentesRecentes({
                   <TableCell className="font-medium">{incidente.carteira}</TableCell>
                   <TableCell>
                     {incidente.data_registro 
-                      ? format(new Date(incidente.data_registro), 'dd/MM/yyyy', { locale: ptBR })
+                      ? formatarData(incidente.data_registro)
                       : '-'
                     }
                   </TableCell>

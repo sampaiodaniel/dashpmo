@@ -24,7 +24,9 @@ export function useEditarProjetoForm({ projeto, onSuccess }: UseEditarProjetoFor
     carteira_secundaria: projeto.carteira_secundaria || '',
     carteira_terciaria: projeto.carteira_terciaria || '',
     equipe: projeto.equipe || '',
-    finalizacao_prevista: projeto.finalizacao_prevista && projeto.finalizacao_prevista !== 'TBD' ? projeto.finalizacao_prevista : '',
+    finalizacao_prevista: projeto.finalizacao_prevista && projeto.finalizacao_prevista !== 'TBD' 
+      ? new Date(projeto.finalizacao_prevista) 
+      : null,
   });
 
   const handleInputChange = (field: string, value: string | Date | null | boolean | number) => {
@@ -80,7 +82,9 @@ export function useEditarProjetoForm({ projeto, onSuccess }: UseEditarProjetoFor
         carteira_secundaria: formData.carteira_secundaria || null,
         carteira_terciaria: formData.carteira_terciaria || null,
         equipe: formData.equipe.trim() || null,
-        finalizacao_prevista: formData.finalizacao_prevista || null,
+        finalizacao_prevista: formData.finalizacao_prevista 
+          ? formData.finalizacao_prevista.toISOString().split('T')[0] 
+          : null,
         // Manter os campos obrigatórios do banco com valores derivados dos novos campos
         area_responsavel: (formData.carteira_primaria || 'Cadastro') as any,
         responsavel_interno: formData.responsavel_asa || 'Admin',

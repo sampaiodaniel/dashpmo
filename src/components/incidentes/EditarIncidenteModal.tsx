@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DatePicker } from '@/components/ui/date-picker';
 import { useIncidenteOperations } from '@/hooks/useIncidentes';
 import { IncidenteHistorico } from '@/hooks/useIncidentesHistorico';
 
@@ -36,7 +37,9 @@ export function EditarIncidenteModal({ incidente, isOpen, onClose }: EditarIncid
   const [atual, setAtual] = useState(incidente.atual.toString());
   const [mais15Dias, setMais15Dias] = useState(incidente.mais_15_dias.toString());
   const [criticos, setCriticos] = useState(incidente.criticos.toString());
-  const [dataRegistro, setDataRegistro] = useState(incidente.data_registro);
+  const [dataRegistro, setDataRegistro] = useState<Date>(
+    incidente.data_registro ? new Date(incidente.data_registro) : new Date()
+  );
 
   const { editarIncidente } = useIncidenteOperations();
 
@@ -49,7 +52,7 @@ export function EditarIncidenteModal({ incidente, isOpen, onClose }: EditarIncid
       setAtual(incidente.atual.toString());
       setMais15Dias(incidente.mais_15_dias.toString());
       setCriticos(incidente.criticos.toString());
-      setDataRegistro(incidente.data_registro);
+      setDataRegistro(incidente.data_registro ? new Date(incidente.data_registro) : new Date());
     }
   }, [incidente]);
 
@@ -66,7 +69,7 @@ export function EditarIncidenteModal({ incidente, isOpen, onClose }: EditarIncid
         atual: parseInt(atual) || 0,
         mais_15_dias: parseInt(mais15Dias) || 0,
         criticos: parseInt(criticos) || 0,
-        data_registro: dataRegistro
+        data_registro: dataRegistro.toISOString().split('T')[0]
       });
       
       onClose();
@@ -100,13 +103,11 @@ export function EditarIncidenteModal({ incidente, isOpen, onClose }: EditarIncid
           </div>
 
           <div>
-            <Label htmlFor="data">Data do Registro</Label>
-            <Input
-              id="data"
-              type="date"
-              value={dataRegistro}
-              onChange={(e) => setDataRegistro(e.target.value)}
-              required
+            <Label>Data do Registro</Label>
+            <DatePicker
+              date={dataRegistro}
+              onDateChange={(date) => date && setDataRegistro(date)}
+              placeholder="Selecione a data do registro"
             />
           </div>
 

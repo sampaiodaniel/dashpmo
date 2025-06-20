@@ -3,8 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, User, Building, MoreVertical, Eye, Edit } from 'lucide-react';
 import { MudancaReplanejamento } from '@/types/pmo';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { formatarData } from '@/utils/dateFormatting';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -82,7 +81,7 @@ export function MudancaCard({ mudanca }: MudancaCardProps) {
             <div className="flex items-center gap-4 text-sm text-pmo-gray">
               <div className="flex items-center gap-1">
                 <Calendar className="h-4 w-4" />
-                <span>{format(new Date(mudanca.data_solicitacao), 'dd/MM/yyyy', { locale: ptBR })}</span>
+                <span>{formatarData(mudanca.data_solicitacao)}</span>
               </div>
               <div className="flex items-center gap-1">
                 <User className="h-4 w-4" />

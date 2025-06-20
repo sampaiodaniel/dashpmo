@@ -1,17 +1,17 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Plus, Trash2 } from 'lucide-react';
 import { UseFormReturn } from 'react-hook-form';
 
 export interface EntregaDinamica {
   id: string;
   nome: string;
-  data: string;
+  data: Date | null;
   entregaveis: string;
 }
 
@@ -28,7 +28,7 @@ export function EntregasDinamicasNovo({ form, entregas, onEntregasChange }: Entr
     const novaEntrega: EntregaDinamica = {
       id: nextId.toString(),
       nome: '',
-      data: '',
+      data: null,
       entregaveis: ''
     };
     onEntregasChange([...entregas, novaEntrega]);
@@ -41,7 +41,7 @@ export function EntregasDinamicasNovo({ form, entregas, onEntregasChange }: Entr
     }
   };
 
-  const atualizarEntrega = (id: string, campo: keyof EntregaDinamica, valor: string) => {
+  const atualizarEntrega = (id: string, campo: keyof EntregaDinamica, valor: string | Date | null) => {
     const novasEntregas = entregas.map(entrega => 
       entrega.id === id ? { ...entrega, [campo]: valor } : entrega
     );
@@ -86,12 +86,11 @@ export function EntregasDinamicasNovo({ form, entregas, onEntregasChange }: Entr
               </div>
               
               <div>
-                <Label htmlFor={`entrega-data-${entrega.id}`}>Data de Entrega</Label>
-                <Input
-                  id={`entrega-data-${entrega.id}`}
-                  type="date"
-                  value={entrega.data}
-                  onChange={(e) => atualizarEntrega(entrega.id, 'data', e.target.value)}
+                <Label>Data de Entrega</Label>
+                <DatePicker
+                  date={entrega.data}
+                  onDateChange={(date) => atualizarEntrega(entrega.id, 'data', date)}
+                  placeholder="Selecione a data de entrega"
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   Pode ser deixado em branco se não houver definição
