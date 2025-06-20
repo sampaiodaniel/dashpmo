@@ -42,15 +42,25 @@ export function useTiposProjetoOperations() {
 
   const createTipoProjeto = useMutation({
     mutationFn: async (tipo: { nome: string; descricao?: string; ordem: number }) => {
-      console.log('Criando novo tipo de projeto:', tipo);
+      console.log('🚀 Criando novo tipo de projeto:', tipo);
+      
+      // Verificar autenticação
+      const { data: { user } } = await supabase.auth.getUser();
+      console.log('👤 Usuário autenticado:', user?.email);
+      
+      if (!user) {
+        throw new Error('Usuário não autenticado');
+      }
       
       const novoTipo = {
         nome: tipo.nome,
         descricao: tipo.descricao,
         ordem: tipo.ordem,
         ativo: true,
-        criado_por: 'Admin'
+        criado_por: user.email || 'Admin'
       };
+      
+      console.log('📝 Dados sendo enviados:', novoTipo);
       
       const { data, error } = await supabase
         .from('tipos_projeto')
@@ -59,14 +69,21 @@ export function useTiposProjetoOperations() {
         .single();
 
       if (error) {
-        console.error('Erro ao criar tipo de projeto:', error);
+        console.error('❌ Erro ao criar tipo de projeto:', error);
+        console.error('❌ Detalhes do erro:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        });
         throw error;
       }
       
-      console.log('Tipo de projeto criado com sucesso:', data);
+      console.log('✅ Tipo de projeto criado com sucesso:', data);
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('🎉 Mutation onSuccess - Tipo criado:', data);
       queryClient.invalidateQueries({ queryKey: ['tipos-projeto'] });
       toast({
         title: "Sucesso",
@@ -74,7 +91,7 @@ export function useTiposProjetoOperations() {
       });
     },
     onError: (error) => {
-      console.error('Erro ao criar tipo de projeto:', error);
+      console.error('💥 Erro na mutation create:', error);
       toast({
         title: "Erro",
         description: "Erro ao criar tipo de projeto",
@@ -85,23 +102,41 @@ export function useTiposProjetoOperations() {
 
   const updateTipoProjeto = useMutation({
     mutationFn: async ({ id, nome, descricao, ordem }: { id: number; nome: string; descricao?: string; ordem: number }) => {
-      console.log('Atualizando tipo de projeto:', { id, nome, descricao, ordem });
+      console.log('🔄 Atualizando tipo de projeto:', { id, nome, descricao, ordem });
+      
+      // Verificar autenticação
+      const { data: { user } } = await supabase.auth.getUser();
+      console.log('👤 Usuário autenticado (update):', user?.email);
+      
+      if (!user) {
+        throw new Error('Usuário não autenticado');
+      }
+      
+      const updateData = { nome, descricao, ordem };
+      console.log('📝 Dados de atualização:', updateData);
       
       const { data, error } = await supabase
         .from('tipos_projeto')
-        .update({ nome, descricao, ordem })
+        .update(updateData)
         .eq('id', id)
         .select();
 
       if (error) {
-        console.error('Erro ao atualizar tipo de projeto:', error);
+        console.error('❌ Erro ao atualizar tipo de projeto:', error);
+        console.error('❌ Detalhes do erro (update):', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        });
         throw error;
       }
       
-      console.log('Tipo de projeto atualizado com sucesso:', data);
+      console.log('✅ Tipo de projeto atualizado com sucesso:', data);
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('🎉 Mutation onSuccess - Tipo atualizado:', data);
       queryClient.invalidateQueries({ queryKey: ['tipos-projeto'] });
       queryClient.refetchQueries({ queryKey: ['tipos-projeto'] });
       toast({
@@ -110,7 +145,7 @@ export function useTiposProjetoOperations() {
       });
     },
     onError: (error) => {
-      console.error('Erro ao atualizar tipo de projeto:', error);
+      console.error('💥 Erro na mutation update:', error);
       toast({
         title: "Erro",
         description: "Erro ao atualizar tipo de projeto",
@@ -121,7 +156,15 @@ export function useTiposProjetoOperations() {
 
   const deleteTipoProjeto = useMutation({
     mutationFn: async (id: number) => {
-      console.log('Removendo tipo de projeto (soft delete):', id);
+      console.log('🗑️ Removendo tipo de projeto (soft delete):', id);
+      
+      // Verificar autenticação
+      const { data: { user } } = await supabase.auth.getUser();
+      console.log('👤 Usuário autenticado (delete):', user?.email);
+      
+      if (!user) {
+        throw new Error('Usuário não autenticado');
+      }
       
       const { data, error } = await supabase
         .from('tipos_projeto')
@@ -130,14 +173,21 @@ export function useTiposProjetoOperations() {
         .select();
 
       if (error) {
-        console.error('Erro ao remover tipo de projeto:', error);
+        console.error('❌ Erro ao remover tipo de projeto:', error);
+        console.error('❌ Detalhes do erro (delete):', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        });
         throw error;
       }
       
-      console.log('Tipo de projeto removido com sucesso:', data);
+      console.log('✅ Tipo de projeto removido com sucesso:', data);
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('🎉 Mutation onSuccess - Tipo removido:', data);
       queryClient.invalidateQueries({ queryKey: ['tipos-projeto'] });
       queryClient.refetchQueries({ queryKey: ['tipos-projeto'] });
       toast({
@@ -146,7 +196,7 @@ export function useTiposProjetoOperations() {
       });
     },
     onError: (error) => {
-      console.error('Erro ao remover tipo de projeto:', error);
+      console.error('💥 Erro na mutation delete:', error);
       toast({
         title: "Erro",
         description: "Erro ao remover tipo de projeto",
