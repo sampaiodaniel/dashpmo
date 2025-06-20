@@ -78,9 +78,7 @@ export function EditarStatusForm({ status, onSuccess }: EditarStatusFormProps) {
 
       <EntregasDinamicas
         entregas={entregas}
-        onEntregaChange={atualizarEntrega}
-        onAddEntrega={adicionarEntrega}
-        onRemoveEntrega={removerEntrega}
+        onChange={setEntregas}
       />
 
       <div className="flex justify-end gap-2">

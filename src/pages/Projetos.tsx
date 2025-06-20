@@ -213,9 +213,7 @@ export default function Projetos() {
         )}
 
         <CriarProjetoModal
-          open={modalAberto}
-          onOpenChange={setModalAberto}
-          onSuccess={handleModalSuccess}
+          onProjetoCriado={handleModalSuccess}
         />
       </div>
     </Layout>
