@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
@@ -134,7 +133,7 @@ export default function Projetos() {
                     <div className="flex justify-between items-start mb-4">
                       <div className="flex items-center gap-3">
                         <Link 
-                          to={`/projeto/${projeto.id}`}
+                          to={`/projetos/${projeto.id}`}
                           className="text-lg font-semibold text-pmo-primary hover:underline"
                         >
                           {projeto.nome_projeto}
