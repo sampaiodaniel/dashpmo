@@ -54,6 +54,7 @@ function App() {
               <Route path="/incidentes" element={<Incidentes />} />
               <Route path="/incidentes-registros" element={<IncidentesRegistros />} />
               <Route path="/mudancas" element={<Mudancas />} />
+              <Route path="/nova-mudanca" element={<Mudancas />} />
               <Route path="/mudancas/:id" element={<MudancaDetalhes />} />
               <Route path="/mudancas/editar/:id" element={<EditarMudanca />} />
               <Route path="/licoes" element={<Licoes />} />

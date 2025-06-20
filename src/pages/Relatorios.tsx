@@ -5,11 +5,10 @@ import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileText, BarChart3, TrendingUp, Webhook } from 'lucide-react';
+import { FileText, BarChart3, TrendingUp } from 'lucide-react';
 import { RelatorioASAViewer } from '@/components/relatorios/RelatorioASAViewer';
 import { RelatorioVisualViewer } from '@/components/relatorios/RelatorioVisualViewer';
 import { RelatorioConsolidadoContent } from '@/components/relatorios/consolidado/RelatorioConsolidadoContent';
-import { ReportWebhookModal } from '@/components/relatorios/ReportWebhookModal';
 import { UltimosRelatorios } from '@/components/relatorios/UltimosRelatorios';
 import { useRelatorioASA } from '@/hooks/useRelatorioASA';
 import { useRelatorioVisual } from '@/hooks/useRelatorioVisual';
@@ -20,7 +19,6 @@ import { CARTEIRAS } from '@/types/pmo';
 export default function Relatorios() {
   const { usuario, isLoading } = useAuth();
   const [tipoRelatorio, setTipoRelatorio] = useState<'asa' | 'visual' | 'consolidado' | null>(null);
-  const [webhookModalAberto, setWebhookModalAberto] = useState(false);
   
   // Filtros para relatórios
   const [filtroASA, setFiltroASA] = useState<'carteira' | 'geral'>('carteira');
@@ -121,8 +119,15 @@ export default function Relatorios() {
       : await gerarRelatorioResponsavelConsolidado(responsavelConsolidado);
     
     if (dados) {
-      setDadosRelatorioConsolidado(dados);
-      setTipoRelatorio('consolidado');
+      // Criar URL para abrir em nova aba
+      const params = new URLSearchParams({
+        tipo: filtroConsolidado,
+        valor: filtroConsolidado === 'carteira' ? carteiraConsolidado : responsavelConsolidado
+      });
+      
+      // Abrir relatório em nova aba
+      window.open(`/relatorio-consolidado?${params}`, '_blank');
+      
       adicionarRelatorio({
         tipo: 'consolidado',
         filtro: filtroConsolidado === 'carteira' ? 'Carteira' : 'Responsável ASA',
@@ -158,14 +163,6 @@ export default function Relatorios() {
           }}
           dados={dadosRelatorioVisual}
         />
-      </Layout>
-    );
-  }
-
-  if (tipoRelatorio === 'consolidado') {
-    return (
-      <Layout>
-        <RelatorioConsolidadoContent dados={dadosRelatorioConsolidado} />
       </Layout>
     );
   }
@@ -384,31 +381,7 @@ export default function Relatorios() {
         </div>
 
         <UltimosRelatorios />
-
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-semibold text-pmo-primary mb-2">Webhook de Relatórios</h3>
-              <p className="text-pmo-gray text-sm">
-                Configure webhooks para envio automático de relatórios
-              </p>
-            </div>
-            <Button 
-              onClick={() => setWebhookModalAberto(true)}
-              variant="outline"
-              className="flex items-center gap-2"
-            >
-              <Webhook className="h-4 w-4" />
-              Configurar
-            </Button>
-          </div>
-        </div>
       </div>
-
-      <ReportWebhookModal 
-        isOpen={webhookModalAberto}
-        onClose={() => setWebhookModalAberto(false)}
-      />
     </Layout>
   );
 }

@@ -17,7 +17,6 @@ import { usePagination } from '@/hooks/usePagination';
 export default function Projetos() {
   const { usuario, isLoading } = useAuth();
   const [filtros, setFiltros] = useState<FiltrosProjeto>({});
-  const [modalAberto, setModalAberto] = useState(false);
   const [filtroAtivo, setFiltroAtivo] = useState<string | null>(null);
   const navigate = useNavigate();
   
@@ -88,7 +87,6 @@ export default function Projetos() {
   }
 
   const handleModalSuccess = () => {
-    setModalAberto(false);
     refetch();
   };
 
@@ -106,10 +104,9 @@ export default function Projetos() {
             <h1 className="text-3xl font-bold text-pmo-primary">Projetos</h1>
             <p className="text-pmo-gray mt-2">Gerencie e acompanhe todos os projetos</p>
           </div>
-          <Button onClick={() => setModalAberto(true)} className="bg-pmo-primary hover:bg-pmo-primary/90">
-            <Plus className="h-4 w-4 mr-2" />
-            Novo Projeto
-          </Button>
+          <CriarProjetoModal 
+            onProjetoCriado={handleModalSuccess}
+          />
         </div>
 
         <ProjetosKPIs 
@@ -226,9 +223,7 @@ export default function Projetos() {
           </div>
         )}
 
-        <CriarProjetoModal 
-          onProjetoCriado={handleModalSuccess}
-        />
+
       </div>
     </Layout>
   );

@@ -1,7 +1,7 @@
-
 import { MetricasVisuais } from './MetricasVisuais';
 import { GraficosIndicadores } from './GraficosIndicadores';
 import { TimelineEntregas } from './TimelineEntregas';
+import { RelatorioFooter } from '../asa/RelatorioFooter';
 
 interface DadosRelatorioVisual {
   carteira?: string;
@@ -154,10 +154,11 @@ export function RelatorioVisualContent({ dados }: RelatorioVisualContentProps) {
       </div>
 
       {/* Footer */}
-      <div className="text-center border-t border-[#E5E7EB] pt-6 text-sm text-[#6B7280]">
-        <p>PMO - Sistema de Gestão de Projetos</p>
-        <p>Relatório gerado automaticamente em {dataGeracao.toLocaleString('pt-BR')}</p>
-      </div>
+      <RelatorioFooter dados={{
+        dataGeracao: dataGeracao,
+        carteira: dados.carteira,
+        responsavel: dados.responsavel
+      }} />
     </div>
   );
 }

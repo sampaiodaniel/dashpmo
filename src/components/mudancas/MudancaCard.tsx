@@ -1,10 +1,10 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, User, Building, MoreVertical, Eye, Edit } from 'lucide-react';
 import { MudancaReplanejamento } from '@/types/pmo';
 import { formatarData } from '@/utils/dateFormatting';
 import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,6 +17,22 @@ interface MudancaCardProps {
 }
 
 export function MudancaCard({ mudanca }: MudancaCardProps) {
+  const navigate = useNavigate();
+
+  const handleCardClick = () => {
+    navigate(`/mudancas/${mudanca.id}`);
+  };
+
+  const handleVisualizar = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigate(`/mudancas/${mudanca.id}`);
+  };
+
+  const handleEditar = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigate(`/mudancas/editar/${mudanca.id}`);
+  };
+
   const getTipoColor = (tipo: string) => {
     switch (tipo?.toLowerCase()) {
       case 'escopo':
@@ -32,23 +48,8 @@ export function MudancaCard({ mudanca }: MudancaCardProps) {
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status?.toLowerCase()) {
-      case 'pendente':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'em análise':
-        return 'bg-blue-100 text-blue-800';
-      case 'aprovada':
-        return 'bg-green-100 text-green-800';
-      case 'rejeitada':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
   return (
-    <Card className="hover:shadow-md transition-shadow cursor-pointer">
+    <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={handleCardClick}>
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex-1">
@@ -67,9 +68,6 @@ export function MudancaCard({ mudanca }: MudancaCardProps) {
             <div className="flex items-center gap-2 mb-3">
               <Badge className={getTipoColor(mudanca.tipo_mudanca)}>
                 {mudanca.tipo_mudanca}
-              </Badge>
-              <Badge className={getStatusColor(mudanca.status_aprovacao || 'Pendente')}>
-                {mudanca.status_aprovacao || 'Pendente'}
               </Badge>
               {mudanca.impacto_prazo_dias > 0 && (
                 <Badge variant="outline" className="bg-gray-50">
@@ -106,11 +104,11 @@ export function MudancaCard({ mudanca }: MudancaCardProps) {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={handleVisualizar}>
                   <Eye className="h-4 w-4 mr-2" />
                   Visualizar
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={handleEditar}>
                   <Edit className="h-4 w-4 mr-2" />
                   Editar
                 </DropdownMenuItem>

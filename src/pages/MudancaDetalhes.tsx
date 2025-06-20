@@ -1,257 +1,305 @@
-import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useScrollToTop } from '@/hooks/useScrollToTop';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Calendar } from 'lucide-react';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { formatarData } from '@/utils/dateFormatting';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
+import { LoginForm } from '@/components/auth/LoginForm';
+import { Layout } from '@/components/layout/Layout';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ArrowLeft, FileText, User, Calendar, MessageSquare, Edit } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useScrollToTop } from '@/hooks/useScrollToTop';
+import { formatarData } from '@/utils/dateFormatting';
+import { MudancaReplanejamento } from '@/types/pmo';
 
-interface Mudanca {
-  id: number;
-  projeto_id: number;
-  tipo_mudanca: string;
-  solicitante: string;
-  descricao: string;
-  justificativa_negocio: string;
-  impacto_prazo_dias: number;
-  data_solicitacao: string;
-  status_aprovacao: string;
-  responsavel_aprovacao: string;
-  data_aprovacao: string;
-  observacoes: string;
-  criado_por: string;
-  data_criacao: string;
+function useMudancaIndividual(id: string | undefined) {
+  return useQuery({
+    queryKey: ['mudanca-individual', id],
+    queryFn: async (): Promise<MudancaReplanejamento | null> => {
+      if (!id || isNaN(parseInt(id))) {
+        console.error('ID inválido:', id);
+        return null;
+      }
+
+      console.log('🔍 Buscando mudança com ID:', id);
+      
+      try {
+        const { data, error } = await supabase
+          .from('mudancas_replanejamento')
+          .select(`
+            *,
+            projeto:projetos(
+              id,
+              nome_projeto,
+              area_responsavel,
+              responsavel_interno,
+              gp_responsavel,
+              status_ativo,
+              data_criacao,
+              criado_por
+            )
+          `)
+          .eq('id', parseInt(id))
+          .maybeSingle();
+
+        if (error) {
+          console.error('❌ Erro na query Supabase:', error);
+          throw new Error(`Erro ao carregar detalhes da mudança: ${error.message}`);
+        }
+
+        if (!data) {
+          console.log('⚠️ Mudança não encontrada para ID:', id);
+          return null;
+        }
+
+        console.log('✅ Mudança encontrada:', data);
+        
+        // Convertendo strings de data para objetos Date
+        const mudancaProcessada: MudancaReplanejamento = {
+          ...data,
+          data_solicitacao: new Date(data.data_solicitacao),
+          data_criacao: new Date(data.data_criacao),
+          data_aprovacao: data.data_aprovacao ? new Date(data.data_aprovacao) : undefined,
+          projeto: data.projeto ? {
+            ...data.projeto,
+            data_criacao: new Date(data.projeto.data_criacao)
+          } : undefined
+        };
+
+        return mudancaProcessada;
+      } catch (error) {
+        console.error('❌ Erro geral ao buscar mudança:', error);
+        throw error;
+      }
+    },
+    enabled: !!id,
+    retry: 1,
+    retryDelay: 1000,
+  });
 }
 
 export default function MudancaDetalhes() {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { usuario, isAdmin } = useAuth();
+  const { usuario, isLoading: authLoading } = useAuth();
   
   useScrollToTop();
-  const { toast } = useToast();
-  const [mudanca, setMudanca] = useState<Mudanca | null>(null);
 
-  const { data, isLoading, error, isFetching } = useQuery({
-    queryKey: ['mudanca-detalhes', id],
-    queryFn: async () => {
-      console.log('Fazendo consulta para mudança com ID:', id);
-      
-      if (!id) {
-        throw new Error('ID da mudança não especificado');
-      }
+  const { data: mudanca, isLoading, error, isError } = useMudancaIndividual(id);
 
-      const { data, error } = await supabase
-        .from('mudancas_replanejamento')
-        .select('*')
-        .eq('id', parseInt(id))
-        .single();
-
-      if (error) {
-        console.error('Erro ao buscar detalhes da mudança:', error);
-        throw new Error('Erro ao carregar detalhes da mudança');
-      }
-
-      setMudanca(data as Mudanca);
-      return data;
-    },
-  });
-
-  const aprovarMudanca = async () => {
-    if (!id) {
-      toast({
-        title: "Erro",
-        description: "ID da mudança não especificado.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const { error } = await supabase
-      .from('mudancas_replanejamento')
-      .update({ 
-        status_aprovacao: 'Aprovada', 
-        responsavel_aprovacao: usuario?.nome,
-        data_aprovacao: new Date().toISOString().split('T')[0]
-      })
-      .eq('id', parseInt(id));
-
-    if (error) {
-      console.error('Erro ao aprovar mudança:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao aprovar a mudança. Tente novamente.",
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "Sucesso",
-        description: "Mudança aprovada com sucesso!",
-      });
-      navigate('/mudancas');
-    }
-  };
-
-  const rejeitarMudanca = async () => {
-    if (!id) {
-      toast({
-        title: "Erro",
-        description: "ID da mudança não especificado.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const motivo = prompt('Por favor, insira o motivo da rejeição:');
-    if (!motivo) {
-      toast({
-        title: "Atenção",
-        description: "Motivo da rejeição não fornecido.",
-      });
-      return;
-    }
-
-    const { error } = await supabase
-      .from('mudancas_replanejamento')
-      .update({ 
-        status_aprovacao: 'Rejeitada', 
-        responsavel_aprovacao: usuario?.nome, 
-        observacoes: motivo,
-        data_aprovacao: new Date().toISOString().split('T')[0]
-      })
-      .eq('id', parseInt(id));
-
-    if (error) {
-      console.error('Erro ao rejeitar mudança:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao rejeitar a mudança. Tente novamente.",
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "Sucesso",
-        description: "Mudança rejeitada com sucesso!",
-      });
-      navigate('/mudancas');
-    }
-  };
-
-  if (isFetching) return <div>Carregando...</div>;
-  if (error) return <div>Erro: {error.message}</div>;
-  if (!mudanca) return <div>Mudança não encontrada</div>;
-
-  return (
-    <div className="container mx-auto p-4">
-      <Button variant="ghost" onClick={() => navigate('/mudancas')} className="mb-4">
-        Voltar para a lista
-      </Button>
-
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-900">
-              Detalhes da Mudança
-            </h2>
-            {usuario && isAdmin() && mudanca?.status_aprovacao === 'Pendente' && (
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={aprovarMudanca}>Aprovar</Button>
-                <Button variant="destructive" onClick={rejeitarMudanca}>Rejeitar</Button>
-              </div>
-            )}
+  if (authLoading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center mx-auto mb-4 shadow-lg">
+              <img 
+                src="/lovable-uploads/DashPMO_Icon_recortado.png" 
+                alt="DashPMO" 
+                className="w-8 h-8" 
+              />
+            </div>
+            <div className="text-pmo-gray">Carregando...</div>
           </div>
         </div>
+      </Layout>
+    );
+  }
 
-        <Card className="mb-4">
-          <CardHeader>
-            <CardTitle>{mudanca.tipo_mudanca}</CardTitle>
-            <CardDescription>
-              <div className="flex items-center space-x-2">
-                <span>Data de Solicitação:</span>
-                <Calendar className="h-4 w-4" />
-                <span>
-                  {formatarData(mudanca.data_solicitacao)}
-                </span>
-              </div>
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-4">
-            <div className="space-y-1">
-              <h3 className="text-sm font-medium">Solicitante</h3>
-              <p className="text-gray-600">{mudanca.solicitante}</p>
+  if (!usuario) {
+    return <LoginForm />;
+  }
+
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center mx-auto mb-4 shadow-lg">
+              <img 
+                src="/lovable-uploads/DashPMO_Icon_recortado.png" 
+                alt="DashPMO" 
+                className="w-8 h-8" 
+              />
             </div>
+            <div className="text-pmo-gray">Carregando detalhes da mudança...</div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
-            <Separator />
-
-            <div className="space-y-1">
-              <h3 className="text-sm font-medium">Descrição</h3>
-              <p className="text-gray-600">{mudanca.descricao}</p>
+  if (isError || !mudanca) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center mx-auto mb-4 shadow-lg">
+              <img 
+                src="/lovable-uploads/DashPMO_Icon_recortado.png" 
+                alt="DashPMO" 
+                className="w-8 h-8" 
+              />
             </div>
+            <h1 className="text-2xl font-bold text-pmo-primary mb-4">Mudança não encontrada</h1>
+            <p className="text-pmo-gray mb-6">
+              {isError 
+                ? `Erro ao carregar mudança: ${error?.message || 'Erro desconhecido'}`
+                : 'A mudança solicitada não existe ou foi removida.'
+              }
+            </p>
+            <Button onClick={() => navigate('/mudancas')} variant="outline">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Voltar para Mudanças
+            </Button>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
-            <Separator />
-
-            <div className="space-y-1">
-              <h3 className="text-sm font-medium">Justificativa de Negócio</h3>
-              <p className="text-gray-600">{mudanca.justificativa_negocio}</p>
-            </div>
-
-            <Separator />
-
-            <div className="space-y-1">
-              <h3 className="text-sm font-medium">Impacto no Prazo (dias)</h3>
-              <p className="text-gray-600">{mudanca.impacto_prazo_dias}</p>
-            </div>
-
-            <Separator />
-
-            <div className="space-y-1">
-              <h3 className="text-sm font-medium">Status de Aprovação</h3>
-              <Badge variant="secondary">{mudanca.status_aprovacao}</Badge>
-            </div>
-
-            <Separator />
-
-            <div className="space-y-1">
-              <h3 className="text-sm font-medium">Responsável pela Aprovação</h3>
-              <p className="text-gray-600">{mudanca.responsavel_aprovacao || 'Pendente'}</p>
-            </div>
-
-            <Separator />
-
-            <div className="space-y-1">
-              <h3 className="text-sm font-medium">Data da Aprovação</h3>
-              <p className="text-gray-600">
-                {mudanca.data_aprovacao 
-                  ? formatarData(mudanca.data_aprovacao)
-                  : 'Pendente'
-                }
+  return (
+    <Layout>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button onClick={() => navigate('/mudancas')} variant="outline" size="sm">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Voltar
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold text-pmo-primary">
+                {mudanca.projeto?.nome_projeto || 'Projeto não identificado'}
+              </h1>
+              <p className="text-pmo-gray mt-1">
+                {mudanca.tipo_mudanca}
               </p>
             </div>
+          </div>
+          
+          <Button 
+            onClick={() => navigate(`/mudancas/editar/${mudanca.id}`)}
+            className="bg-pmo-primary hover:bg-pmo-secondary text-white"
+          >
+            <Edit className="h-4 w-4 mr-2" />
+            Editar Mudança
+          </Button>
+        </div>
 
-            <Separator />
+        <div className="space-y-12">
+          {/* Informações da Mudança */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-2xl font-normal text-gray-700">
+                <FileText className="h-6 w-6 text-pmo-primary" />
+                Informações da Mudança
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-8">
+              {/* Primeira linha: Descrição - ocupa linha toda */}
+              <div className="text-left">
+                <label className="text-base font-medium text-pmo-gray block mb-3 text-left">Descrição</label>
+                <p className="text-base text-gray-900 leading-relaxed text-left">
+                  {mudanca.descricao || 'Não informado'}
+                </p>
+              </div>
 
-            <div className="space-y-1">
-              <h3 className="text-sm font-medium">Observações</h3>
-              <p className="text-gray-600">{mudanca.observacoes || 'N/A'}</p>
-            </div>
+              {/* Segunda linha: Tipo e Data */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                  <label className="text-base font-medium text-pmo-gray block mb-3">Tipo da Mudança</label>
+                  <span className="text-base text-gray-900">{mudanca.tipo_mudanca}</span>
+                </div>
 
-            <Separator />
+                <div>
+                  <label className="text-base font-medium text-pmo-gray block mb-3">Data de Solicitação</label>
+                  <span className="text-base text-gray-900">{formatarData(mudanca.data_solicitacao)}</span>
+                </div>
+              </div>
 
-            <div className="space-y-1">
-              <h3 className="text-sm font-medium">Criado por</h3>
-              <p className="text-gray-600">{mudanca.criado_por}</p>
-            </div>
-          </CardContent>
-        </Card>
+              {/* Terceira linha: Solicitante e Impacto */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                  <label className="text-base font-medium text-pmo-gray block mb-3">Solicitante</label>
+                  <span className="text-base text-gray-900">{mudanca.solicitante}</span>
+                </div>
+
+                <div>
+                  <label className="text-base font-medium text-pmo-gray block mb-3">Impacto no Prazo</label>
+                  <span className="text-base text-gray-900">
+                    {mudanca.impacto_prazo_dias} {mudanca.impacto_prazo_dias === 1 ? 'dia' : 'dias'}
+                  </span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Justificativa de Negócio */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-2xl font-normal text-gray-700">
+                <MessageSquare className="h-6 w-6 text-pmo-primary" />
+                Justificativa de Negócio
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-base text-gray-900 leading-relaxed">
+                {mudanca.justificativa_negocio || 'Não informado'}
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Informações Adicionais */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-2xl font-normal text-gray-700">
+                <User className="h-6 w-6 text-pmo-primary" />
+                Informações Adicionais
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-8">
+              {/* Observações - linha inteira se existir */}
+              {mudanca.observacoes && (
+                <div className="text-left">
+                  <label className="text-base font-medium text-pmo-gray block mb-3 text-left">Observações</label>
+                  <p className="text-base text-gray-900 leading-relaxed text-left">
+                    {mudanca.observacoes}
+                  </p>
+                </div>
+              )}
+
+              {/* Criação e Responsável */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                  <label className="text-base font-medium text-pmo-gray block mb-3">Criado por</label>
+                  <span className="text-base text-gray-900">{mudanca.criado_por}</span>
+                </div>
+
+                <div>
+                  <label className="text-base font-medium text-pmo-gray block mb-3">Data de Criação</label>
+                  <span className="text-base text-gray-900">{formatarData(mudanca.data_criacao)}</span>
+                </div>
+              </div>
+
+              {/* Aprovação (se existir) */}
+              {mudanca.responsavel_aprovacao && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div>
+                    <label className="text-base font-medium text-pmo-gray block mb-3">Responsável pela Avaliação</label>
+                    <span className="text-base text-gray-900">{mudanca.responsavel_aprovacao}</span>
+                  </div>
+
+                  {mudanca.data_aprovacao && (
+                    <div>
+                      <label className="text-base font-medium text-pmo-gray block mb-3">Data da Avaliação</label>
+                      <span className="text-base text-gray-900">{formatarData(mudanca.data_aprovacao)}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
-    </div>
+    </Layout>
   );
 }

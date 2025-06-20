@@ -40,7 +40,7 @@ export function LicoesList({ licoes }: LicoesListProps) {
       case 'Em andamento':
         return 'bg-yellow-100 text-yellow-700 border-yellow-200';
       case 'Não aplicada':
-        return 'bg-red-100 text-red-700 border-red-200';
+        return 'bg-blue-100 text-blue-700 border-blue-200';
       default:
         return 'bg-gray-100 text-gray-700 border-gray-200';
     }

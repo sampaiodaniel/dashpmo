@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
@@ -9,9 +8,7 @@ import { MudancasFilters } from '@/components/mudancas/MudancasFilters';
 import { MudancasSearchBar } from '@/components/mudancas/MudancasSearchBar';
 import { useMudancas } from '@/hooks/useMudancas';
 import { useMudancasFiltradas } from '@/hooks/useMudancasFiltradas';
-import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { CriarMudancaModal } from '@/components/forms/CriarMudancaModal';
 
 export default function Mudancas() {
   const { usuario, isLoading } = useAuth();
@@ -25,8 +22,12 @@ export default function Mudancas() {
     return (
       <div className="min-h-screen bg-pmo-background flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 bg-pmo-primary rounded-xl flex items-center justify-center mx-auto mb-4">
-            <span className="text-white font-bold text-xl">DashPMO</span>
+          <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center mx-auto mb-4 shadow-lg">
+            <img 
+              src="/lovable-uploads/DashPMO_Icon_recortado.png" 
+              alt="DashPMO" 
+              className="w-8 h-8" 
+            />
           </div>
           <div className="text-pmo-gray">Carregando...</div>
         </div>
@@ -42,12 +43,15 @@ export default function Mudancas() {
     refetch();
   };
 
-  const handleFiltrarPendentes = () => {
-    setFiltros({ statusAprovacao: 'Pendente' });
+  const handleFiltrarTotal = () => {
+    setFiltros({});
+    setTermoBusca('');
   };
 
-  const handleFiltrarEmAnalise = () => {
-    setFiltros({ statusAprovacao: 'Em Análise' });
+  const handleFiltrarImpacto = () => {
+    // Limpar filtros para mostrar todas as mudanças
+    setFiltros({});
+    setTermoBusca('');
   };
 
   return (
@@ -55,21 +59,16 @@ export default function Mudancas() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div className="text-left">
-            <h1 className="text-3xl font-bold text-pmo-primary">Replanejamento / CRs</h1>
+            <h1 className="text-3xl font-bold text-pmo-primary">Mudanças</h1>
             <p className="text-pmo-gray mt-2">Gestão de mudanças e replanejamentos de projetos</p>
           </div>
-          <Link to="/nova-mudanca">
-            <Button className="bg-pmo-primary hover:bg-pmo-primary/90">
-              <Plus className="h-4 w-4 mr-2" />
-              Nova Mudança
-            </Button>
-          </Link>
+          <CriarMudancaModal onMudancaCriada={handleMudancaCriada} />
         </div>
 
         <MudancasMetricas 
           mudancas={mudancas} 
-          onFiltrarPendentes={handleFiltrarPendentes}
-          onFiltrarEmAnalise={handleFiltrarEmAnalise}
+          onFiltrarTotal={handleFiltrarTotal}
+          onFiltrarImpacto={handleFiltrarImpacto}
         />
 
         <MudancasFilters 

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
@@ -8,6 +7,7 @@ import { LicoesMetricas } from '@/components/licoes/LicoesMetricas';
 import { LicoesFilters } from '@/components/licoes/LicoesFilters';
 import { LicoesSearchBar } from '@/components/licoes/LicoesSearchBar';
 import { useLicoesAprendidas } from '@/hooks/useLicoesAprendidas';
+import { NovaLicaoModal } from '@/components/licoes/NovaLicaoModal';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 
@@ -23,13 +23,18 @@ export default function Licoes() {
   const { data: licoes, isLoading: isLoadingLicoes, refetch } = useLicoesAprendidas();
   const [filtros, setFiltros] = useState<LicoesFiltersType>({});
   const [termoBusca, setTermoBusca] = useState('');
+  const [modalAberto, setModalAberto] = useState(false);
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-pmo-background flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 bg-pmo-primary rounded-xl flex items-center justify-center mx-auto mb-4">
-            <span className="text-white font-bold text-xl">DashPMO</span>
+          <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center mx-auto mb-4 shadow-lg">
+            <img 
+              src="/lovable-uploads/DashPMO_Icon_recortado.png" 
+              alt="DashPMO" 
+              className="w-8 h-8" 
+            />
           </div>
           <div className="text-pmo-gray">Carregando...</div>
         </div>
@@ -42,6 +47,11 @@ export default function Licoes() {
   }
 
   const handleNovaLicao = () => {
+    setModalAberto(true);
+  };
+
+  const handleLicaoCriada = () => {
+    setModalAberto(false);
     refetch();
   };
 
@@ -137,6 +147,13 @@ export default function Licoes() {
         
         <LicoesList licoes={licoesFiltradas} />
       </div>
+
+      <NovaLicaoModal
+        isOpen={modalAberto}
+        onClose={() => setModalAberto(false)}
+        onLicaoCreated={handleLicaoCriada}
+        categorias={['Técnica', 'Processo', 'Comunicação', 'Recursos', 'Planejamento']}
+      />
     </Layout>
   );
 }

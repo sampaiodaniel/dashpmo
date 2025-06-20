@@ -1,10 +1,26 @@
 import { DadosRelatorioASA } from '@/hooks/useRelatorioASA';
 
 interface RelatorioFooterProps {
-  dados: DadosRelatorioASA;
+  dados: {
+    dataRelatorio?: string;
+    carteira?: string;
+    responsavel?: string;
+    dataGeracao?: Date | string;
+  };
 }
 
 export function RelatorioFooter({ dados }: RelatorioFooterProps) {
+  // Normalizar data de geração
+  let dataFormatada: string;
+  if (dados.dataRelatorio) {
+    dataFormatada = dados.dataRelatorio;
+  } else if (dados.dataGeracao) {
+    const data = dados.dataGeracao instanceof Date ? dados.dataGeracao : new Date(dados.dataGeracao);
+    dataFormatada = data.toLocaleDateString('pt-BR');
+  } else {
+    dataFormatada = new Date().toLocaleDateString('pt-BR');
+  }
+
   return (
     <div className="text-center text-sm text-[#6B7280] border-t-4 border-[#A6926B] pt-8 bg-white p-8 rounded-xl break-inside-avoid relative overflow-hidden">
       {/* Background decorativo */}
@@ -14,7 +30,7 @@ export function RelatorioFooter({ dados }: RelatorioFooterProps) {
         <div className="flex items-center justify-between mb-4">
           <div className="text-left">
             <p className="font-bold text-lg text-[#1B365D] mb-2">ASA Investments</p>
-            <p className="font-medium text-[#A6926B] mb-1">Relatório gerado em {dados.dataRelatorio} por DashPMO</p>
+            <p className="font-medium text-[#A6926B] mb-1">Relatório gerado em {dataFormatada} por DashPMO</p>
             <p className="text-xs text-[#9CA3AF]">Desenvolvido por Daniel Sampaio de Almeida - PMO/CWI</p>
           </div>
           <div className="text-right">
