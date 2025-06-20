@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -39,13 +38,12 @@ export function useEditarProjetoForm({ projeto, onSuccess }: UseEditarProjetoFor
     setCarregando(true);
 
     try {
-      // Validar se o tipo_projeto_id existe na tabela configuracoes_sistema (se não for null)
+      // Validar se o tipo_projeto_id existe na tabela tipos_projeto (se não for null)
       if (formData.tipo_projeto_id) {
         const { data: tipoExiste, error: tipoError } = await supabase
-          .from('configuracoes_sistema')
+          .from('tipos_projeto')
           .select('id')
           .eq('id', formData.tipo_projeto_id)
-          .eq('tipo', 'tipos_projeto')
           .eq('ativo', true)
           .maybeSingle();
 

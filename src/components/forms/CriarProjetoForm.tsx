@@ -58,7 +58,7 @@ export function CriarProjetoForm({
               <SelectContent>
                 {tiposProjeto?.map((tipo) => (
                   <SelectItem key={tipo.id} value={tipo.id.toString()}>
-                    {tipo.valor}
+                    {tipo.nome}
                   </SelectItem>
                 ))}
               </SelectContent>

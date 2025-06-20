@@ -1,10 +1,9 @@
-
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { useTiposProjetoOperations, TipoProjeto } from '@/hooks/useTiposProjeto';
 
 interface TipoProjetoModalProps {
@@ -17,39 +16,41 @@ export function TipoProjetoModal({ aberto, onFechar, tipo }: TipoProjetoModalPro
   const { createTipoProjeto, updateTipoProjeto } = useTiposProjetoOperations();
   
   const [formData, setFormData] = useState({
-    tipo: 'tipos_projeto',
-    valor: '',
-    ordem: 0,
+    nome: '',
+    descricao: '',
+    ordem: 0
   });
 
   useEffect(() => {
     if (tipo) {
       setFormData({
-        tipo: 'tipos_projeto',
-        valor: tipo.valor || '',
-        ordem: tipo.ordem || 0,
+        nome: tipo.nome,
+        descricao: tipo.descricao || '',
+        ordem: tipo.ordem
       });
     } else {
       setFormData({
-        tipo: 'tipos_projeto',
-        valor: '',
-        ordem: 0,
+        nome: '',
+        descricao: '',
+        ordem: 0
       });
     }
-  }, [tipo]);
+  }, [tipo, aberto]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (tipo) {
-      await updateTipoProjeto.mutateAsync({ 
-        id: tipo.id, 
-        valor: formData.valor,
+      await updateTipoProjeto.mutateAsync({
+        id: tipo.id,
+        nome: formData.nome,
+        descricao: formData.descricao,
         ordem: formData.ordem
       });
     } else {
       await createTipoProjeto.mutateAsync({
-        valor: formData.valor,
+        nome: formData.nome,
+        descricao: formData.descricao,
         ordem: formData.ordem
       });
     }
@@ -68,24 +69,22 @@ export function TipoProjetoModal({ aberto, onFechar, tipo }: TipoProjetoModalPro
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="tipo">Tipo *</Label>
-            <Select value={formData.tipo} disabled>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione o tipo" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="tipos_projeto">Tipos de Projeto</SelectItem>
-              </SelectContent>
-            </Select>
+            <Label htmlFor="nome">Nome *</Label>
+            <Input
+              id="nome"
+              value={formData.nome}
+              onChange={(e) => setFormData(prev => ({ ...prev, nome: e.target.value }))}
+              required
+            />
           </div>
 
           <div>
-            <Label htmlFor="valor">Valor *</Label>
-            <Input
-              id="valor"
-              value={formData.valor}
-              onChange={(e) => setFormData(prev => ({ ...prev, valor: e.target.value }))}
-              required
+            <Label htmlFor="descricao">Descrição</Label>
+            <Textarea
+              id="descricao"
+              value={formData.descricao}
+              onChange={(e) => setFormData(prev => ({ ...prev, descricao: e.target.value }))}
+              rows={3}
             />
           </div>
 

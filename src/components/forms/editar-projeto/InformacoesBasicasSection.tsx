@@ -1,4 +1,3 @@
-
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -49,7 +48,7 @@ export function InformacoesBasicasSection({ formData, onInputChange }: Informaco
               <SelectItem key="none" value="none">Nenhum</SelectItem>
               {tiposProjeto?.filter(tipo => tipo.ativo).map((tipo) => (
                 <SelectItem key={tipo.id} value={tipo.id.toString()}>
-                  {tipo.valor}
+                  {tipo.nome}
                 </SelectItem>
               ))}
             </SelectContent>
