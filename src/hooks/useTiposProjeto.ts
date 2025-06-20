@@ -44,20 +44,12 @@ export function useTiposProjetoOperations() {
     mutationFn: async (tipo: { nome: string; descricao?: string; ordem: number }) => {
       console.log('🚀 Criando novo tipo de projeto:', tipo);
       
-      // Verificar autenticação
-      const { data: { user } } = await supabase.auth.getUser();
-      console.log('👤 Usuário autenticado:', user?.email);
-      
-      if (!user) {
-        throw new Error('Usuário não autenticado');
-      }
-      
       const novoTipo = {
         nome: tipo.nome,
         descricao: tipo.descricao,
         ordem: tipo.ordem,
         ativo: true,
-        criado_por: user.email || 'Admin'
+        criado_por: 'Admin'
       };
       
       console.log('📝 Dados sendo enviados:', novoTipo);
@@ -104,14 +96,6 @@ export function useTiposProjetoOperations() {
     mutationFn: async ({ id, nome, descricao, ordem }: { id: number; nome: string; descricao?: string; ordem: number }) => {
       console.log('🔄 Atualizando tipo de projeto:', { id, nome, descricao, ordem });
       
-      // Verificar autenticação
-      const { data: { user } } = await supabase.auth.getUser();
-      console.log('👤 Usuário autenticado (update):', user?.email);
-      
-      if (!user) {
-        throw new Error('Usuário não autenticado');
-      }
-      
       const updateData = { nome, descricao, ordem };
       console.log('📝 Dados de atualização:', updateData);
       
@@ -157,14 +141,6 @@ export function useTiposProjetoOperations() {
   const deleteTipoProjeto = useMutation({
     mutationFn: async (id: number) => {
       console.log('🗑️ Removendo tipo de projeto (soft delete):', id);
-      
-      // Verificar autenticação
-      const { data: { user } } = await supabase.auth.getUser();
-      console.log('👤 Usuário autenticado (delete):', user?.email);
-      
-      if (!user) {
-        throw new Error('Usuário não autenticado');
-      }
       
       const { data, error } = await supabase
         .from('tipos_projeto')

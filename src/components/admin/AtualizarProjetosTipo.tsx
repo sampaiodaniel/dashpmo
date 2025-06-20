@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -43,7 +42,7 @@ export function AtualizarProjetosTipo() {
 
       toast({
         title: "Sucesso",
-        description: `${projetosSemTipo} projetos atualizados com o tipo "${primeiroTipo.valor}"`,
+        description: `${projetosSemTipo} projetos atualizados com o tipo "${primeiroTipo.nome}"`,
       });
 
       queryClient.invalidateQueries({ queryKey: ['projetos'] });
@@ -74,7 +73,7 @@ export function AtualizarProjetosTipo() {
       <CardContent className="space-y-4">
         <p className="text-orange-700">
           Foram encontrados <strong>{projetosSemTipo} projetos</strong> sem tipo definido. 
-          Deseja atualizar todos para o tipo "{primeiroTipo?.valor}"?
+          Deseja atualizar todos para o tipo "{primeiroTipo?.nome}"?
         </p>
         
         <Button 
