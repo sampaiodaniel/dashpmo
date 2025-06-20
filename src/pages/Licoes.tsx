@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
@@ -9,8 +10,6 @@ import { LicoesSearchBar } from '@/components/licoes/LicoesSearchBar';
 import { useLicoesAprendidas } from '@/hooks/useLicoesAprendidas';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
-import { NovaLicaoModal } from '@/components/licoes/NovaLicaoModal';
-import { PageHeader } from '@/components/common/PageHeader';
 
 interface LicoesFiltersType {
   categoria?: string;
@@ -24,7 +23,6 @@ export default function Licoes() {
   const { data: licoes, isLoading: isLoadingLicoes, refetch } = useLicoesAprendidas();
   const [filtros, setFiltros] = useState<LicoesFiltersType>({});
   const [termoBusca, setTermoBusca] = useState('');
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   if (isLoading) {
     return (
@@ -44,10 +42,6 @@ export default function Licoes() {
   }
 
   const handleNovaLicao = () => {
-    setIsModalOpen(true);
-  };
-  
-  const handleLicaoCriada = () => {
     refetch();
   };
 
@@ -107,19 +101,19 @@ export default function Licoes() {
   return (
     <Layout>
       <div className="space-y-6">
-        <PageHeader 
-          title="Lições Aprendidas" 
-          subtitle="Gestão de conhecimento e aprendizados dos projetos"
-          action={
-            <Button 
-              onClick={handleNovaLicao}
-              className="bg-pmo-primary hover:bg-pmo-primary/90"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Nova Lição
-            </Button>
-          }
-        />
+        <div className="flex items-center justify-between">
+          <div className="text-left">
+            <h1 className="text-3xl font-bold text-pmo-primary">Lições Aprendidas</h1>
+            <p className="text-pmo-gray mt-2">Gestão de conhecimento e aprendizados dos projetos</p>
+          </div>
+          <Button 
+            onClick={handleNovaLicao}
+            className="bg-pmo-primary hover:bg-pmo-primary/90"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Nova Lição
+          </Button>
+        </div>
 
         <LicoesMetricas 
           totalLicoes={totalLicoes}
@@ -142,13 +136,6 @@ export default function Licoes() {
         />
         
         <LicoesList licoes={licoesFiltradas} />
-        
-        <NovaLicaoModal 
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          onLicaoCreated={handleLicaoCriada}
-          categorias={['Qualidade', 'Processo', 'Conhecimento', 'Riscos', 'Mudanças', 'Técnica']}
-        />
       </div>
     </Layout>
   );

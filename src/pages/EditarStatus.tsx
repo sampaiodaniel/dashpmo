@@ -1,73 +1,92 @@
+
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { StatusProjeto } from '@/types/pmo';
 import { Layout } from '@/components/layout/Layout';
+import { useStatusList } from '@/hooks/useStatusList';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { EditarStatusForm } from '@/components/forms/EditarStatusForm';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function EditarStatus() {
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams();
   const navigate = useNavigate();
+  const { data: statusList, isLoading, error } = useStatusList();
   const { isAdmin } = useAuth();
 
-  const { data: status, isLoading, error } = useQuery({
-    queryKey: ['status', id],
-    queryFn: async (): Promise<StatusProjeto> => {
-      if (!id) throw new Error('ID do status não fornecido');
+  console.log('EditarStatus - ID:', id);
+  console.log('EditarStatus - StatusList:', statusList);
+  console.log('EditarStatus - Loading:', isLoading);
+  console.log('EditarStatus - Error:', error);
 
-      const { data, error } = await supabase
-        .from('status_projeto')
-        .select(`
-          *,
-          projeto:projetos (*)
-        `)
-        .eq('id', parseInt(id))
-        .single();
-
-      if (error) {
-        console.error('Erro ao buscar status:', error);
-        throw error;
-      }
-
-      return {
-        ...data,
-        data_atualizacao: new Date(data.data_atualizacao),
-        data_aprovacao: data.data_aprovacao ? new Date(data.data_aprovacao) : null,
-        data_criacao: new Date(data.data_criacao),
-        data_marco1: data.data_marco1 ? new Date(data.data_marco1) : null,
-        data_marco2: data.data_marco2 ? new Date(data.data_marco2) : null,
-        data_marco3: data.data_marco3 ? new Date(data.data_marco3) : null,
-        projeto: data.projeto ? {
-          ...data.projeto,
-          data_criacao: new Date(data.projeto.data_criacao)
-        } : null
-      };
-    },
-    enabled: !!id,
-  });
-
-  if (isLoading) {
+  // Validar se o ID existe e é um número válido
+  if (!id || isNaN(Number(id))) {
+    console.log('EditarStatus - ID inválido:', id);
     return (
       <Layout>
         <div className="text-center py-8">
-          <div className="text-pmo-gray">Carregando status...</div>
+          <h1 className="text-2xl font-bold text-pmo-primary mb-4">ID inválido</h1>
+          <p className="text-pmo-gray mb-4">O ID do status não é válido.</p>
+          <Button onClick={() => navigate('/status')}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Voltar para Status
+          </Button>
         </div>
       </Layout>
     );
   }
 
-  if (error || !status) {
+  if (isLoading) {
+    console.log('EditarStatus - Carregando...');
+    return (
+      <Layout>
+        <div className="text-center py-8 text-pmo-gray">
+          <div>Carregando status...</div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (error) {
+    console.error('EditarStatus - Erro ao carregar dados:', error);
+    return (
+      <Layout>
+        <div className="text-center py-8">
+          <h1 className="text-2xl font-bold text-pmo-primary mb-4">Erro ao carregar dados</h1>
+          <p className="text-pmo-gray mb-4">Ocorreu um erro ao carregar os dados do status.</p>
+          <Button onClick={() => navigate('/status')}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Voltar para Status
+          </Button>
+        </div>
+      </Layout>
+    );
+  }
+
+  // Aguardar o carregamento dos dados antes de procurar o status
+  if (!statusList || statusList.length === 0) {
+    console.log('EditarStatus - Aguardando dados...');
+    return (
+      <Layout>
+        <div className="text-center py-8 text-pmo-gray">
+          <div>Carregando dados...</div>
+        </div>
+      </Layout>
+    );
+  }
+
+  const status = statusList.find(s => s.id === Number(id));
+  console.log('EditarStatus - Status encontrado:', status);
+
+  if (!status) {
+    console.log('EditarStatus - Status não encontrado para ID:', id);
     return (
       <Layout>
         <div className="text-center py-8">
           <h1 className="text-2xl font-bold text-pmo-primary mb-4">Status não encontrado</h1>
-          <p className="text-pmo-gray mb-4">O status solicitado não foi encontrado.</p>
+          <p className="text-pmo-gray mb-4">O status com ID {id} não foi encontrado.</p>
           <Button onClick={() => navigate('/status')}>
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Voltar para Lista
+            Voltar para Status
           </Button>
         </div>
       </Layout>
@@ -91,7 +110,7 @@ export default function EditarStatus() {
   }
 
   const handleSuccess = () => {
-    navigate('/status');
+    navigate(`/status/${status.id}`);
   };
 
   return (
@@ -100,7 +119,7 @@ export default function EditarStatus() {
         <div className="flex items-center gap-4">
           <Button 
             variant="outline" 
-            onClick={() => navigate('/status')}
+            onClick={() => navigate(`/status/${status.id}`)}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Voltar

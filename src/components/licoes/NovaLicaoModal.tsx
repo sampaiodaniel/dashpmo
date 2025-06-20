@@ -70,11 +70,11 @@ export function NovaLicaoModal({
       acao_recomendada: acaoRecomendada,
       status_aplicacao: statusAplicacao as any,
       responsavel_registro: responsavel,
-      projeto_id: projetoId && projetoId !== "nenhum" ? parseInt(projetoId) : null,
+      projeto_id: projetoId ? parseInt(projetoId) : null,
       tags_busca: tags.join(', ') || null,
       data_registro: new Date().toISOString().split('T')[0]
     });
-    
+
     if (licao) {
       handleClose();
       if (onLicaoCreated) {

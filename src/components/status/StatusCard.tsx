@@ -1,8 +1,8 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { StatusProjeto } from '@/types/pmo';
 import { useNavigate } from 'react-router-dom';
-import { Building, Calendar, User, Users } from 'lucide-react';
 
 interface StatusCardProps {
   status: StatusProjeto;
@@ -39,16 +39,6 @@ export function StatusCard({ status }: StatusCardProps) {
       default:
         return 'bg-gray-100 text-gray-800';
     }
-  };
-
-  const getApprovalColor = (approved: boolean) => {
-    return approved 
-      ? 'bg-green-100 text-green-800'
-      : 'bg-yellow-100 text-yellow-800';
-  };
-
-  const getApprovalText = (approved: boolean) => {
-    return approved ? 'Revisado' : 'Em Revisão';
   };
 
   // Função para obter classes exatas dos badges das carteiras como na lista de projetos
@@ -115,60 +105,47 @@ export function StatusCard({ status }: StatusCardProps) {
       className="bg-white border-b border-gray-200 p-6 hover:bg-gray-50 cursor-pointer transition-colors"
       onClick={handleCardClick}
     >
-      {/* Primeira linha - Título e Carteira */}
       <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center gap-4 flex-1">
-          <h3 className="text-lg font-semibold text-pmo-primary">
+        <div className="flex items-center gap-3 flex-1">
+          <h3 className="text-lg font-semibold text-[#1B365D]">
             {status.projeto?.nome_projeto}
           </h3>
-          <div className="flex items-center gap-2 bg-blue-50 px-3 py-1 rounded-lg border border-blue-200">
-            <Building className="h-4 w-4 text-blue-600" />
-            <span className="font-semibold text-blue-700 text-sm">
-              {status.projeto?.area_responsavel || 'Crédito'}
-            </span>
-          </div>
+          <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border ${getCarteiraBadgeClasses(status.projeto?.area_responsavel || 'Crédito')}`}>
+            <span className="text-sm">{getCarteiraIcon(status.projeto?.area_responsavel || 'Crédito')}</span>
+            {status.projeto?.area_responsavel || 'Crédito'}
+          </span>
         </div>
-        <div className="flex flex-col items-end gap-2 text-sm text-gray-600">
-          <div className="flex items-center gap-1">
-            <Calendar className="h-4 w-4" />
-            <span>{status.data_atualizacao.toLocaleDateString()}</span>
-          </div>
-          <Badge className={getApprovalColor(status.aprovado)}>
-            {getApprovalText(status.aprovado)}
-          </Badge>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-gray-600">{status.data_atualizacao.toLocaleDateString()}</span>
+          {!status.aprovado && (
+            <Badge className="bg-yellow-100 text-yellow-800">
+              Em Revisão
+            </Badge>
+          )}
+          {status.aprovado && (
+            <Badge className="bg-green-100 text-green-800">
+              Revisado
+            </Badge>
+          )}
         </div>
       </div>
 
-      {/* Segunda linha - Badges de Status */}
-      <div className="flex items-center gap-3 mb-4">
-        <Badge className={getStatusColor(status.status_geral || 'Verde')}>
+      <div className="flex gap-3 mb-4">
+        <Badge className="text-xs px-2 py-1" style={{ backgroundColor: '#E3F2FD', color: '#1976D2' }}>
           Status: {status.status_geral || 'Em Andamento'}
         </Badge>
         <Badge className={getStatusColor(status.status_visao_gp)}>
           Visão Chefe do Projeto: {status.status_visao_gp}
         </Badge>
         <Badge className={getRiskColor(status.prob_x_impact || 'Baixo')}>
-          Risco: {status.prob_x_impact || 'Baixo'}
+          Matriz de Risco: {status.prob_x_impact || 'Baixo'}
         </Badge>
       </div>
 
-      {/* Terceira linha - Informações dos responsáveis */}
       <div className="flex items-center gap-6 text-sm text-gray-600">
-        <div className="flex items-center gap-2">
-          <User className="h-4 w-4 text-gray-400" />
-          <span className="text-gray-600">Responsável ASA:</span>
-          <span className="font-medium">{status.projeto?.responsavel_asa || status.projeto?.responsavel_interno || 'Não informado'}</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <Users className="h-4 w-4 text-gray-400" />
-          <span className="text-gray-600">Chefe do Projeto:</span>
-          <span className="font-medium">{status.projeto?.gp_responsavel || 'Marco'}</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <Calendar className="h-4 w-4 text-gray-400" />
-          <span className="text-gray-600">Próxima Entrega:</span>
-          <span className="font-medium">{status.data_marco1 ? status.data_marco1.toLocaleDateString() : 'TBD (A definir)'}</span>
-        </div>
+        <span><span className="font-bold">Responsável ASA:</span> {status.projeto?.responsavel_asa || 'Não informado'}</span>
+        <span><span className="font-bold">Chefe do Projeto:</span> {status.projeto?.gp_responsavel || 'Marco'}</span>
+        <span><span className="font-bold">Próxima Entrega:</span> {status.data_marco1 ? status.data_marco1.toLocaleDateString() : 'TBD (A definir)'}</span>
       </div>
     </div>
   );

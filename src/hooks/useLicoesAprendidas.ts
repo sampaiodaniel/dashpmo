@@ -1,8 +1,8 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { LicaoAprendida, CategoriaLicao, StatusAplicacao } from '@/types/pmo';
-import { log } from '@/utils/logger';
 
 export function useLicoesAprendidas() {
   return useQuery({
@@ -64,21 +64,7 @@ export function useLicoesOperations() {
         data_criacao: data.data_criacao ? new Date(data.data_criacao) : new Date()
       };
     },
-    onSuccess: (data) => {
-      // Registrar log da criação
-      log(
-        'licoes',
-        'criacao',
-        'licao_aprendida',
-        data.id,
-        `${data.categoria_licao} - ${data.responsavel_registro}`,
-        {
-          categoria_licao: data.categoria_licao,
-          status_aplicacao: data.status_aplicacao,
-          projeto_id: data.projeto_id
-        }
-      );
-
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['licoes-aprendidas'] });
       toast({
         title: "Sucesso",
@@ -129,20 +115,7 @@ export function useLicoesOperations() {
         data_criacao: data.data_criacao ? new Date(data.data_criacao) : new Date()
       };
     },
-    onSuccess: (data) => {
-      // Registrar log da edição
-      log(
-        'licoes',
-        'edicao',
-        'licao_aprendida',
-        data.id,
-        `${data.categoria_licao} - ${data.responsavel_registro}`,
-        {
-          categoria_licao: data.categoria_licao,
-          status_aplicacao: data.status_aplicacao
-        }
-      );
-
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['licoes-aprendidas'] });
       toast({
         title: "Sucesso",
@@ -161,33 +134,14 @@ export function useLicoesOperations() {
 
   const deleteLicao = useMutation({
     mutationFn: async (id: number) => {
-      // Buscar dados da lição para o log antes de deletar
-      const { data: licaoData } = await supabase
-        .from('licoes_aprendidas')
-        .select('categoria_licao, responsavel_registro')
-        .eq('id', id)
-        .single();
-
       const { error } = await supabase
         .from('licoes_aprendidas')
         .delete()
         .eq('id', id);
 
       if (error) throw error;
-
-      return { id, licaoData };
     },
-    onSuccess: (result) => {
-      // Registrar log da exclusão
-      log(
-        'licoes',
-        'exclusao',
-        'licao_aprendida',
-        result.id,
-        `${result.licaoData?.categoria_licao || 'Lição'} - ${result.licaoData?.responsavel_registro || 'N/A'} removida`,
-        null
-      );
-
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['licoes-aprendidas'] });
       toast({
         title: "Sucesso",

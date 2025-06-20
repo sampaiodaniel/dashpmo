@@ -1,3 +1,4 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { StatusProjeto } from '@/types/pmo';
@@ -16,7 +17,6 @@ export function useStatusList() {
             id,
             nome_projeto,
             area_responsavel,
-            responsavel_asa,
             responsavel_interno,
             gp_responsavel,
             status_ativo,

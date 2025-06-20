@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
@@ -8,7 +9,6 @@ import { RelatorioASAViewer } from '@/components/relatorios/RelatorioASAViewer';
 import { RelatorioVisualViewer } from '@/components/relatorios/RelatorioVisualViewer';
 import { RelatorioConsolidadoContent } from '@/components/relatorios/consolidado/RelatorioConsolidadoContent';
 import { ReportWebhookModal } from '@/components/relatorios/ReportWebhookModal';
-import { PageHeader } from '@/components/common/PageHeader';
 
 export default function Relatorios() {
   const { usuario, isLoading } = useAuth();
@@ -76,10 +76,10 @@ export default function Relatorios() {
   return (
     <Layout>
       <div className="space-y-6">
-        <PageHeader 
-          title="Relatórios" 
-          subtitle="Geração de relatórios e análises"
-        />
+        <div className="text-left">
+          <h1 className="text-3xl font-bold text-pmo-primary">Relatórios</h1>
+          <p className="text-pmo-gray mt-2">Geração de relatórios e análises</p>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div className="bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow">

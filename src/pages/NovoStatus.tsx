@@ -1,20 +1,23 @@
-
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
-import { ArrowLeft, Save } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { ArrowLeft, Save, Info, AlertTriangle } from 'lucide-react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useNovoStatusForm } from '@/hooks/useNovoStatusForm';
 import { ProjetoInformacaoSection } from '@/components/forms/status/ProjetoInformacaoSection';
 import { StatusInformacaoSection } from '@/components/forms/status/StatusInformacaoSection';
 import { DetalhesStatusSection } from '@/components/forms/status/DetalhesStatusSection';
 import { EntregasDinamicasNovo } from '@/components/forms/EntregasDinamicasNovo';
 import { calcularMatrizRisco } from '@/utils/riskMatrixCalculator';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function NovoStatus() {
   const { usuario, isLoading } = useAuth();
+  const [searchParams] = useSearchParams();
+  const projetoIdFromUrl = searchParams.get('projeto');
+  
   const { 
     form, 
     isLoading: isSubmitting, 
@@ -26,7 +29,9 @@ export default function NovoStatus() {
     setEntregas,
     handleCarteiraChange,
     handleProjetoChange,
-    handleProgressoChange
+    handleProgressoChange,
+    temStatusNaoValidado,
+    ultimoStatus
   } = useNovoStatusForm();
 
   // Valores atuais dos campos de risco para calcular a matriz
@@ -70,6 +75,30 @@ export default function NovoStatus() {
             <p className="text-pmo-gray mt-2">Criar novo status de projeto</p>
           </div>
         </div>
+
+        {/* Alerta para status não validado */}
+        {temStatusNaoValidado && (
+          <Alert className="border-amber-200 bg-amber-50">
+            <AlertTriangle className="h-4 w-4 text-amber-600" />
+            <AlertDescription className="text-amber-800">
+              <strong>⚠️ Status anterior não validado:</strong> Existe um status de{' '}
+              {ultimoStatus?.data_atualizacao && new Date(ultimoStatus.data_atualizacao).toLocaleDateString('pt-BR')}{' '}
+              que ainda não foi revisado pela equipe. Ao criar este novo status, ele se tornará o último status ativo do projeto, 
+              enquanto o anterior permanecerá como "Em Revisão" no histórico.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Alerta informativo quando dados são pré-preenchidos */}
+        {(projetoIdFromUrl || projetoSelecionado) && !temStatusNaoValidado && (
+          <Alert className="border-blue-200 bg-blue-50">
+            <Info className="h-4 w-4 text-blue-600" />
+            <AlertDescription className="text-blue-800">
+              <strong>📋 Dados pré-preenchidos:</strong> Os campos foram automaticamente preenchidos com base no último status deste projeto. 
+              Você pode editar qualquer informação conforme necessário. Os campos "Itens Trabalhados na Semana" e "Bloqueios Atuais" foram limpos para nova atualização.
+            </AlertDescription>
+          </Alert>
+        )}
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">

@@ -1,3 +1,4 @@
+
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
@@ -6,29 +7,21 @@ import { IncidentesMetricas } from '@/components/incidentes/IncidentesMetricas';
 import { TabelaIncidentesRecentes } from '@/components/incidentes/TabelaIncidentesRecentes';
 import { GraficoEvolutivoIncidentes } from '@/components/incidentes/GraficoEvolutivoIncidentes';
 import { IncidentesFiltersCompact } from '@/components/incidentes/IncidentesFiltersCompact';
-import { NovoRegistroIncidenteModal } from '@/components/incidentes/NovoRegistroIncidenteModal';
 import { useIncidentes } from '@/hooks/useIncidentes';
 import { useEffect, useState } from 'react';
 import { seedIncidentesCanais } from '@/utils/seedIncidentesCanais';
-import { PageHeader } from '@/components/common/PageHeader';
-import { Button } from '@/components/ui/button';
-import { Plus, List } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 
 export default function Incidentes() {
-  const { usuario, isLoading, isAdmin } = useAuth();
+  const { usuario, isLoading } = useAuth();
   const { data: incidentes, isLoading: isLoadingIncidentes } = useIncidentes();
-  const navigate = useNavigate();
   
   // Filtros únicos para toda a página
   const [responsavelSelecionado, setResponsavelSelecionado] = useState('todos');
   const [carteiraSelecionada, setCarteiraSelecionada] = useState('todas');
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     if (usuario) {
-      // Comentado para evitar criação automática de registros de incidentes
-      // seedIncidentesCanais();
+      seedIncidentesCanais();
     }
   }, [usuario]);
 
@@ -68,31 +61,10 @@ export default function Incidentes() {
   return (
     <Layout>
       <div className="space-y-6">
-        <PageHeader 
-          title="Incidentes" 
-          subtitle="Gestão e acompanhamento de incidentes"
-          action={
-            <div className="flex gap-2">
-              {isAdmin() && (
-                <Button 
-                  variant="outline"
-                  onClick={() => navigate('/incidentes-registros')}
-                  className="border-pmo-primary text-pmo-primary hover:bg-pmo-primary hover:text-white"
-                >
-                  <List className="w-4 h-4 mr-2" />
-                  Ver Registros
-                </Button>
-              )}
-              <Button 
-                onClick={() => setIsModalOpen(true)}
-                className="bg-pmo-primary hover:bg-pmo-primary/90"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Novo Registro
-              </Button>
-            </div>
-          }
-        />
+        <div className="text-left">
+          <h1 className="text-3xl font-bold text-pmo-primary">Incidentes</h1>
+          <p className="text-pmo-gray mt-2">Gestão e acompanhamento de incidentes</p>
+        </div>
         
         <IncidentesMetricas 
           criticos={metricas.criticos}
@@ -116,11 +88,6 @@ export default function Incidentes() {
         <GraficoEvolutivoIncidentes 
           carteiraFiltro={carteiraSelecionada}
           responsavelFiltro={responsavelSelecionado}
-        />
-
-        <NovoRegistroIncidenteModal 
-          isOpen={isModalOpen} 
-          onClose={() => setIsModalOpen(false)} 
         />
       </div>
     </Layout>

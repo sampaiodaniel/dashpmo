@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
@@ -14,7 +15,6 @@ import { Link } from 'react-router-dom';
 import { StatusFilters as StatusFiltersType } from '@/components/status/filters/FilterUtils';
 import { PaginationFooter } from '@/components/common/PaginationFooter';
 import { usePagination } from '@/hooks/usePagination';
-import { PageHeader } from '@/components/common/PageHeader';
 
 export default function Status() {
   const { usuario, isLoading } = useAuth();
@@ -88,18 +88,18 @@ export default function Status() {
   return (
     <Layout>
       <div className="space-y-6">
-        <PageHeader 
-          title="Status de Projetos" 
-          subtitle="Acompanhe o status e progresso dos projetos"
-          action={
-            <Link to="/novo-status">
-              <Button className="bg-pmo-primary hover:bg-pmo-primary/90">
-                <Plus className="h-4 w-4 mr-2" />
-                Novo Status
-              </Button>
-            </Link>
-          }
-        />
+        <div className="flex items-center justify-between">
+          <div className="text-left">
+            <h1 className="text-3xl font-bold text-pmo-primary">Status de Projetos</h1>
+            <p className="text-pmo-gray mt-2">Acompanhe o status e progresso dos projetos</p>
+          </div>
+          <Link to="/novo-status">
+            <Button className="bg-pmo-primary hover:bg-pmo-primary/90">
+              <Plus className="h-4 w-4 mr-2" />
+              Novo Status
+            </Button>
+          </Link>
+        </div>
 
         <StatusMetricas 
           totalStatus={metricas.totalStatus}

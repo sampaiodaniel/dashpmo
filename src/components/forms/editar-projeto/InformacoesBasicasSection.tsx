@@ -45,6 +45,7 @@ export function InformacoesBasicasSection({ formData, onInputChange }: Informaco
               <SelectValue placeholder="Selecione o tipo de projeto" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem key="none" value="none">Nenhum</SelectItem>
               {tiposProjeto?.filter(tipo => tipo.ativo).map((tipo) => (
                 <SelectItem key={tipo.id} value={tipo.id.toString()}>
                   {tipo.nome}

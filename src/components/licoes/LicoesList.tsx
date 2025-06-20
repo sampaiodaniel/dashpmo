@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, User, Building, Eye, Edit, MoreVertical } from 'lucide-react';
@@ -39,7 +40,7 @@ export function LicoesList({ licoes }: LicoesListProps) {
       case 'Em andamento':
         return 'bg-yellow-100 text-yellow-700 border-yellow-200';
       case 'Não aplicada':
-        return 'bg-gray-100 text-gray-700 border-gray-200';
+        return 'bg-red-100 text-red-700 border-red-200';
       default:
         return 'bg-gray-100 text-gray-700 border-gray-200';
     }

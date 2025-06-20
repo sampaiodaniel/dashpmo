@@ -1,13 +1,12 @@
-
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLogger } from '@/utils/logger';
 import { EntregaDinamica } from '@/components/forms/EntregasDinamicasNovo';
 
@@ -39,6 +38,7 @@ export function useNovoStatusForm() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { log } = useLogger();
+  const [searchParams] = useSearchParams();
   
   const [carteiraSelecionada, setCarteiraSelecionada] = useState('');
   const [projetoSelecionado, setProjetoSelecionado] = useState<number | null>(null);
@@ -46,6 +46,9 @@ export function useNovoStatusForm() {
   const [entregas, setEntregas] = useState<EntregaDinamica[]>([
     { id: '1', nome: '', data: '', entregaveis: '' }
   ]);
+
+  // Verificar se há um projeto especificado na URL
+  const projetoIdFromUrl = searchParams.get('projeto');
 
   const form = useForm<StatusFormData>({
     resolver: zodResolver(statusFormSchema),
@@ -57,6 +60,123 @@ export function useNovoStatusForm() {
       observacoes_gerais: '',
     },
   });
+
+  // Buscar último status do projeto quando projetoSelecionado ou projetoIdFromUrl mudar
+  const { data: ultimoStatus } = useQuery({
+    queryKey: ['ultimo-status', projetoSelecionado || projetoIdFromUrl],
+    queryFn: async () => {
+      const projetoId = projetoSelecionado || (projetoIdFromUrl ? parseInt(projetoIdFromUrl) : null);
+      if (!projetoId) return null;
+
+      console.log('🔍 Buscando último status para projeto:', projetoId);
+
+      const { data, error } = await supabase
+        .from('status_projeto')
+        .select(`
+          *,
+          projeto:projetos(*)
+        `)
+        .eq('projeto_id', projetoId)
+        .order('data_atualizacao', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Erro ao buscar último status:', error);
+        return null;
+      }
+
+      console.log('📋 Último status encontrado:', data);
+      return data;
+    },
+    enabled: !!(projetoSelecionado || projetoIdFromUrl),
+  });
+
+  // Verificar se último status não foi validado
+  const temStatusNaoValidado = ultimoStatus && !ultimoStatus.aprovado;
+
+  // Pré-preencher formulário quando último status for carregado
+  useEffect(() => {
+    if (ultimoStatus) {
+      console.log('🔄 Preenchendo formulário com dados do último status');
+      
+      // Definir carteira e projeto
+      if (ultimoStatus.projeto?.area_responsavel) {
+        setCarteiraSelecionada(ultimoStatus.projeto.area_responsavel);
+      }
+      
+      const projetoId = ultimoStatus.projeto_id;
+      setProjetoSelecionado(projetoId);
+      form.setValue('projeto_id', projetoId);
+
+      // Preencher campos do formulário com dados do último status
+      form.setValue('status_geral', ultimoStatus.status_geral);
+      form.setValue('status_visao_gp', ultimoStatus.status_visao_gp);
+      form.setValue('probabilidade_riscos', ultimoStatus.probabilidade_riscos);
+      form.setValue('impacto_riscos', ultimoStatus.impacto_riscos);
+      
+      // Preencher progresso (limpar para nova atualização)
+      const novoProgresso = (ultimoStatus.progresso_estimado || 0);
+      setProgressoEstimado(novoProgresso);
+      form.setValue('progresso_estimado', novoProgresso);
+
+      // Preencher backlog e observações (manter para continuidade)
+      form.setValue('backlog', ultimoStatus.backlog || '');
+      form.setValue('observacoes_gerais', ultimoStatus.observacoes_pontos_atencao || '');
+
+      // Limpar campos que devem ser atualizados semanalmente
+      form.setValue('entregas_realizadas', '');
+      form.setValue('bloqueios_atuais', '');
+
+      // Preencher entregas com base no último status
+      const entregasPreenchidas: EntregaDinamica[] = [];
+      
+      if (ultimoStatus.entrega1) {
+        entregasPreenchidas.push({
+          id: '1',
+          nome: ultimoStatus.entrega1,
+          data: ultimoStatus.data_marco1 ? new Date(ultimoStatus.data_marco1).toISOString().split('T')[0] : '',
+          entregaveis: ultimoStatus.entregaveis1 || ''
+        });
+      }
+      
+      if (ultimoStatus.entrega2) {
+        entregasPreenchidas.push({
+          id: '2',
+          nome: ultimoStatus.entrega2,
+          data: ultimoStatus.data_marco2 ? new Date(ultimoStatus.data_marco2).toISOString().split('T')[0] : '',
+          entregaveis: ultimoStatus.entregaveis2 || ''
+        });
+      }
+      
+      if (ultimoStatus.entrega3) {
+        entregasPreenchidas.push({
+          id: '3',
+          nome: ultimoStatus.entrega3,
+          data: ultimoStatus.data_marco3 ? new Date(ultimoStatus.data_marco3).toISOString().split('T')[0] : '',
+          entregaveis: ultimoStatus.entregaveis3 || ''
+        });
+      }
+
+      // Se não houver entregas, criar uma vazia
+      if (entregasPreenchidas.length === 0) {
+        entregasPreenchidas.push({ id: '1', nome: '', data: '', entregaveis: '' });
+      }
+
+      setEntregas(entregasPreenchidas);
+
+      console.log('✅ Formulário preenchido com sucesso');
+    }
+  }, [ultimoStatus, form]);
+
+  // Pré-selecionar projeto se especificado na URL
+  useEffect(() => {
+    if (projetoIdFromUrl && !projetoSelecionado) {
+      const projetoId = parseInt(projetoIdFromUrl);
+      setProjetoSelecionado(projetoId);
+      form.setValue('projeto_id', projetoId);
+    }
+  }, [projetoIdFromUrl, projetoSelecionado, form]);
 
   const mutation = useMutation({
     mutationFn: async (data: StatusFormData) => {
@@ -212,5 +332,7 @@ export function useNovoStatusForm() {
     handleCarteiraChange,
     handleProjetoChange,
     handleProgressoChange,
+    temStatusNaoValidado,
+    ultimoStatus,
   };
 }

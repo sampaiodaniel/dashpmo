@@ -20,7 +20,7 @@ export function AdminConfiguracoes() {
   const queryClient = useQueryClient();
 
   const { data: configuracoes, isLoading } = useConfiguracoesSistema(tipoAtivo as any);
-  const { data: tiposProjeto, isLoading: isLoadingTipos, refetch: refetchTipos } = useTiposProjeto({ includeInactive: true });
+  const { data: tiposProjeto, isLoading: isLoadingTipos, refetch: refetchTipos } = useTiposProjeto();
   const { deleteConfiguracao } = useConfiguracoesSistemaOperations();
   const { deleteTipoProjeto } = useTiposProjetoOperations();
 
