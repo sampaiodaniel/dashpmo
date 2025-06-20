@@ -170,52 +170,6 @@ export default function StatusDetalhes() {
         </div>
 
         <div className="space-y-12">
-          {/* Informações do Projeto */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Building className="h-5 w-5" />
-                Informações do Projeto
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-10">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                <div>
-                  <label className="text-sm font-medium text-gray-600 block mb-4">Descrição do Projeto</label>
-                  <p className="text-base text-gray-900">{status.projeto?.descricao_projeto || status.projeto?.descricao || 'Não informada'}</p>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium text-gray-600 block mb-4">Responsável ASA</label>
-                  <div className="flex items-center gap-2">
-                    <User className="h-4 w-4 text-gray-500" />
-                    <span className="text-base text-gray-900">{status.projeto?.responsavel_asa || 'Não informado'}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                <div>
-                  <label className="text-sm font-medium text-gray-600 block mb-4">Chefe do Projeto</label>
-                  <div className="flex items-center gap-2">
-                    <User className="h-4 w-4 text-gray-500" />
-                    <span className="text-base text-gray-900">{status.projeto?.gp_responsavel}</span>
-                  </div>
-                </div>
-
-                {tipoProjeto && (
-                  <div>
-                    <label className="text-sm font-medium text-gray-600 block mb-4">Tipo de Projeto</label>
-                    <div className="flex items-center gap-2">
-                      <FileType className="h-4 w-4 text-gray-500" />
-                      <span className="text-base text-gray-900">{tipoProjeto.valor}</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
           {/* Status do Projeto */}
           <Card>
             <CardHeader>
@@ -274,6 +228,41 @@ export default function StatusDetalhes() {
                   )}
                 </div>
               )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                <div>
+                  <label className="text-sm font-medium text-gray-600 block mb-4">Descrição do Projeto</label>
+                  <p className="text-base text-gray-900">{status.projeto?.descricao_projeto || status.projeto?.descricao || 'Não informada'}</p>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-600 block mb-4">Responsável ASA</label>
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-gray-500" />
+                    <span className="text-base text-gray-900">{status.projeto?.responsavel_asa || status.projeto?.responsavel_interno || 'Não informado'}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                <div>
+                  <label className="text-sm font-medium text-gray-600 block mb-4">Chefe do Projeto</label>
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-gray-500" />
+                    <span className="text-base text-gray-900">{status.projeto?.gp_responsavel}</span>
+                  </div>
+                </div>
+
+                {tipoProjeto && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-600 block mb-4">Tipo de Projeto</label>
+                    <div className="flex items-center gap-2">
+                      <FileType className="h-4 w-4 text-gray-500" />
+                      <span className="text-base text-gray-900">{tipoProjeto.valor}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
 

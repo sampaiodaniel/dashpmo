@@ -19,6 +19,7 @@ export default function Projetos() {
   const { usuario, isLoading } = useAuth();
   const [filtros, setFiltros] = useState<FiltrosProjeto>({});
   const [modalAberto, setModalAberto] = useState(false);
+  const [filtroAtivo, setFiltroAtivo] = useState<string | null>(null);
   
   const { data: projetos, isLoading: projetosLoading, refetch } = useProjetos(filtros);
 
@@ -32,6 +33,34 @@ export default function Projetos() {
     data: projetos || [],
     itemsPerPage: 10
   });
+
+  // Calcular métricas
+  const metricas = {
+    total: projetos?.length || 0,
+    ativos: projetos?.filter(p => p.status_ativo).length || 0
+  };
+
+  const handleFiltroClick = (tipo: string) => {
+    setFiltroAtivo(prev => prev === tipo ? null : tipo);
+    
+    const novosFiltros = { ...filtros };
+    
+    if (tipo === 'ativos') {
+      // Filtrar apenas projetos ativos
+      delete novosFiltros.incluirFechados;
+    } else {
+      // Resetar filtros
+      delete novosFiltros.incluirFechados;
+    }
+    
+    setFiltros(novosFiltros);
+    goToPage(1);
+  };
+
+  // Extract unique responsaveis from projetos data
+  const responsaveis = Array.from(new Set(
+    projetos?.map(p => p.responsavel_asa || p.responsavel_interno).filter(Boolean) || []
+  ));
 
   if (isLoading) {
     return (
@@ -79,9 +108,17 @@ export default function Projetos() {
           </Button>
         </div>
 
-        <ProjetosKPIs />
+        <ProjetosKPIs 
+          metricas={metricas}
+          filtroAtivo={filtroAtivo}
+          onFiltroClick={handleFiltroClick}
+        />
         
-        <ProjetoFilters filtros={filtros} onFiltroChange={setFiltros} />
+        <ProjetoFilters 
+          filtros={filtros} 
+          onFiltroChange={setFiltros}
+          responsaveis={responsaveis}
+        />
         
         {projetosLoading ? (
           <div className="text-center py-8 text-pmo-gray">
@@ -176,8 +213,8 @@ export default function Projetos() {
         )}
 
         <CriarProjetoModal
-          isOpen={modalAberto}
-          onClose={() => setModalAberto(false)}
+          open={modalAberto}
+          onOpenChange={setModalAberto}
           onSuccess={handleModalSuccess}
         />
       </div>
