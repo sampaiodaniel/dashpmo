@@ -250,16 +250,16 @@ export default function StatusDetalhes() {
 
                 <div>
                   <label className="text-sm font-medium text-gray-600 block mb-4">Progresso</label>
-                  <span className="text-base text-gray-900">{status.progresso_estimado || 0}%</span>
+                  <span className="text-base text-gray-900">{(status as any).progresso_estimado || 0}%</span>
                 </div>
               </div>
 
               {status.aprovado !== null && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                   <div>
-                    <label className="text-sm font-medium text-gray-600 block mb-4">Status de Aprovação</label>
+                    <label className="text-sm font-medium text-gray-600 block mb-4">Revisado ?</label>
                     <Badge variant={status.aprovado ? "default" : "secondary"} className="text-sm">
-                      {status.aprovado ? "Revisado" : "Em Revisão"}
+                      {status.aprovado ? "Sim" : "Não"}
                     </Badge>
                   </div>
 

@@ -78,7 +78,6 @@ export function EditarStatusForm({ status, onSuccess }: EditarStatusFormProps) {
 
       <EntregasDinamicas
         entregas={entregas}
-        onEntregasChange={setEntregas}
         onAdicionarEntrega={adicionarEntrega}
         onRemoverEntrega={removerEntrega}
         onAtualizarEntrega={atualizarEntrega}

@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Projeto, CARTEIRAS } from '@/types/pmo';
+import { Projeto } from '@/types/pmo';
 import { useQueryClient } from '@tanstack/react-query';
 
 interface UseEditarProjetoFormProps {
@@ -84,7 +84,7 @@ export function useEditarProjetoForm({ projeto, onSuccess }: UseEditarProjetoFor
         equipe: formData.equipe.trim() || null,
         finalizacao_prevista: formData.finalizacao_prevista || null,
         // Manter os campos obrigatórios do banco com valores derivados dos novos campos
-        area_responsavel: (formData.carteira_primaria || 'Cadastro') as typeof CARTEIRAS[number],
+        area_responsavel: (formData.carteira_primaria || 'Cadastro') as any,
         responsavel_interno: formData.responsavel_asa || 'Admin',
         gp_responsavel: formData.gp_responsavel_cwi || 'Admin'
       };

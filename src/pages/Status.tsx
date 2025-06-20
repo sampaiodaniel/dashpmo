@@ -13,13 +13,13 @@ import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { StatusFilters as StatusFiltersType } from '@/components/status/filters/FilterUtils';
+import { PaginationFooter } from '@/components/common/PaginationFooter';
+import { usePagination } from '@/hooks/usePagination';
 
 export default function Status() {
   const { usuario, isLoading } = useAuth();
   const [filtros, setFiltros] = useState<StatusFiltersType>({});
   const [termoBusca, setTermoBusca] = useState('');
-  const [paginaAtual, setPaginaAtual] = useState(1);
-  const itensPorPagina = 10;
 
   const {
     data: { status, totalItens },
@@ -28,8 +28,19 @@ export default function Status() {
   } = useStatusFiltrados({
     filtros,
     termoBusca,
-    paginaAtual,
-    itensPorPagina
+    paginaAtual: 1,
+    itensPorPagina: 1000 // Buscar todos para depois paginar localmente
+  });
+
+  const {
+    currentPage,
+    totalPages,
+    totalItems,
+    paginatedData: statusPaginados,
+    goToPage
+  } = usePagination({
+    data: status || [],
+    itemsPerPage: 10
   });
 
   const {
@@ -45,7 +56,7 @@ export default function Status() {
   const handleFiltroMetricaClick = (tipo: string) => {
     const novosFiltros = aplicarFiltroStatus(tipo);
     setFiltros(novosFiltros);
-    setPaginaAtual(1);
+    goToPage(1); // Reset para primeira página
   };
 
   // Extract unique responsaveis from status data
@@ -117,7 +128,16 @@ export default function Status() {
             Carregando status...
           </div>
         ) : (
-          <StatusList status={status} onStatusUpdate={handleStatusUpdate} />
+          <div className="space-y-4">
+            <StatusList status={statusPaginados} onStatusUpdate={handleStatusUpdate} />
+            
+            <PaginationFooter
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              onPageChange={goToPage}
+            />
+          </div>
         )}
       </div>
     </Layout>
