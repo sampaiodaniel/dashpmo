@@ -54,7 +54,7 @@ export function StatusInformacaoSection({
             name="status_visao_gp"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Visão GP *</FormLabel>
+                <FormLabel>Visão Chefe do Projeto *</FormLabel>
                 <FormControl>
                   <StatusVisaoGPSelect
                     value={field.value}

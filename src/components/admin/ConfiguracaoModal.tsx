@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -67,7 +66,7 @@ export function ConfiguracaoModal({ aberto, onFechar, configuracao, tipoInicial 
       'responsavel_cwi': 'Responsáveis CWI',
       'carteira': 'Carteiras',
       'status_geral': 'Status Geral',
-      'status_visao_gp': 'Status Visão GP',
+      'status_visao_gp': 'Status Visão Chefe do Projeto',
       'nivel_risco': 'Níveis de Risco',
       'tipo_mudanca': 'Tipos de Mudança',
       'categoria_licao': 'Categorias de Lição'

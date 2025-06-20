@@ -43,11 +43,11 @@ export default function NovoStatus() {
     return (
       <div className="min-h-screen bg-pmo-background flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 bg-pmo-primary rounded-xl flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-white rounded-xl flex items-center justify-center mx-auto mb-4 animate-pulse shadow-lg">
             <img 
-              src="/lovable-uploads/6e48c2c5-9581-4a4e-8e6c-f3610c1742bd.png" 
+              src="/lovable-uploads/e42353b2-fcfd-4457-bbd8-066545973f48.png" 
               alt="DashPMO" 
-              className="h-8 w-8"
+              className="w-12 h-12" 
             />
           </div>
           <div className="text-pmo-gray">Carregando...</div>

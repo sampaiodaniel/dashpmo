@@ -1,4 +1,3 @@
-
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ExternalLink, FileText, Plus } from 'lucide-react';
@@ -67,7 +66,7 @@ export function ProjetoStatus({ projeto }: ProjetoStatusProps) {
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <FileText className="h-5 w-5 text-pmo-primary" />
-          <h2 className="text-2xl text-black">Último Status</h2>
+          <h2 className="text-lg text-gray-800">Último Status</h2>
           <Badge variant={ultimoStatus.aprovado ? "default" : "destructive"} className="text-xs">
             {ultimoStatus.aprovado ? "Revisado" : "Não Revisado"}
           </Badge>
@@ -125,9 +124,9 @@ export function ProjetoStatus({ projeto }: ProjetoStatusProps) {
       </div>
 
       {ultimoStatus.realizado_semana_atual && (
-        <div className="mt-6">
+        <div className="mt-6 text-left">
           <h3 className="font-medium text-pmo-gray mb-2">Realizado na Semana</h3>
-          <ul className="list-disc list-inside space-y-1">
+          <ul className="list-disc list-inside space-y-1 text-left">
             {formatarComoBullets(ultimoStatus.realizado_semana_atual)}
           </ul>
         </div>

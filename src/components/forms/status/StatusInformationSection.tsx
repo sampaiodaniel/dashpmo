@@ -50,10 +50,10 @@ export function StatusInformationSection({
         </div>
 
         <div>
-          <Label htmlFor="status_visao_gp">Visão GP</Label>
+                      <Label htmlFor="status_visao_gp">Visão Chefe do Projeto</Label>
           <Select value={statusVisaoGp} onValueChange={onStatusVisaoGpChange}>
             <SelectTrigger>
-              <SelectValue placeholder="Selecione a visão GP" />
+                              <SelectValue placeholder="Selecione a visão do Chefe do Projeto" />
             </SelectTrigger>
             <SelectContent>
               {STATUS_VISAO_GP_OPTIONS.map((status) => (

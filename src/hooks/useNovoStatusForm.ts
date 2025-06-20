@@ -16,7 +16,7 @@ const statusFormSchema = z.object({
     required_error: "Status geral é obrigatório",
   }),
   status_visao_gp: z.enum(['Verde', 'Amarelo', 'Vermelho'], {
-    required_error: "Visão GP é obrigatória",
+    required_error: "Visão Chefe do Projeto é obrigatória",
   }),
   progresso_estimado: z.number().min(0).max(100),
   probabilidade_riscos: z.enum(['Baixo', 'Médio', 'Alto'], {

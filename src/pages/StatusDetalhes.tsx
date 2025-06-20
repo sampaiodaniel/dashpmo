@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
@@ -62,20 +61,22 @@ export default function StatusDetalhes() {
     }
   };
 
-  if (authLoading) {
+  if (authLoading || isLoading) {
     return (
-      <div className="min-h-screen bg-pmo-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-pmo-primary rounded-xl flex items-center justify-center mx-auto mb-4">
-            <img 
-              src="/lovable-uploads/6e48c2c5-9581-4a4e-8e6c-f3610c1742bd.png" 
-              alt="DashPMO" 
-              className="w-8 h-8" 
-            />
+      <Layout>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center mx-auto mb-4 shadow-lg">
+              <img 
+                src="/lovable-uploads/e42353b2-fcfd-4457-bbd8-066545973f48.png" 
+                alt="DashPMO" 
+                className="w-8 h-8" 
+              />
+            </div>
+            <div className="text-pmo-gray">Carregando detalhes do status...</div>
           </div>
-          <div className="text-pmo-gray">Carregando...</div>
         </div>
-      </div>
+      </Layout>
     );
   }
 
@@ -83,32 +84,25 @@ export default function StatusDetalhes() {
     return <LoginForm />;
   }
 
-  if (isLoading) {
-    return (
-      <Layout>
-        <div className="text-center py-8 text-pmo-gray">
-          <div className="flex items-center justify-center mb-4">
-            <img 
-              src="/lovable-uploads/6e48c2c5-9581-4a4e-8e6c-f3610c1742bd.png" 
-              alt="DashPMO" 
-              className="w-8 h-8" 
-            />
-          </div>
-          <div>Carregando status...</div>
-        </div>
-      </Layout>
-    );
-  }
-
   if (!status) {
     return (
       <Layout>
-        <div className="text-center py-8">
-          <h1 className="text-2xl font-bold text-pmo-primary mb-4">Status não encontrado</h1>
-          <Button onClick={() => navigate('/status')} variant="outline">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Voltar para Status
-          </Button>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center mx-auto mb-4 shadow-lg">
+              <img 
+                src="/lovable-uploads/e42353b2-fcfd-4457-bbd8-066545973f48.png" 
+                alt="DashPMO" 
+                className="w-8 h-8" 
+              />
+            </div>
+            <h1 className="text-2xl font-bold text-pmo-primary mb-4">Status não encontrado</h1>
+            <p className="text-pmo-gray mb-6">O status solicitado não existe ou foi removido.</p>
+            <Button onClick={() => navigate('/status')} variant="outline">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Voltar para Status
+            </Button>
+          </div>
         </div>
       </Layout>
     );
@@ -173,15 +167,16 @@ export default function StatusDetalhes() {
           {/* Status do Projeto */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-lg text-gray-800">
                 <Calendar className="h-5 w-5" />
                 Status do Projeto
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-10">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
+            <CardContent className="space-y-8">
+              {/* Primeira linha: Data do Status, Status Geral, Visão Chefe do Projeto */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div>
-                  <label className="text-sm font-medium text-gray-600 block mb-4">Data do Status</label>
+                  <label className="text-sm font-medium text-gray-600 block mb-3">Data do Status</label>
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4 text-gray-500" />
                     <span className="text-base text-gray-900">{formatarData(status.data_atualizacao)}</span>
@@ -189,54 +184,54 @@ export default function StatusDetalhes() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-600 block mb-4">Status Geral</label>
+                  <label className="text-sm font-medium text-gray-600 block mb-3">Status Geral</label>
                   <Badge className={`text-sm ${getStatusGeralColor(status.status_geral)}`}>
                     {status.status_geral}
                   </Badge>
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-600 block mb-4">Visão Chefe do Projeto</label>
+                  <label className="text-sm font-medium text-gray-600 block mb-3">Visão Chefe do Projeto</label>
                   <Badge className={`text-sm ${getStatusColor(status.status_visao_gp)}`}>
                     {status.status_visao_gp}
                   </Badge>
                 </div>
-
-                <div>
-                  <label className="text-sm font-medium text-gray-600 block mb-4">Progresso</label>
-                  <span className="text-base text-gray-900">{(status as any).progresso_estimado || 0}%</span>
-                </div>
               </div>
 
-              {status.aprovado !== null && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                  <div>
-                    <label className="text-sm font-medium text-gray-600 block mb-4">Revisado ?</label>
-                    <Badge variant={status.aprovado ? "default" : "secondary"} className="text-sm">
-                      {status.aprovado ? "Sim" : "Não"}
-                    </Badge>
-                  </div>
-
-                  {status.aprovado && status.data_aprovacao && (
-                    <div>
-                      <label className="text-sm font-medium text-gray-600 block mb-4">Data de Aprovação</label>
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-gray-500" />
-                        <span className="text-base text-gray-900">{formatarData(status.data_aprovacao)}</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+              {/* Segunda linha: Progresso, Revisado, Data de Aprovação */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div>
-                  <label className="text-sm font-medium text-gray-600 block mb-4">Descrição do Projeto</label>
+                  <label className="text-sm font-medium text-gray-600 block mb-3">Progresso</label>
+                  <span className="text-base text-gray-900">{(status as any).progresso_estimado || 0}%</span>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-600 block mb-3">Revisado ?</label>
+                  <Badge variant={status.aprovado ? "default" : "secondary"} className="text-sm">
+                    {status.aprovado ? "Sim" : "Não"}
+                  </Badge>
+                </div>
+
+                {status.aprovado && status.data_aprovacao && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-600 block mb-3">Data de Aprovação</label>
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-gray-500" />
+                      <span className="text-base text-gray-900">{formatarData(status.data_aprovacao)}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Terceira linha: Descrição do Projeto e Responsável ASA */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                  <label className="text-sm font-medium text-gray-600 block mb-3">Descrição do Projeto</label>
                   <p className="text-base text-gray-900">{status.projeto?.descricao_projeto || status.projeto?.descricao || 'Não informada'}</p>
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-600 block mb-4">Responsável ASA</label>
+                  <label className="text-sm font-medium text-gray-600 block mb-3">Responsável ASA</label>
                   <div className="flex items-center gap-2">
                     <User className="h-4 w-4 text-gray-500" />
                     <span className="text-base text-gray-900">{status.projeto?.responsavel_asa || status.projeto?.responsavel_interno || 'Não informado'}</span>
@@ -244,9 +239,10 @@ export default function StatusDetalhes() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+              {/* Quarta linha: Chefe do Projeto e Tipo de Projeto */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
-                  <label className="text-sm font-medium text-gray-600 block mb-4">Chefe do Projeto</label>
+                  <label className="text-sm font-medium text-gray-600 block mb-3">Chefe do Projeto</label>
                   <div className="flex items-center gap-2">
                     <User className="h-4 w-4 text-gray-500" />
                     <span className="text-base text-gray-900">{status.projeto?.gp_responsavel}</span>
@@ -255,11 +251,8 @@ export default function StatusDetalhes() {
 
                 {tipoProjeto && (
                   <div>
-                    <label className="text-sm font-medium text-gray-600 block mb-4">Tipo de Projeto</label>
-                    <div className="flex items-center gap-2">
-                      <FileType className="h-4 w-4 text-gray-500" />
-                      <span className="text-base text-gray-900">{tipoProjeto.valor}</span>
-                    </div>
+                    <label className="text-sm font-medium text-gray-600 block mb-3">Tipo de Projeto</label>
+                    <span className="text-base text-gray-900">{tipoProjeto.nome}</span>
                   </div>
                 )}
               </div>

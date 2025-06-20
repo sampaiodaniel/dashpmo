@@ -106,7 +106,7 @@ export function HistoricoProjetoModal({ projetoId, nomeProjeto, aberto, onFechar
                   </div>
                   
                   <div>
-                    <span className="text-xs text-pmo-gray">Visão GP:</span>
+                    <span className="text-xs text-pmo-gray">Visão Chefe do Projeto:</span>
                     <div className="mt-1">
                       <Badge className={getStatusColor(status.status_visao_gp)}>
                         {status.status_visao_gp}

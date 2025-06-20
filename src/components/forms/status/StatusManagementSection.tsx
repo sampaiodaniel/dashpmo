@@ -58,7 +58,7 @@ export function StatusManagementSection({ formData, onInputChange }: StatusManag
           </div>
 
           <div>
-            <Label htmlFor="status_visao_gp">Visão GP *</Label>
+            <Label htmlFor="status_visao_gp">Visão Chefe do Projeto *</Label>
             <Select value={formData.status_visao_gp} onValueChange={(value) => onInputChange('status_visao_gp', value)} required>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione a visão" />

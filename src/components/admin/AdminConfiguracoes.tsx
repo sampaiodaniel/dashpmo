@@ -29,7 +29,7 @@ export function AdminConfiguracoes() {
     { key: 'responsavel_cwi', label: 'Responsáveis CWI', descricao: 'Gerentes de Projeto e Responsáveis técnicos da CWI' },
     { key: 'carteira', label: 'Carteiras', descricao: 'Carteiras/áreas de negócio (primária, secundária, terciária)' },
     { key: 'status_geral', label: 'Status Geral', descricao: 'Status gerais dos projetos' },
-    { key: 'status_visao_gp', label: 'Status Visão GP', descricao: 'Cores de status na visão do GP (Verde, Amarelo, Vermelho)' },
+    { key: 'status_visao_gp', label: 'Status Visão Chefe do Projeto', descricao: 'Cores de status na visão do Chefe do Projeto (Verde, Amarelo, Vermelho)' },
     { key: 'nivel_risco', label: 'Níveis de Risco', descricao: 'Níveis de risco para probabilidade e impacto' },
     { key: 'tipo_mudanca', label: 'Tipos de Mudança', descricao: 'Tipos de mudança/replanejamento' },
     { key: 'categoria_licao', label: 'Categorias de Lição', descricao: 'Categorias para lições aprendidas' },

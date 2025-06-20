@@ -9,7 +9,7 @@ interface StatusVisaoGPSelectProps {
   disabled?: boolean;
 }
 
-export function StatusVisaoGPSelect({ value, onValueChange, placeholder = "Selecione o status...", disabled = false }: StatusVisaoGPSelectProps) {
+export function StatusVisaoGPSelect({ value, onValueChange, placeholder = "Selecione a visão...", disabled = false }: StatusVisaoGPSelectProps) {
   const { data: statusVisaoGP = [] } = useStatusVisaoGP();
 
   return (

@@ -89,10 +89,7 @@ export function ProjetoInfoGerais({ projeto }: ProjetoInfoGeraisProps) {
             {tipoProjeto && (
               <div>
                 <label className="text-sm font-medium text-gray-600 block mb-4">Tipo de Projeto</label>
-                <div className="flex items-center gap-2">
-                  <FileType className="h-5 w-5 text-gray-500" />
-                  <span className="text-base text-gray-900">{tipoProjeto.nome}</span>
-                </div>
+                <span className="text-base text-gray-900">{tipoProjeto.nome}</span>
               </div>
             )}
           </div>
