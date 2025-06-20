@@ -65,10 +65,16 @@ export function ProjetoStatus({ projeto }: ProjetoStatusProps) {
     <div className="bg-white rounded-lg shadow-sm border p-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <FileText className="h-5 w-5 text-pmo-primary" />
-          <h2 className="text-lg text-gray-800">Último Status</h2>
-          <Badge variant={ultimoStatus.aprovado ? "default" : "destructive"} className="text-xs">
-            {ultimoStatus.aprovado ? "Revisado" : "Não Revisado"}
+          <FileText className="h-6 w-6 text-pmo-primary" />
+          <h2 className="text-2xl font-normal text-gray-700">Último Status</h2>
+          <Badge 
+            className={`text-xs ${
+              ultimoStatus.aprovado 
+                ? "bg-green-100 text-green-800" 
+                : "bg-yellow-100 text-yellow-800"
+            }`}
+          >
+            {ultimoStatus.aprovado ? "Revisado" : "Em Revisão"}
           </Badge>
         </div>
         <div className="flex items-center gap-2">
@@ -125,7 +131,7 @@ export function ProjetoStatus({ projeto }: ProjetoStatusProps) {
 
       {ultimoStatus.realizado_semana_atual && (
         <div className="mt-6 text-left">
-          <h3 className="font-medium text-pmo-gray mb-2">Realizado na Semana</h3>
+          <h3 className="font-medium text-pmo-gray mb-2 text-left">Realizado na Semana</h3>
           <ul className="list-disc list-inside space-y-1 text-left">
             {formatarComoBullets(ultimoStatus.realizado_semana_atual)}
           </ul>

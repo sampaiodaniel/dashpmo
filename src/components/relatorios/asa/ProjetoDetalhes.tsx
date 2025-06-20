@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar, AlertTriangle, Target, User, Crown, FileText } from 'lucide-react';
 import { ProjetoAtividades } from './ProjetoAtividades';

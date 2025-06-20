@@ -48,7 +48,7 @@ export function CriarProjetoModal({ onProjetoCriado }: CriarProjetoModalProps) {
     const projeto = await criarProjeto({
       nome_projeto: formData.nome_projeto,
       tipo_projeto_id: formData.tipo_projeto_id,
-      descricao_projeto: formData.descricao_projeto || null,
+      descricao: formData.descricao_projeto || null,
       area_responsavel: formData.carteira_primaria as typeof CARTEIRAS[number],
       carteira_primaria: formData.carteira_primaria || null,
       carteira_secundaria: formData.carteira_secundaria === 'none' ? null : formData.carteira_secundaria || null,

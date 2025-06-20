@@ -1,19 +1,49 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileText, BarChart3, TrendingUp, Webhook } from 'lucide-react';
 import { RelatorioASAViewer } from '@/components/relatorios/RelatorioASAViewer';
 import { RelatorioVisualViewer } from '@/components/relatorios/RelatorioVisualViewer';
 import { RelatorioConsolidadoContent } from '@/components/relatorios/consolidado/RelatorioConsolidadoContent';
 import { ReportWebhookModal } from '@/components/relatorios/ReportWebhookModal';
+import { UltimosRelatorios } from '@/components/relatorios/UltimosRelatorios';
+import { useRelatorioASA } from '@/hooks/useRelatorioASA';
+import { useRelatorioVisual } from '@/hooks/useRelatorioVisual';
+import { useRelatorioConsolidado } from '@/hooks/useRelatorioConsolidado';
+import { useHistoricoRelatorios } from '@/hooks/useHistoricoRelatorios';
+import { CARTEIRAS } from '@/types/pmo';
 
 export default function Relatorios() {
   const { usuario, isLoading } = useAuth();
   const [tipoRelatorio, setTipoRelatorio] = useState<'asa' | 'visual' | 'consolidado' | null>(null);
   const [webhookModalAberto, setWebhookModalAberto] = useState(false);
+  
+  // Filtros para relatórios
+  const [filtroASA, setFiltroASA] = useState<'carteira' | 'geral'>('carteira');
+  const [carteiraSelecionada, setCarteiraSelecionada] = useState<string>('');
+  
+  const [filtroVisual, setFiltroVisual] = useState<'carteira' | 'responsavel'>('carteira');
+  const [carteiraVisual, setCarteiraVisual] = useState<string>('');
+  const [responsavelVisual, setResponsavelVisual] = useState<string>('');
+  
+  const [filtroConsolidado, setFiltroConsolidado] = useState<'carteira' | 'responsavel'>('carteira');
+  const [carteiraConsolidado, setCarteiraConsolidado] = useState<string>('');
+  const [responsavelConsolidado, setResponsavelConsolidado] = useState<string>('');
+
+  // Hooks dos relatórios
+  const { gerarRelatorioCarteira, gerarRelatorioGeral, isLoading: isLoadingASA, carteiras } = useRelatorioASA();
+  const { gerarRelatorioCarteira: gerarRelatorioCarteiraVisual, gerarRelatorioResponsavel: gerarRelatorioResponsavelVisual, carteiras: carteirasVisual, responsaveis: responsaveisVisual } = useRelatorioVisual();
+  const { gerarRelatorioCarteira: gerarRelatorioCarteiraConsolidado, gerarRelatorioResponsavel: gerarRelatorioResponsavelConsolidado, carteiras: carteirasConsolidado, responsaveis: responsaveisConsolidado } = useRelatorioConsolidado();
+  const { adicionarRelatorio } = useHistoricoRelatorios();
+
+  // Estados dos dados dos relatórios
+  const [dadosRelatorioASA, setDadosRelatorioASA] = useState(null);
+  const [dadosRelatorioVisual, setDadosRelatorioVisual] = useState(null);
+  const [dadosRelatorioConsolidado, setDadosRelatorioConsolidado] = useState(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -23,8 +53,12 @@ export default function Relatorios() {
     return (
       <div className="min-h-screen bg-pmo-background flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 bg-pmo-primary rounded-xl flex items-center justify-center mx-auto mb-4">
-            <span className="text-white font-bold text-xl">DashPMO</span>
+          <div className="w-16 h-16 bg-white rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+            <img 
+              src="/lovable-uploads/DashPMO_Icon_recortado.png" 
+              alt="DashPMO" 
+              className="w-12 h-12" 
+            />
           </div>
           <div className="text-pmo-gray">Carregando...</div>
         </div>
@@ -36,13 +70,78 @@ export default function Relatorios() {
     return <LoginForm />;
   }
 
+  const handleGerarRelatorioASA = async () => {
+    if (filtroASA === 'geral') {
+      const dados = await gerarRelatorioGeral();
+      if (dados) {
+        setDadosRelatorioASA(dados);
+        setTipoRelatorio('asa');
+        adicionarRelatorio({
+          tipo: 'asa',
+          filtro: 'Geral',
+          valor: 'Todos os projetos',
+          nomeArquivo: `relatorio-asa-geral-${new Date().toISOString().split('T')[0]}.pdf`
+        });
+      }
+    } else if (carteiraSelecionada) {
+      const dados = await gerarRelatorioCarteira(carteiraSelecionada);
+      if (dados) {
+        setDadosRelatorioASA(dados);
+        setTipoRelatorio('asa');
+        adicionarRelatorio({
+          tipo: 'asa',
+          filtro: 'Carteira',
+          valor: carteiraSelecionada,
+          nomeArquivo: `relatorio-asa-${carteiraSelecionada.toLowerCase().replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`
+        });
+      }
+    }
+  };
+
+  const handleGerarRelatorioVisual = async () => {
+    const dados = filtroVisual === 'carteira' 
+      ? await gerarRelatorioCarteiraVisual(carteiraVisual)
+      : await gerarRelatorioResponsavelVisual(responsavelVisual);
+    
+    if (dados) {
+      setDadosRelatorioVisual(dados);
+      setTipoRelatorio('visual');
+      adicionarRelatorio({
+        tipo: 'visual',
+        filtro: filtroVisual === 'carteira' ? 'Carteira' : 'Responsável ASA',
+        valor: filtroVisual === 'carteira' ? carteiraVisual : responsavelVisual,
+        nomeArquivo: `relatorio-visual-${(filtroVisual === 'carteira' ? carteiraVisual : responsavelVisual).toLowerCase().replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`
+      });
+    }
+  };
+
+  const handleGerarRelatorioConsolidado = async () => {
+    const dados = filtroConsolidado === 'carteira' 
+      ? await gerarRelatorioCarteiraConsolidado(carteiraConsolidado)
+      : await gerarRelatorioResponsavelConsolidado(responsavelConsolidado);
+    
+    if (dados) {
+      setDadosRelatorioConsolidado(dados);
+      setTipoRelatorio('consolidado');
+      adicionarRelatorio({
+        tipo: 'consolidado',
+        filtro: filtroConsolidado === 'carteira' ? 'Carteira' : 'Responsável ASA',
+        valor: filtroConsolidado === 'carteira' ? carteiraConsolidado : responsavelConsolidado,
+        nomeArquivo: `relatorio-consolidado-${(filtroConsolidado === 'carteira' ? carteiraConsolidado : responsavelConsolidado).toLowerCase().replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`
+      });
+    }
+  };
+
   if (tipoRelatorio === 'asa') {
     return (
       <Layout>
         <RelatorioASAViewer 
           isOpen={true}
-          onClose={() => setTipoRelatorio(null)}
-          dados={null}
+          onClose={() => {
+            setTipoRelatorio(null);
+            setDadosRelatorioASA(null);
+          }}
+          dados={dadosRelatorioASA}
         />
       </Layout>
     );
@@ -53,8 +152,11 @@ export default function Relatorios() {
       <Layout>
         <RelatorioVisualViewer 
           isOpen={true}
-          onClose={() => setTipoRelatorio(null)}
-          dados={null}
+          onClose={() => {
+            setTipoRelatorio(null);
+            setDadosRelatorioVisual(null);
+          }}
+          dados={dadosRelatorioVisual}
         />
       </Layout>
     );
@@ -63,12 +165,7 @@ export default function Relatorios() {
   if (tipoRelatorio === 'consolidado') {
     return (
       <Layout>
-        <RelatorioConsolidadoContent dados={{
-          projetos: [],
-          statusProjetos: [],
-          incidentes: [],
-          dataGeracao: new Date()
-        }} />
+        <RelatorioConsolidadoContent dados={dadosRelatorioConsolidado} />
       </Layout>
     );
   }
@@ -81,61 +178,212 @@ export default function Relatorios() {
           <p className="text-pmo-gray mt-2">Geração de relatórios e análises</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-pmo-primary/10 rounded-lg">
-                <FileText className="h-6 w-6 text-pmo-primary" />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Relatório ASA */}
+          <Card className="hover:shadow-md transition-shadow">
+            <CardHeader>
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-pmo-primary/10 rounded-lg">
+                  <FileText className="h-6 w-6 text-pmo-primary" />
+                </div>
               </div>
-            </div>
-            <h3 className="text-lg font-semibold text-pmo-primary mb-2">Relatório ASA</h3>
-            <p className="text-pmo-gray text-sm mb-4">
-              Relatório executivo formatado para apresentação ASA
-            </p>
-            <Button 
-              onClick={() => setTipoRelatorio('asa')}
-              className="w-full bg-pmo-primary hover:bg-pmo-secondary text-white"
-            >
-              Gerar Relatório
-            </Button>
-          </div>
+              <CardTitle className="text-lg text-pmo-primary mb-2">Relatório ASA</CardTitle>
+              <p className="text-pmo-gray text-sm">
+                Relatório executivo formatado para apresentação ASA
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-pmo-gray mb-2 block">Filtrar por:</label>
+                <Select value={filtroASA} onValueChange={(value: 'carteira' | 'geral') => setFiltroASA(value)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="carteira">Por Carteira</SelectItem>
+                    <SelectItem value="geral">Relatório Geral</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-          <div className="bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-pmo-primary/10 rounded-lg">
-                <BarChart3 className="h-6 w-6 text-pmo-primary" />
-              </div>
-            </div>
-            <h3 className="text-lg font-semibold text-pmo-primary mb-2">Relatório Visual</h3>
-            <p className="text-pmo-gray text-sm mb-4">
-              Relatório com gráficos e visualizações de dados
-            </p>
-            <Button 
-              onClick={() => setTipoRelatorio('visual')}
-              className="w-full bg-pmo-primary hover:bg-pmo-secondary text-white"
-            >
-              Gerar Relatório
-            </Button>
-          </div>
+              {filtroASA === 'carteira' && (
+                <div>
+                  <label className="text-sm font-medium text-pmo-gray mb-2 block">Carteira:</label>
+                  <Select value={carteiraSelecionada} onValueChange={setCarteiraSelecionada}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione uma carteira" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CARTEIRAS.map((carteira) => (
+                        <SelectItem key={carteira} value={carteira}>
+                          {carteira}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
-          <div className="bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-pmo-primary/10 rounded-lg">
-                <TrendingUp className="h-6 w-6 text-pmo-primary" />
+              <Button 
+                onClick={handleGerarRelatorioASA}
+                disabled={isLoadingASA || (filtroASA === 'carteira' && !carteiraSelecionada)}
+                className="w-full bg-pmo-primary hover:bg-pmo-secondary text-white"
+              >
+                {isLoadingASA ? 'Gerando...' : 'Gerar Relatório'}
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Relatório Visual */}
+          <Card className="hover:shadow-md transition-shadow">
+            <CardHeader>
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-pmo-primary/10 rounded-lg">
+                  <BarChart3 className="h-6 w-6 text-pmo-primary" />
+                </div>
               </div>
-            </div>
-            <h3 className="text-lg font-semibold text-pmo-primary mb-2">Relatório Consolidado</h3>
-            <p className="text-pmo-gray text-sm mb-4">
-              Relatório completo com todas as informações
-            </p>
-            <Button 
-              onClick={() => setTipoRelatorio('consolidado')}
-              className="w-full bg-pmo-primary hover:bg-pmo-secondary text-white"
-            >
-              Gerar Relatório
-            </Button>
-          </div>
+              <CardTitle className="text-lg text-pmo-primary mb-2">Relatório Visual</CardTitle>
+              <p className="text-pmo-gray text-sm">
+                Relatório com gráficos e visualizações de dados
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-pmo-gray mb-2 block">Filtrar por:</label>
+                <Select value={filtroVisual} onValueChange={(value: 'carteira' | 'responsavel') => setFiltroVisual(value)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="carteira">Por Carteira</SelectItem>
+                    <SelectItem value="responsavel">Por Responsável ASA</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {filtroVisual === 'carteira' ? (
+                <div>
+                  <label className="text-sm font-medium text-pmo-gray mb-2 block">Carteira:</label>
+                  <Select value={carteiraVisual} onValueChange={setCarteiraVisual}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione uma carteira" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {carteirasVisual.map((carteira) => (
+                        <SelectItem key={carteira} value={carteira}>
+                          {carteira}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ) : (
+                <div>
+                  <label className="text-sm font-medium text-pmo-gray mb-2 block">Responsável ASA:</label>
+                  <Select value={responsavelVisual} onValueChange={setResponsavelVisual}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione um responsável" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {responsaveisVisual.map((responsavel) => (
+                        <SelectItem key={responsavel} value={responsavel}>
+                          {responsavel}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              <Button 
+                onClick={handleGerarRelatorioVisual}
+                disabled={
+                  (filtroVisual === 'carteira' && !carteiraVisual) || 
+                  (filtroVisual === 'responsavel' && !responsavelVisual)
+                }
+                className="w-full bg-pmo-primary hover:bg-pmo-secondary text-white"
+              >
+                Gerar Relatório
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Relatório Consolidado */}
+          <Card className="hover:shadow-md transition-shadow">
+            <CardHeader>
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-pmo-primary/10 rounded-lg">
+                  <TrendingUp className="h-6 w-6 text-pmo-primary" />
+                </div>
+              </div>
+              <CardTitle className="text-lg text-pmo-primary mb-2">Relatório Consolidado</CardTitle>
+              <p className="text-pmo-gray text-sm">
+                Relatório completo com todas as informações
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-pmo-gray mb-2 block">Filtrar por:</label>
+                <Select value={filtroConsolidado} onValueChange={(value: 'carteira' | 'responsavel') => setFiltroConsolidado(value)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="carteira">Por Carteira</SelectItem>
+                    <SelectItem value="responsavel">Por Responsável ASA</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {filtroConsolidado === 'carteira' ? (
+                <div>
+                  <label className="text-sm font-medium text-pmo-gray mb-2 block">Carteira:</label>
+                  <Select value={carteiraConsolidado} onValueChange={setCarteiraConsolidado}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione uma carteira" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {carteirasConsolidado.map((carteira) => (
+                        <SelectItem key={carteira} value={carteira}>
+                          {carteira}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ) : (
+                <div>
+                  <label className="text-sm font-medium text-pmo-gray mb-2 block">Responsável ASA:</label>
+                  <Select value={responsavelConsolidado} onValueChange={setResponsavelConsolidado}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione um responsável" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {responsaveisConsolidado.map((responsavel) => (
+                        <SelectItem key={responsavel} value={responsavel}>
+                          {responsavel}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              <Button 
+                onClick={handleGerarRelatorioConsolidado}
+                disabled={
+                  (filtroConsolidado === 'carteira' && !carteiraConsolidado) || 
+                  (filtroConsolidado === 'responsavel' && !responsavelConsolidado)
+                }
+                className="w-full bg-pmo-primary hover:bg-pmo-secondary text-white"
+              >
+                Gerar Relatório
+              </Button>
+            </CardContent>
+          </Card>
         </div>
+
+        <UltimosRelatorios />
 
         <div className="bg-white rounded-lg shadow-sm border p-6">
           <div className="flex items-center justify-between">

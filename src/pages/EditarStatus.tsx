@@ -1,5 +1,6 @@
 
 import { useParams, useNavigate } from 'react-router-dom';
+import { useScrollToTop } from '@/hooks/useScrollToTop';
 import { Layout } from '@/components/layout/Layout';
 import { useStatusList } from '@/hooks/useStatusList';
 import { Button } from '@/components/ui/button';
@@ -12,6 +13,8 @@ export default function EditarStatus() {
   const navigate = useNavigate();
   const { data: statusList, isLoading, error } = useStatusList();
   const { isAdmin } = useAuth();
+  
+  useScrollToTop();
 
   console.log('EditarStatus - ID:', id);
   console.log('EditarStatus - StatusList:', statusList);

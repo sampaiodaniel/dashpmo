@@ -1,4 +1,3 @@
-
 import { DadosRelatorioASA } from '@/hooks/useRelatorioASA';
 
 interface RelatorioFooterProps {
@@ -20,7 +19,7 @@ export function RelatorioFooter({ dados }: RelatorioFooterProps) {
           </div>
           <div className="text-right">
             <img 
-              src="/lovable-uploads/e42353b2-fcfd-4457-bbd8-066545973f48.png" 
+              src="/lovable-uploads/Logo_Asa.png" 
               alt="ASA Logo" 
               className="h-20 w-auto mb-2"
             />

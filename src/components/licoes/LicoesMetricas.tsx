@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from '@/components/ui/card';
 import { Star, AlertTriangle, BookOpen } from 'lucide-react';
 
@@ -45,7 +44,7 @@ export function LicoesMetricas({
             <AlertTriangle className="h-5 w-5 text-pmo-warning" />
             <div className="flex items-baseline gap-2">
               <div className="text-2xl font-bold text-pmo-warning">{pontosAtencao}</div>
-              <span className="text-sm text-pmo-gray">Pontos de Atenção</span>
+              <span className="text-sm text-pmo-gray">Lições de Melhoria</span>
             </div>
           </div>
         </CardContent>

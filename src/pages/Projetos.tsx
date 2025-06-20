@@ -72,7 +72,7 @@ export default function Projetos() {
         <div className="text-center">
           <div className="w-16 h-16 bg-white rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg">
             <img 
-              src="/lovable-uploads/e42353b2-fcfd-4457-bbd8-066545973f48.png" 
+              src="/lovable-uploads/DashPMO_Icon_recortado.png" 
               alt="DashPMO" 
               className="w-12 h-12" 
             />
@@ -144,9 +144,12 @@ export default function Projetos() {
                         <span className="text-lg font-semibold text-pmo-primary">
                           {projeto.nome_projeto}
                         </span>
-                        <Badge variant="outline" className="text-xs">
-                          {projeto.area_responsavel}
-                        </Badge>
+                        <div className="flex items-center gap-2 bg-blue-50 px-3 py-1 rounded-lg border border-blue-200">
+                          <Building className="h-4 w-4 text-blue-600" />
+                          <span className="font-semibold text-blue-700 text-sm">
+                            {projeto.area_responsavel}
+                          </span>
+                        </div>
                       </div>
                       <div className="flex items-center gap-4 text-sm text-gray-600">
                         <div className="flex items-center gap-1">
@@ -190,7 +193,13 @@ export default function Projetos() {
                               <span className="text-gray-600">Progresso:</span>
                               <div className="font-medium">{(projeto.ultimoStatus as any).progresso_estimado || 0}%</div>
                             </div>
-                            <Badge variant={projeto.ultimoStatus.aprovado ? "default" : "secondary"} className="ml-2">
+                            <Badge 
+                              className={`ml-2 ${
+                                projeto.ultimoStatus.aprovado 
+                                  ? "bg-green-100 text-green-800" 
+                                  : "bg-yellow-100 text-yellow-800"
+                              }`}
+                            >
                               {projeto.ultimoStatus.aprovado ? "Revisado" : "Em Revisão"}
                             </Badge>
                           </div>

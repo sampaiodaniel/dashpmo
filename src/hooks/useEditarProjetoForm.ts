@@ -16,7 +16,7 @@ export function useEditarProjetoForm({ projeto, onSuccess }: UseEditarProjetoFor
   const [formData, setFormData] = useState({
     nome_projeto: projeto.nome_projeto || '',
     tipo_projeto_id: projeto.tipo_projeto_id || null,
-    descricao_projeto: projeto.descricao_projeto || '',
+    descricao_projeto: projeto.descricao || projeto.descricao_projeto || '',
     responsavel_asa: projeto.responsavel_asa || '',
     gp_responsavel_cwi: projeto.gp_responsavel_cwi || '',
     responsavel_cwi: projeto.responsavel_cwi || '',
@@ -74,7 +74,7 @@ export function useEditarProjetoForm({ projeto, onSuccess }: UseEditarProjetoFor
       const dataToSubmit = {
         nome_projeto: formData.nome_projeto.trim(),
         tipo_projeto_id: formData.tipo_projeto_id,
-        descricao_projeto: formData.descricao_projeto.trim() || null,
+        descricao: formData.descricao_projeto.trim() || null,
         responsavel_asa: formData.responsavel_asa.trim() || null,
         gp_responsavel_cwi: formData.gp_responsavel_cwi.trim() || null,
         responsavel_cwi: formData.responsavel_cwi.trim() || null,

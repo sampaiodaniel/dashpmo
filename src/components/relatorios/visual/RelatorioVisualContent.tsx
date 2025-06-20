@@ -71,9 +71,9 @@ export function RelatorioVisualContent({ dados }: RelatorioVisualContentProps) {
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
                   <h3 className="text-xl font-bold text-[#1B365D] mb-2">{projeto.nome_projeto}</h3>
-                  {projeto.descricao_projeto && (
-                    <p className="text-[#6B7280] mb-4">{projeto.descricao_projeto}</p>
-                  )}
+                            {projeto.descricao_projeto && (
+            <p className="text-[#6B7280] mb-4">{projeto.descricao_projeto}</p>
+          )}
                   
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                     <div>

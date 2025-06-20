@@ -15,7 +15,7 @@ export function RelatorioHeader({ dados }: RelatorioHeaderProps) {
       <div className="relative z-10">
         <div className="flex items-center justify-center gap-8 mb-8">
           <img 
-            src="/lovable-uploads/e42353b2-fcfd-4457-bbd8-066545973f48.png" 
+            src="/lovable-uploads/Logo_Asa.png" 
             alt="ASA Logo" 
             className="h-48 w-auto"
           />

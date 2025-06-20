@@ -27,7 +27,7 @@ export function LoginForm() {
           <CardHeader className="text-center">
             <div className="flex items-center justify-center mb-4">
               <img 
-                src="/lovable-uploads/d157ae33-1b14-4a31-b5db-2a5d85d550e4.png" 
+                src="/lovable-uploads/DashPMO_recortado.png" 
                 alt="DashPMO" 
                 className="h-16 w-auto max-w-full"
                 style={{ objectFit: 'contain' }}

@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { Calendar, User, Building, FileType } from 'lucide-react';
 import { formatarData } from '@/utils/dateFormatting';
 import { useTiposProjeto } from '@/hooks/useTiposProjeto';
+import { useScrollToTop } from '@/hooks/useScrollToTop';
 
 export default function StatusDetalhes() {
   const { id } = useParams<{ id: string }>();
@@ -25,6 +26,8 @@ export default function StatusDetalhes() {
   const { data: statusList, isLoading, refetch } = useStatusList();
   const { data: tiposProjeto } = useTiposProjeto();
   const queryClient = useQueryClient();
+  
+  useScrollToTop();
 
   const status = statusList?.find(s => s.id === Number(id));
 
@@ -68,7 +71,7 @@ export default function StatusDetalhes() {
           <div className="text-center">
             <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center mx-auto mb-4 shadow-lg">
               <img 
-                src="/lovable-uploads/e42353b2-fcfd-4457-bbd8-066545973f48.png" 
+                src="/lovable-uploads/DashPMO_Icon_recortado.png" 
                 alt="DashPMO" 
                 className="w-8 h-8" 
               />
@@ -91,7 +94,7 @@ export default function StatusDetalhes() {
           <div className="text-center">
             <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center mx-auto mb-4 shadow-lg">
               <img 
-                src="/lovable-uploads/e42353b2-fcfd-4457-bbd8-066545973f48.png" 
+                src="/lovable-uploads/DashPMO_Icon_recortado.png" 
                 alt="DashPMO" 
                 className="w-8 h-8" 
               />
@@ -167,94 +170,86 @@ export default function StatusDetalhes() {
           {/* Status do Projeto */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg text-gray-800">
-                <Calendar className="h-5 w-5" />
+              <CardTitle className="flex items-center gap-2 text-2xl font-normal text-gray-700">
+                <Calendar className="h-6 w-6 text-pmo-primary" />
                 Status do Projeto
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-8">
-              {/* Primeira linha: Data do Status, Status Geral, Visão Chefe do Projeto */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {/* Primeira linha: Descrição do Projeto - ocupa linha toda */}
+              <div className="text-left">
+                <label className="text-base font-medium text-pmo-gray block mb-3 text-left">Descrição do Projeto</label>
+                <p className="text-base text-gray-900 leading-relaxed text-left">
+                  {status.projeto?.descricao || status.projeto?.descricao_projeto || 'Não informado'}
+                </p>
+              </div>
+
+              {/* Segunda linha: Data do Status e Visão Chefe do Projeto */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
-                  <label className="text-sm font-medium text-gray-600 block mb-3">Data do Status</label>
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-gray-500" />
-                    <span className="text-base text-gray-900">{formatarData(status.data_atualizacao)}</span>
-                  </div>
+                  <label className="text-base font-medium text-pmo-gray block mb-3">Data do Status</label>
+                  <span className="text-base text-gray-900">{formatarData(status.data_atualizacao)}</span>
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-600 block mb-3">Status Geral</label>
-                  <Badge className={`text-sm ${getStatusGeralColor(status.status_geral)}`}>
-                    {status.status_geral}
-                  </Badge>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium text-gray-600 block mb-3">Visão Chefe do Projeto</label>
+                  <label className="text-base font-medium text-pmo-gray block mb-3">Visão Chefe do Projeto</label>
                   <Badge className={`text-sm ${getStatusColor(status.status_visao_gp)}`}>
                     {status.status_visao_gp}
                   </Badge>
                 </div>
               </div>
 
-              {/* Segunda linha: Progresso, Revisado, Data de Aprovação */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {/* Terceira linha: Progresso e Status de Revisão */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
-                  <label className="text-sm font-medium text-gray-600 block mb-3">Progresso</label>
+                  <label className="text-base font-medium text-pmo-gray block mb-3">Progresso</label>
                   <span className="text-base text-gray-900">{(status as any).progresso_estimado || 0}%</span>
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-600 block mb-3">Revisado ?</label>
+                  <label className="text-base font-medium text-pmo-gray block mb-3">Revisado ?</label>
                   <Badge variant={status.aprovado ? "default" : "secondary"} className="text-sm">
                     {status.aprovado ? "Sim" : "Não"}
                   </Badge>
                 </div>
-
-                {status.aprovado && status.data_aprovacao && (
-                  <div>
-                    <label className="text-sm font-medium text-gray-600 block mb-3">Data de Aprovação</label>
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-gray-500" />
-                      <span className="text-base text-gray-900">{formatarData(status.data_aprovacao)}</span>
-                    </div>
-                  </div>
-                )}
               </div>
 
-              {/* Terceira linha: Descrição do Projeto e Responsável ASA */}
+              {/* Data de Aprovação, se houver */}
+              {status.aprovado && status.data_aprovacao && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div>
+                    <label className="text-base font-medium text-pmo-gray block mb-3">Data de Aprovação</label>
+                    <span className="text-base text-gray-900">{formatarData(status.data_aprovacao)}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Responsáveis - Chefe do Projeto e Responsável ASA */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
-                  <label className="text-sm font-medium text-gray-600 block mb-3">Descrição do Projeto</label>
-                  <p className="text-base text-gray-900">{status.projeto?.descricao_projeto || status.projeto?.descricao || 'Não informada'}</p>
+                  <label className="text-base font-medium text-pmo-gray block mb-3">Chefe do Projeto</label>
+                  <span className="text-base text-gray-900">{status.projeto?.gp_responsavel}</span>
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-600 block mb-3">Responsável ASA</label>
-                  <div className="flex items-center gap-2">
-                    <User className="h-4 w-4 text-gray-500" />
-                    <span className="text-base text-gray-900">{status.projeto?.responsavel_asa || status.projeto?.responsavel_interno || 'Não informado'}</span>
-                  </div>
+                  <label className="text-base font-medium text-pmo-gray block mb-3">Responsável ASA</label>
+                  <span className="text-base text-gray-900">{status.projeto?.responsavel_asa || status.projeto?.responsavel_interno || 'Não informado'}</span>
                 </div>
               </div>
 
-              {/* Quarta linha: Chefe do Projeto e Tipo de Projeto */}
+              {/* Última linha: Tipo de Projeto e Status Geral */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
-                  <label className="text-sm font-medium text-gray-600 block mb-3">Chefe do Projeto</label>
-                  <div className="flex items-center gap-2">
-                    <User className="h-4 w-4 text-gray-500" />
-                    <span className="text-base text-gray-900">{status.projeto?.gp_responsavel}</span>
-                  </div>
+                  <label className="text-base font-medium text-pmo-gray block mb-3">Tipo de Projeto</label>
+                  <span className="text-base text-gray-900">{tipoProjeto?.nome || 'Não informado'}</span>
                 </div>
-
-                {tipoProjeto && (
-                  <div>
-                    <label className="text-sm font-medium text-gray-600 block mb-3">Tipo de Projeto</label>
-                    <span className="text-base text-gray-900">{tipoProjeto.nome}</span>
-                  </div>
-                )}
+                
+                <div>
+                  <label className="text-base font-medium text-pmo-gray block mb-3">Status Geral</label>
+                  <Badge className={`text-sm ${getStatusGeralColor(status.status_geral)}`}>
+                    {status.status_geral}
+                  </Badge>
+                </div>
               </div>
             </CardContent>
           </Card>

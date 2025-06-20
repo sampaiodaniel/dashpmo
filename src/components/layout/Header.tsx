@@ -52,8 +52,8 @@ export function Header({ onToggleSidebar }: HeaderProps) {
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2">
           <img 
-            src="/lovable-uploads/e42353b2-fcfd-4457-bbd8-066545973f48.png" 
-            alt="ASA Logo" 
+            src="/lovable-uploads/Logo_Asa.png" 
+                          alt="ASA Logo" 
             className="h-12 w-auto"
           />
           <div className="text-right">

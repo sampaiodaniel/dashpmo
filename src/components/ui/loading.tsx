@@ -4,7 +4,7 @@ export function Loading() {
       <div className="text-center">
         <div className="w-16 h-16 bg-white rounded-xl flex items-center justify-center mx-auto mb-4 animate-pulse shadow-lg">
           <img 
-            src="/lovable-uploads/e42353b2-fcfd-4457-bbd8-066545973f48.png" 
+            src="/lovable-uploads/DashPMO_Icon_recortado.png" 
             alt="DashPMO" 
             className="w-12 h-12" 
           />

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useScrollToTop } from '@/hooks/useScrollToTop';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -34,6 +35,8 @@ export default function MudancaDetalhes() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { usuario, isAdmin } = useAuth();
+  
+  useScrollToTop();
   const { toast } = useToast();
   const [mudanca, setMudanca] = useState<Mudanca | null>(null);
 

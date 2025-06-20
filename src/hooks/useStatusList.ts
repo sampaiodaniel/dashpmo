@@ -16,12 +16,19 @@ export function useStatusList() {
           projeto:projetos!inner (
             id,
             nome_projeto,
+            descricao,
+            descricao_projeto,
             area_responsavel,
             responsavel_interno,
+            responsavel_asa,
             gp_responsavel,
             status_ativo,
             data_criacao,
-            criado_por
+            criado_por,
+            tipo_projeto_id,
+            carteira_primaria,
+            carteira_secundaria,
+            carteira_terciaria
           )
         `)
         .order('data_atualizacao', { ascending: false });

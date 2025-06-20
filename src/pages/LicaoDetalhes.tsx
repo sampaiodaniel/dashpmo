@@ -1,4 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
+import { useScrollToTop } from '@/hooks/useScrollToTop';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
@@ -17,6 +18,8 @@ export default function LicaoDetalhes() {
   const navigate = useNavigate();
   const { usuario, isLoading: authLoading, isAdmin } = useAuth();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  
+  useScrollToTop();
 
   const { data: licao, isLoading, error, refetch } = useQuery({
     queryKey: ['licao', id],

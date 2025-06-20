@@ -11,6 +11,7 @@ import { EditarProjetoModal } from '@/components/forms/EditarProjetoModal';
 import { ProjetoInfoGerais } from '@/components/projetos/ProjetoInfoGerais';
 import { ProjetoStatus } from '@/components/projetos/ProjetoStatus';
 import { Loading } from '@/components/ui/loading';
+import { useScrollToTop } from '@/hooks/useScrollToTop';
 
 export default function ProjetoDetalhes() {
   const { id } = useParams<{ id: string }>();
@@ -18,6 +19,8 @@ export default function ProjetoDetalhes() {
   const { usuario, isLoading: authLoading } = useAuth();
   const { data: projetos, isLoading } = useProjetos();
   const [editarModalAberto, setEditarModalAberto] = useState(false);
+  
+  useScrollToTop();
 
   const projeto = projetos?.find(p => p.id === Number(id));
 
@@ -36,7 +39,7 @@ export default function ProjetoDetalhes() {
           <div className="text-center">
             <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center mx-auto mb-4 shadow-lg">
               <img 
-                src="/lovable-uploads/e42353b2-fcfd-4457-bbd8-066545973f48.png" 
+                src="/lovable-uploads/DashPMO_Icon_recortado.png" 
                 alt="DashPMO" 
                 className="w-8 h-8" 
               />

@@ -1,4 +1,3 @@
-
 import { useEffect, useState, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useRelatorioConsolidado, DadosRelatorioConsolidado } from '@/hooks/useRelatorioConsolidado';
@@ -57,8 +56,8 @@ export default function RelatorioConsolidado() {
         <div className="text-center">
           <div className="w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-4">
             <img 
-              src="/lovable-uploads/8a727f08-4c14-4499-8d1e-a2caa0540ee7.png" 
-              alt="PMO Logo" 
+              src="/lovable-uploads/DashPMO_Icon_recortado.png" 
+              alt="DashPMO Logo" 
               className="w-16 h-16"
             />
           </div>
@@ -74,8 +73,8 @@ export default function RelatorioConsolidado() {
         <div className="text-center">
           <div className="w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-4">
             <img 
-              src="/lovable-uploads/8a727f08-4c14-4499-8d1e-a2caa0540ee7.png" 
-              alt="PMO Logo" 
+              src="/lovable-uploads/DashPMO_Icon_recortado.png" 
+              alt="DashPMO Logo" 
               className="w-16 h-16"
             />
           </div>

@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { StatusProjeto } from '@/types/pmo';
 import { useNavigate } from 'react-router-dom';
+import { Building } from 'lucide-react';
 
 interface StatusCardProps {
   status: StatusProjeto;
@@ -110,10 +111,12 @@ export function StatusCard({ status }: StatusCardProps) {
           <h3 className="text-lg font-semibold text-[#1B365D]">
             {status.projeto?.nome_projeto}
           </h3>
-          <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border ${getCarteiraBadgeClasses(status.projeto?.area_responsavel || 'Crédito')}`}>
-            <span className="text-sm">{getCarteiraIcon(status.projeto?.area_responsavel || 'Crédito')}</span>
-            {status.projeto?.area_responsavel || 'Crédito'}
-          </span>
+          <div className="flex items-center gap-2 bg-blue-50 px-3 py-1 rounded-lg border border-blue-200">
+            <Building className="h-4 w-4 text-blue-600" />
+            <span className="font-semibold text-blue-700 text-sm">
+              {status.projeto?.area_responsavel || 'Crédito'}
+            </span>
+          </div>
         </div>
         <div className="flex items-center gap-3">
           <span className="text-sm text-gray-600">{status.data_atualizacao.toLocaleDateString()}</span>

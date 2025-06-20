@@ -1,5 +1,6 @@
 
 import { useParams, useNavigate } from 'react-router-dom';
+import { useScrollToTop } from '@/hooks/useScrollToTop';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
@@ -12,6 +13,8 @@ export default function EditarMudanca() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { usuario, isLoading } = useAuth();
+  
+  useScrollToTop();
   const { data: mudancas, isLoading: mudancasLoading } = useMudancasList();
 
   const mudanca = mudancas?.find(m => m.id === Number(id));
