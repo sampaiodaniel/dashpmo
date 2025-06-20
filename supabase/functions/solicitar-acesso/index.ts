@@ -33,20 +33,44 @@ serve(async (req) => {
       )
     }
 
-    // Enviar email usando Resend com domínio padrão
+    // Enviar email usando Resend 
     const emailData = {
       from: 'PMO System <onboarding@resend.dev>',
-      to: ['delivered@resend.dev'], // Email de teste do Resend
+      to: ['daniel.almeida@cwi.com.br'], // Email do administrador
       subject: 'Nova Solicitação de Acesso - Sistema PMO',
       html: `
-        <h2>Nova Solicitação de Acesso</h2>
-        <p><strong>Nome:</strong> ${nome}</p>
-        <p><strong>Email:</strong> ${email}</p>
-        ${telefone ? `<p><strong>Telefone:</strong> ${telefone}</p>` : ''}
-        <p><strong>Motivo:</strong></p>
-        <p>${motivo}</p>
-        <hr>
-        <p><em>Enviado pelo Sistema PMO</em></p>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #1B365D; border-bottom: 2px solid #1B365D; padding-bottom: 10px;">
+            🔔 Nova Solicitação de Acesso - Sistema PMO
+          </h2>
+          
+          <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="color: #1B365D; margin-top: 0;">Dados do Solicitante:</h3>
+            <p><strong>👤 Nome:</strong> ${nome}</p>
+            <p><strong>📧 Email:</strong> ${email}</p>
+            ${telefone ? `<p><strong>📱 Telefone:</strong> ${telefone}</p>` : ''}
+          </div>
+          
+          <div style="background-color: #fff3cd; padding: 20px; border-radius: 8px; border-left: 4px solid #ffc107;">
+            <h3 style="color: #856404; margin-top: 0;">💼 Motivo da Solicitação:</h3>
+            <p style="white-space: pre-line;">${motivo}</p>
+          </div>
+          
+          <div style="background-color: #d1ecf1; padding: 15px; border-radius: 8px; margin-top: 20px;">
+            <p style="margin: 0; font-size: 14px; color: #0c5460;">
+              <strong>📋 Próximos passos:</strong><br>
+              1. Revisar a solicitação<br>
+              2. Criar usuário no sistema (se aprovado)<br>
+              3. Responder ao solicitante via email
+            </p>
+          </div>
+          
+          <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
+          <p style="text-align: center; color: #666; font-size: 12px;">
+            <em>🤖 Enviado automaticamente pelo Sistema PMO - DashPMO</em><br>
+            <em>Data: ${new Date().toLocaleString('pt-BR')}</em>
+          </p>
+        </div>
       `
     }
 

@@ -10,19 +10,42 @@ interface DashboardOverviewTableProps {
 }
 
 export function DashboardOverviewTable({ filtros, carteirasPermitidas }: DashboardOverviewTableProps) {
-  const { data: carteiraOverview } = useCarteiraOverview();
+  const { data: carteiraOverview } = useCarteiraOverview(filtros);
 
   // Buscar dados de status por carteira para as colunas Verde/Amarelo/Vermelho
   const { data: statusPorCarteira = {} } = useQuery({
-    queryKey: ['status-por-carteira'],
+    queryKey: ['status-por-carteira', filtros],
     queryFn: async () => {
-      const { data, error } = await supabase
+      console.log('📊 Buscando status por carteira com filtros:', filtros);
+      
+      // Primeiro buscar a hierarquia se necessário
+      let hierarchy = { responsaveisHierarquia: [], carteirasPermitidas: [] };
+      if (filtros?.responsavel_asa) {
+        const { getResponsavelHierarchy } = await import('@/hooks/dashboard/useDashboardHierarchy');
+        hierarchy = await getResponsavelHierarchy(filtros.responsavel_asa);
+      }
+
+      let query = supabase
         .from('status_projeto')
         .select(`
           status_visao_gp,
-          projeto:projetos!inner(area_responsavel)
+          projeto:projetos!inner(area_responsavel, responsavel_asa)
         `)
-        .eq('aprovado', true);
+        .eq('aprovado', true)
+        .eq('projeto.status_ativo', true);
+
+      // Aplicar filtros
+      if (filtros?.carteira && filtros.carteira !== 'todas') {
+        query = query.eq('projeto.area_responsavel', filtros.carteira);
+      } else if (hierarchy.carteirasPermitidas.length > 0) {
+        query = query.in('projeto.area_responsavel', hierarchy.carteirasPermitidas);
+      }
+
+      if (filtros?.responsavel_asa && hierarchy.responsaveisHierarquia.length > 0) {
+        query = query.in('projeto.responsavel_asa', hierarchy.responsaveisHierarquia);
+      }
+
+      const { data, error } = await query;
 
       if (error) {
         console.error('Erro ao buscar status por carteira:', error);
@@ -56,24 +79,8 @@ export function DashboardOverviewTable({ filtros, carteirasPermitidas }: Dashboa
     },
   });
 
-  // Filtrar dados da visão geral por carteira baseado nos filtros
-  const carteiraOverviewFiltrada = carteiraOverview?.filter(item => {
-    // Filtro por carteira específica
-    if (filtros.carteira && filtros.carteira !== 'todas') {
-      if (item.carteira !== filtros.carteira) {
-        return false;
-      }
-    }
-    
-    // Filtro por responsável ASA usando as carteiras permitidas das métricas
-    if (filtros.responsavel_asa && carteirasPermitidas) {
-      if (!carteirasPermitidas.includes(item.carteira)) {
-        return false;
-      }
-    }
-    
-    return true;
-  });
+  // Os dados já vêm filtrados do hook useCarteiraOverview
+  const carteiraOverviewFiltrada = carteiraOverview;
 
   return (
     <div className="bg-white rounded-lg shadow-sm border overflow-hidden">

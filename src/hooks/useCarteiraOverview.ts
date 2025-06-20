@@ -1,7 +1,8 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { CARTEIRAS } from '@/types/pmo';
+import { CARTEIRAS, FiltrosDashboard } from '@/types/pmo';
+import { getResponsavelHierarchy } from './dashboard/useDashboardHierarchy';
 
 export interface CarteiraOverviewData {
   carteira: string;
@@ -18,17 +19,43 @@ export interface CarteiraOverviewData {
   entregues: number;
 }
 
-export function useCarteiraOverview() {
+export function useCarteiraOverview(filtros?: FiltrosDashboard) {
   return useQuery({
-    queryKey: ['carteira-overview'],
+    queryKey: ['carteira-overview', filtros],
     queryFn: async (): Promise<CarteiraOverviewData[]> => {
-      console.log('📊 Buscando dados de overview por carteira');
+      console.log('📊 Buscando dados de overview por carteira com filtros:', filtros);
 
-      // Buscar projetos ativos
-      const { data: projetos, error: projetosError } = await supabase
+      // Buscar hierarquia ASA se necessário
+      let hierarchy = { responsaveisHierarquia: [], carteirasPermitidas: [] };
+      if (filtros?.responsavel_asa) {
+        hierarchy = await getResponsavelHierarchy(filtros.responsavel_asa);
+      }
+
+      // Buscar projetos ativos com filtros aplicados
+      let query = supabase
         .from('projetos')
         .select('*')
         .eq('status_ativo', true);
+
+      // Aplicar filtros
+      if (filtros?.carteira && filtros.carteira !== 'todas') {
+        const carteiraValida = CARTEIRAS.find(c => c === filtros.carteira);
+        if (carteiraValida) {
+          query = query.eq('area_responsavel', carteiraValida);
+          console.log('🏢 Filtro de carteira aplicado no overview:', carteiraValida);
+        }
+      } else if (hierarchy.carteirasPermitidas.length > 0) {
+        // Se temos hierarquia ASA mas não filtro específico de carteira, usar carteiras permitidas
+        query = query.in('area_responsavel', hierarchy.carteirasPermitidas);
+        console.log('🏢 Filtro de carteiras por hierarquia ASA no overview:', hierarchy.carteirasPermitidas);
+      }
+
+      if (filtros?.responsavel_asa && hierarchy.responsaveisHierarquia.length > 0) {
+        query = query.in('responsavel_asa', hierarchy.responsaveisHierarquia);
+        console.log('👤 Filtro de responsável ASA no overview:', hierarchy.responsaveisHierarquia);
+      }
+
+      const { data: projetos, error: projetosError } = await query;
 
       if (projetosError) {
         console.error('Erro ao buscar projetos:', projetosError);
@@ -70,8 +97,13 @@ export function useCarteiraOverview() {
       const em15Dias = new Date();
       em15Dias.setDate(hoje.getDate() + 15);
 
-      // Calcular métricas por carteira
-      const carteiraOverview: CarteiraOverviewData[] = CARTEIRAS.map(carteira => {
+      // Calcular métricas por carteira (apenas para carteiras que têm projetos)
+      const carteirasComProjetos = new Set(projetos?.map(p => p.area_responsavel) || []);
+      const carteirasParaCalcular = filtros?.carteira && filtros.carteira !== 'todas' 
+        ? [filtros.carteira].filter(c => CARTEIRAS.includes(c as any))
+        : CARTEIRAS.filter(c => carteirasComProjetos.has(c));
+
+      const carteiraOverview: CarteiraOverviewData[] = carteirasParaCalcular.map(carteira => {
         const projetosCarteira = projetos?.filter(p => p.area_responsavel === carteira) || [];
         const mudancasCarteira = mudancas?.filter(m => {
           const projeto = projetos?.find(p => p.id === m.projeto_id);
