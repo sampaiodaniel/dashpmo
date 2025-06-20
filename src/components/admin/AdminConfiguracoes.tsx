@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,6 +9,7 @@ import { ConfiguracaoModal } from './ConfiguracaoModal';
 import { TipoProjetoModal } from './TipoProjetoModal';
 import { ConfiguracaoSistema } from '@/types/admin';
 import { TipoProjeto } from '@/hooks/useTiposProjeto';
+import { useQueryClient } from '@tanstack/react-query';
 
 export function AdminConfiguracoes() {
   const [tipoAtivo, setTipoAtivo] = useState<string>('responsavel_cwi');
@@ -17,9 +17,10 @@ export function AdminConfiguracoes() {
   const [tipoProjetoModalAberto, setTipoProjetoModalAberto] = useState(false);
   const [configuracaoEditando, setConfiguracaoEditando] = useState<ConfiguracaoSistema | null>(null);
   const [tipoProjetoEditando, setTipoProjetoEditando] = useState<TipoProjeto | null>(null);
+  const queryClient = useQueryClient();
 
   const { data: configuracoes, isLoading } = useConfiguracoesSistema(tipoAtivo as any);
-  const { data: tiposProjeto, isLoading: isLoadingTipos } = useTiposProjeto();
+  const { data: tiposProjeto, isLoading: isLoadingTipos, refetch: refetchTipos } = useTiposProjeto();
   const { deleteConfiguracao } = useConfiguracoesSistemaOperations();
   const { deleteTipoProjeto } = useTiposProjetoOperations();
 
@@ -65,6 +66,14 @@ export function AdminConfiguracoes() {
     if (confirm('Tem certeza que deseja remover este tipo de projeto?')) {
       deleteTipoProjeto.mutate(id);
     }
+  };
+
+  const handleFecharTipoProjetoModal = () => {
+    setTipoProjetoModalAberto(false);
+    setTipoProjetoEditando(null);
+    // Invalidar cache e refetch para garantir atualização imediata
+    queryClient.invalidateQueries({ queryKey: ['tipos-projeto'] });
+    refetchTipos();
   };
 
   return (
@@ -181,7 +190,10 @@ export function AdminConfiguracoes() {
                     {tiposProjeto?.map((tipo) => (
                       <div key={tipo.id} className="flex items-center justify-between p-3 border rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
                         <div className="flex-1">
-                          <span className="font-medium">{tipo.valor}</span>
+                          <span className="font-medium">{tipo.nome}</span>
+                          {tipo.descricao && (
+                            <span className="text-sm text-gray-500 ml-2">({tipo.descricao})</span>
+                          )}
                           <span className="text-sm text-gray-500 ml-2">(Ordem: {tipo.ordem})</span>
                         </div>
                         <div className="flex gap-2">
@@ -226,7 +238,7 @@ export function AdminConfiguracoes() {
 
       <TipoProjetoModal
         aberto={tipoProjetoModalAberto}
-        onFechar={() => setTipoProjetoModalAberto(false)}
+        onFechar={handleFecharTipoProjetoModal}
         tipo={tipoProjetoEditando}
       />
     </div>

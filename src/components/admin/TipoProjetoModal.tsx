@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useTiposProjetoOperations, TipoProjeto } from '@/hooks/useTiposProjeto';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface TipoProjetoModalProps {
   aberto: boolean;
@@ -14,6 +15,7 @@ interface TipoProjetoModalProps {
 
 export function TipoProjetoModal({ aberto, onFechar, tipo }: TipoProjetoModalProps) {
   const { createTipoProjeto, updateTipoProjeto } = useTiposProjetoOperations();
+  const queryClient = useQueryClient();
   
   const [formData, setFormData] = useState({
     nome: '',
@@ -40,26 +42,41 @@ export function TipoProjetoModal({ aberto, onFechar, tipo }: TipoProjetoModalPro
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (tipo) {
-      await updateTipoProjeto.mutateAsync({
-        id: tipo.id,
-        nome: formData.nome,
-        descricao: formData.descricao,
-        ordem: formData.ordem
-      });
-    } else {
-      await createTipoProjeto.mutateAsync({
-        nome: formData.nome,
-        descricao: formData.descricao,
-        ordem: formData.ordem
-      });
+    try {
+      if (tipo) {
+        await updateTipoProjeto.mutateAsync({
+          id: tipo.id,
+          nome: formData.nome,
+          descricao: formData.descricao,
+          ordem: formData.ordem
+        });
+      } else {
+        await createTipoProjeto.mutateAsync({
+          nome: formData.nome,
+          descricao: formData.descricao,
+          ordem: formData.ordem
+        });
+      }
+      
+      // Invalidar cache e refetch para garantir atualização imediata
+      queryClient.invalidateQueries({ queryKey: ['tipos-projeto'] });
+      queryClient.refetchQueries({ queryKey: ['tipos-projeto'] });
+      
+      onFechar();
+    } catch (error) {
+      console.error('Erro ao salvar tipo de projeto:', error);
     }
-    
+  };
+
+  const handleFechar = () => {
+    // Invalidar cache e refetch ao fechar
+    queryClient.invalidateQueries({ queryKey: ['tipos-projeto'] });
+    queryClient.refetchQueries({ queryKey: ['tipos-projeto'] });
     onFechar();
   };
 
   return (
-    <Dialog open={aberto} onOpenChange={onFechar}>
+    <Dialog open={aberto} onOpenChange={handleFechar}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
@@ -99,7 +116,7 @@ export function TipoProjetoModal({ aberto, onFechar, tipo }: TipoProjetoModalPro
           </div>
 
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={onFechar}>
+            <Button type="button" variant="outline" onClick={handleFechar}>
               Cancelar
             </Button>
             <Button 
