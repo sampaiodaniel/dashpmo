@@ -16,7 +16,7 @@ export function useTiposProjeto() {
   return useQuery({
     queryKey: ['tipos-projeto'],
     queryFn: async (): Promise<TipoProjeto[]> => {
-      console.log('Buscando tipos de projeto da tabela tipos_projeto');
+      console.log('🔍 Buscando tipos de projeto da tabela tipos_projeto');
       
       const { data, error } = await supabase
         .from('tipos_projeto')
@@ -25,11 +25,13 @@ export function useTiposProjeto() {
         .order('ordem', { ascending: true });
 
       if (error) {
-        console.error('Erro ao buscar tipos de projeto:', error);
+        console.error('❌ Erro ao buscar tipos de projeto:', error);
         throw error;
       }
 
-      console.log('Tipos de projeto encontrados:', data);
+      console.log('✅ Tipos de projeto encontrados:', data);
+      console.log('📊 Quantidade de tipos:', data?.length || 0);
+      
       return data || [];
     },
   });
