@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -15,7 +14,8 @@ export function ConfiguracoesPerfil() {
   const { log } = useLogger();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-    nome: usuario?.nome || '',
+    nome: usuario?.nome?.split(' ')[0] || '',
+    sobrenome: usuario?.nome?.split(' ').slice(1).join(' ') || '',
     email: usuario?.email || '',
     senhaAtual: '',
     novaSenha: '',
@@ -34,12 +34,11 @@ export function ConfiguracoesPerfil() {
     try {
       const updates: any = {};
       
-      if (formData.nome !== usuario.nome) {
-        updates.nome = formData.nome;
-      }
+      // Combinar nome e sobrenome
+      const nomeCompleto = `${formData.nome.trim()} ${formData.sobrenome.trim()}`.trim();
       
-      if (formData.email !== usuario.email) {
-        updates.email = formData.email;
+      if (nomeCompleto !== usuario.nome) {
+        updates.nome = nomeCompleto;
       }
 
       if (Object.keys(updates).length > 0) {
@@ -68,8 +67,7 @@ export function ConfiguracoesPerfil() {
           {
             campos_alterados: Object.keys(updates),
             valores_anteriores: {
-              nome: usuario.nome,
-              email: usuario.email
+              nome: usuario.nome
             }
           }
         );
@@ -216,15 +214,28 @@ export function ConfiguracoesPerfil() {
               />
             </div>
             <div>
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="sobrenome">Sobrenome</Label>
               <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => handleInputChange('email', e.target.value)}
-                placeholder="seu@email.com"
+                id="sobrenome"
+                value={formData.sobrenome}
+                onChange={(e) => handleInputChange('sobrenome', e.target.value)}
+                placeholder="Seu sobrenome"
               />
             </div>
+          </div>
+          
+          <div>
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              value={formData.email}
+              readOnly
+              disabled
+              className="bg-gray-50 cursor-not-allowed"
+              placeholder="Email não pode ser alterado"
+            />
+            <p className="text-xs text-[#9CA3AF] mt-1">O email não pode ser alterado pois é usado para identificação única do usuário</p>
           </div>
           
           <div className="flex justify-end">

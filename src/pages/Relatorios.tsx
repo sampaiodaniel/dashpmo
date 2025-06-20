@@ -41,7 +41,6 @@ export default function Relatorios() {
   // Estados dos dados dos relatórios
   const [dadosRelatorioASA, setDadosRelatorioASA] = useState(null);
   const [dadosRelatorioVisual, setDadosRelatorioVisual] = useState(null);
-  const [dadosRelatorioConsolidado, setDadosRelatorioConsolidado] = useState(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
