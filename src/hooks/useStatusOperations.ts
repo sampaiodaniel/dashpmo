@@ -1,15 +1,12 @@
-
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from './useAuth';
-import { useNavigate } from 'react-router-dom';
 import { useLogger } from '@/utils/logger';
 
 export function useStatusOperations() {
   const queryClient = useQueryClient();
   const { usuario } = useAuth();
-  const navigate = useNavigate();
   const { log } = useLogger();
 
   const revisar = useMutation({
@@ -58,8 +55,8 @@ export function useStatusOperations() {
         title: "Sucesso",
         description: "Status revisado com sucesso!",
       });
-      // Redirecionar para a listagem de status
-      navigate('/status');
+      // Remover navegação automática que causa tela branca
+      // navigate('/status');
     },
     onError: (error) => {
       console.error('Erro ao revisar status:', error);
@@ -113,8 +110,8 @@ export function useStatusOperations() {
         title: "Sucesso",
         description: "Status rejeitado com sucesso!",
       });
-      // Redirecionar para a listagem de status
-      navigate('/status');
+      // Remover navegação automática que causa tela branca
+      // navigate('/status');
     },
     onError: (error) => {
       console.error('Erro ao rejeitar status:', error);

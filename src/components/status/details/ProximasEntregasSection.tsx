@@ -1,10 +1,10 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { StatusProjeto } from '@/types/pmo';
 import { formatarData } from '@/utils/dateFormatting';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { Calendar } from 'lucide-react';
 
 interface ProximasEntregasSectionProps {
   status: StatusProjeto;
@@ -82,32 +82,59 @@ export function ProximasEntregasSection({ status }: ProximasEntregasSectionProps
   if (entregasUnicas.length === 0) {
     return null;
   }
+  
+  // Função para formatar texto com quebras de linha e bullets
+  const formatarEntregaveis = (texto: string | null) => {
+    if (!texto || texto.trim() === '') return 'Nenhum entregável definido';
+    
+    const linhas = texto.split('\n').filter(linha => linha.trim() !== '');
+    
+    if (linhas.length === 0) return 'Nenhum entregável definido';
+    
+    return (
+      <ul className="list-disc pl-5 space-y-1 text-left mt-2">
+        {linhas.map((linha, index) => (
+          <li key={index} className="text-base text-gray-900 text-left">
+            {linha.trim()}
+          </li>
+        ))}
+      </ul>
+    );
+  };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-left">Próximas Entregas ({entregasUnicas.length})</CardTitle>
+    <Card className="shadow-none border border-gray-200">
+      <CardHeader className="pb-0">
+        <CardTitle className="flex items-center gap-2 text-[1.625rem] font-normal text-black mb-8">
+          <Calendar className="h-5 w-5 text-pmo-primary" />
+          Próximas Entregas ({entregasUnicas.length})
+        </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4 text-left">
+      <CardContent className="pt-0 pb-10 space-y-4 text-left">
         {entregasUnicas.map((entrega, index) => (
-          <div key={`${entrega.tipo}-${entrega.ordem}-${index}`} className="border rounded-lg p-4 space-y-2">
-            <div className="flex items-center justify-between">
-              <h4 className="font-medium text-pmo-primary text-left">{entrega.nome}</h4>
-              <Badge variant="outline">Entrega {entrega.ordem}</Badge>
+          <div key={`${entrega.tipo}-${entrega.ordem}-${index}`} className="border rounded-lg p-4 space-y-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
+              <div className="flex items-center gap-4 flex-wrap">
+                <h4 className="font-medium text-lg text-pmo-primary text-left">
+                  {entrega.nome}
+                </h4>
+                {entrega.data && (
+                  <span className="text-base text-pmo-gray whitespace-nowrap">
+                    (Previsão: <span className="font-medium">{formatarData(entrega.data)}</span>)
+                  </span>
+                )}
+              </div>
+              <Badge variant="outline" className="self-start md:self-auto">
+                Entrega {entrega.ordem}
+              </Badge>
             </div>
-            
-            {entrega.data && (
-              <p className="text-sm text-pmo-gray text-left">
-                <span className="font-medium">Data prevista:</span> {formatarData(entrega.data)}
-              </p>
-            )}
             
             {entrega.entregaveis && (
               <div className="text-left">
-                <span className="text-sm font-medium text-pmo-gray">Entregáveis:</span>
-                <p className="text-sm text-gray-700 mt-1 whitespace-pre-wrap text-left">
-                  {entrega.entregaveis}
-                </p>
+                <span className="text-base font-medium text-pmo-gray block mb-1">Entregáveis:</span>
+                <div className="text-base text-gray-700 text-left">
+                  {formatarEntregaveis(entrega.entregaveis)}
+                </div>
               </div>
             )}
           </div>

@@ -19,6 +19,7 @@ import IncidentesRegistros from "./pages/IncidentesRegistros";
 import Mudancas from "./pages/Mudancas";
 import MudancaDetalhes from "./pages/MudancaDetalhes";
 import EditarMudanca from "./pages/EditarMudanca";
+import NovaMudanca from "./pages/NovaMudanca";
 import Licoes from "./pages/Licoes";
 import LicaoDetalhes from "./pages/LicaoDetalhes";
 import Relatorios from "./pages/Relatorios";
@@ -54,6 +55,7 @@ function App() {
               <Route path="/incidentes" element={<Incidentes />} />
               <Route path="/incidentes-registros" element={<IncidentesRegistros />} />
               <Route path="/mudancas" element={<Mudancas />} />
+              <Route path="/nova-mudanca" element={<NovaMudanca />} />
               <Route path="/mudancas/:id" element={<MudancaDetalhes />} />
               <Route path="/mudancas/editar/:id" element={<EditarMudanca />} />
               <Route path="/licoes" element={<Licoes />} />

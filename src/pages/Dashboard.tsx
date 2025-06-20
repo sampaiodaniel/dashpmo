@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
@@ -13,6 +12,7 @@ import { ProximosMarcos } from '@/components/dashboard/ProximosMarcos';
 import { DashboardLoading } from '@/components/dashboard/DashboardLoading';
 import { DashboardError } from '@/components/dashboard/DashboardError';
 import { FiltrosDashboard } from '@/types/pmo';
+import { PageHeader } from '@/components/common/PageHeader';
 
 function DashboardContent() {
   const [filtros, setFiltros] = useState<FiltrosDashboard>({});
@@ -29,10 +29,10 @@ function DashboardContent() {
 
   return (
     <div className="space-y-6 text-left">
-      <div className="text-left">
-        <h1 className="text-3xl font-bold text-pmo-primary text-left">Dashboard</h1>
-        <p className="text-pmo-gray mt-2 text-left">Visão geral dos projetos e indicadores</p>
-      </div>
+      <PageHeader 
+        title="Dashboard" 
+        subtitle="Visão geral dos projetos e indicadores" 
+      />
 
       {/* Filtros do Dashboard */}
       <DashboardFilters filtros={filtros} onFiltroChange={handleFiltroChange} />

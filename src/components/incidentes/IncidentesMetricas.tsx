@@ -1,5 +1,4 @@
-
-import { AlertCircle, Clock, CheckCircle } from 'lucide-react';
+import { AlertCircle, Clock, CheckCircle, BarChart3 } from 'lucide-react';
 import { KpiBox } from '@/components/common/KpiBox';
 
 interface IncidentesMetricasProps {
@@ -9,9 +8,16 @@ interface IncidentesMetricasProps {
   total: number;
 }
 
-export function IncidentesMetricas({ criticos, emAndamento, resolvidos }: IncidentesMetricasProps) {
+export function IncidentesMetricas({ criticos, emAndamento, resolvidos, total }: IncidentesMetricasProps) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+      <KpiBox
+        title="Total"
+        value={total}
+        icon={<BarChart3 className="h-5 w-5" />}
+        color="blue"
+      />
+
       <KpiBox
         title="Críticos"
         value={criticos}

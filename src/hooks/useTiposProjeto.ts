@@ -12,25 +12,31 @@ export interface TipoProjeto {
   data_criacao: string;
 }
 
-export function useTiposProjeto() {
+export function useTiposProjeto(options: { includeInactive?: boolean } = {}) {
+  const { includeInactive = false } = options;
+  
   return useQuery({
-    queryKey: ['tipos-projeto'],
+    queryKey: ['tipos-projeto', { includeInactive }],
     queryFn: async (): Promise<TipoProjeto[]> => {
-      console.log('🔍 Buscando tipos de projeto da tabela tipos_projeto');
+      console.log(`🔍 Buscando tipos de projeto (inativos inclusos: ${includeInactive})`);
       
-      const { data, error } = await supabase
+      let query = supabase
         .from('tipos_projeto')
         .select('*')
-        .eq('ativo', true)
         .order('ordem', { ascending: true });
+
+      if (!includeInactive) {
+        query = query.eq('ativo', true);
+      }
+
+      const { data, error } = await query;
 
       if (error) {
         console.error('❌ Erro ao buscar tipos de projeto:', error);
         throw error;
       }
 
-      console.log('✅ Tipos de projeto encontrados:', data);
-      console.log('📊 Quantidade de tipos:', data?.length || 0);
+      console.log(`✅ Tipos de projeto encontrados: ${data?.length || 0}`);
       
       return data || [];
     },

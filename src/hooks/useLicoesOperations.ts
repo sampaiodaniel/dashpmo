@@ -1,9 +1,9 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { Database } from '@/integrations/supabase/types';
+import { log } from '@/utils/logger';
 
 type LicaoInsert = Database['public']['Tables']['licoes_aprendidas']['Insert'];
 
@@ -33,6 +33,20 @@ export function useLicoesOperations() {
         });
         return null;
       }
+
+      // Registrar log da criação
+      log(
+        'licoes',
+        'criacao',
+        'licao_aprendida',
+        data.id,
+        `${data.categoria_licao} - ${data.responsavel_registro}`,
+        {
+          categoria_licao: data.categoria_licao,
+          status_aplicacao: data.status_aplicacao,
+          projeto_id: data.projeto_id
+        }
+      );
 
       // Invalidar cache para recarregar a lista
       queryClient.invalidateQueries({ queryKey: ['licoes'] });

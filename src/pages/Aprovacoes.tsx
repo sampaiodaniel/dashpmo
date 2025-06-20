@@ -153,9 +153,9 @@ export default function Aprovacoes() {
   return (
     <Layout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold text-pmo-primary">Revisões Pendentes</h1>
-          <p className="text-pmo-gray mt-2">Status de projetos aguardando revisão</p>
+        <div className="text-left">
+          <h1 className="text-3xl font-bold text-pmo-primary text-left">Revisões Pendentes</h1>
+          <p className="text-pmo-gray mt-2 text-left">Status de projetos aguardando revisão</p>
         </div>
 
         {isLoadingStatus ? (

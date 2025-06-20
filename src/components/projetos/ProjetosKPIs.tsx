@@ -1,4 +1,3 @@
-
 import { BarChart3, Play } from "lucide-react";
 import { KpiBox } from '@/components/common/KpiBox';
 
@@ -22,7 +21,7 @@ export function ProjetosKPIs({ metricas, filtroAtivo, onFiltroClick }: ProjetosK
           title="Total de Projetos"
           value={metricas.total}
           icon={<BarChart3 className="h-5 w-5" />}
-          color="red"
+          color="blue"
         />
       </div>
 

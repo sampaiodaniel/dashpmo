@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -6,6 +5,7 @@ import { StatusProjeto } from '@/types/pmo';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { useEntregasDinamicas, Entrega } from '@/hooks/useEntregasDinamicas';
+import { log } from '@/utils/logger';
 
 export function useEditarStatusForm(status: StatusProjeto) {
   const queryClient = useQueryClient();
@@ -173,6 +173,21 @@ export function useEditarStatusForm(status: StatusProjeto) {
             .insert(entregasAdicionais);
         }
       }
+
+      // Registrar log da edição
+      log(
+        'status',
+        'edicao',
+        'status_projeto',
+        status.id,
+        `Status do projeto ${status.projeto?.nome_projeto || 'N/A'}`,
+        {
+          status_geral: formData.status_geral,
+          status_visao_gp: formData.status_visao_gp,
+          progresso_estimado: formData.progresso_estimado,
+          voltou_para_revisao: status.aprovado && isAdmin()
+        }
+      );
 
       const successMessage = status.aprovado && isAdmin() 
         ? "Status atualizado com sucesso! O status voltou para revisão."

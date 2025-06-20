@@ -1,6 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Building, Calendar, User, Users, FileType, FileText } from 'lucide-react';
+import { Building, Users, FileText } from 'lucide-react';
 import { Projeto } from '@/types/pmo';
 import { useTiposProjeto } from '@/hooks/useTiposProjeto';
 
@@ -16,11 +15,9 @@ export function ProjetoInfoGerais({ projeto }: ProjetoInfoGeraisProps) {
     if (!finalizacaoPrevista) {
       return 'TBD';
     }
-    
     if (finalizacaoPrevista === 'TBD') {
       return 'TBD';
     }
-    
     try {
       const date = new Date(finalizacaoPrevista);
       return date.toLocaleDateString('pt-BR');
@@ -29,147 +26,124 @@ export function ProjetoInfoGerais({ projeto }: ProjetoInfoGeraisProps) {
     }
   };
 
-  // Buscar o nome do tipo de projeto
   const tipoProjeto = tiposProjeto?.find(tipo => tipo.id === projeto.tipo_projeto_id);
+
+  // Classes utilitárias para padronização visual igual ao bloco Último Status
+  const blocoTituloClass = "flex items-center gap-2 text-[1.625rem] font-normal text-black mb-8";
+  const blocoIconClass = "h-5 w-5 text-pmo-primary";
+  const labelClass = "block text-base text-gray-400 mb-2 font-bold text-center";
+  const valueClass = "text-base text-black text-center font-normal mb-0";
+  const gridClass = "grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-8";
+  const grid2Class = "grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-0";
+  const grid3Class = "grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-8";
 
   return (
     <div className="space-y-12">
-      {/* Informações Básicas - Card Principal */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-xl">
-            <Building className="h-6 w-6" />
+      {/* Bloco: Informações Básicas */}
+      <Card className="shadow-none border border-gray-200">
+        <CardHeader className="pb-0">
+          <CardTitle className={blocoTituloClass}>
+            <Building className={blocoIconClass} />
             Informações Básicas
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-10">
+        <CardContent className="pt-0 pb-10">
           {/* Descrição */}
-          <div>
-            <label className="text-sm font-medium text-gray-600 block mb-4">Descrição do Projeto</label>
-            <p className="text-base text-gray-900 leading-relaxed">{projeto.descricao || projeto.descricao_projeto || 'Não informado'}</p>
-          </div>
-
-          {/* Status e Datas em grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-            <div>
-              <label className="text-sm font-medium text-gray-600 block mb-4">Status do Projeto</label>
-              <Badge variant={projeto.status_ativo ? "default" : "secondary"} className="text-sm px-3 py-1">
-                {projeto.status_ativo ? "Ativo" : "Inativo"}
-              </Badge>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-gray-600 block mb-4">Data de Criação</label>
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-gray-500" />
-                <span className="text-base text-gray-900">{projeto.data_criacao.toLocaleDateString('pt-BR')}</span>
-              </div>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-gray-600 block mb-4">Previsão de Finalização</label>
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-gray-500" />
-                <span className="text-base text-gray-900">{formatarFinalizacaoPrevista(projeto.finalizacao_prevista)}</span>
-              </div>
+          <div className="mb-6">
+            <span className="block text-base text-pmo-gray mb-2 font-medium text-left">Descrição do Projeto</span>
+            <div className="w-full">
+              <span className="text-base text-black font-normal block mt-1 mb-2 text-left">{projeto.descricao || projeto.descricao_projeto || 'Não informado'}</span>
             </div>
           </div>
-
-          {/* Equipe e Tipo de Projeto em grid de 2 colunas */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-            {/* Equipe */}
-            {projeto.equipe && (
-              <div>
-                <label className="text-sm font-medium text-gray-600 block mb-4">Equipe do Projeto</label>
-                <p className="text-base text-gray-900 leading-relaxed text-left">{projeto.equipe}</p>
+          {/* Equipe */}
+          <div className="mb-8">
+            <span className="block text-base text-pmo-gray mb-2 font-medium text-left">Equipe</span>
+            <div className="w-full">
+              <span className="text-base text-black font-normal block mt-1 mb-2 text-left">{projeto.equipe || 'Não informado'}</span>
+            </div>
+          </div>
+          {/* Grid para os outros campos */}
+          <div className={grid2Class + " mb-0"}>
+            <div>
+              <span className={labelClass}>Tipo de Projeto</span>
+              <div className="mt-1">
+                <span className={valueClass}>{tipoProjeto?.nome || 'Não informado'}</span>
               </div>
-            )}
-
-            {/* Tipo de Projeto */}
-            {tipoProjeto && (
-              <div>
-                <label className="text-sm font-medium text-gray-600 block mb-4">Tipo de Projeto</label>
-                <div className="flex items-center gap-2">
-                  <FileType className="h-5 w-5 text-gray-500" />
-                  <span className="text-base text-gray-900">{tipoProjeto.nome}</span>
-                </div>
+            </div>
+            <div>
+              <span className={labelClass}>Status do Projeto</span>
+              <div className="mt-1">
+                <span className="inline-block rounded-full bg-pmo-primary/80 text-white px-6 py-1 text-base font-normal">
+                  {projeto.status_ativo ? 'Ativo' : 'Inativo'}
+                </span>
               </div>
-            )}
+            </div>
+          </div>
+          <div className={grid2Class + " mt-8"}>
+            <div>
+              <span className={labelClass}>Data de Criação</span>
+              <span className={valueClass + ' text-left'}>{projeto.data_criacao.toLocaleDateString('pt-BR')}</span>
+            </div>
+            <div>
+              <span className={labelClass}>Previsão de Finalização</span>
+              <span className={valueClass + ' text-left'}>{formatarFinalizacaoPrevista(projeto.finalizacao_prevista)}</span>
+            </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Cards de Responsáveis e Carteiras lado a lado */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-        {/* Responsáveis */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Users className="h-5 w-5" />
-              Responsáveis
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-8">
-            {projeto.responsavel_asa && (
-              <div>
-                <label className="text-sm font-medium text-gray-600 block mb-4">Responsável ASA</label>
-                <div className="flex items-center gap-2">
-                  <User className="h-4 w-4 text-gray-500" />
-                  <span className="text-base text-gray-900">{projeto.responsavel_asa}</span>
-                </div>
-              </div>
-            )}
-
+      {/* Bloco: Responsáveis */}
+      <Card className="shadow-none border border-gray-200">
+        <CardHeader className="pb-0">
+          <CardTitle className={blocoTituloClass}>
+            <Users className={blocoIconClass} />
+            Responsáveis
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pt-0 pb-10">
+          <div className={grid3Class}>
             <div>
-              <label className="text-sm font-medium text-gray-600 block mb-4">Chefe do Projeto</label>
-              <div className="flex items-center gap-2">
-                <Users className="h-4 w-4 text-gray-500" />
-                <span className="text-base text-gray-900">{projeto.gp_responsavel}</span>
-              </div>
+              <span className={labelClass}>Responsável ASA</span>
+              <span className={valueClass}>{projeto.responsavel_asa || 'Não informado'}</span>
             </div>
-
-            {projeto.responsavel_cwi && (
-              <div>
-                <label className="text-sm font-medium text-gray-600 block mb-4">Responsável Técnico</label>
-                <div className="flex items-center gap-2">
-                  <User className="h-4 w-4 text-gray-500" />
-                  <span className="text-base text-gray-900">{projeto.responsavel_cwi}</span>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Carteiras */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <FileText className="h-5 w-5" />
-              Carteiras
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-8">
             <div>
-              <label className="text-sm font-medium text-gray-600 block mb-4">Carteira Primária</label>
-              <p className="text-base text-gray-900">{projeto.area_responsavel}</p>
+              <span className={labelClass}>Chefe do Projeto</span>
+              <span className={valueClass}>{projeto.gp_responsavel || 'Não informado'}</span>
             </div>
+            <div>
+              <span className={labelClass}>Responsável Técnico</span>
+              <span className={valueClass}>{projeto.responsavel_cwi || 'Não informado'}</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-            {projeto.carteira_secundaria && (
-              <div>
-                <label className="text-sm font-medium text-gray-600 block mb-4">Carteira Secundária</label>
-                <p className="text-base text-gray-900">{projeto.carteira_secundaria}</p>
-              </div>
-            )}
-
-            {projeto.carteira_terciaria && (
-              <div>
-                <label className="text-sm font-medium text-gray-600 block mb-4">Carteira Terciária</label>
-                <p className="text-base text-gray-900">{projeto.carteira_terciaria}</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+      {/* Bloco: Carteiras */}
+      <Card className="shadow-none border border-gray-200">
+        <CardHeader className="pb-0">
+          <CardTitle className={blocoTituloClass}>
+            <FileText className={blocoIconClass} />
+            Carteiras
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pt-0 pb-10">
+          <div className={grid3Class}>
+            <div>
+              <span className={labelClass}>Carteira Primária</span>
+              <span className={valueClass}>{projeto.area_responsavel || projeto.carteira_primaria || 'Não informado'}</span>
+            </div>
+            <div>
+              <span className={labelClass}>Carteira Secundária</span>
+              <span className={valueClass}>{projeto.carteira_secundaria || 'Não informado'}</span>
+            </div>
+            <div>
+              <span className={labelClass}>Carteira Terciária</span>
+              <span className={valueClass}>{projeto.carteira_terciaria || 'Não informado'}</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
+

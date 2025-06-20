@@ -1,10 +1,10 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Plus, Trash2 } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface Entrega {
   id: string;
@@ -42,85 +42,87 @@ export function EntregasDinamicas({ entregas, onChange }: EntregasDinamicasProps
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-pmo-primary">Próximas Entregas</h3>
-        <Button 
-          type="button" 
-          variant="outline" 
-          size="sm"
+    <Card>
+      <CardHeader>
+        <CardTitle>Próximas Entregas</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {entregas.map((entrega, index) => (
+          <div key={entrega.id} className="border rounded-lg p-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <h4 className="font-medium text-lg">
+                Entrega {index + 1}
+                {index === 0 && <span className="text-red-500 ml-1">*</span>}
+              </h4>
+              {entregas.length > 1 && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => removerEntrega(entrega.id)}
+                  className="text-red-600 hover:text-red-700"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor={`nome-${entrega.id}`}>
+                  Nome da Entrega
+                  {index === 0 && <span className="text-red-500 ml-1">*</span>}
+                </Label>
+                <Input 
+                  id={`nome-${entrega.id}`}
+                  placeholder="Nome da entrega..." 
+                  value={entrega.nome}
+                  onChange={(e) => atualizarEntrega(entrega.id, 'nome', e.target.value)}
+                  required={index === 0}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor={`data-${entrega.id}`}>Data de Entrega</Label>
+                <Input 
+                  id={`data-${entrega.id}`}
+                  placeholder="dd/mm/aaaa"
+                  value={entrega.data}
+                  onChange={(e) => atualizarEntrega(entrega.id, 'data', e.target.value)}
+                />
+                <p className="text-xs text-gray-500">
+                  Deixe em branco se não houver definição de data
+                </p>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor={`entregaveis-${entrega.id}`}>
+                Entregáveis
+                {index === 0 && <span className="text-red-500 ml-1">*</span>}
+              </Label>
+              <Textarea 
+                id={`entregaveis-${entrega.id}`}
+                placeholder="Descreva os entregáveis da entrega..." 
+                rows={3}
+                value={entrega.entregaveis}
+                onChange={(e) => atualizarEntrega(entrega.id, 'entregaveis', e.target.value)}
+                required={index === 0}
+              />
+            </div>
+          </div>
+        ))}
+
+        <Button
+          type="button"
+          variant="outline"
           onClick={adicionarEntrega}
+          className="w-full"
         >
           <Plus className="h-4 w-4 mr-2" />
           Adicionar Entrega
         </Button>
-      </div>
-
-      {entregas.map((entrega, index) => (
-        <div key={entrega.id} className="border rounded-lg p-4 space-y-4">
-          <div className="flex items-center justify-between">
-            <h4 className="font-medium text-lg">
-              Entrega {index + 1}
-              {index === 0 && <span className="text-red-500 ml-1">*</span>}
-            </h4>
-            {entregas.length > 1 && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => removerEntrega(entrega.id)}
-                className="text-red-600 hover:text-red-700"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            )}
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor={`nome-${entrega.id}`}>
-                Nome da Entrega
-                {index === 0 && <span className="text-red-500 ml-1">*</span>}
-              </Label>
-              <Input 
-                id={`nome-${entrega.id}`}
-                placeholder="Nome da entrega..." 
-                value={entrega.nome}
-                onChange={(e) => atualizarEntrega(entrega.id, 'nome', e.target.value)}
-                required={index === 0}
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor={`data-${entrega.id}`}>Data de Entrega</Label>
-              <Input 
-                id={`data-${entrega.id}`}
-                placeholder="dd/mm/aaaa"
-                value={entrega.data}
-                onChange={(e) => atualizarEntrega(entrega.id, 'data', e.target.value)}
-              />
-              <p className="text-xs text-gray-500">
-                Deixe em branco se não houver definição de data
-              </p>
-            </div>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor={`entregaveis-${entrega.id}`}>
-              Entregáveis
-              {index === 0 && <span className="text-red-500 ml-1">*</span>}
-            </Label>
-            <Textarea 
-              id={`entregaveis-${entrega.id}`}
-              placeholder="Descreva os entregáveis da entrega..." 
-              rows={3}
-              value={entrega.entregaveis}
-              onChange={(e) => atualizarEntrega(entrega.id, 'entregaveis', e.target.value)}
-              required={index === 0}
-            />
-          </div>
-        </div>
-      ))}
-    </div>
+      </CardContent>
+    </Card>
   );
 }

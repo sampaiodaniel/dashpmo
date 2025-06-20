@@ -90,7 +90,7 @@ export default function LicaoDetalhes() {
       case 'Em andamento':
         return 'bg-yellow-100 text-yellow-700 border-yellow-200';
       case 'Não aplicada':
-        return 'bg-red-100 text-red-700 border-red-200';
+        return 'bg-gray-100 text-gray-700 border-gray-200';
       default:
         return 'bg-gray-100 text-gray-700 border-gray-200';
     }

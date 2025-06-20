@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, AlertTriangle, FileText } from 'lucide-react';
@@ -28,15 +27,23 @@ export function StatusDetalhesContent({ status }: StatusDetalhesContentProps) {
     }
   };
 
-  // Função para preservar quebras de linha
-  const formatarTextoComQuebras = (texto: string | null) => {
-    if (!texto) return 'Nada reportado';
-    return texto.split('\n').map((linha, index) => (
-      <span key={index}>
-        {linha}
-        {index < texto.split('\n').length - 1 && <br />}
-      </span>
-    ));
+  // Função para formatar texto com quebras de linha e bullets
+  const formatarTextoComQuebrasEBullets = (texto: string | null) => {
+    if (!texto || texto.trim() === '') return 'Nada reportado';
+    
+    const linhas = texto.split('\n').filter(linha => linha.trim() !== '');
+    
+    if (linhas.length === 0) return 'Nada reportado';
+    
+    return (
+      <ul className="list-disc pl-5 space-y-1 text-left">
+        {linhas.map((linha, index) => (
+          <li key={index} className="text-base text-gray-900 text-left">
+            {linha.trim()}
+          </li>
+        ))}
+      </ul>
+    );
   };
 
   return (
@@ -146,30 +153,30 @@ export function StatusDetalhesContent({ status }: StatusDetalhesContentProps) {
         <CardContent className="space-y-10">
           <div>
             <label className="text-sm font-medium text-gray-600 block mb-4">Itens Trabalhados na Semana</label>
-            <p className="text-base text-gray-900 leading-relaxed">
-              {formatarTextoComQuebras(status.realizado_semana_atual)}
-            </p>
+            <div className="text-base text-gray-900 leading-relaxed text-left">
+              {formatarTextoComQuebrasEBullets(status.realizado_semana_atual)}
+            </div>
           </div>
 
           <div>
             <label className="text-sm font-medium text-gray-600 block mb-4">Backlog</label>
-            <p className="text-base text-gray-900 leading-relaxed">
-              {formatarTextoComQuebras(status.backlog)}
-            </p>
+            <div className="text-base text-gray-900 leading-relaxed text-left">
+              {formatarTextoComQuebrasEBullets(status.backlog)}
+            </div>
           </div>
 
           <div>
             <label className="text-sm font-medium text-gray-600 block mb-4">Bloqueios Atuais</label>
-            <p className="text-base text-gray-900 leading-relaxed">
-              {formatarTextoComQuebras(status.bloqueios_atuais)}
-            </p>
+            <div className="text-base text-gray-900 leading-relaxed text-left">
+              {formatarTextoComQuebrasEBullets(status.bloqueios_atuais)}
+            </div>
           </div>
 
           <div>
             <label className="text-sm font-medium text-gray-600 block mb-4">Observações ou Pontos de Atenção</label>
-            <p className="text-base text-gray-900 leading-relaxed">
-              {formatarTextoComQuebras(status.observacoes_pontos_atencao)}
-            </p>
+            <div className="text-base text-gray-900 leading-relaxed text-left">
+              {formatarTextoComQuebrasEBullets(status.observacoes_pontos_atencao)}
+            </div>
           </div>
         </CardContent>
       </Card>

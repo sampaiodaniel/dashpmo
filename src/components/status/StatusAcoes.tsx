@@ -1,4 +1,3 @@
-
 import { Button } from '@/components/ui/button';
 import { Check, Edit } from 'lucide-react';
 import { StatusProjeto } from '@/types/pmo';
@@ -19,12 +18,21 @@ export function StatusAcoes({ status }: StatusAcoesProps) {
     navigate(`/status/editar/${status.id}`);
   };
 
+  const handleRevisarStatus = () => {
+    revisar({ statusId: status.id, revisadoPor: 'Admin' }, {
+      onSuccess: () => {
+        // Navegar para lista de status após sucesso
+        navigate('/status');
+      }
+    });
+  };
+
   return (
     <div className="flex gap-2">
       {!status.aprovado && (
         <>
           <Button
-            onClick={() => revisar({ statusId: status.id, revisadoPor: 'Admin' })}
+            onClick={handleRevisarStatus}
             disabled={isLoading}
             size="sm"
             className="bg-green-600 hover:bg-green-700 text-white"

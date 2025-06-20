@@ -1,4 +1,3 @@
-
 import { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
@@ -6,7 +5,7 @@ interface KpiBoxProps {
   title: string;
   value: string | number;
   icon: ReactNode;
-  color: 'red' | 'yellow' | 'green';
+  color: 'red' | 'yellow' | 'green' | 'blue';
   className?: string;
 }
 
@@ -26,6 +25,11 @@ export function KpiBox({ title, value, icon, color, className }: KpiBoxProps) {
       border: 'border-l-green-500',
       text: 'text-green-600',
       iconBg: 'text-green-600'
+    },
+    blue: {
+      border: 'border-l-blue-500',
+      text: 'text-blue-600',
+      iconBg: 'text-blue-600'
     }
   };
 

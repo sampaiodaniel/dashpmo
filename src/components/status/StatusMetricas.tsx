@@ -1,4 +1,3 @@
-
 import { FileText, Clock, CheckCircle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 
@@ -24,16 +23,16 @@ export function StatusMetricas({
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <Card 
-        className={`border-l-4 border-l-red-500 cursor-pointer hover:shadow-md transition-shadow ${
-          filtroAtivo === 'totalStatus' ? 'ring-2 ring-red-500' : ''
+        className={`border-l-4 border-l-blue-500 cursor-pointer hover:shadow-md transition-shadow ${
+          filtroAtivo === 'totalStatus' ? 'ring-2 ring-blue-500' : ''
         }`}
         onClick={onFiltrarTotal}
       >
         <CardContent className="p-4">
           <div className="flex items-center gap-3">
-            <FileText className="h-5 w-5 text-red-500" />
+            <FileText className="h-5 w-5 text-blue-600" />
             <div className="flex items-baseline gap-2">
-              <div className="text-2xl font-bold text-red-500">{totalStatus}</div>
+              <div className="text-2xl font-bold text-blue-600">{totalStatus}</div>
               <span className="text-sm text-pmo-gray">Total de Status</span>
             </div>
           </div>

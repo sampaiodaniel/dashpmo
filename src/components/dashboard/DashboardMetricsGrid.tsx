@@ -1,5 +1,4 @@
-
-import { CheckCircle, Clock, AlertTriangle } from 'lucide-react';
+import { CheckCircle, Clock, AlertTriangle, BarChart3 } from 'lucide-react';
 import { DashboardMetricas } from '@/types/pmo';
 import { KpiBox } from '@/components/common/KpiBox';
 
@@ -13,8 +12,8 @@ export function DashboardMetricsGrid({ metricas }: DashboardMetricsGridProps) {
       <KpiBox
         title="Total de Projetos"
         value={metricas.totalProjetos}
-        icon={<AlertTriangle className="h-5 w-5" />}
-        color="red"
+        icon={<BarChart3 className="h-5 w-5" />}
+        color="blue"
       />
 
       <KpiBox
