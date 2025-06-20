@@ -8,7 +8,7 @@ import { ProjetoFilters } from '@/components/projetos/ProjetoFilters';
 import { Button } from '@/components/ui/button';
 import { Plus, Building, Calendar, User, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { CriarProjetoModal } from '@/components/forms/CriarProjetoModal';
 import { FiltrosProjeto } from '@/types/pmo';
 import { PaginationFooter } from '@/components/common/PaginationFooter';
@@ -19,6 +19,7 @@ export default function Projetos() {
   const [filtros, setFiltros] = useState<FiltrosProjeto>({});
   const [modalAberto, setModalAberto] = useState(false);
   const [filtroAtivo, setFiltroAtivo] = useState<string | null>(null);
+  const navigate = useNavigate();
   
   const { data: projetos, isLoading: projetosLoading, refetch } = useProjetos(filtros);
 
@@ -60,6 +61,10 @@ export default function Projetos() {
   const responsaveis = Array.from(new Set(
     projetos?.map(p => p.responsavel_asa || p.responsavel_interno).filter(Boolean) || []
   ));
+
+  const handleProjetoClick = (projetoId: number) => {
+    navigate(`/projetos/${projetoId}`);
+  };
 
   if (isLoading) {
     return (
@@ -127,17 +132,18 @@ export default function Projetos() {
           <div className="space-y-4">
             <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
               {projetosPaginados.map((projeto) => (
-                <div key={projeto.id} className="border-b border-gray-100 last:border-0">
+                <div 
+                  key={projeto.id} 
+                  className="border-b border-gray-100 last:border-0 hover:bg-gray-50 cursor-pointer transition-colors"
+                  onClick={() => handleProjetoClick(projeto.id)}
+                >
                   <div className="p-6">
                     {/* Primeira linha */}
                     <div className="flex justify-between items-start mb-4">
                       <div className="flex items-center gap-3">
-                        <Link 
-                          to={`/projetos/${projeto.id}`}
-                          className="text-lg font-semibold text-pmo-primary hover:underline"
-                        >
+                        <span className="text-lg font-semibold text-pmo-primary">
                           {projeto.nome_projeto}
-                        </Link>
+                        </span>
                         <Badge variant="outline" className="text-xs">
                           {projeto.area_responsavel}
                         </Badge>
