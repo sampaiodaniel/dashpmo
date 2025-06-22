@@ -1,7 +1,6 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Download, X } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { RelatorioVisualContent } from './visual/RelatorioVisualContent';
 
 interface DadosRelatorioVisual {
@@ -21,8 +20,48 @@ interface RelatorioVisualViewerProps {
 
 export function RelatorioVisualViewer({ isOpen, onClose, dados }: RelatorioVisualViewerProps) {
   const handleDownload = () => {
-    // Implementar download do relatório
-    console.log('Download do relatório visual');
+    // Gerar PDF do relatório visual
+    const element = document.getElementById('relatorio-content');
+    if (!element) return;
+
+    // Configurações para o PDF
+    const opt = {
+      margin: [0.5, 0.5, 0.5, 0.5],
+      filename: `relatorio-visual-${dados?.carteira || dados?.responsavel || 'dashboard'}-${new Date().toISOString().split('T')[0]}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { 
+        scale: 1.5,
+        useCORS: true,
+        letterRendering: true,
+        allowTaint: true,
+        scrollX: 0,
+        scrollY: 0,
+        width: element.scrollWidth,
+        height: element.scrollHeight
+      },
+      jsPDF: { 
+        unit: 'in', 
+        format: 'a4', 
+        orientation: 'portrait',
+        compress: true
+      },
+      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+    };
+
+    // Usar html2pdf para gerar o PDF
+    if (typeof window !== 'undefined' && (window as any).html2pdf) {
+      (window as any).html2pdf().set(opt).from(element).save();
+    } else {
+      // Fallback: tentar carregar html2pdf dinamicamente
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+      script.onload = () => {
+        if ((window as any).html2pdf) {
+          (window as any).html2pdf().set(opt).from(element).save();
+        }
+      };
+      document.head.appendChild(script);
+    }
   };
 
   if (!dados) return null;
@@ -38,9 +77,6 @@ export function RelatorioVisualViewer({ isOpen, onClose, dados }: RelatorioVisua
             <Button onClick={handleDownload} size="sm">
               <Download className="h-4 w-4 mr-2" />
               Download PDF
-            </Button>
-            <Button onClick={onClose} variant="outline" size="sm">
-              <X className="h-4 w-4" />
             </Button>
           </div>
         </DialogHeader>

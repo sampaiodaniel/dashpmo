@@ -131,20 +131,41 @@ export function TimelineEntregas({ projetos }: TimelineEntregasProps) {
   const renderTimeline = (entregasPagina: any[], numeroPagina: number) => {
     const tracosSemanas = gerarPosicoesSemanas(entregasPagina);
     
+    // Função para calcular altura mais precisa baseada no conteúdo real
+    const calcularAlturaBox = (entrega: any) => {
+      let alturaTotal = 80; // Base: padding, margens e espaçamentos
+      
+      // Altura do título da entrega (sempre presente)
+      alturaTotal += 35; // Título + separador
+      
+      // Altura do nome do projeto (se presente)
+      if (projetos.length > 1) {
+        alturaTotal += 35; // Nome do projeto + separador
+      }
+      
+      // Altura dos entregáveis (parte mais crítica)
+      if (entrega.entregaveis) {
+        const linhas = entrega.entregaveis.split('\n').filter((item: string) => item.trim());
+        linhas.forEach((linha: string) => {
+          // Calcular quantas linhas cada item vai ocupar baseado no comprimento
+          const caracteresPorLinha = 45; // Aproximadamente 45 caracteres por linha no box
+          const linhasNecessarias = Math.ceil(linha.length / caracteresPorLinha);
+          alturaTotal += (linhasNecessarias * 18) + 4; // 18px por linha + 4px de espaçamento
+        });
+      }
+      
+      return Math.max(200, alturaTotal); // Mínimo de 200px
+    };
+    
     // Calcular a altura máxima necessária baseada no conteúdo de todos os boxes
-    const alturaMaxima = Math.max(...entregasPagina.map(entrega => {
-      const linhasEntregaveis = entrega.entregaveis ? entrega.entregaveis.split('\n').filter((item: string) => item.trim()).length : 0;
-      const alturaBase = 140;
-      const alturaAdicional = Math.max(0, (linhasEntregaveis - 5) * 16);
-      return alturaBase + alturaAdicional;
-    }));
+    const alturaMaxima = Math.max(...entregasPagina.map(entrega => calcularAlturaBox(entrega)));
     
     // Altura do container deve ser suficiente para conter o maior box + timeline + datas
-    const alturaContainer = Math.max(400, alturaMaxima + 120); // 120px para timeline, conectores e datas
-    const posicaoTimeline = alturaContainer - 80; // Timeline sempre 80px do final
+    const alturaContainer = Math.max(350, alturaMaxima + 80); // Reduzido de 100 para 80
+    const posicaoTimeline = alturaContainer - 50; // Reduzido de 60 para 50
     
     return (
-      <div className="relative py-8 mb-8">
+      <div className="relative py-4 mb-4">
         {/* Container com altura dinâmica para conter todos os elementos */}
         <div className="relative" style={{ height: `${alturaContainer}px` }}>
           
@@ -157,35 +178,37 @@ export function TimelineEntregas({ projetos }: TimelineEntregasProps) {
             const posicoes = ['16.67%', '50%', '83.33%'];
             const posicao = posicoes[index];
             
-            // Calcular altura necessária baseada no conteúdo
-            const linhasEntregaveis = entrega.entregaveis ? entrega.entregaveis.split('\n').filter((item: string) => item.trim()).length : 0;
-            const alturaBase = 140; // altura mínima
-            const alturaAdicional = Math.max(0, (linhasEntregaveis - 5) * 16); // 16px por linha extra
-            const alturaTotal = alturaBase + alturaAdicional;
+            // Calcular altura específica e precisa para este box
+            const alturaBox = calcularAlturaBox(entrega);
             
             return (
               <div key={index} className="absolute" style={{ 
                 left: posicao,
                 transform: 'translateX(-50%)',
-                // Box termina sempre 10px acima da timeline, mas nunca sai do container
-                top: `${Math.max(20, posicaoTimeline - alturaTotal - 10)}px`
+                // Box termina sempre 10px acima da timeline (reduzido de 15px)
+                top: `${Math.max(20, posicaoTimeline - alturaBox - 10)}px`
               }}>
                 {/* Box de informação da entrega */}
                 <div className="w-64">
                   <div 
-                    className={`p-3 rounded-lg border-2 shadow-sm ${entrega.cor} flex flex-col overflow-hidden`}
-                    style={{ height: `${alturaTotal}px` }}
+                    className={`p-4 rounded-lg border-2 shadow-sm ${entrega.cor}`}
+                    style={{ height: `${alturaBox}px` }}
                   >
-                    {/* Nome do projeto (se for timeline geral) - sempre no topo */}
+                    {/* Nome da entrega - SEMPRE NO TOPO */}
+                    <div className="text-sm font-semibold text-left leading-tight mb-3 pb-2 border-b border-current border-opacity-20">
+                      {entrega.titulo}
+                    </div>
+                    
+                    {/* Nome do projeto (se for timeline geral) */}
                     {projetos.length > 1 && (
-                      <div className="text-xs opacity-75 leading-tight font-medium text-left mb-2 pb-2 border-b border-current border-opacity-20 flex-shrink-0">
+                      <div className="text-xs opacity-75 leading-tight font-medium text-left mb-3 pb-2 border-b border-current border-opacity-20">
                         Projeto: {entrega.projeto}
                       </div>
                     )}
                     
-                    {/* Entregáveis - área expansível com scroll se necessário */}
+                    {/* Entregáveis - lista completa */}
                     {entrega.entregaveis && (
-                      <div className="text-xs leading-relaxed text-left mb-2 flex-grow overflow-y-auto">
+                      <div className="text-xs leading-relaxed text-left">
                         <div className="space-y-1">
                           {entrega.entregaveis.split('\n').filter((item: string) => item.trim()).map((item: string, i: number) => (
                             <div key={i} className="leading-relaxed flex items-start">
@@ -196,11 +219,6 @@ export function TimelineEntregas({ projetos }: TimelineEntregasProps) {
                         </div>
                       </div>
                     )}
-                    
-                    {/* Nome da entrega - sempre na parte inferior do box */}
-                    <div className="text-sm font-semibold text-left leading-tight flex-shrink-0">
-                      {entrega.titulo}
-                    </div>
                   </div>
                 </div>
                 
