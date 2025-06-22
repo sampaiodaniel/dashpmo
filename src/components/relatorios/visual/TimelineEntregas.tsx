@@ -26,10 +26,9 @@ export function TimelineEntregas({ projetos }: TimelineEntregasProps) {
           entregaveis: status.entregaveis1,
           projeto: projeto.nome_projeto || 'Projeto',
           tipo: 'marco1',
-          cor: 'bg-[#F8F9FA] border-[#1B365D] text-[#1B365D]',
-          corLinha: 'bg-[#1B365D]',
-          corBorda: 'border-[#1B365D]',
-          corTexto: 'text-[#1B365D]'
+          cor: '#A6926B',
+          corTexto: '#FFFFFF',
+          corBorda: '#A6926B'
         });
       }
       
@@ -40,10 +39,9 @@ export function TimelineEntregas({ projetos }: TimelineEntregasProps) {
           entregaveis: status.entregaveis2,
           projeto: projeto.nome_projeto || 'Projeto',
           tipo: 'marco2',
-          cor: 'bg-[#FDF6E3] border-[#A6926B] text-[#8B7355]',
-          corLinha: 'bg-[#A6926B]',
-          corBorda: 'border-[#A6926B]',
-          corTexto: 'text-[#8B7355]'
+          cor: '#2E5984',
+          corTexto: '#FFFFFF',
+          corBorda: '#2E5984'
         });
       }
       
@@ -54,10 +52,9 @@ export function TimelineEntregas({ projetos }: TimelineEntregasProps) {
           entregaveis: status.entregaveis3,
           projeto: projeto.nome_projeto || 'Projeto',
           tipo: 'marco3',
-          cor: 'bg-[#F0F4F8] border-[#2E5984] text-[#2E5984]',
-          corLinha: 'bg-[#2E5984]',
-          corBorda: 'border-[#2E5984]',
-          corTexto: 'text-[#2E5984]'
+          cor: '#6B7280',
+          corTexto: '#FFFFFF',
+          corBorda: '#6B7280'
         });
       }
     });
@@ -170,7 +167,17 @@ export function TimelineEntregas({ projetos }: TimelineEntregasProps) {
         <div className="relative" style={{ height: `${alturaContainer}px` }}>
           
           {/* Timeline horizontal - posição calculada dinamicamente */}
-          <div className="absolute left-0 right-0 h-1 bg-[#1B365D]" style={{ top: `${posicaoTimeline}px`, minHeight: '4px' }}></div>
+          <div 
+            className="absolute left-0 right-0 timeline-horizontal" 
+            style={{ 
+              top: `${posicaoTimeline}px`, 
+              height: '6px',
+              backgroundColor: '#A6926B',
+              minHeight: '6px',
+              border: 'none',
+              outline: 'none'
+            }}
+          ></div>
           
           {/* Boxes das entregas em posições fixas - sempre acima da timeline */}
           {entregasPagina.map((entrega, index) => {
@@ -191,8 +198,15 @@ export function TimelineEntregas({ projetos }: TimelineEntregasProps) {
                 {/* Box de informação da entrega */}
                 <div className="w-64" style={{ minWidth: '256px' }}>
                   <div 
-                    className={`p-4 rounded-lg border-2 shadow-sm ${entrega.cor}`}
-                    style={{ height: `${alturaBox}px`, minHeight: '200px', minWidth: '240px' }}
+                    className="p-4 rounded-lg border-2 shadow-sm timeline-box"
+                    style={{ 
+                      height: `${alturaBox}px`, 
+                      minHeight: '200px', 
+                      minWidth: '240px',
+                      backgroundColor: entrega.cor,
+                      color: entrega.corTexto,
+                      borderColor: entrega.corBorda
+                    }}
                   >
                     {/* Nome da entrega - SEMPRE NO TOPO */}
                     <div className="text-sm font-semibold text-left leading-tight mb-3 pb-2 border-b border-current border-opacity-20">
@@ -224,20 +238,34 @@ export function TimelineEntregas({ projetos }: TimelineEntregasProps) {
                 
                 {/* Linha vertical conectora - conecta box à bolinha */}
                 <div 
-                  className={`w-1 ${entrega.corLinha} mx-auto`}
-                  style={{ height: '10px', minHeight: '10px' }}
+                  className="w-1 mx-auto timeline-connector"
+                  style={{ 
+                    height: '12px', 
+                    minHeight: '12px',
+                    backgroundColor: entrega.cor,
+                    border: 'none',
+                    outline: 'none'
+                  }}
                 ></div>
                 
                 {/* Ponto na timeline - exatamente sobre a linha horizontal */}
                 <div 
-                  className={`w-3 h-3 rounded-full bg-white border-2 ${entrega.corBorda} shadow-md mx-auto`}
-                  style={{ marginTop: '-2px', minWidth: '12px', minHeight: '12px' }}
+                  className="w-3 h-3 rounded-full bg-white border-2 shadow-md mx-auto timeline-marker"
+                  style={{ 
+                    marginTop: '-2px', 
+                    minWidth: '12px', 
+                    minHeight: '12px',
+                    borderColor: entrega.corBorda
+                  }}
                 ></div>
                 
                 {/* Data - imediatamente abaixo da timeline */}
                 <div 
-                  className={`text-sm font-semibold ${entrega.corTexto} text-center`}
-                  style={{ marginTop: '8px' }}
+                  className="text-sm font-semibold text-center"
+                  style={{ 
+                    marginTop: '8px',
+                    color: entrega.cor
+                  }}
                 >
                   {formatarData(entrega.data)}
                 </div>
@@ -256,7 +284,16 @@ export function TimelineEntregas({ projetos }: TimelineEntregasProps) {
                 top: `${posicaoTimeline - 5}px` // 5px acima da timeline
               }}
             >
-                              <div className="w-0.5 h-3 bg-[#1B365D]" style={{ minWidth: '2px', minHeight: '12px' }}></div>
+              <div 
+                className="w-0.5 h-3 timeline-week-marker" 
+                style={{ 
+                  minWidth: '3px', 
+                  minHeight: '20px',
+                  backgroundColor: '#A6926B',
+                  border: 'none',
+                  outline: 'none'
+                }}
+              ></div>
             </div>
           ))}
         </div>

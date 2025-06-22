@@ -53,7 +53,7 @@ export function GraficosIndicadores({ projetos, incidentes }: GraficosIndicadore
         const progresso = p.ultimoStatus?.progresso_estimado || 0;
         return progresso >= 0 && progresso <= 25;
       }).length,
-      fill: '#EF4444'
+      fill: '#6B7280'
     },
     {
       faixa: '26-50%',
@@ -61,7 +61,7 @@ export function GraficosIndicadores({ projetos, incidentes }: GraficosIndicadore
         const progresso = p.ultimoStatus?.progresso_estimado || 0;
         return progresso > 25 && progresso <= 50;
       }).length,
-      fill: '#F59E0B'
+      fill: '#A6926B'
     },
     {
       faixa: '51-75%',
@@ -69,7 +69,7 @@ export function GraficosIndicadores({ projetos, incidentes }: GraficosIndicadore
         const progresso = p.ultimoStatus?.progresso_estimado || 0;
         return progresso > 50 && progresso <= 75;
       }).length,
-      fill: '#06B6D4'
+      fill: '#2E5984'
     },
     {
       faixa: '76-100%',
@@ -89,7 +89,8 @@ export function GraficosIndicadores({ projetos, incidentes }: GraficosIndicadore
   }, {} as Record<string, number>);
 
   const statusGeralChartData = Object.entries(statusGeralData).map(([status, quantidade]) => ({
-    status: status.length > 12 ? status.substring(0, 12) + '...' : status,
+    status: status,
+    statusOriginal: status,
     quantidade: Number(quantidade),
     fill: getStatusGeralColor(status)
   })).sort((a, b) => Number(b.quantidade) - Number(a.quantidade));
@@ -98,11 +99,11 @@ export function GraficosIndicadores({ projetos, incidentes }: GraficosIndicadore
     const colors: Record<string, string> = {
       'Em Andamento': '#2E5984',
       'Concluído': '#10B981',
-      'Pausado': '#F59E0B',
+      'Pausado': '#A6926B',
       'Cancelado': '#EF4444',
-      'Aguardando Aprovação': '#8B5CF6',
-      'Aguardando Homologação': '#6366F1',
-      'Em Especificação': '#06B6D4',
+      'Aguardando Aprovação': '#A6926B',
+      'Aguardando Homologação': '#1B365D',
+      'Em Especificação': '#2E5984',
       'Planejamento': '#6B7280',
       'default': '#6B7280'
     };
@@ -117,10 +118,6 @@ export function GraficosIndicadores({ projetos, incidentes }: GraficosIndicadore
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-[#1B365D] border-b border-[#E5E7EB] pb-2">
-        Indicadores e Gráficos
-      </h2>
-      
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Gráfico de Status por Saúde */}
         <Card className="bg-white">
@@ -168,7 +165,7 @@ export function GraficosIndicadores({ projetos, incidentes }: GraficosIndicadore
                   <Tooltip 
                     formatter={(value: any) => [`${value}`, 'Projetos']}
                   />
-                  <Bar dataKey="quantidade" fill="#1B365D" />
+                  <Bar dataKey="quantidade" fill="#A6926B" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -189,7 +186,7 @@ export function GraficosIndicadores({ projetos, incidentes }: GraficosIndicadore
                   <XAxis dataKey="nivel" />
                   <YAxis />
                   <Tooltip />
-                  <Bar dataKey="quantidade" fill="#1B365D" />
+                  <Bar dataKey="quantidade" fill="#A6926B" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -204,21 +201,27 @@ export function GraficosIndicadores({ projetos, incidentes }: GraficosIndicadore
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px]">
+            <div className="h-[350px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={statusGeralChartData}>
+                <BarChart 
+                  data={statusGeralChartData}
+                  margin={{ top: 20, right: 30, left: 20, bottom: 100 }}
+                >
                   <XAxis 
                     dataKey="status" 
                     angle={-45}
                     textAnchor="end"
-                    height={80}
-                    fontSize={10}
+                    height={100}
+                    fontSize={11}
+                    interval={0}
+                    tick={{ fontSize: 11 }}
                   />
                   <YAxis />
                   <Tooltip 
                     formatter={(value: any) => [`${value}`, 'Projetos']}
+                    labelFormatter={(label: string) => `Status: ${label}`}
                   />
-                  <Bar dataKey="quantidade" fill="#2E5984" />
+                  <Bar dataKey="quantidade" fill="#1B365D" />
                 </BarChart>
               </ResponsiveContainer>
             </div>

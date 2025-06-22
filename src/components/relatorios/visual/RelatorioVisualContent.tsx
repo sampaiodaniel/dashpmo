@@ -52,28 +52,34 @@ export function RelatorioVisualContent({ dados }: RelatorioVisualContentProps) {
   };
 
   return (
-    <div className="space-y-8 bg-gradient-to-br from-gray-50 to-white w-full" id="relatorio-content" style={{ fontFamily: 'Inter, system-ui, -apple-system, sans-serif' }}>
+    <div className="space-y-8 bg-white w-full" id="relatorio-content" style={{ fontFamily: 'Inter, system-ui, -apple-system, sans-serif' }}>
       {/* Header do Relatório ASA */}
-      <div>
+      <div className="bg-[#A6926B] p-6 rounded-lg shadow-md">
         <RelatorioHeader dados={dadosASAFormat} />
       </div>
 
       {/* Gráficos de Indicadores */}
-      <div className="bg-white p-8 rounded-lg border-l-4 border-[#A6926B] w-full shadow-lg">
+      <div className="bg-white p-8 rounded-lg w-full shadow-md">
+        <div className="pb-4 mb-6">
+          <h2 className="text-2xl font-bold text-[#1B365D]">Indicadores e Gráficos</h2>
+        </div>
         <GraficosIndicadores projetos={projetosComStatus} incidentes={dados.incidentes} />
       </div>
 
       {/* Overview de Projetos por Responsável */}
-      <div className="bg-white p-8 rounded-lg border-l-4 border-[#1B365D] w-full shadow-lg" data-overview>
+      <div className="bg-white p-8 rounded-lg w-full shadow-md" data-overview>
+        <div className="pb-4 mb-6">
+          <h2 className="text-2xl font-bold text-[#1B365D]">Overview de Projetos</h2>
+        </div>
         <ProjetosOverview projetos={projetosComStatus} />
       </div>
 
       {/* Detalhamento por Projeto */}
       <div className="space-y-6 w-full">
-        <div className="bg-white p-8 rounded-lg border-l-4 border-[#1B365D] w-full shadow-lg">
-          <h2 className="text-2xl font-bold text-[#1B365D] border-b border-[#E5E7EB] pb-3 mb-6">
-            Detalhamento por Projeto
-          </h2>
+        <div className="bg-white p-8 rounded-lg w-full shadow-md">
+          <div className="pb-4 mb-6">
+            <h2 className="text-2xl font-bold text-[#1B365D]">Detalhamento por Projeto</h2>
+          </div>
         
           {(() => {
             // Agrupar projetos por Responsável ASA
@@ -112,7 +118,7 @@ export function RelatorioVisualContent({ dados }: RelatorioVisualContentProps) {
                       const element = document.querySelector('[data-overview]');
                       element?.scrollIntoView({ behavior: 'smooth' });
                     }}
-                    className="text-sm text-[#1B365D] hover:text-[#2E5984] flex items-center gap-1"
+                    className="text-sm text-[#A6926B] hover:text-[#8B7355] flex items-center gap-1 font-medium"
                   >
                     ← Voltar ao Overview
                   </button>
@@ -136,23 +142,23 @@ export function RelatorioVisualContent({ dados }: RelatorioVisualContentProps) {
                   )}
                   
                   {/* Informações básicas */}
-                  <div className="bg-gradient-to-r from-[#F8F9FA] to-[#FDF6E3] p-4 rounded-lg border border-[#E5E7EB]">
+                  <div className="bg-gray-50 p-4 rounded-lg border border-[#A6926B] border-opacity-30">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                       <div>
-                        <span className="text-[#6B7280]">Responsável ASA:</span>
-                        <div className="font-medium text-[#1B365D]">{projeto.responsavel_asa || 'Não informado'}</div>
+                        <span className="text-[#6B7280] font-medium">Responsável ASA:</span>
+                        <div className="font-semibold text-[#1B365D]">{projeto.responsavel_asa || 'Não informado'}</div>
                       </div>
                       <div>
-                        <span className="text-[#6B7280]">Chefe do Projeto:</span>
-                        <div className="font-medium text-[#1B365D]">{projeto.gp_responsavel || 'Não informado'}</div>
+                        <span className="text-[#6B7280] font-medium">Chefe do Projeto:</span>
+                        <div className="font-semibold text-[#1B365D]">{projeto.gp_responsavel || 'Não informado'}</div>
                       </div>
                       <div>
-                        <span className="text-[#6B7280]">Status Geral:</span>
-                        <div className="font-medium text-[#1B365D]">{projeto.ultimoStatus?.status_geral || 'Não informado'}</div>
+                        <span className="text-[#6B7280] font-medium">Status Geral:</span>
+                        <div className="font-semibold text-[#1B365D]">{projeto.ultimoStatus?.status_geral || 'Não informado'}</div>
                       </div>
                       <div>
-                        <span className="text-[#6B7280]">Progresso:</span>
-                        <div className="font-medium text-[#1B365D]">
+                        <span className="text-[#6B7280] font-medium">Progresso:</span>
+                        <div className="font-semibold text-[#1B365D]">
                           {projeto.ultimoStatus?.progresso_estimado ? `${projeto.ultimoStatus.progresso_estimado}%` : 'Não informado'}
                         </div>
                       </div>
@@ -163,14 +169,18 @@ export function RelatorioVisualContent({ dados }: RelatorioVisualContentProps) {
                 {/* Realizado na semana */}
                 {projeto.ultimoStatus?.realizado_semana_atual && (
                   <div className="mb-6 mt-8">
-                    <h4 className="font-semibold text-[#1B365D] mb-3 text-base text-center">Realizado na Semana</h4>
-                    <div className="space-y-2 text-left">
-                      {projeto.ultimoStatus.realizado_semana_atual.split('\n').filter((item: string) => item.trim()).map((item: string, i: number) => (
-                        <div key={i} className="text-sm text-[#6B7280] leading-relaxed flex items-start">
-                          <span className="font-medium text-[#1B365D] mr-2 mt-0.5 flex-shrink-0">•</span>
-                          <span className="flex-1">{item.trim()}</span>
-                        </div>
-                      ))}
+                    <div className="bg-[#A6926B] text-white p-3 rounded-t-lg">
+                      <h4 className="font-semibold text-base text-center">Realizado na Semana</h4>
+                    </div>
+                    <div className="bg-gray-50 p-4 rounded-b-lg border-l-4 border-[#A6926B]">
+                      <div className="space-y-1 text-left">
+                        {projeto.ultimoStatus.realizado_semana_atual.split('\n').filter((item: string) => item.trim()).map((item: string, i: number) => (
+                          <div key={i} className="text-sm text-[#6B7280] leading-snug flex items-start">
+                            <span className="font-medium text-[#A6926B] mr-2 mt-0.5 flex-shrink-0">•</span>
+                            <span className="flex-1">{item.trim()}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 )}
@@ -179,53 +189,65 @@ export function RelatorioVisualContent({ dados }: RelatorioVisualContentProps) {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6 mt-8">
                   {/* Pontos de Atenção */}
                   <div>
-                    <h4 className="font-semibold text-[#1B365D] mb-3 text-base text-center">Pontos de Atenção</h4>
-                    {projeto.ultimoStatus?.observacoes_pontos_atencao ? (
-                      <div className="space-y-2 text-left">
-                        {projeto.ultimoStatus.observacoes_pontos_atencao.split('\n').filter((item: string) => item.trim()).map((item: string, i: number) => (
-                          <div key={i} className="text-sm text-[#6B7280] leading-relaxed flex items-start">
-                            <span className="font-medium text-[#D97706] mr-2 mt-0.5 flex-shrink-0">⚠️</span>
-                            <span className="flex-1">{item.trim()}</span>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-sm text-[#6B7280] italic text-left">Nada reportado</div>
-                    )}
+                    <div className="bg-[#F59E0B] text-white p-3 rounded-t-lg">
+                      <h4 className="font-semibold text-base text-center">Pontos de Atenção</h4>
+                    </div>
+                    <div className="bg-gray-50 p-4 rounded-b-lg border-l-4 border-[#F59E0B] min-h-[120px]">
+                      {projeto.ultimoStatus?.observacoes_pontos_atencao ? (
+                        <div className="space-y-2 text-left">
+                          {projeto.ultimoStatus.observacoes_pontos_atencao.split('\n').filter((item: string) => item.trim()).map((item: string, i: number) => (
+                            <div key={i} className="text-sm text-[#6B7280] leading-relaxed flex items-start">
+                              <span className="font-medium text-[#F59E0B] mr-2 mt-0.5 flex-shrink-0">⚠️</span>
+                              <span className="flex-1">{item.trim()}</span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-sm text-[#6B7280] italic text-left">Nada reportado</div>
+                      )}
+                    </div>
                   </div>
                   
                   {/* Backlog */}
                   <div>
-                    <h4 className="font-semibold text-[#1B365D] mb-3 text-base text-center">Backlog</h4>
-                    {projeto.ultimoStatus?.backlog ? (
-                      <div className="space-y-2 text-left">
-                        {projeto.ultimoStatus.backlog.split('\n').filter((item: string) => item.trim()).map((item: string, i: number) => (
-                          <div key={i} className="text-sm text-[#6B7280] leading-relaxed flex items-start">
-                            <span className="font-medium text-[#2E5984] mr-2 mt-0.5 flex-shrink-0">→</span>
-                            <span className="flex-1">{item.trim()}</span>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-sm text-[#6B7280] italic text-left">Nada reportado</div>
-                    )}
+                    <div className="bg-[#2E5984] text-white p-3 rounded-t-lg">
+                      <h4 className="font-semibold text-base text-center">Backlog</h4>
+                    </div>
+                    <div className="bg-gray-50 p-4 rounded-b-lg border-l-4 border-[#2E5984] min-h-[120px]">
+                      {projeto.ultimoStatus?.backlog ? (
+                        <div className="space-y-2 text-left">
+                          {projeto.ultimoStatus.backlog.split('\n').filter((item: string) => item.trim()).map((item: string, i: number) => (
+                            <div key={i} className="text-sm text-[#6B7280] leading-relaxed flex items-start">
+                              <span className="font-medium text-[#2E5984] mr-2 mt-0.5 flex-shrink-0">→</span>
+                              <span className="flex-1">{item.trim()}</span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-sm text-[#6B7280] italic text-left">Nada reportado</div>
+                      )}
+                    </div>
                   </div>
 
                   {/* Bloqueios */}
                   <div>
-                    <h4 className="font-semibold text-[#1B365D] mb-3 text-base text-center">Bloqueios</h4>
-                    {projeto.ultimoStatus?.bloqueios ? (
-                      <div className="space-y-2 text-left">
-                        {projeto.ultimoStatus.bloqueios.split('\n').filter((item: string) => item.trim()).map((item: string, i: number) => (
-                          <div key={i} className="text-sm text-[#6B7280] leading-relaxed flex items-start">
-                            <span className="font-medium text-[#DC2626] mr-2 mt-0.5 flex-shrink-0">🚫</span>
-                            <span className="flex-1">{item.trim()}</span>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-sm text-[#6B7280] italic text-left">Nada reportado</div>
-                    )}
+                    <div className="bg-[#6B7280] text-white p-3 rounded-t-lg">
+                      <h4 className="font-semibold text-base text-center">Bloqueios</h4>
+                    </div>
+                    <div className="bg-gray-50 p-4 rounded-b-lg border-l-4 border-[#6B7280] min-h-[120px]">
+                      {projeto.ultimoStatus?.bloqueios ? (
+                        <div className="space-y-2 text-left">
+                          {projeto.ultimoStatus.bloqueios.split('\n').filter((item: string) => item.trim()).map((item: string, i: number) => (
+                            <div key={i} className="text-sm text-[#6B7280] leading-relaxed flex items-start">
+                              <span className="font-medium text-[#6B7280] mr-2 mt-0.5 flex-shrink-0">🚫</span>
+                              <span className="flex-1">{item.trim()}</span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-sm text-[#6B7280] italic text-left">Nada reportado</div>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -241,7 +263,10 @@ export function RelatorioVisualContent({ dados }: RelatorioVisualContentProps) {
 
       {/* Tabela de Incidentes */}
       {dados.incidentes.length > 0 && (
-        <div className="bg-white p-8 rounded-lg border-l-4 border-[#DC2626] w-full shadow-lg">
+        <div className="bg-white p-8 rounded-lg w-full shadow-md">
+          <div className="pb-4 mb-6">
+            <h2 className="text-2xl font-bold text-[#1B365D]">Controle de Incidentes</h2>
+          </div>
           <TabelaIncidentes incidentes={dados.incidentes} carteira={dados.carteira || 'Visual'} />
         </div>
       )}
