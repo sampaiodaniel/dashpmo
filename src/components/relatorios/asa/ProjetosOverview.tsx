@@ -1,6 +1,8 @@
-
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { ExternalLink } from 'lucide-react';
+import { formatarData } from '@/utils/dateFormatting';
 
 interface ProjetosOverviewProps {
   projetos: any[];
@@ -63,10 +65,12 @@ export function ProjetosOverview({ projetos }: ProjetosOverviewProps) {
                   <Table>
                     <TableHeader>
                       <TableRow className="bg-[#F8FAFC]">
-                        <TableHead className="text-[#1B365D] font-semibold w-[35%]">Projeto</TableHead>
-                        <TableHead className="text-[#1B365D] font-semibold w-[25%]">Chefe do Projeto</TableHead>
-                        <TableHead className="text-[#1B365D] font-semibold text-center w-[15%]">Status</TableHead>
-                        <TableHead className="text-[#1B365D] font-semibold w-[25%]">Progresso</TableHead>
+                        <TableHead className="text-[#1B365D] font-semibold w-[25%]">Projeto</TableHead>
+                        <TableHead className="text-[#1B365D] font-semibold w-[20%]">Chefe do Projeto</TableHead>
+                        <TableHead className="text-[#1B365D] font-semibold w-[15%]">Data Finalização</TableHead>
+                        <TableHead className="text-[#1B365D] font-semibold text-center w-[10%]">Status</TableHead>
+                        <TableHead className="text-[#1B365D] font-semibold w-[20%]">Progresso</TableHead>
+                        <TableHead className="text-[#1B365D] font-semibold text-center w-[10%]">Detalhe</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -77,6 +81,10 @@ export function ProjetosOverview({ projetos }: ProjetosOverviewProps) {
                           </TableCell>
                           <TableCell className="text-[#6B7280] py-4">
                             {projeto.gp_responsavel || projeto.equipe || 'Não informado'}
+                          </TableCell>
+                          <TableCell className="text-[#6B7280] py-4">
+                            {projeto.ultimoStatus?.finalizacao_prevista ? formatarData(projeto.ultimoStatus.finalizacao_prevista) : 
+                             projeto.finalizacao_prevista ? formatarData(projeto.finalizacao_prevista) : 'Não informada'}
                           </TableCell>
                           <TableCell className="text-center py-4">
                             <div className="flex items-center justify-center">
@@ -95,6 +103,19 @@ export function ProjetosOverview({ projetos }: ProjetosOverviewProps) {
                                 {projeto.ultimoStatus?.progresso_estimado || 0}%
                               </span>
                             </div>
+                          </TableCell>
+                          <TableCell className="text-center py-4">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-[#1B365D] hover:bg-[#F8FAFC]"
+                              onClick={() => {
+                                const element = document.getElementById(`projeto-${projeto.id}`);
+                                element?.scrollIntoView({ behavior: 'smooth' });
+                              }}
+                            >
+                              <ExternalLink className="h-4 w-4" />
+                            </Button>
                           </TableCell>
                         </TableRow>
                       ))}

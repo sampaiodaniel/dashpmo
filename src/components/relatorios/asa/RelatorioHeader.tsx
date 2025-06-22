@@ -1,11 +1,28 @@
-
 import { DadosRelatorioASA } from '@/hooks/useRelatorioASA';
+import { useState, useEffect } from 'react';
+import { prepareImageForReport } from '@/utils/imageUtils';
 
 interface RelatorioHeaderProps {
   dados: DadosRelatorioASA;
 }
 
 export function RelatorioHeader({ dados }: RelatorioHeaderProps) {
+  const [logoSrc, setLogoSrc] = useState<string>("/lovable-uploads/Logo_Asa_recortado.png");
+
+  useEffect(() => {
+    const loadLogo = async () => {
+      try {
+        const logoUrl = await prepareImageForReport("/lovable-uploads/Logo_Asa_recortado.png");
+        setLogoSrc(logoUrl);
+      } catch (error) {
+        console.error('Erro ao carregar logo no header:', error);
+        // Mantém o src padrão como fallback
+      }
+    };
+
+    loadLogo();
+  }, []);
+
   return (
     <div className="text-center border-b-4 border-[#A6926B] pb-8 bg-white p-8 rounded-xl break-inside-avoid relative overflow-hidden">
       {/* Background decorativo */}
@@ -15,9 +32,16 @@ export function RelatorioHeader({ dados }: RelatorioHeaderProps) {
       <div className="relative z-10">
         <div className="flex items-center justify-center gap-8 mb-8">
           <img 
-            src="/lovable-uploads/Logo_Asa.png" 
+            src={logoSrc}
             alt="ASA Logo" 
-            className="h-48 w-auto"
+            className="h-24 w-auto"
+            onError={(e) => {
+              console.error('Erro ao carregar logo:', e);
+              // Fallback para URL relativa
+              (e.target as HTMLImageElement).src = "/lovable-uploads/Logo_Asa_recortado.png";
+            }}
+            loading="eager"
+            style={{ maxWidth: '100%', height: 'auto' }}
           />
           <div className="text-left">
             <h1 className="text-5xl font-bold text-[#1B365D] mb-3 tracking-tight">Status Report</h1>

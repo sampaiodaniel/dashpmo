@@ -1,4 +1,6 @@
 import { DadosRelatorioASA } from '@/hooks/useRelatorioASA';
+import { useState, useEffect } from 'react';
+import { prepareImageForReport } from '@/utils/imageUtils';
 
 interface RelatorioFooterProps {
   dados: {
@@ -10,6 +12,22 @@ interface RelatorioFooterProps {
 }
 
 export function RelatorioFooter({ dados }: RelatorioFooterProps) {
+  const [logoSrc, setLogoSrc] = useState<string>("/lovable-uploads/Logo_Asa_recortado.png");
+
+  useEffect(() => {
+    const loadLogo = async () => {
+      try {
+        const logoUrl = await prepareImageForReport("/lovable-uploads/Logo_Asa_recortado.png");
+        setLogoSrc(logoUrl);
+      } catch (error) {
+        console.error('Erro ao carregar logo no footer:', error);
+        // Mantém o src padrão como fallback
+      }
+    };
+
+    loadLogo();
+  }, []);
+
   // Normalizar data de geração
   let dataFormatada: string;
   if (dados.dataRelatorio) {
@@ -35,9 +53,16 @@ export function RelatorioFooter({ dados }: RelatorioFooterProps) {
           </div>
           <div className="text-right">
             <img 
-              src="/lovable-uploads/Logo_Asa.png" 
+              src={logoSrc}
               alt="ASA Logo" 
-              className="h-20 w-auto mb-2"
+              className="w-auto mb-2"
+              onError={(e) => {
+                console.error('Erro ao carregar logo no footer:', e);
+                // Fallback para URL relativa
+                (e.target as HTMLImageElement).src = "/lovable-uploads/Logo_Asa_recortado.png";
+              }}
+              loading="eager"
+              style={{ maxWidth: '100%', height: '56px', width: 'auto' }}
             />
           </div>
         </div>

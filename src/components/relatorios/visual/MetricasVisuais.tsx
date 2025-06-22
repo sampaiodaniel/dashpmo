@@ -1,102 +1,119 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart3, TrendingUp, Calendar, CheckCircle } from 'lucide-react';
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend } from 'recharts';
 
 interface MetricasVisuaisProps {
   projetos: any[];
 }
 
 export function MetricasVisuais({ projetos }: MetricasVisuaisProps) {
-  // Calcular métricas reais
-  const totalProjetos = projetos.length;
-  const projetosVerdes = projetos.filter(p => p.ultimoStatus?.status_visao_gp === 'Verde').length;
-  const projetosAmarelos = projetos.filter(p => p.ultimoStatus?.status_visao_gp === 'Amarelo').length;
-  const projetosVermelhos = projetos.filter(p => p.ultimoStatus?.status_visao_gp === 'Vermelho').length;
-  
-  // Projetos com entregas próximas (próximos 30 dias)
-  const hoje = new Date();
-  const proximas30Dias = new Date();
-  proximas30Dias.setDate(hoje.getDate() + 30);
-  
-  const entregasProximas = projetos.reduce((acc, projeto) => {
-    const status = projeto.ultimoStatus;
-    if (!status) return acc;
-    
-    const datas = [status.data_marco1, status.data_marco2, status.data_marco3]
-      .filter(data => data)
-      .map(data => new Date(data))
-      .filter(data => data >= hoje && data <= proximas30Dias);
-    
-    return acc + datas.length;
-  }, 0);
+  // Dados para gráfico de distribuição por status geral
+  const statusGeral = projetos.reduce((acc, projeto) => {
+    const status = projeto.ultimoStatus?.status_geral || 'Não informado';
+    acc[status] = (acc[status] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
 
-  // Projetos concluídos ou em fase final
-  const projetosConcluidos = projetos.filter(p => 
-    p.ultimoStatus?.status_geral === 'Concluído' || 
-    p.ultimoStatus?.status_geral === 'Aguardando Homologação'
-  ).length;
+  // Dados para gráfico de saúde dos projetos
+  const statusSaude = projetos.reduce((acc, projeto) => {
+    const saude = projeto.ultimoStatus?.status_visao_gp || 'Não informado';
+    acc[saude] = (acc[saude] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  // Preparar dados para o gráfico de pizza - Status Geral
+  const chartDataStatus = Object.entries(statusGeral).map(([name, value]) => ({
+    name,
+    value,
+    color: getStatusGeralColor(name)
+  }));
+
+  // Preparar dados para o gráfico de pizza - Saúde
+  const chartDataSaude = Object.entries(statusSaude).map(([name, value]) => ({
+    name,
+    value,
+    color: getStatusSaudeColor(name)
+  }));
+
+  function getStatusGeralColor(status: string) {
+    const colors: Record<string, string> = {
+      'Em Andamento': '#2E5984',
+      'Concluído': '#10B981',
+      'Pausado': '#F59E0B',
+      'Cancelado': '#EF4444',
+      'Aguardando Aprovação': '#8B5CF6',
+      'Aguardando Homologação': '#6366F1',
+      'Em Especificação': '#06B6D4',
+      'Planejamento': '#6B7280',
+      'default': '#6B7280'
+    };
+    return colors[status] || colors.default;
+  }
+
+  function getStatusSaudeColor(saude: string) {
+    const colors: Record<string, string> = {
+      'Verde': '#10B981',
+      'Amarelo': '#F59E0B',
+      'Vermelho': '#EF4444',
+      'default': '#6B7280'
+    };
+    return colors[saude] || colors.default;
+  }
+
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0];
+      return (
+        <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
+          <p className="font-medium">{data.name}</p>
+          <p className="text-sm text-[#6B7280]">
+            {data.value} projeto{data.value !== 1 ? 's' : ''}
+          </p>
+        </div>
+      );
+    }
+    return null;
+  };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      <Card className="bg-white border-l-4 border-[#1B365D]">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-[#6B7280]">
-            Total de Projetos
-          </CardTitle>
-          <BarChart3 className="h-4 w-4 text-[#1B365D]" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-[#1B365D]">{totalProjetos}</div>
-          <p className="text-xs text-[#6B7280]">
-            Projetos ativos monitorados
-          </p>
-        </CardContent>
-      </Card>
-
-      <Card className="bg-white border-l-4 border-green-500">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-[#6B7280]">
-            Status Saudável
-          </CardTitle>
-          <TrendingUp className="h-4 w-4 text-green-500" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-green-600">{projetosVerdes}</div>
-          <p className="text-xs text-[#6B7280]">
-            {totalProjetos > 0 ? Math.round((projetosVerdes / totalProjetos) * 100) : 0}% dos projetos
-          </p>
-        </CardContent>
-      </Card>
-
-      <Card className="bg-white border-l-4 border-yellow-500">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-[#6B7280]">
-            Entregas Próximas
-          </CardTitle>
-          <Calendar className="h-4 w-4 text-yellow-500" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-yellow-600">{entregasProximas}</div>
-          <p className="text-xs text-[#6B7280]">
-            Próximos 30 dias
-          </p>
-        </CardContent>
-      </Card>
-
-      <Card className="bg-white border-l-4 border-blue-500">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-[#6B7280]">
-            Finalizações
-          </CardTitle>
-          <CheckCircle className="h-4 w-4 text-blue-500" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-blue-600">{projetosConcluidos}</div>
-          <p className="text-xs text-[#6B7280]">
-            Concluídos ou em homologação
-          </p>
-        </CardContent>
-      </Card>
+    <div className="space-y-6">
+      <h2 className="text-2xl font-bold text-[#1B365D] border-b border-[#E5E7EB] pb-2">
+        Visão Geral dos Projetos
+      </h2>
+      
+      <div className="flex justify-center">
+        {/* Gráfico de Status Geral */}
+        <Card className="bg-white w-full max-w-md">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold text-[#1B365D] text-center">
+              Projetos por Status
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={chartDataStatus}
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={80}
+                    dataKey="value"
+                  >
+                    {chartDataStatus.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Legend 
+                    verticalAlign="bottom" 
+                    height={36}
+                    formatter={(value, entry) => `${value}: ${entry.payload.value}`}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
