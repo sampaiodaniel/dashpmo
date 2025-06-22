@@ -24,7 +24,7 @@ export function RelatorioHeader({ dados }: RelatorioHeaderProps) {
   }, []);
 
   return (
-    <div className="text-center border-b-4 border-[#A6926B] pb-8 bg-white p-8 rounded-xl break-inside-avoid relative overflow-hidden">
+    <div className="text-center pb-8 bg-white p-8 rounded-xl break-inside-avoid relative overflow-hidden">
       {/* Background decorativo */}
       <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#A6926B]/10 to-transparent rounded-full transform translate-x-16 -translate-y-16"></div>
       <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-[#1B365D]/10 to-transparent rounded-full transform -translate-x-12 translate-y-12"></div>

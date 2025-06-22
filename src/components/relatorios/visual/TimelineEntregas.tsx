@@ -250,12 +250,14 @@ export function TimelineEntregas({ projetos }: TimelineEntregasProps) {
                 
                 {/* Ponto na timeline - exatamente sobre a linha horizontal */}
                 <div 
-                  className="w-3 h-3 rounded-full bg-white border-2 shadow-md mx-auto timeline-marker"
+                  className="w-3 h-3 rounded-full shadow-md mx-auto timeline-marker"
                   style={{ 
                     marginTop: '-2px', 
                     minWidth: '12px', 
                     minHeight: '12px',
-                    borderColor: entrega.corBorda
+                    backgroundColor: entrega.cor,
+                    borderColor: entrega.corBorda,
+                    border: `2px solid ${entrega.corBorda}`
                   }}
                 ></div>
                 

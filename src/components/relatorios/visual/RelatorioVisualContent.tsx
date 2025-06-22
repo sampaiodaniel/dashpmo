@@ -54,7 +54,7 @@ export function RelatorioVisualContent({ dados }: RelatorioVisualContentProps) {
   return (
     <div className="space-y-8 bg-white w-full" id="relatorio-content" style={{ fontFamily: 'Inter, system-ui, -apple-system, sans-serif' }}>
       {/* Header do Relatório ASA */}
-      <div className="bg-[#A6926B] p-6 rounded-lg shadow-md">
+      <div className="bg-white p-6 rounded-lg shadow-md border-none">
         <RelatorioHeader dados={dadosASAFormat} />
       </div>
 
@@ -127,7 +127,18 @@ export function RelatorioVisualContent({ dados }: RelatorioVisualContentProps) {
                 {/* Título e informações do projeto */}
                 <div className="mb-6">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-3xl font-bold text-[#1B365D]">{projeto.nome_projeto || projeto.nome}</h3>
+                    <div className="flex items-baseline gap-4">
+                      <h3 className="text-3xl font-bold text-[#1B365D]">{projeto.nome_projeto || projeto.nome}</h3>
+                      {(projeto.ultimoStatus?.finalizacao_prevista || projeto.data_fim || projeto.finalizacao_prevista) && (
+                        <span className="text-sm text-[#6B7280] font-normal opacity-75 whitespace-nowrap">
+                          (Previsão de Finalização: {formatarData(
+                            projeto.ultimoStatus?.finalizacao_prevista || 
+                            projeto.data_fim || 
+                            projeto.finalizacao_prevista
+                          )})
+                        </span>
+                      )}
+                    </div>
                     <div className="flex items-center">
                       <div className={`w-8 h-8 rounded-full border-2 border-white shadow-lg ${
                         projeto.ultimoStatus?.status_visao_gp === 'Verde' ? 'bg-green-500' :

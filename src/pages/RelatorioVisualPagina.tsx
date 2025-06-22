@@ -67,7 +67,7 @@ export default function RelatorioVisualPagina() {
       /* Remover headers e footers do navegador */
       @page {
         margin: 0.5in;
-        size: A4;
+        size: A4 landscape;
         @top-left { content: ""; }
         @top-center { content: ""; }
         @top-right { content: ""; }
@@ -112,6 +112,7 @@ export default function RelatorioVisualPagina() {
         /* Remover headers e footers */
         @page {
           margin: 0.5in;
+          size: A4 landscape;
           @top-left { content: ""; }
           @top-center { content: ""; }
           @top-right { content: ""; }
@@ -192,6 +193,7 @@ export default function RelatorioVisualPagina() {
                 (clonedElement as HTMLElement).style.width = '100%';
                 (clonedElement as HTMLElement).style.maxWidth = 'none';
                 (clonedElement as HTMLElement).style.fontSize = '12px';
+                (clonedElement as HTMLElement).style.minWidth = '1200px';
               }
               
               // Forçar grid layout
@@ -206,7 +208,7 @@ export default function RelatorioVisualPagina() {
           jsPDF: { 
             unit: 'in', 
             format: 'a4', 
-            orientation: 'portrait',
+            orientation: 'landscape',
             compress: true,
             precision: 16
           },
@@ -217,16 +219,16 @@ export default function RelatorioVisualPagina() {
           }
         };
 
-        // Executar geração do PDF com timeout
-        const pdfPromise = window.html2pdf().set(opt).from(element).save();
+        // Aguardar mais tempo para renderização completa
+        await new Promise(resolve => setTimeout(resolve, 2000));
         
-        // Timeout de 45 segundos para geração do PDF
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Timeout na geração do PDF')), 45000)
-        );
-        
-        await Promise.race([pdfPromise, timeoutPromise]);
-        console.log('PDF gerado com sucesso!');
+        // Usar método toPdf para garantir conteúdo
+        const pdf = window.html2pdf().set(opt).from(element);
+        await pdf.toPdf().get('pdf').then((pdfObj: any) => {
+          console.log('PDF gerado com', pdfObj.internal.getNumberOfPages(), 'páginas');
+        });
+        await pdf.save();
+        console.log('PDF salvo com sucesso!');
         
       } else {
         throw new Error('html2pdf não disponível');
@@ -315,7 +317,7 @@ export default function RelatorioVisualPagina() {
     const printStyles = `
       @page {
         margin: 0.5in;
-        size: A4;
+        size: A4 landscape;
         /* Remover headers e footers */
         @top-left { content: ""; }
         @top-center { content: ""; }
@@ -524,15 +526,6 @@ export default function RelatorioVisualPagina() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-4">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={handleVoltar}
-                className="flex items-center gap-2"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Voltar
-              </Button>
               <h1 className="text-lg font-semibold text-gray-900">
                 Relatório Visual - {dados.carteira || dados.responsavel}
               </h1>
@@ -563,7 +556,7 @@ export default function RelatorioVisualPagina() {
       </div>
 
       {/* Conteúdo do relatório */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-8" style={{ minWidth: '1200px' }}>
         <RelatorioVisualContent dados={dados} />
       </div>
     </div>

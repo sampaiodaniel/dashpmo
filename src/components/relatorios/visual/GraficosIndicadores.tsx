@@ -176,7 +176,7 @@ export function GraficosIndicadores({ projetos, incidentes }: GraficosIndicadore
         <Card className="bg-white">
           <CardHeader>
             <CardTitle className="text-lg font-semibold text-[#1B365D]">
-              Distribuição de Riscos
+              Distribuição por Matriz de Riscos
             </CardTitle>
           </CardHeader>
           <CardContent>
