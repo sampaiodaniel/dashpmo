@@ -45,33 +45,74 @@ export function GraficosIndicadores({ projetos, incidentes }: GraficosIndicadore
     }
   ];
 
-  // Dados para progresso por projeto (barras horizontais)
-  const progressoProjetos = projetos
-    .map(projeto => ({
-      nome: projeto.nome_projeto.length > 20 ? 
-            projeto.nome_projeto.substring(0, 20) + '...' : 
-            projeto.nome_projeto,
-      progresso: projeto.ultimoStatus?.progresso_estimado || 0,
-      status: projeto.ultimoStatus?.status_visao_gp || 'Cinza'
-    }))
-    .sort((a, b) => b.progresso - a.progresso); // Ordenar por progresso decrescente
+  // Dados para projetos por faixa de progresso
+  const progressoData = [
+    {
+      faixa: '0-25%',
+      quantidade: projetos.filter(p => {
+        const progresso = p.ultimoStatus?.progresso_estimado || 0;
+        return progresso >= 0 && progresso <= 25;
+      }).length,
+      fill: '#EF4444'
+    },
+    {
+      faixa: '26-50%',
+      quantidade: projetos.filter(p => {
+        const progresso = p.ultimoStatus?.progresso_estimado || 0;
+        return progresso > 25 && progresso <= 50;
+      }).length,
+      fill: '#F59E0B'
+    },
+    {
+      faixa: '51-75%',
+      quantidade: projetos.filter(p => {
+        const progresso = p.ultimoStatus?.progresso_estimado || 0;
+        return progresso > 50 && progresso <= 75;
+      }).length,
+      fill: '#06B6D4'
+    },
+    {
+      faixa: '76-100%',
+      quantidade: projetos.filter(p => {
+        const progresso = p.ultimoStatus?.progresso_estimado || 0;
+        return progresso > 75 && progresso <= 100;
+      }).length,
+      fill: '#10B981'
+    }
+  ];
+
+  // Dados para projetos por status geral
+  const statusGeralData = projetos.reduce((acc, projeto) => {
+    const status = projeto.ultimoStatus?.status_geral || 'Não informado';
+    acc[status] = (acc[status] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const statusGeralChartData = Object.entries(statusGeralData).map(([status, quantidade]) => ({
+    status: status.length > 12 ? status.substring(0, 12) + '...' : status,
+    quantidade: Number(quantidade),
+    fill: getStatusGeralColor(status)
+  })).sort((a, b) => Number(b.quantidade) - Number(a.quantidade));
+
+  function getStatusGeralColor(status: string) {
+    const colors: Record<string, string> = {
+      'Em Andamento': '#2E5984',
+      'Concluído': '#10B981',
+      'Pausado': '#F59E0B',
+      'Cancelado': '#EF4444',
+      'Aguardando Aprovação': '#8B5CF6',
+      'Aguardando Homologação': '#6366F1',
+      'Em Especificação': '#06B6D4',
+      'Planejamento': '#6B7280',
+      'default': '#6B7280'
+    };
+    return colors[status] || colors.default;
+  }
 
   const chartConfig = {
     quantidade: {
       label: "Quantidade",
     },
-    progresso: {
-      label: "Progresso (%)",
-    },
-  };
-
-  const getBarColor = (status: string) => {
-    switch (status) {
-      case 'Verde': return '#10B981';
-      case 'Amarelo': return '#F59E0B';
-      case 'Vermelho': return '#EF4444';
-      default: return '#6B7280';
-    }
   };
 
   return (
@@ -89,63 +130,45 @@ export function GraficosIndicadores({ projetos, incidentes }: GraficosIndicadore
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={statusData}
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={80}
-                  dataKey="quantidade"
-                  label={({ status, quantidade }) => `${status}: ${quantidade}`}
-                >
-                  {statusData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.fill} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
+            <div className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={statusData}
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={80}
+                    dataKey="quantidade"
+                    label={({ status, quantidade }) => `${status}: ${quantidade}`}
+                  >
+                    {statusData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
           </CardContent>
         </Card>
 
-        {/* Gráfico de Progresso dos Projetos (Barras Horizontais) */}
+        {/* Gráfico de Projetos por Faixa de Progresso */}
         <Card className="bg-white">
           <CardHeader>
             <CardTitle className="text-lg font-semibold text-[#1B365D]">
-              Progresso dos Projetos
+              Projetos por Faixa de Progresso
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart 
-                  data={progressoProjetos} 
-                  layout="horizontal"
-                  margin={{ top: 5, right: 30, left: 150, bottom: 5 }}
-                >
-                  <XAxis 
-                    type="number" 
-                    domain={[0, 100]} 
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <YAxis 
-                    type="category" 
-                    dataKey="nome" 
-                    axisLine={false}
-                    tickLine={false}
-                    fontSize={10}
-                    width={140}
-                  />
+                <BarChart data={progressoData}>
+                  <XAxis dataKey="faixa" />
+                  <YAxis />
                   <Tooltip 
-                    formatter={(value: any) => [`${value}%`, 'Progresso']}
+                    formatter={(value: any) => [`${value}`, 'Projetos']}
                   />
-                  <Bar 
-                    dataKey="progresso" 
-                    fill="#1B365D"
-                    radius={[0, 4, 4, 0]}
-                  />
+                  <Bar dataKey="quantidade" fill="#1B365D" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -167,6 +190,35 @@ export function GraficosIndicadores({ projetos, incidentes }: GraficosIndicadore
                   <YAxis />
                   <Tooltip />
                   <Bar dataKey="quantidade" fill="#1B365D" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Gráfico de Projetos por Status Geral */}
+        <Card className="bg-white">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold text-[#1B365D]">
+              Projetos por Status Geral
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={statusGeralChartData}>
+                  <XAxis 
+                    dataKey="status" 
+                    angle={-45}
+                    textAnchor="end"
+                    height={80}
+                    fontSize={10}
+                  />
+                  <YAxis />
+                  <Tooltip 
+                    formatter={(value: any) => [`${value}`, 'Projetos']}
+                  />
+                  <Bar dataKey="quantidade" fill="#2E5984" />
                 </BarChart>
               </ResponsiveContainer>
             </div>

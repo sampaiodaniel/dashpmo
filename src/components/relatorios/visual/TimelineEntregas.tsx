@@ -131,39 +131,65 @@ export function TimelineEntregas({ projetos }: TimelineEntregasProps) {
   const renderTimeline = (entregasPagina: any[], numeroPagina: number) => {
     const tracosSemanas = gerarPosicoesSemanas(entregasPagina);
     
+    // Calcular a altura máxima necessária baseada no conteúdo de todos os boxes
+    const alturaMaxima = Math.max(...entregasPagina.map(entrega => {
+      const linhasEntregaveis = entrega.entregaveis ? entrega.entregaveis.split('\n').filter((item: string) => item.trim()).length : 0;
+      const alturaBase = 140;
+      const alturaAdicional = Math.max(0, (linhasEntregaveis - 5) * 16);
+      return alturaBase + alturaAdicional;
+    }));
+    
+    // Altura do container deve ser suficiente para conter o maior box + timeline + datas
+    const alturaContainer = Math.max(400, alturaMaxima + 120); // 120px para timeline, conectores e datas
+    const posicaoTimeline = alturaContainer - 80; // Timeline sempre 80px do final
+    
     return (
-      <div className="relative py-6">
-        {/* Timeline horizontal ocupando toda a extensão */}
-        <div className="absolute bottom-12 left-0 right-0 h-1 bg-gray-800"></div>
-        
-        <div className="relative min-h-[350px]">
-          {/* Boxes das entregas em posições fixas */}
+      <div className="relative py-8 mb-8">
+        {/* Container com altura dinâmica para conter todos os elementos */}
+        <div className="relative" style={{ height: `${alturaContainer}px` }}>
+          
+          {/* Timeline horizontal - posição calculada dinamicamente */}
+          <div className="absolute left-0 right-0 h-1 bg-gray-800" style={{ top: `${posicaoTimeline}px` }}></div>
+          
+          {/* Boxes das entregas em posições fixas - sempre acima da timeline */}
           {entregasPagina.map((entrega, index) => {
             // Posições fixas: 16.67%, 50%, 83.33%
             const posicoes = ['16.67%', '50%', '83.33%'];
             const posicao = posicoes[index];
             
+            // Calcular altura necessária baseada no conteúdo
+            const linhasEntregaveis = entrega.entregaveis ? entrega.entregaveis.split('\n').filter((item: string) => item.trim()).length : 0;
+            const alturaBase = 140; // altura mínima
+            const alturaAdicional = Math.max(0, (linhasEntregaveis - 5) * 16); // 16px por linha extra
+            const alturaTotal = alturaBase + alturaAdicional;
+            
             return (
               <div key={index} className="absolute" style={{ 
                 left: posicao,
                 transform: 'translateX(-50%)',
-                top: '0'
+                // Box termina sempre 10px acima da timeline, mas nunca sai do container
+                top: `${Math.max(20, posicaoTimeline - alturaTotal - 10)}px`
               }}>
                 {/* Box de informação da entrega */}
-                <div className="mb-4 w-80">
-                  <div className={`p-4 rounded-lg border-2 shadow-sm ${entrega.cor}`}>
-                    {/* Nome da entrega */}
-                    <div className="text-sm font-semibold mb-3 text-left leading-tight">
-                      {entrega.titulo}
-                    </div>
+                <div className="w-64">
+                  <div 
+                    className={`p-3 rounded-lg border-2 shadow-sm ${entrega.cor} flex flex-col overflow-hidden`}
+                    style={{ height: `${alturaTotal}px` }}
+                  >
+                    {/* Nome do projeto (se for timeline geral) - sempre no topo */}
+                    {projetos.length > 1 && (
+                      <div className="text-xs opacity-75 leading-tight font-medium text-left mb-2 pb-2 border-b border-current border-opacity-20 flex-shrink-0">
+                        Projeto: {entrega.projeto}
+                      </div>
+                    )}
                     
-                    {/* Entregáveis com altura mínima e quebra de linha adequada */}
+                    {/* Entregáveis - área expansível com scroll se necessário */}
                     {entrega.entregaveis && (
-                      <div className="text-xs leading-relaxed text-left min-h-[100px]">
+                      <div className="text-xs leading-relaxed text-left mb-2 flex-grow overflow-y-auto">
                         <div className="space-y-1">
                           {entrega.entregaveis.split('\n').filter((item: string) => item.trim()).map((item: string, i: number) => (
                             <div key={i} className="leading-relaxed flex items-start">
-                              <span className="mr-2 mt-1 flex-shrink-0 text-xs">•</span>
+                              <span className="mr-2 mt-0.5 flex-shrink-0 text-xs">•</span>
                               <span className="flex-1 text-xs break-words">{item.trim()}</span>
                             </div>
                           ))}
@@ -171,27 +197,29 @@ export function TimelineEntregas({ projetos }: TimelineEntregasProps) {
                       </div>
                     )}
                     
-                    {/* Nome do projeto (se for timeline geral) */}
-                    {projetos.length > 1 && (
-                      <div className="text-xs opacity-75 leading-tight font-medium text-left mt-3 pt-2 border-t border-current border-opacity-20">
-                        Projeto: {entrega.projeto}
-                      </div>
-                    )}
+                    {/* Nome da entrega - sempre na parte inferior do box */}
+                    <div className="text-sm font-semibold text-left leading-tight flex-shrink-0">
+                      {entrega.titulo}
+                    </div>
                   </div>
                 </div>
                 
-                {/* Linha vertical conectora colorida */}
-                <div className={`w-1 h-12 ${entrega.corLinha} mx-auto`}></div>
-                
-                {/* Ponto na timeline colorido */}
+                {/* Linha vertical conectora - conecta box à bolinha */}
                 <div 
-                  className={`w-4 h-4 rounded-full bg-white border-2 ${entrega.corBorda} shadow-md mx-auto`}
-                  style={{ position: 'relative', top: '44px' }}
+                  className={`w-1 ${entrega.corLinha} mx-auto`}
+                  style={{ height: '10px' }}
                 ></div>
                 
-                {/* Data abaixo da timeline com cor da entrega */}
+                {/* Ponto na timeline - exatamente sobre a linha horizontal */}
                 <div 
-                  className={`mt-16 text-sm font-semibold ${entrega.corTexto} text-center`}
+                  className={`w-3 h-3 rounded-full bg-white border-2 ${entrega.corBorda} shadow-md mx-auto`}
+                  style={{ marginTop: '-2px' }}
+                ></div>
+                
+                {/* Data - imediatamente abaixo da timeline */}
+                <div 
+                  className={`text-sm font-semibold ${entrega.corTexto} text-center`}
+                  style={{ marginTop: '8px' }}
                 >
                   {formatarData(entrega.data)}
                 </div>
@@ -199,7 +227,7 @@ export function TimelineEntregas({ projetos }: TimelineEntregasProps) {
             );
           })}
           
-          {/* Traços das semanas intermediárias */}
+          {/* Traços das semanas intermediárias - pequenos e pretos, cruzando a timeline */}
           {tracosSemanas.map((traco, index) => (
             <div 
               key={`semana-${index}`}
@@ -207,10 +235,10 @@ export function TimelineEntregas({ projetos }: TimelineEntregasProps) {
               style={{ 
                 left: `${traco.posicao}%`,
                 transform: 'translateX(-50%)',
-                bottom: '48px'
+                top: `${posicaoTimeline - 5}px` // 5px acima da timeline
               }}
             >
-              <div className="w-1 h-6 bg-gray-800"></div>
+              <div className="w-0.5 h-3 bg-gray-800"></div>
             </div>
           ))}
         </div>

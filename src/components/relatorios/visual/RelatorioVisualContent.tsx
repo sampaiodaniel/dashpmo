@@ -56,11 +56,6 @@ export function RelatorioVisualContent({ dados }: RelatorioVisualContentProps) {
       {/* Header do Relatório ASA */}
       <RelatorioHeader dados={dadosASAFormat} />
 
-      {/* Métricas Visuais */}
-      <div className="bg-white p-8 rounded-xl border-l-4 border-[#1B365D] break-inside-avoid">
-        <MetricasVisuais projetos={projetosComStatus} />
-      </div>
-
       {/* Gráficos de Indicadores */}
       <div className="bg-white p-8 rounded-xl border-l-4 border-[#A6926B] break-inside-avoid">
         <GraficosIndicadores projetos={projetosComStatus} incidentes={dados.incidentes} />
@@ -121,98 +116,105 @@ export function RelatorioVisualContent({ dados }: RelatorioVisualContentProps) {
                   </button>
                 </div>
                 
-                {/* Informações básicas do projeto */}
-                <div className="bg-[#F8FAFC] p-6 rounded-xl border border-[#E5E7EB]">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-4 flex-1">
-                          <h3 className="text-xl font-bold text-[#1B365D]">{projeto.nome_projeto}</h3>
-                          <div className="text-sm text-[#6B7280]">
-                            <span className="font-medium">Data Prevista Finalização:</span>{' '}
-                            {projeto.ultimoStatus?.finalizacao_prevista ? formatarData(projeto.ultimoStatus.finalizacao_prevista) : 
-                             projeto.finalizacao_prevista ? formatarData(projeto.finalizacao_prevista) : 'Não informada'}
-                          </div>
-                        </div>
-                        <div className="flex items-center">
-                          <div className={`w-8 h-8 rounded-full ${
-                            projeto.ultimoStatus?.status_visao_gp === 'Verde' ? 'bg-green-500' :
-                            projeto.ultimoStatus?.status_visao_gp === 'Amarelo' ? 'bg-yellow-500' :
-                            projeto.ultimoStatus?.status_visao_gp === 'Vermelho' ? 'bg-red-500' : 'bg-gray-400'
-                          }`} title={`Status: ${projeto.ultimoStatus?.status_visao_gp}`}></div>
-                        </div>
+                {/* Título do projeto com fonte maior */}
+                <div className="mb-6">
+                  <h3 className="text-2xl font-bold text-[#1B365D] mb-4">{projeto.nome_projeto || projeto.nome}</h3>
+                                      {(projeto.descricao_projeto || projeto.descricao) && (
+                      <p className="text-[#6B7280] leading-relaxed mb-6">{projeto.descricao_projeto || projeto.descricao}</p>
+                    )}
+                  
+                  {/* Informações básicas do projeto */}
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-sm">
+                      <div>
+                        <span className="text-[#6B7280]">Responsável ASA:</span>
+                        <div className="font-medium text-[#1B365D]">{projeto.responsavel_asa || 'Não informado'}</div>
                       </div>
-                      
-                      {projeto.descricao_projeto && (
-                        <p className="text-[#6B7280] mb-4 leading-relaxed">{projeto.descricao_projeto}</p>
-                      )}
-                      
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                        <div>
-                          <span className="text-[#6B7280]">Responsável ASA:</span>
-                          <div className="font-medium text-[#1B365D]">{projeto.responsavel_asa || 'Não informado'}</div>
-                        </div>
-                        <div>
-                          <span className="text-[#6B7280]">Chefe do Projeto:</span>
-                          <div className="font-medium text-[#1B365D]">{projeto.gp_responsavel}</div>
-                        </div>
-                        <div>
-                          <span className="text-[#6B7280]">Status Geral:</span>
-                          <div className="font-medium text-[#1B365D]">{projeto.ultimoStatus?.status_geral}</div>
-                        </div>
+                      <div>
+                        <span className="text-[#6B7280]">Chefe do Projeto:</span>
+                        <div className="font-medium text-[#1B365D]">{projeto.gp_responsavel}</div>
+                      </div>
+                      <div>
+                        <span className="text-[#6B7280]">Status Geral:</span>
+                        <div className="font-medium text-[#1B365D]">{projeto.ultimoStatus?.status_geral}</div>
                       </div>
                     </div>
                   </div>
+                </div>
 
-                  {/* Realizado na semana com quebra de linhas e bullets */}
-                  {projeto.ultimoStatus?.realizado_semana_atual && (
-                    <div className="mb-4">
-                      <h4 className="font-semibold text-[#1B365D] mb-2">Realizado na Semana</h4>
-                      <div className="space-y-1">
-                        {projeto.ultimoStatus.realizado_semana_atual.split('\n').filter((item: string) => item.trim()).map((item: string, i: number) => (
-                          <div key={i} className="text-sm text-[#6B7280] leading-tight flex items-start">
-                            <span className="font-medium text-[#1B365D] mr-2 mt-1 flex-shrink-0">•</span>
+                {/* Realizado na semana com quebra de linhas e bullets */}
+                {projeto.ultimoStatus?.realizado_semana_atual && (
+                  <div className="mb-6">
+                    <h4 className="font-semibold text-[#1B365D] mb-3">Realizado na Semana</h4>
+                    <div className="space-y-0.5">
+                      {projeto.ultimoStatus.realizado_semana_atual.split('\n').filter((item: string) => item.trim()).map((item: string, i: number) => (
+                        <div key={i} className="text-sm text-[#6B7280] leading-snug flex items-start">
+                          <span className="font-medium text-[#1B365D] mr-2 mt-0.5 flex-shrink-0">•</span>
+                          <span className="flex-1">{item.trim()}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Pontos de atenção, backlog e bloqueios na mesma linha */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* Pontos de Atenção */}
+                  <div>
+                    <h4 className="font-semibold text-[#1B365D] mb-3">Pontos de Atenção</h4>
+                    {projeto.ultimoStatus?.observacoes_pontos_atencao ? (
+                      <div className="space-y-0.5">
+                        {projeto.ultimoStatus.observacoes_pontos_atencao.split('\n').filter((item: string) => item.trim()).map((item: string, i: number) => (
+                          <div key={i} className="text-sm text-[#6B7280] leading-snug flex items-start">
+                            <span className="font-medium text-[#F59E0B] mr-2 mt-0.5 flex-shrink-0">⚠️</span>
                             <span className="flex-1">{item.trim()}</span>
                           </div>
                         ))}
                       </div>
-                    </div>
-                  )}
-
-                  {/* Pontos de atenção e backlog */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {projeto.ultimoStatus?.observacoes_pontos_atencao && (
-                      <div>
-                        <h4 className="font-semibold text-[#1B365D] mb-2">Pontos de Atenção</h4>
-                        <div className="space-y-1">
-                          {projeto.ultimoStatus.observacoes_pontos_atencao.split('\n').filter((item: string) => item.trim()).map((item: string, i: number) => (
-                            <div key={i} className="text-sm text-[#6B7280] leading-tight flex items-start">
-                              <span className="font-medium text-[#F59E0B] mr-2 mt-1 flex-shrink-0">⚠️</span>
-                              <span className="flex-1">{item.trim()}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
+                    ) : (
+                      <div className="text-sm text-[#6B7280] italic">Nada reportado</div>
                     )}
-                    
-                    {projeto.ultimoStatus?.backlog && (
-                      <div>
-                        <h4 className="font-semibold text-[#1B365D] mb-2">Backlog</h4>
-                        <div className="space-y-1">
-                          {projeto.ultimoStatus.backlog.split('\n').filter((item: string) => item.trim()).map((item: string, i: number) => (
-                            <div key={i} className="text-sm text-[#6B7280] leading-tight flex items-start">
-                              <span className="font-medium text-[#6B7280] mr-2 mt-1 flex-shrink-0">→</span>
-                              <span className="flex-1">{item.trim()}</span>
-                            </div>
-                          ))}
-                        </div>
+                  </div>
+                  
+                  {/* Backlog */}
+                  <div>
+                    <h4 className="font-semibold text-[#1B365D] mb-3">Backlog</h4>
+                    {projeto.ultimoStatus?.backlog ? (
+                      <div className="space-y-1">
+                        {projeto.ultimoStatus.backlog.split('\n').filter((item: string) => item.trim()).map((item: string, i: number) => (
+                          <div key={i} className="text-sm text-[#6B7280] leading-relaxed flex items-start">
+                            <span className="font-medium text-[#6B7280] mr-2 mt-1 flex-shrink-0">→</span>
+                            <span className="flex-1">{item.trim()}</span>
+                          </div>
+                        ))}
                       </div>
+                    ) : (
+                      <div className="text-sm text-[#6B7280] italic">Nada reportado</div>
+                    )}
+                  </div>
+
+                  {/* Bloqueios */}
+                  <div>
+                    <h4 className="font-semibold text-[#1B365D] mb-3">Bloqueios</h4>
+                    {projeto.ultimoStatus?.bloqueios ? (
+                      <div className="space-y-1">
+                        {projeto.ultimoStatus.bloqueios.split('\n').filter((item: string) => item.trim()).map((item: string, i: number) => (
+                          <div key={i} className="text-sm text-[#6B7280] leading-relaxed flex items-start">
+                            <span className="font-medium text-[#EF4444] mr-2 mt-1 flex-shrink-0">🚫</span>
+                            <span className="flex-1">{item.trim()}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-sm text-[#6B7280] italic">Nada reportado</div>
                     )}
                   </div>
                 </div>
 
                 {/* Timeline de entregas do projeto específico */}
-                <TimelineEntregas projetos={[projeto]} />
+                <div className="mb-12">
+                  <TimelineEntregas projetos={[projeto]} />
+                </div>
               </div>
             ));
           })()}

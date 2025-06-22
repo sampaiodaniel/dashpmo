@@ -6,48 +6,19 @@ interface MetricasVisuaisProps {
 }
 
 export function MetricasVisuais({ projetos }: MetricasVisuaisProps) {
-  // Dados para gráfico de distribuição por status geral
-  const statusGeral = projetos.reduce((acc, projeto) => {
-    const status = projeto.ultimoStatus?.status_geral || 'Não informado';
-    acc[status] = (acc[status] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
-
-  // Dados para gráfico de saúde dos projetos
+  // Dados para gráfico de saúde dos projetos (status de saúde)
   const statusSaude = projetos.reduce((acc, projeto) => {
     const saude = projeto.ultimoStatus?.status_visao_gp || 'Não informado';
     acc[saude] = (acc[saude] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
 
-  // Preparar dados para o gráfico de pizza - Status Geral
-  const chartDataStatus = Object.entries(statusGeral).map(([name, value]) => ({
-    name,
-    value,
-    color: getStatusGeralColor(name)
-  }));
-
-  // Preparar dados para o gráfico de pizza - Saúde
+  // Preparar dados para o gráfico de pizza - Saúde (renomeado como Distribuição por Status)
   const chartDataSaude = Object.entries(statusSaude).map(([name, value]) => ({
     name,
     value,
     color: getStatusSaudeColor(name)
   }));
-
-  function getStatusGeralColor(status: string) {
-    const colors: Record<string, string> = {
-      'Em Andamento': '#2E5984',
-      'Concluído': '#10B981',
-      'Pausado': '#F59E0B',
-      'Cancelado': '#EF4444',
-      'Aguardando Aprovação': '#8B5CF6',
-      'Aguardando Homologação': '#6366F1',
-      'Em Especificação': '#06B6D4',
-      'Planejamento': '#6B7280',
-      'default': '#6B7280'
-    };
-    return colors[status] || colors.default;
-  }
 
   function getStatusSaudeColor(saude: string) {
     const colors: Record<string, string> = {
@@ -81,11 +52,11 @@ export function MetricasVisuais({ projetos }: MetricasVisuaisProps) {
       </h2>
       
       <div className="flex justify-center">
-        {/* Gráfico de Status Geral */}
+        {/* Gráfico de Distribuição por Status (Saúde) */}
         <Card className="bg-white w-full max-w-md">
           <CardHeader>
             <CardTitle className="text-lg font-semibold text-[#1B365D] text-center">
-              Projetos por Status
+              Distribuição por Status
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -93,13 +64,13 @@ export function MetricasVisuais({ projetos }: MetricasVisuaisProps) {
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={chartDataStatus}
+                    data={chartDataSaude}
                     cx="50%"
                     cy="50%"
                     outerRadius={80}
                     dataKey="value"
                   >
-                    {chartDataStatus.map((entry, index) => (
+                    {chartDataSaude.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>

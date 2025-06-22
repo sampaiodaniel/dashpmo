@@ -18,6 +18,11 @@ export function ProjetosOverview({ projetos }: ProjetosOverviewProps) {
     }
   };
 
+  const handleRowClick = (projetoId: number) => {
+    const element = document.getElementById(`projeto-${projetoId}`);
+    element?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   // Filtrar apenas projetos com último status aprovado
   const projetosAtivos = projetos.filter(projeto => projeto.ultimoStatus);
 
@@ -65,17 +70,20 @@ export function ProjetosOverview({ projetos }: ProjetosOverviewProps) {
                   <Table>
                     <TableHeader>
                       <TableRow className="bg-[#F8FAFC]">
-                        <TableHead className="text-[#1B365D] font-semibold w-[25%]">Projeto</TableHead>
-                        <TableHead className="text-[#1B365D] font-semibold w-[20%]">Chefe do Projeto</TableHead>
-                        <TableHead className="text-[#1B365D] font-semibold w-[15%]">Data Finalização</TableHead>
+                        <TableHead className="text-[#1B365D] font-semibold w-[30%]">Projeto</TableHead>
+                        <TableHead className="text-[#1B365D] font-semibold w-[25%]">Chefe do Projeto</TableHead>
+                        <TableHead className="text-[#1B365D] font-semibold w-[20%]">Data Finalização</TableHead>
                         <TableHead className="text-[#1B365D] font-semibold text-center w-[10%]">Status</TableHead>
-                        <TableHead className="text-[#1B365D] font-semibold w-[20%]">Progresso</TableHead>
-                        <TableHead className="text-[#1B365D] font-semibold text-center w-[10%]">Detalhe</TableHead>
+                        <TableHead className="text-[#1B365D] font-semibold w-[15%]">Progresso</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {projetosPorResponsavel[responsavel].map((projeto) => (
-                        <TableRow key={projeto.id} className="border-b border-[#F1F5F9]">
+                        <TableRow 
+                          key={projeto.id} 
+                          className="border-b border-[#F1F5F9] hover:bg-[#F8FAFC] cursor-pointer transition-colors"
+                          onClick={() => handleRowClick(projeto.id)}
+                        >
                           <TableCell className="font-medium text-[#1B365D] py-4">
                             {projeto.nome_projeto}
                           </TableCell>
@@ -103,19 +111,6 @@ export function ProjetosOverview({ projetos }: ProjetosOverviewProps) {
                                 {projeto.ultimoStatus?.progresso_estimado || 0}%
                               </span>
                             </div>
-                          </TableCell>
-                          <TableCell className="text-center py-4">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="text-[#1B365D] hover:bg-[#F8FAFC]"
-                              onClick={() => {
-                                const element = document.getElementById(`projeto-${projeto.id}`);
-                                element?.scrollIntoView({ behavior: 'smooth' });
-                              }}
-                            >
-                              <ExternalLink className="h-4 w-4" />
-                            </Button>
                           </TableCell>
                         </TableRow>
                       ))}
