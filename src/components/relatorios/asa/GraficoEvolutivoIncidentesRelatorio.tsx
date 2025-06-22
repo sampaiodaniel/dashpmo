@@ -1,7 +1,8 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Dot } from 'recharts';
 import { useIncidentes } from '@/hooks/useIncidentes';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 interface GraficoEvolutivoIncidentesRelatorioProps {
   carteira: string;
@@ -10,20 +11,38 @@ interface GraficoEvolutivoIncidentesRelatorioProps {
 export function GraficoEvolutivoIncidentesRelatorio({ carteira }: GraficoEvolutivoIncidentesRelatorioProps) {
   const { data: incidentesData } = useIncidentes();
   
-  // Filtrar dados apenas para a carteira específica e ordenar por data
-  const dadosCarteira = incidentesData?.filter(item => item.carteira === carteira)
-    ?.sort((a, b) => new Date(a.data_registro || '').getTime() - new Date(b.data_registro || '').getTime())
-    ?.map(item => ({
-      mes: new Date(item.data_registro || '').toLocaleDateString('pt-BR', { 
+  // Buscar TODOS os registros históricos da carteira específica, não apenas o mais recente
+  const { data: todosIncidentes } = useQuery({
+    queryKey: ['incidentes-historico', carteira],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('incidentes')
+        .select('*')
+        .eq('carteira', carteira)
+        .order('data_registro', { ascending: true });
+
+      if (error) throw error;
+      return data || [];
+    },
+  });
+  
+  // Filtrar e processar dados históricos para criar evolução temporal
+  const dadosCarteira = todosIncidentes?.map(item => {
+    // Usar UTC para evitar problemas de timezone que causam diferença de 1 dia
+    const dataUTC = new Date(item.data_registro + 'T00:00:00.000Z');
+    return {
+      mes: dataUTC.toLocaleDateString('pt-BR', { 
         day: '2-digit', 
-        month: 'short' 
+        month: 'short',
+        timeZone: 'UTC'
       }),
       data: item.data_registro,
       estoqueAtual: item.atual,
       entradas: item.entrada,
       saidas: item.saida,
       criticos: item.criticos
-    })) || [];
+    };
+  }) || [];
 
   const CustomDot = (props: any) => {
     const { cx, cy, payload, dataKey } = props;

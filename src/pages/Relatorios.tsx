@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileText, BarChart3, TrendingUp } from 'lucide-react';
 import { RelatorioASAViewer } from '@/components/relatorios/RelatorioASAViewer';
-import { RelatorioVisualViewer } from '@/components/relatorios/RelatorioVisualViewer';
+
 import { RelatorioConsolidadoContent } from '@/components/relatorios/consolidado/RelatorioConsolidadoContent';
 import { UltimosRelatorios } from '@/components/relatorios/UltimosRelatorios';
 import { useRelatorioASA } from '@/hooks/useRelatorioASA';
@@ -40,7 +40,6 @@ export default function Relatorios() {
 
   // Estados dos dados dos relatórios
   const [dadosRelatorioASA, setDadosRelatorioASA] = useState(null);
-  const [dadosRelatorioVisual, setDadosRelatorioVisual] = useState(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -101,8 +100,12 @@ export default function Relatorios() {
       : await gerarRelatorioResponsavelVisual(responsavelVisual);
     
     if (dados) {
-      setDadosRelatorioVisual(dados);
-      setTipoRelatorio('visual');
+      // Salvar dados no sessionStorage
+      sessionStorage.setItem('relatorio-visual-dados', JSON.stringify(dados));
+      
+      // Abrir relatório em nova aba
+      window.open('/relatorio-visual', '_blank');
+      
       adicionarRelatorio({
         tipo: 'visual',
         filtro: filtroVisual === 'carteira' ? 'Carteira' : 'Responsável ASA',
@@ -151,20 +154,7 @@ export default function Relatorios() {
     );
   }
 
-  if (tipoRelatorio === 'visual') {
-    return (
-      <Layout>
-        <RelatorioVisualViewer 
-          isOpen={true}
-          onClose={() => {
-            setTipoRelatorio(null);
-            setDadosRelatorioVisual(null);
-          }}
-          dados={dadosRelatorioVisual}
-        />
-      </Layout>
-    );
-  }
+
 
   return (
     <Layout>

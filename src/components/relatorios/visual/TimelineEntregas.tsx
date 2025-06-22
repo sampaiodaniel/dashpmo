@@ -170,7 +170,7 @@ export function TimelineEntregas({ projetos }: TimelineEntregasProps) {
         <div className="relative" style={{ height: `${alturaContainer}px` }}>
           
           {/* Timeline horizontal - posição calculada dinamicamente */}
-          <div className="absolute left-0 right-0 h-1 bg-gray-800" style={{ top: `${posicaoTimeline}px` }}></div>
+          <div className="absolute left-0 right-0 h-1 bg-gray-800" style={{ top: `${posicaoTimeline}px`, minHeight: '4px' }}></div>
           
           {/* Boxes das entregas em posições fixas - sempre acima da timeline */}
           {entregasPagina.map((entrega, index) => {
@@ -189,10 +189,10 @@ export function TimelineEntregas({ projetos }: TimelineEntregasProps) {
                 top: `${Math.max(20, posicaoTimeline - alturaBox - 10)}px`
               }}>
                 {/* Box de informação da entrega */}
-                <div className="w-64">
+                <div className="w-64" style={{ minWidth: '256px' }}>
                   <div 
                     className={`p-4 rounded-lg border-2 shadow-sm ${entrega.cor}`}
-                    style={{ height: `${alturaBox}px` }}
+                    style={{ height: `${alturaBox}px`, minHeight: '200px', minWidth: '240px' }}
                   >
                     {/* Nome da entrega - SEMPRE NO TOPO */}
                     <div className="text-sm font-semibold text-left leading-tight mb-3 pb-2 border-b border-current border-opacity-20">
@@ -225,13 +225,13 @@ export function TimelineEntregas({ projetos }: TimelineEntregasProps) {
                 {/* Linha vertical conectora - conecta box à bolinha */}
                 <div 
                   className={`w-1 ${entrega.corLinha} mx-auto`}
-                  style={{ height: '10px' }}
+                  style={{ height: '10px', minHeight: '10px' }}
                 ></div>
                 
                 {/* Ponto na timeline - exatamente sobre a linha horizontal */}
                 <div 
                   className={`w-3 h-3 rounded-full bg-white border-2 ${entrega.corBorda} shadow-md mx-auto`}
-                  style={{ marginTop: '-2px' }}
+                  style={{ marginTop: '-2px', minWidth: '12px', minHeight: '12px' }}
                 ></div>
                 
                 {/* Data - imediatamente abaixo da timeline */}
@@ -256,7 +256,7 @@ export function TimelineEntregas({ projetos }: TimelineEntregasProps) {
                 top: `${posicaoTimeline - 5}px` // 5px acima da timeline
               }}
             >
-              <div className="w-0.5 h-3 bg-gray-800"></div>
+              <div className="w-0.5 h-3 bg-gray-800" style={{ minWidth: '2px', minHeight: '12px' }}></div>
             </div>
           ))}
         </div>
@@ -275,7 +275,7 @@ export function TimelineEntregas({ projetos }: TimelineEntregasProps) {
             </CardTitle>
             
             {totalPaginas > 1 && (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 no-print">
                 <Button
                   variant="outline"
                   size="sm"

@@ -1,4 +1,3 @@
-
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { GraficoEvolutivoIncidentesRelatorio } from './GraficoEvolutivoIncidentesRelatorio';
@@ -9,7 +8,13 @@ interface TabelaIncidentesProps {
 }
 
 export function TabelaIncidentes({ incidentes, carteira }: TabelaIncidentesProps) {
-  if (!incidentes || incidentes.length === 0) {
+  // Filtrar apenas o registro mais recente da carteira específica
+  const incidenteAtual = incidentes.filter(inc => inc.carteira === carteira)
+    .sort((a, b) => new Date(b.data_registro || '').getTime() - new Date(a.data_registro || '').getTime())[0];
+  
+  const incidentesParaExibir = incidenteAtual ? [incidenteAtual] : [];
+
+  if (!incidentesParaExibir || incidentesParaExibir.length === 0) {
     return (
       <div className="space-y-6">
         <Card>
@@ -52,7 +57,7 @@ export function TabelaIncidentes({ incidentes, carteira }: TabelaIncidentesProps
               </TableRow>
             </TableHeader>
             <TableBody>
-              {incidentes.map((incidente, index) => (
+              {incidentesParaExibir.map((incidente, index) => (
                 <TableRow key={index}>
                   <TableCell className="font-medium text-[#1B365D]">{incidente.carteira}</TableCell>
                   <TableCell className="text-center text-[#6B7280]">{incidente.anterior}</TableCell>

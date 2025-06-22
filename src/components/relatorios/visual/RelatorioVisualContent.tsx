@@ -52,24 +52,26 @@ export function RelatorioVisualContent({ dados }: RelatorioVisualContentProps) {
   };
 
   return (
-    <div className="space-y-8 print:space-y-6 bg-gradient-to-br from-[#F8FAFC] to-[#F1F5F9]" id="relatorio-content" style={{ fontFamily: 'Inter, sans-serif' }}>
+    <div className="space-y-8 bg-white w-full" id="relatorio-content" style={{ fontFamily: 'Inter, sans-serif' }}>
       {/* Header do Relatório ASA */}
-      <RelatorioHeader dados={dadosASAFormat} />
+      <div>
+        <RelatorioHeader dados={dadosASAFormat} />
+      </div>
 
       {/* Gráficos de Indicadores */}
-      <div className="bg-white p-8 rounded-xl border-l-4 border-[#A6926B] break-inside-avoid">
+      <div className="bg-white p-8 rounded-lg border-l-4 border-[#A6926B] w-full shadow-sm">
         <GraficosIndicadores projetos={projetosComStatus} incidentes={dados.incidentes} />
       </div>
 
       {/* Overview de Projetos por Responsável */}
-      <div className="bg-white p-8 rounded-xl border-l-4 border-[#2E5984] break-inside-avoid" data-overview>
+      <div className="bg-white p-8 rounded-lg border-l-4 border-[#2E5984] w-full shadow-sm" data-overview>
         <ProjetosOverview projetos={projetosComStatus} />
       </div>
 
       {/* Detalhamento por Projeto */}
-      <div className="space-y-6">
-        <div className="bg-white p-8 rounded-xl border-l-4 border-[#1B365D] break-inside-avoid">
-          <h2 className="text-2xl font-bold text-[#1B365D] border-b border-[#E5E7EB] pb-2 mb-6">
+      <div className="space-y-6 w-full">
+        <div className="bg-white p-8 rounded-lg border-l-4 border-[#1B365D] w-full shadow-sm">
+          <h2 className="text-2xl font-bold text-[#1B365D] border-b border-[#E5E7EB] pb-3 mb-6">
             Detalhamento por Projeto
           </h2>
         
@@ -101,10 +103,10 @@ export function RelatorioVisualContent({ dados }: RelatorioVisualContentProps) {
               projetosPorResponsavel[responsavel]
             );
 
-            return projetosOrdenados.map((projeto) => (
-              <div key={projeto.id} id={`projeto-${projeto.id}`} className="space-y-4 mb-8 last:mb-0">
+            return projetosOrdenados.map((projeto, index) => (
+              <div key={projeto.id} id={`projeto-${projeto.id}`} className="space-y-4 mb-12 last:mb-0 border-b border-gray-200 pb-8 last:border-b-0 last:pb-0">
                 {/* Link para voltar ao overview */}
-                <div className="flex justify-start mb-4">
+                <div className="flex justify-start mb-3 no-print">
                   <button
                     onClick={() => {
                       const element = document.querySelector('[data-overview]');
@@ -116,39 +118,55 @@ export function RelatorioVisualContent({ dados }: RelatorioVisualContentProps) {
                   </button>
                 </div>
                 
-                {/* Título do projeto com fonte maior */}
+                {/* Título e informações do projeto */}
                 <div className="mb-6">
-                  <h3 className="text-2xl font-bold text-[#1B365D] mb-4">{projeto.nome_projeto || projeto.nome}</h3>
-                                      {(projeto.descricao_projeto || projeto.descricao) && (
-                      <p className="text-[#6B7280] leading-relaxed mb-6">{projeto.descricao_projeto || projeto.descricao}</p>
-                    )}
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-3xl font-bold text-[#1B365D]">{projeto.nome_projeto || projeto.nome}</h3>
+                    <div className="flex items-center">
+                      <div className={`w-8 h-8 rounded-full border-2 border-white shadow-lg ${
+                        projeto.ultimoStatus?.status_visao_gp === 'Verde' ? 'bg-green-500' :
+                        projeto.ultimoStatus?.status_visao_gp === 'Amarelo' ? 'bg-yellow-500' :
+                        projeto.ultimoStatus?.status_visao_gp === 'Vermelho' ? 'bg-red-500' : 'bg-gray-400'
+                      }`} title={`Status Visão GP: ${projeto.ultimoStatus?.status_visao_gp || 'Não informado'}`}></div>
+                    </div>
+                  </div>
                   
-                  {/* Informações básicas do projeto */}
+                  {(projeto.descricao_projeto || projeto.descricao) && (
+                    <p className="text-base text-[#6B7280] leading-relaxed mb-4 text-left">{projeto.descricao_projeto || projeto.descricao}</p>
+                  )}
+                  
+                  {/* Informações básicas */}
                   <div className="bg-gray-50 p-4 rounded-lg">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-sm">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                       <div>
                         <span className="text-[#6B7280]">Responsável ASA:</span>
                         <div className="font-medium text-[#1B365D]">{projeto.responsavel_asa || 'Não informado'}</div>
                       </div>
                       <div>
                         <span className="text-[#6B7280]">Chefe do Projeto:</span>
-                        <div className="font-medium text-[#1B365D]">{projeto.gp_responsavel}</div>
+                        <div className="font-medium text-[#1B365D]">{projeto.gp_responsavel || 'Não informado'}</div>
                       </div>
                       <div>
                         <span className="text-[#6B7280]">Status Geral:</span>
-                        <div className="font-medium text-[#1B365D]">{projeto.ultimoStatus?.status_geral}</div>
+                        <div className="font-medium text-[#1B365D]">{projeto.ultimoStatus?.status_geral || 'Não informado'}</div>
+                      </div>
+                      <div>
+                        <span className="text-[#6B7280]">Progresso:</span>
+                        <div className="font-medium text-[#1B365D]">
+                          {projeto.ultimoStatus?.progresso_estimado ? `${projeto.ultimoStatus.progresso_estimado}%` : 'Não informado'}
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Realizado na semana com quebra de linhas e bullets */}
+                {/* Realizado na semana */}
                 {projeto.ultimoStatus?.realizado_semana_atual && (
                   <div className="mb-6">
-                    <h4 className="font-semibold text-[#1B365D] mb-3">Realizado na Semana</h4>
-                    <div className="space-y-0.5">
+                    <h4 className="font-semibold text-[#1B365D] mb-3 text-base text-center">Realizado na Semana</h4>
+                    <div className="space-y-2 text-left">
                       {projeto.ultimoStatus.realizado_semana_atual.split('\n').filter((item: string) => item.trim()).map((item: string, i: number) => (
-                        <div key={i} className="text-sm text-[#6B7280] leading-snug flex items-start">
+                        <div key={i} className="text-sm text-[#6B7280] leading-relaxed flex items-start">
                           <span className="font-medium text-[#1B365D] mr-2 mt-0.5 flex-shrink-0">•</span>
                           <span className="flex-1">{item.trim()}</span>
                         </div>
@@ -157,62 +175,62 @@ export function RelatorioVisualContent({ dados }: RelatorioVisualContentProps) {
                   </div>
                 )}
 
-                {/* Pontos de atenção, backlog e bloqueios na mesma linha */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Pontos de atenção, backlog e bloqueios */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                   {/* Pontos de Atenção */}
                   <div>
-                    <h4 className="font-semibold text-[#1B365D] mb-3">Pontos de Atenção</h4>
+                    <h4 className="font-semibold text-[#1B365D] mb-3 text-base text-center">Pontos de Atenção</h4>
                     {projeto.ultimoStatus?.observacoes_pontos_atencao ? (
-                      <div className="space-y-0.5">
+                      <div className="space-y-2 text-left">
                         {projeto.ultimoStatus.observacoes_pontos_atencao.split('\n').filter((item: string) => item.trim()).map((item: string, i: number) => (
-                          <div key={i} className="text-sm text-[#6B7280] leading-snug flex items-start">
+                          <div key={i} className="text-sm text-[#6B7280] leading-relaxed flex items-start">
                             <span className="font-medium text-[#F59E0B] mr-2 mt-0.5 flex-shrink-0">⚠️</span>
                             <span className="flex-1">{item.trim()}</span>
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <div className="text-sm text-[#6B7280] italic">Nada reportado</div>
+                      <div className="text-sm text-[#6B7280] italic text-left">Nada reportado</div>
                     )}
                   </div>
                   
                   {/* Backlog */}
                   <div>
-                    <h4 className="font-semibold text-[#1B365D] mb-3">Backlog</h4>
+                    <h4 className="font-semibold text-[#1B365D] mb-3 text-base text-center">Backlog</h4>
                     {projeto.ultimoStatus?.backlog ? (
-                      <div className="space-y-1">
+                      <div className="space-y-2 text-left">
                         {projeto.ultimoStatus.backlog.split('\n').filter((item: string) => item.trim()).map((item: string, i: number) => (
                           <div key={i} className="text-sm text-[#6B7280] leading-relaxed flex items-start">
-                            <span className="font-medium text-[#6B7280] mr-2 mt-1 flex-shrink-0">→</span>
+                            <span className="font-medium text-[#6B7280] mr-2 mt-0.5 flex-shrink-0">→</span>
                             <span className="flex-1">{item.trim()}</span>
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <div className="text-sm text-[#6B7280] italic">Nada reportado</div>
+                      <div className="text-sm text-[#6B7280] italic text-left">Nada reportado</div>
                     )}
                   </div>
 
                   {/* Bloqueios */}
                   <div>
-                    <h4 className="font-semibold text-[#1B365D] mb-3">Bloqueios</h4>
+                    <h4 className="font-semibold text-[#1B365D] mb-3 text-base text-center">Bloqueios</h4>
                     {projeto.ultimoStatus?.bloqueios ? (
-                      <div className="space-y-1">
+                      <div className="space-y-2 text-left">
                         {projeto.ultimoStatus.bloqueios.split('\n').filter((item: string) => item.trim()).map((item: string, i: number) => (
                           <div key={i} className="text-sm text-[#6B7280] leading-relaxed flex items-start">
-                            <span className="font-medium text-[#EF4444] mr-2 mt-1 flex-shrink-0">🚫</span>
+                            <span className="font-medium text-[#EF4444] mr-2 mt-0.5 flex-shrink-0">🚫</span>
                             <span className="flex-1">{item.trim()}</span>
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <div className="text-sm text-[#6B7280] italic">Nada reportado</div>
+                      <div className="text-sm text-[#6B7280] italic text-left">Nada reportado</div>
                     )}
                   </div>
                 </div>
 
                 {/* Timeline de entregas do projeto específico */}
-                <div className="mb-12">
+                <div className="mb-8">
                   <TimelineEntregas projetos={[projeto]} />
                 </div>
               </div>
@@ -223,17 +241,19 @@ export function RelatorioVisualContent({ dados }: RelatorioVisualContentProps) {
 
       {/* Tabela de Incidentes */}
       {dados.incidentes.length > 0 && (
-        <div className="bg-white p-8 rounded-xl border-l-4 border-[#EF4444] break-inside-avoid page-break-after">
+        <div className="bg-white p-8 rounded-lg border-l-4 border-[#EF4444] w-full shadow-sm">
           <TabelaIncidentes incidentes={dados.incidentes} carteira={dados.carteira || 'Visual'} />
         </div>
       )}
 
       {/* Footer */}
-      <RelatorioFooter dados={{
-        dataGeracao: dataGeracao,
-        carteira: dados.carteira,
-        responsavel: dados.responsavel
-      }} />
+      <div className="w-full">
+        <RelatorioFooter dados={{
+          dataGeracao: dataGeracao,
+          carteira: dados.carteira,
+          responsavel: dados.responsavel
+        }} />
+      </div>
     </div>
   );
 }

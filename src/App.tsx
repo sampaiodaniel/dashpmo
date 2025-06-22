@@ -24,6 +24,7 @@ import LicaoDetalhes from "./pages/LicaoDetalhes";
 import Relatorios from "./pages/Relatorios";
 import RelatorioCompartilhado from "./pages/RelatorioCompartilhado";
 import RelatorioConsolidado from "./pages/RelatorioConsolidado";
+import RelatorioVisualPagina from "./pages/RelatorioVisualPagina";
 import Administracao from "./pages/Administracao";
 import Configuracoes from "./pages/Configuracoes";
 import NotFound from "./pages/NotFound";
@@ -62,6 +63,7 @@ function App() {
               <Route path="/relatorios" element={<Relatorios />} />
               <Route path="/relatorio-compartilhado" element={<RelatorioCompartilhado />} />
               <Route path="/relatorio-consolidado" element={<RelatorioConsolidado />} />
+              <Route path="/relatorio-visual" element={<RelatorioVisualPagina />} />
               <Route path="/administracao" element={<Administracao />} />
               <Route path="/configuracoes" element={<Configuracoes />} />
               <Route path="*" element={<NotFound />} />
