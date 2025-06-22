@@ -26,10 +26,10 @@ export function TimelineEntregas({ projetos }: TimelineEntregasProps) {
           entregaveis: status.entregaveis1,
           projeto: projeto.nome_projeto || 'Projeto',
           tipo: 'marco1',
-          cor: 'bg-blue-100 border-blue-300 text-blue-700',
-          corLinha: 'bg-blue-500',
-          corBorda: 'border-blue-500',
-          corTexto: 'text-blue-600'
+          cor: 'bg-[#F8F9FA] border-[#1B365D] text-[#1B365D]',
+          corLinha: 'bg-[#1B365D]',
+          corBorda: 'border-[#1B365D]',
+          corTexto: 'text-[#1B365D]'
         });
       }
       
@@ -40,10 +40,10 @@ export function TimelineEntregas({ projetos }: TimelineEntregasProps) {
           entregaveis: status.entregaveis2,
           projeto: projeto.nome_projeto || 'Projeto',
           tipo: 'marco2',
-          cor: 'bg-green-100 border-green-300 text-green-700',
-          corLinha: 'bg-green-500',
-          corBorda: 'border-green-500',
-          corTexto: 'text-green-600'
+          cor: 'bg-[#FDF6E3] border-[#A6926B] text-[#8B7355]',
+          corLinha: 'bg-[#A6926B]',
+          corBorda: 'border-[#A6926B]',
+          corTexto: 'text-[#8B7355]'
         });
       }
       
@@ -54,10 +54,10 @@ export function TimelineEntregas({ projetos }: TimelineEntregasProps) {
           entregaveis: status.entregaveis3,
           projeto: projeto.nome_projeto || 'Projeto',
           tipo: 'marco3',
-          cor: 'bg-purple-100 border-purple-300 text-purple-700',
-          corLinha: 'bg-purple-500',
-          corBorda: 'border-purple-500',
-          corTexto: 'text-purple-600'
+          cor: 'bg-[#F0F4F8] border-[#2E5984] text-[#2E5984]',
+          corLinha: 'bg-[#2E5984]',
+          corBorda: 'border-[#2E5984]',
+          corTexto: 'text-[#2E5984]'
         });
       }
     });
@@ -170,7 +170,7 @@ export function TimelineEntregas({ projetos }: TimelineEntregasProps) {
         <div className="relative" style={{ height: `${alturaContainer}px` }}>
           
           {/* Timeline horizontal - posição calculada dinamicamente */}
-          <div className="absolute left-0 right-0 h-1 bg-gray-800" style={{ top: `${posicaoTimeline}px`, minHeight: '4px' }}></div>
+          <div className="absolute left-0 right-0 h-1 bg-[#1B365D]" style={{ top: `${posicaoTimeline}px`, minHeight: '4px' }}></div>
           
           {/* Boxes das entregas em posições fixas - sempre acima da timeline */}
           {entregasPagina.map((entrega, index) => {
@@ -256,7 +256,7 @@ export function TimelineEntregas({ projetos }: TimelineEntregasProps) {
                 top: `${posicaoTimeline - 5}px` // 5px acima da timeline
               }}
             >
-              <div className="w-0.5 h-3 bg-gray-800" style={{ minWidth: '2px', minHeight: '12px' }}></div>
+                              <div className="w-0.5 h-3 bg-[#1B365D]" style={{ minWidth: '2px', minHeight: '12px' }}></div>
             </div>
           ))}
         </div>
