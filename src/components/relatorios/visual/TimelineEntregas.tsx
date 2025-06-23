@@ -303,28 +303,41 @@ export function TimelineEntregas({ projetos, forceMobile = false }: TimelineEntr
     
     // Função para calcular altura mais precisa baseada no conteúdo real
     const calcularAlturaBox = (entrega: any) => {
-      let alturaTotal = 80; // Base: padding, margens e espaçamentos
+      let alturaTotal = 40; // Base: padding do box + margens internas
       
-      // Altura do título da entrega (sempre presente)
-      alturaTotal += 35; // Título + separador
+      // Altura do título da entrega (sempre presente) - considerar quebras de linha
+      const tituloLength = entrega.titulo ? entrega.titulo.length : 0;
+      const linhasTitulo = Math.ceil(tituloLength / 40); // ~40 caracteres por linha no título (mais conservador)
+      alturaTotal += (linhasTitulo * 20) + 12 + 8; // 20px por linha + 12px mb + 8px pb
       
       // Altura do nome do projeto (se presente)
       if (projetos.length > 1) {
-        alturaTotal += 35; // Nome do projeto + separador
+        const projetoLength = entrega.projeto ? entrega.projeto.length : 0;
+        const linhasProjeto = Math.ceil(projetoLength / 40);
+        alturaTotal += (linhasProjeto * 18) + 12 + 8; // 18px por linha + 12px mb + 8px pb
       }
       
-      // Altura dos entregáveis (parte mais crítica)
+      // Altura dos entregáveis (se presente)
       if (entrega.entregaveis) {
         const linhas = entrega.entregaveis.split('\n').filter((item: string) => item.trim());
-        linhas.forEach((linha: string) => {
-          // Calcular quantas linhas cada item vai ocupar baseado no comprimento
-          const caracteresPorLinha = 45; // Aproximadamente 45 caracteres por linha no box
-          const linhasNecessarias = Math.ceil(linha.length / caracteresPorLinha);
-          alturaTotal += (linhasNecessarias * 18) + 4; // 18px por linha + 4px de espaçamento
-        });
+        
+        if (linhas.length > 0) {
+          // Título "Entregáveis:"
+          alturaTotal += 18 + 8; // 18px altura + 8px mb
+          
+          // Cada linha de entregável
+          linhas.forEach((linha: string) => {
+            const caracteresPorLinha = 38; // Mais conservador para garantir quebras adequadas
+            const linhasNecessarias = Math.max(1, Math.ceil(linha.trim().length / caracteresPorLinha));
+            alturaTotal += (linhasNecessarias * 16) + 3; // 16px por linha + 3px espaçamento
+          });
+          
+          // Espaçamento final da seção
+          alturaTotal += 8;
+        }
       }
       
-      return Math.max(200, alturaTotal); // Mínimo de 200px
+      return Math.max(200, alturaTotal); // Mínimo de 200px para garantir espaço adequado
     };
     
     // Calcular a altura máxima necessária baseada no conteúdo de todos os boxes
@@ -369,16 +382,17 @@ export function TimelineEntregas({ projetos, forceMobile = false }: TimelineEntr
                 top: `${Math.max(20, posicaoTimeline - alturaBox - 10)}px`
               }}>
                 {/* Box de informação da entrega */}
-                <div className="w-64" style={{ minWidth: '256px' }}>
+                <div className="w-72" style={{ minWidth: '288px' }}>
                   <div 
                     className="p-4 rounded-lg border-2 shadow-sm timeline-box"
                     style={{ 
                       height: `${alturaBox}px`, 
                       minHeight: '200px', 
-                      minWidth: '240px',
+                      minWidth: '280px',
                       backgroundColor: entrega.cor,
                       color: entrega.corTexto,
-                      borderColor: entrega.corBorda
+                      borderColor: entrega.corBorda,
+                      overflow: 'hidden'
                     }}
                   >
                     {/* Nome da entrega - SEMPRE NO TOPO */}
@@ -395,10 +409,11 @@ export function TimelineEntregas({ projetos, forceMobile = false }: TimelineEntr
                     
                     {/* Entregáveis - lista completa */}
                     {entrega.entregaveis && (
-                      <div className="text-xs leading-relaxed text-left">
-                        <div className="space-y-1">
+                      <div className="text-xs leading-snug text-left">
+                        <div className="font-semibold mb-2">Entregáveis:</div>
+                        <div className="space-y-0.5">
                           {entrega.entregaveis.split('\n').filter((item: string) => item.trim()).map((item: string, i: number) => (
-                            <div key={i} className="leading-relaxed flex items-start">
+                            <div key={i} className="leading-snug flex items-start">
                               <span className="mr-2 mt-0.5 flex-shrink-0 text-xs">•</span>
                               <span className="flex-1 text-xs break-words">{item.trim()}</span>
                             </div>

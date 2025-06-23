@@ -24,6 +24,26 @@ export default function ProjetoDetalhes() {
   
   useScrollToTop();
 
+  // Limpeza preventiva de cache ao acessar a página
+  useEffect(() => {
+    const limparCacheProblematico = () => {
+      console.log('🧹 Limpando cache problemático ao acessar detalhes do projeto');
+      
+      // Limpar caches que podem causar conflito na navegação
+      queryClient.removeQueries({ queryKey: ['lista-valores'] });
+      queryClient.removeQueries({ queryKey: ['ultimo-status'] });
+      
+      // Forçar refresh dos dados do projeto atual se necessário
+      if (id) {
+        queryClient.invalidateQueries({ queryKey: ['projetos'] });
+      }
+    };
+
+    // Executar limpeza após um pequeno delay para evitar interferir no carregamento inicial
+    const timeout = setTimeout(limparCacheProblematico, 100);
+    return () => clearTimeout(timeout);
+  }, [id, queryClient]);
+
   // Forçar refetch dos dados quando a página for carregada
   useEffect(() => {
     console.log('🔄 ProjetoDetalhes montado - forçando refetch dos dados');

@@ -17,7 +17,7 @@ export function ProjetoAcoes({ projeto, onEditarClick, onHistoricoClick }: Proje
     <div className="bg-white rounded-lg shadow-sm border p-6">
       <h2 className="text-xl font-semibold text-pmo-primary mb-4">Ações</h2>
       <div className="space-y-3">
-        <Button className="w-full" onClick={() => navigate(`/status/novo?projeto=${projeto.id}`)}>
+        <Button className="w-full" onClick={() => navigate(`/novo-status?projeto=${projeto.id}`)}>
           Novo Status
         </Button>
         <Button 

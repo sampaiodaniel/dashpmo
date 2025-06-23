@@ -60,7 +60,7 @@ export function ProjetoStatus({ projeto }: ProjetoStatusProps) {
   };
 
   const handleNovoStatus = () => {
-    navigate(`/status/novo?projeto=${projeto.id}`);
+    navigate(`/novo-status?projeto=${projeto.id}`);
   };
 
   // Função para formatar texto com quebras de linha em bullets

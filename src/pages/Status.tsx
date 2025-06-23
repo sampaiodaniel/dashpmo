@@ -66,7 +66,7 @@ export default function Status() {
   ));
 
   const handleNovoStatus = () => {
-    navigate('/status/novo');
+    navigate('/novo-status');
   };
 
   if (isLoading) {

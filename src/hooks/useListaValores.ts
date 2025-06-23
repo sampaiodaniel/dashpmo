@@ -8,26 +8,59 @@ export function useListaValores(tipo: string) {
     queryFn: async () => {
       console.log(`Buscando lista de valores para tipo: ${tipo}`);
       
-      const { data, error } = await supabase
-        .from('configuracoes_sistema')
-        .select('valor')
-        .eq('tipo', tipo)
-        .eq('ativo', true)
-        .order('ordem', { ascending: true })
-        .order('valor', { ascending: true });
+      try {
+        const { data, error } = await supabase
+          .from('configuracoes_sistema')
+          .select('valor')
+          .eq('tipo', tipo)
+          .eq('ativo', true)
+          .order('ordem', { ascending: true })
+          .order('valor', { ascending: true });
 
-      if (error) {
-        console.error(`Erro ao buscar lista de valores para ${tipo}:`, error);
-        throw error;
+        if (error) {
+          console.error(`Erro ao buscar lista de valores para ${tipo}:`, error);
+          // Retornar valores padrão em caso de erro
+          return getValoresPadrao(tipo);
+        }
+
+        console.log(`Lista de valores para ${tipo}:`, data);
+        const valores = data?.map(item => item.valor) || [];
+        
+        // Se não houver dados, usar valores padrão
+        if (valores.length === 0) {
+          console.warn(`Nenhum valor encontrado para ${tipo}, usando valores padrão`);
+          return getValoresPadrao(tipo);
+        }
+        
+        return valores;
+      } catch (error) {
+        console.error(`Erro inesperado ao buscar lista de valores para ${tipo}:`, error);
+        return getValoresPadrao(tipo);
       }
-
-      console.log(`Lista de valores para ${tipo}:`, data);
-      return data?.map(item => item.valor) || [];
     },
-    staleTime: 0, // Reduzir para atualizar mais frequentemente
-    gcTime: 2 * 60 * 1000, // 2 minutos
-    refetchOnWindowFocus: true, // Refetch quando a janela volta ao foco
+    staleTime: 5 * 60 * 1000, // 5 minutos
+    gcTime: 10 * 60 * 1000, // 10 minutos
+    refetchOnWindowFocus: false, // Não refetch quando a janela volta ao foco
+    retry: 2, // Tentar 2 vezes em caso de erro
   });
+}
+
+// Função para retornar valores padrão em caso de erro
+function getValoresPadrao(tipo: string): string[] {
+  switch (tipo) {
+    case 'status_geral':
+      return ['No Prazo', 'Atrasado', 'Pausado'];
+    case 'status_visao_gp':
+      return ['Verde', 'Amarelo', 'Vermelho'];
+    case 'nivel_risco':
+      return ['Baixo', 'Médio', 'Alto'];
+    case 'tipo_mudanca':
+      return ['Replanejamento', 'Mudança de Escopo', 'Recursos Adicionais'];
+    case 'categoria_licao':
+      return ['Técnica', 'Gestão', 'Comunicação', 'Recursos'];
+    default:
+      return [];
+  }
 }
 
 // Hooks específicos para cada tipo de lista
