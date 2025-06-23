@@ -3,39 +3,71 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { MoreVertical, Archive, Trash2, X } from 'lucide-react';
+import { MoreVertical, Archive, Trash2, X, ArchiveRestore, RefreshCw } from 'lucide-react';
 import { Projeto } from '@/types/pmo';
 import { useProjetosOperations } from '@/hooks/useProjetosOperations';
 import { toast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 interface ProjetoAcoesAdminProps {
   projeto: Projeto;
-  onProjetoAtualizado: () => void;
+  onProjetoAtualizado?: () => void;
 }
 
 export function ProjetoAcoesAdmin({ projeto, onProjetoAtualizado }: ProjetoAcoesAdminProps) {
-  const [alertAberto, setAlertAberto] = useState<'fechar' | 'arquivar' | 'apagar' | null>(null);
+  const [alertAberto, setAlertAberto] = useState<'fechar' | 'arquivar' | 'apagar' | 'reabrir' | 'desarquivar' | null>(null);
   const { atualizarProjeto, apagarProjeto, isLoading } = useProjetosOperations();
+  const navigate = useNavigate();
 
   const handleFecharProjeto = async () => {
     const sucesso = await atualizarProjeto(projeto.id, { status_ativo: false });
     if (sucesso) {
       toast({
         title: "Projeto fechado",
-        description: "O projeto foi fechado com sucesso.",
+        description: "O projeto foi fechado com sucesso. Não será possível adicionar novos status.",
       });
-      onProjetoAtualizado();
+      onProjetoAtualizado?.();
+    }
+    setAlertAberto(null);
+  };
+
+  const handleReabrirProjeto = async () => {
+    const sucesso = await atualizarProjeto(projeto.id, { status_ativo: true });
+    if (sucesso) {
+      toast({
+        title: "Projeto reaberto",
+        description: "O projeto foi reaberto com sucesso. Agora é possível adicionar novos status.",
+      });
+      onProjetoAtualizado?.();
     }
     setAlertAberto(null);
   };
 
   const handleArquivarProjeto = async () => {
-    // Implementar lógica de arquivamento (pode ser um campo adicional na tabela)
-    toast({
-      title: "Funcionalidade em desenvolvimento",
-      description: "A funcionalidade de arquivamento será implementada em breve.",
-      variant: "destructive",
-    });
+    const sucesso = await atualizarProjeto(projeto.id, { arquivado: true, status_ativo: false } as any);
+    if (sucesso) {
+      toast({
+        title: "Projeto arquivado",
+        description: "O projeto foi arquivado e removido da visualização padrão.",
+      });
+      onProjetoAtualizado?.();
+      // Se estamos na página de detalhes, voltar para a lista
+      if (window.location.pathname.includes('/projetos/')) {
+        navigate('/projetos');
+      }
+    }
+    setAlertAberto(null);
+  };
+
+  const handleDesarquivarProjeto = async () => {
+    const sucesso = await atualizarProjeto(projeto.id, { arquivado: false } as any);
+    if (sucesso) {
+      toast({
+        title: "Projeto desarquivado",
+        description: "O projeto foi desarquivado e voltou à visualização padrão.",
+      });
+      onProjetoAtualizado?.();
+    }
     setAlertAberto(null);
   };
 
@@ -46,7 +78,11 @@ export function ProjetoAcoesAdmin({ projeto, onProjetoAtualizado }: ProjetoAcoes
         title: "Projeto apagado",
         description: "O projeto foi removido permanentemente do sistema.",
       });
-      onProjetoAtualizado();
+      onProjetoAtualizado?.();
+      // Se estamos na página de detalhes, voltar para a lista
+      if (window.location.pathname.includes('/projetos/')) {
+        navigate('/projetos');
+      }
     }
     setAlertAberto(null);
   };
@@ -60,14 +96,36 @@ export function ProjetoAcoesAdmin({ projeto, onProjetoAtualizado }: ProjetoAcoes
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48">
-          <DropdownMenuItem onClick={() => setAlertAberto('fechar')}>
-            <X className="h-4 w-4 mr-2" />
-            Fechar Projeto
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setAlertAberto('arquivar')}>
-            <Archive className="h-4 w-4 mr-2" />
-            Arquivar Projeto
-          </DropdownMenuItem>
+          {/* Opções para projetos ativos */}
+          {projeto.status_ativo && !projeto.arquivado && (
+            <>
+              <DropdownMenuItem onClick={() => setAlertAberto('fechar')}>
+                <X className="h-4 w-4 mr-2" />
+                Fechar Projeto
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setAlertAberto('arquivar')}>
+                <Archive className="h-4 w-4 mr-2" />
+                Arquivar Projeto
+              </DropdownMenuItem>
+            </>
+          )}
+          
+          {/* Opções para projetos fechados mas não arquivados */}
+          {!projeto.status_ativo && !projeto.arquivado && (
+            <DropdownMenuItem onClick={() => setAlertAberto('reabrir')}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Reabrir Projeto
+            </DropdownMenuItem>
+          )}
+          
+          {/* Opções para projetos arquivados */}
+          {projeto.arquivado && (
+            <DropdownMenuItem onClick={() => setAlertAberto('desarquivar')}>
+              <ArchiveRestore className="h-4 w-4 mr-2" />
+              Desarquivar Projeto
+            </DropdownMenuItem>
+          )}
+          
           <DropdownMenuSeparator />
           <DropdownMenuItem 
             onClick={() => setAlertAberto('apagar')}
@@ -110,6 +168,42 @@ export function ProjetoAcoesAdmin({ projeto, onProjetoAtualizado }: ProjetoAcoes
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={handleArquivarProjeto} disabled={isLoading}>
               Arquivar Projeto
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={alertAberto === 'reabrir'} onOpenChange={() => setAlertAberto(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reabrir Projeto</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja reabrir o projeto "{projeto.nome_projeto}"? 
+              O projeto voltará a aceitar novos status.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleReabrirProjeto} disabled={isLoading}>
+              Reabrir Projeto
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={alertAberto === 'desarquivar'} onOpenChange={() => setAlertAberto(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Desarquivar Projeto</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja desarquivar o projeto "{projeto.nome_projeto}"? 
+              O projeto voltará a aparecer na visualização padrão.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDesarquivarProjeto} disabled={isLoading}>
+              Desarquivar Projeto
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

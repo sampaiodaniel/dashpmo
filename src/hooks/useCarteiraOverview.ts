@@ -35,7 +35,8 @@ export function useCarteiraOverview(filtros?: FiltrosDashboard) {
       let query = supabase
         .from('projetos')
         .select('*')
-        .eq('status_ativo', true);
+        .eq('status_ativo', true)
+        .order('nome_projeto', { ascending: true });
 
       // Aplicar filtros
       if (filtros?.carteira && filtros.carteira !== 'todas') {

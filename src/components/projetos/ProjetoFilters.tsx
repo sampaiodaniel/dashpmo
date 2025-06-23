@@ -42,6 +42,16 @@ export function ProjetoFilters({ filtros, onFiltroChange, responsaveis }: Projet
     onFiltroChange(novosFiltros);
   };
 
+  const handleIncluirArquivadosChange = (checked: boolean) => {
+    const novosFiltros = { ...filtros };
+    if (checked) {
+      novosFiltros.incluirArquivados = true;
+    } else {
+      delete novosFiltros.incluirArquivados;
+    }
+    onFiltroChange(novosFiltros);
+  };
+
   return (
     <Card className="bg-white shadow-sm">
       <CardContent className="p-4">
@@ -94,6 +104,17 @@ export function ProjetoFilters({ filtros, onFiltroChange, responsaveis }: Projet
               />
               <label htmlFor="incluir-fechados" className="text-sm text-pmo-gray">
                 Incluir projetos fechados
+              </label>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="incluir-arquivados"
+                checked={filtros.incluirArquivados || false}
+                onCheckedChange={handleIncluirArquivadosChange}
+              />
+              <label htmlFor="incluir-arquivados" className="text-sm text-pmo-gray">
+                Incluir projetos arquivados
               </label>
             </div>
           </div>

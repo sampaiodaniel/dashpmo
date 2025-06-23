@@ -32,6 +32,7 @@ export interface Projeto {
   criado_por: string;
   data_criacao: Date;
   status_ativo: boolean;
+  arquivado?: boolean;
   ultimoStatus?: StatusProjeto;
 }
 
@@ -181,6 +182,7 @@ export interface FiltrosProjeto {
   gp_responsavel?: string;
   busca?: string;
   incluirFechados?: boolean;
+  incluirArquivados?: boolean;
 }
 
 export interface FiltrosDashboard {

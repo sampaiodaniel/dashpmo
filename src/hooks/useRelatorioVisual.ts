@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -58,7 +57,8 @@ export function useRelatorioVisual() {
         .from('projetos')
         .select('*')
         .eq('carteira_primaria', carteira)
-        .eq('status_ativo', true);
+        .eq('status_ativo', true)
+        .order('nome_projeto', { ascending: true });
 
       if (projetosError) throw projetosError;
 
@@ -128,7 +128,8 @@ export function useRelatorioVisual() {
         .from('projetos')
         .select('*')
         .or(`responsavel_asa.eq.${responsavel},responsavel_cwi.eq.${responsavel},gp_responsavel_cwi.eq.${responsavel}`)
-        .eq('status_ativo', true);
+        .eq('status_ativo', true)
+        .order('nome_projeto', { ascending: true });
 
       if (projetosError) throw projetosError;
 

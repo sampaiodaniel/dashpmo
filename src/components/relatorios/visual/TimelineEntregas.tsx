@@ -19,9 +19,10 @@ export function TimelineEntregas({ projetos }: TimelineEntregasProps) {
       const status = projeto.ultimoStatus;
       if (!status) return;
       
-      if (status.data_marco1 && status.entrega1) {
+      // Marco 1 - incluir mesmo se data for TBD ou não definida
+      if (status.entrega1) {
         entregas.push({
-          data: status.data_marco1,
+          data: status.data_marco1 || 'TBD',
           titulo: status.entrega1,
           entregaveis: status.entregaveis1,
           projeto: projeto.nome_projeto || 'Projeto',
@@ -32,9 +33,10 @@ export function TimelineEntregas({ projetos }: TimelineEntregasProps) {
         });
       }
       
-      if (status.data_marco2 && status.entrega2) {
+      // Marco 2 - incluir mesmo se data for TBD ou não definida
+      if (status.entrega2) {
         entregas.push({
-          data: status.data_marco2,
+          data: status.data_marco2 || 'TBD',
           titulo: status.entrega2,
           entregaveis: status.entregaveis2,
           projeto: projeto.nome_projeto || 'Projeto',
@@ -45,9 +47,10 @@ export function TimelineEntregas({ projetos }: TimelineEntregasProps) {
         });
       }
       
-      if (status.data_marco3 && status.entrega3) {
+      // Marco 3 - incluir mesmo se data for TBD ou não definida
+      if (status.entrega3) {
         entregas.push({
-          data: status.data_marco3,
+          data: status.data_marco3 || 'TBD',
           titulo: status.entrega3,
           entregaveis: status.entregaveis3,
           projeto: projeto.nome_projeto || 'Projeto',
@@ -60,8 +63,13 @@ export function TimelineEntregas({ projetos }: TimelineEntregasProps) {
     });
   }
 
-  // Ordenar por data
-  entregas.sort((a, b) => new Date(a.data).getTime() - new Date(b.data).getTime());
+  // Ordenar por data - TBD sempre por último
+  entregas.sort((a, b) => {
+    if (a.data === 'TBD' && b.data === 'TBD') return 0;
+    if (a.data === 'TBD') return 1; // TBD vai para o final
+    if (b.data === 'TBD') return -1; // TBD vai para o final
+    return new Date(a.data).getTime() - new Date(b.data).getTime();
+  });
 
   if (entregas.length === 0) {
     return (
@@ -84,6 +92,9 @@ export function TimelineEntregas({ projetos }: TimelineEntregasProps) {
   
   // Função para calcular semanas entre duas datas
   const calcularSemanas = (data1: string, data2: string): number => {
+    // Se alguma data for TBD, retornar 1 semana padrão
+    if (data1 === 'TBD' || data2 === 'TBD') return 1;
+    
     const d1 = new Date(data1);
     const d2 = new Date(data2);
     const diffTime = Math.abs(d2.getTime() - d1.getTime());

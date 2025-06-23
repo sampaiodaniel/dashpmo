@@ -36,12 +36,12 @@ export function ProjetosOverview({ projetos }: ProjetosOverviewProps) {
     return grupos;
   }, {} as Record<string, any[]>);
 
-  // Ordenar projetos dentro de cada grupo por progresso decrescente
+  // Ordenar projetos dentro de cada grupo alfabeticamente
   Object.keys(projetosPorResponsavel).forEach(responsavel => {
     projetosPorResponsavel[responsavel].sort((a, b) => {
-      const progressoA = a.ultimoStatus?.progresso_estimado || 0;
-      const progressoB = b.ultimoStatus?.progresso_estimado || 0;
-      return progressoB - progressoA;
+      const nomeA = a.nome_projeto || '';
+      const nomeB = b.nome_projeto || '';
+      return nomeA.localeCompare(nomeB, 'pt-BR', { sensitivity: 'base' });
     });
   });
 
@@ -91,8 +91,7 @@ export function ProjetosOverview({ projetos }: ProjetosOverviewProps) {
                             {projeto.gp_responsavel || projeto.equipe || 'Não informado'}
                           </TableCell>
                           <TableCell className="text-[#6B7280] py-4">
-                            {projeto.ultimoStatus?.finalizacao_prevista ? formatarData(projeto.ultimoStatus.finalizacao_prevista) : 
-                             projeto.finalizacao_prevista ? formatarData(projeto.finalizacao_prevista) : 'Não informada'}
+                            {formatarData(projeto.ultimoStatus?.finalizacao_prevista || projeto.finalizacao_prevista)}
                           </TableCell>
                           <TableCell className="text-center py-4">
                             <div className="flex items-center justify-center">

@@ -43,18 +43,7 @@ export function EntregasDinamicas({ entregas, onChange }: EntregasDinamicasProps
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-pmo-primary">Próximas Entregas</h3>
-        <Button 
-          type="button" 
-          variant="outline" 
-          size="sm"
-          onClick={adicionarEntrega}
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Adicionar Entrega
-        </Button>
-      </div>
+      <h3 className="text-lg font-semibold text-pmo-primary">Próximas Entregas</h3>
 
       {entregas.map((entrega, index) => (
         <div key={entrega.id} className="border rounded-lg p-4 space-y-4">
@@ -120,6 +109,16 @@ export function EntregasDinamicas({ entregas, onChange }: EntregasDinamicasProps
           </div>
         </div>
       ))}
+
+      <Button
+        type="button"
+        variant="outline"
+        onClick={adicionarEntrega}
+        className="w-full"
+      >
+        <Plus className="h-4 w-4 mr-2" />
+        Adicionar Entrega
+      </Button>
     </div>
   );
 }

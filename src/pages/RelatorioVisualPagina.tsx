@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Download, ArrowLeft, Printer } from 'lucide-react';
+import { Printer } from 'lucide-react';
 import { RelatorioVisualContent } from '@/components/relatorios/visual/RelatorioVisualContent';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
 
 interface DadosRelatorioVisual {
   carteira?: string;
@@ -19,7 +17,6 @@ export default function RelatorioVisualPagina() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [dados, setDados] = useState<DadosRelatorioVisual | null>(null);
-  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
   useEffect(() => {
     // Recuperar dados do sessionStorage
@@ -132,187 +129,6 @@ export default function RelatorioVisualPagina() {
     };
   }, [searchParams, navigate]);
 
-  const handleDownloadPdf = async () => {
-    if (isGeneratingPdf) return;
-    
-    setIsGeneratingPdf(true);
-    
-    // Declarar element no escopo da função
-    const element = document.getElementById('relatorio-content');
-    if (!element) {
-      setIsGeneratingPdf(false);
-      console.error('Elemento não encontrado');
-      return;
-    }
-    
-    try {
-      // Aguardar renderização mais tempo para elementos complexos
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Tentar carregar html2pdf se não estiver disponível
-      if (!window.html2pdf) {
-        await loadHtml2Pdf();
-      }
-
-      if (window.html2pdf) {
-        const opt = {
-          margin: [0.3, 0.3, 0.3, 0.3],
-          filename: `relatorio-visual-${dados?.carteira || dados?.responsavel || 'dashboard'}-${new Date().toISOString().split('T')[0]}.pdf`,
-          image: { 
-            type: 'jpeg', 
-            quality: 0.9
-          },
-          html2canvas: { 
-            scale: 1.2,
-            useCORS: true,
-            allowTaint: true,
-            backgroundColor: '#ffffff',
-            logging: false,
-            removeContainer: false,
-            imageTimeout: 15000,
-            letterRendering: true,
-            foreignObjectRendering: true,
-            scrollX: 0,
-            scrollY: 0,
-            windowWidth: 1200,
-            windowHeight: 800,
-            width: element.scrollWidth,
-            height: element.scrollHeight,
-            onclone: function(clonedDoc: Document) {
-              // Garantir visibilidade dos elementos da timeline
-              const timelineElements = clonedDoc.querySelectorAll('.timeline-horizontal, .timeline-box, .timeline-connector, .timeline-marker, .timeline-week-marker');
-              timelineElements.forEach(el => {
-                (el as HTMLElement).style.display = 'block';
-                (el as HTMLElement).style.visibility = 'visible';
-                (el as HTMLElement).style.opacity = '1';
-              });
-              
-              // Forçar layout desktop no clone
-              const clonedElement = clonedDoc.getElementById('relatorio-content');
-              if (clonedElement) {
-                (clonedElement as HTMLElement).style.width = '100%';
-                (clonedElement as HTMLElement).style.maxWidth = 'none';
-                (clonedElement as HTMLElement).style.fontSize = '12px';
-                (clonedElement as HTMLElement).style.minWidth = '1200px';
-              }
-              
-              // Forçar grid layout
-              const grids = clonedDoc.querySelectorAll('.grid.lg\\:grid-cols-2');
-              grids.forEach(grid => {
-                (grid as HTMLElement).style.display = 'grid';
-                (grid as HTMLElement).style.gridTemplateColumns = 'repeat(2, 1fr)';
-                (grid as HTMLElement).style.gap = '1rem';
-              });
-            }
-          },
-          jsPDF: { 
-            unit: 'in', 
-            format: 'a4', 
-            orientation: 'landscape',
-            compress: true,
-            precision: 16
-          },
-          pagebreak: { 
-            mode: ['avoid-all', 'css', 'legacy'],
-            before: '.page-break-before',
-            after: '.page-break-after'
-          }
-        };
-
-        // Aguardar mais tempo para renderização completa
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        // Usar método toPdf para garantir conteúdo
-        const pdf = window.html2pdf().set(opt).from(element);
-        await pdf.toPdf().get('pdf').then((pdfObj: any) => {
-          console.log('PDF gerado com', pdfObj.internal.getNumberOfPages(), 'páginas');
-        });
-        await pdf.save();
-        console.log('PDF salvo com sucesso!');
-        
-      } else {
-        throw new Error('html2pdf não disponível');
-      }
-      
-    } catch (error) {
-      console.error('Erro ao gerar PDF:', error);
-      
-      // Fallback: tentar método alternativo com html2canvas + jsPDF
-      try {
-        console.log('Tentando método alternativo...');
-        
-        // Carregar html2canvas se disponível
-        if (typeof html2canvas !== 'undefined') {
-          const canvas = await html2canvas(element, {
-            scale: 1.2,
-            useCORS: true,
-            allowTaint: true,
-            backgroundColor: '#ffffff',
-            logging: false,
-            width: element.scrollWidth,
-            height: element.scrollHeight
-          });
-          
-          const imgData = canvas.toDataURL('image/jpeg', 0.9);
-          const pdf = new jsPDF('p', 'mm', 'a4');
-          const imgWidth = 190;
-          const pageHeight = 297;
-          const imgHeight = (canvas.height * imgWidth) / canvas.width;
-          let heightLeft = imgHeight;
-          let position = 0;
-          
-          pdf.addImage(imgData, 'JPEG', 10, position, imgWidth, imgHeight);
-          heightLeft -= pageHeight;
-          
-          while (heightLeft >= 0) {
-            position = heightLeft - imgHeight;
-            pdf.addPage();
-            pdf.addImage(imgData, 'JPEG', 10, position, imgWidth, imgHeight);
-            heightLeft -= pageHeight;
-          }
-          
-          pdf.save(`relatorio-visual-${dados?.carteira || dados?.responsavel || 'dashboard'}-${new Date().toISOString().split('T')[0]}.pdf`);
-          console.log('PDF gerado com método alternativo!');
-        } else {
-          // Se tudo falhar, usar impressão
-          console.log('Fallback para impressão...');
-          handlePrint();
-        }
-      } catch (fallbackError) {
-        console.error('Erro no método alternativo:', fallbackError);
-        // Último recurso: impressão
-        handlePrint();
-      }
-    } finally {
-      // Cleanup e reset do estado
-      setTimeout(() => {
-        setIsGeneratingPdf(false);
-      }, 1000);
-    }
-  };
-
-  const loadHtml2Pdf = (): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      if (window.html2pdf) {
-        resolve();
-        return;
-      }
-
-      const script = document.createElement('script');
-      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
-      script.async = true;
-      script.onload = () => {
-        // Aguardar um pouco para garantir que a biblioteca está pronta
-        setTimeout(() => resolve(), 500);
-      };
-      script.onerror = () => reject(new Error('Falha ao carregar html2pdf'));
-      document.head.appendChild(script);
-      
-      // Timeout aumentado para 30 segundos
-      setTimeout(() => reject(new Error('Timeout ao carregar html2pdf')), 30000);
-    });
-  };
-
   const handlePrint = () => {
     const printStyles = `
       @page {
@@ -332,8 +148,7 @@ export default function RelatorioVisualPagina() {
           visibility: hidden; 
         }
         
-        #relatorio-content, 
-        #relatorio-content * { 
+        #relatorio-content, #relatorio-content * { 
           visibility: visible; 
         }
         
@@ -343,30 +158,17 @@ export default function RelatorioVisualPagina() {
           top: 0; 
           width: 100% !important;
           max-width: none !important;
-          margin: 0 !important;
-          padding: 15px !important;
+          min-width: 1200px !important;
           font-size: 12px !important;
-          min-width: 800px !important;
+          background: white !important;
+          padding: 0 !important;
+          margin: 0 !important;
         }
         
-        /* Forçar layout desktop completo */
-        .max-w-7xl {
-          max-width: none !important;
-          width: 100% !important;
-        }
-        
-        .container {
-          max-width: none !important;
-          width: 100% !important;
-        }
-        
-        /* Forçar layout desktop */
+        /* Layout em grid forçado */
         .grid {
           display: grid !important;
-        }
-        
-        .grid-cols-1 {
-          grid-template-columns: 1fr !important;
+          width: 100% !important;
         }
         
         .lg\\:grid-cols-2 {
@@ -541,15 +343,6 @@ export default function RelatorioVisualPagina() {
                 <Printer className="h-4 w-4" />
                 Imprimir
               </Button>
-              <Button 
-                onClick={handleDownloadPdf} 
-                size="sm" 
-                disabled={isGeneratingPdf}
-                className="flex items-center gap-2"
-              >
-                <Download className="h-4 w-4" />
-                {isGeneratingPdf ? 'Gerando PDF...' : 'Download PDF'}
-              </Button>
             </div>
           </div>
         </div>
@@ -561,11 +354,4 @@ export default function RelatorioVisualPagina() {
       </div>
     </div>
   );
-}
-
-// Declaração global para TypeScript
-declare global {
-  interface Window {
-    html2pdf: any;
-  }
 } 

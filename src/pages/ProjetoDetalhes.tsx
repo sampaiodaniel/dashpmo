@@ -10,6 +10,7 @@ import { useState } from 'react';
 import { EditarProjetoModal } from '@/components/forms/EditarProjetoModal';
 import { ProjetoInfoGerais } from '@/components/projetos/ProjetoInfoGerais';
 import { ProjetoStatus } from '@/components/projetos/ProjetoStatus';
+import { ProjetoAcoesAdmin } from '@/components/projetos/ProjetoAcoesAdmin';
 import { Loading } from '@/components/ui/loading';
 import { useScrollToTop } from '@/hooks/useScrollToTop';
 
@@ -17,7 +18,7 @@ export default function ProjetoDetalhes() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { usuario, isLoading: authLoading } = useAuth();
-  const { data: projetos, isLoading } = useProjetos();
+  const { data: projetos, isLoading, refetch } = useProjetos();
   const [editarModalAberto, setEditarModalAberto] = useState(false);
   
   useScrollToTop();
@@ -84,13 +85,23 @@ export default function ProjetoDetalhes() {
             </div>
           </div>
           
-          <Button 
-            onClick={() => setEditarModalAberto(true)}
-            className="bg-pmo-primary hover:bg-pmo-secondary text-white"
-          >
-            <Edit className="h-4 w-4 mr-2" />
-            Editar Projeto
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button 
+              onClick={() => setEditarModalAberto(true)}
+              className="bg-pmo-primary hover:bg-pmo-secondary text-white"
+            >
+              <Edit className="h-4 w-4 mr-2" />
+              Editar Projeto
+            </Button>
+            
+            {/* Ações administrativas - apenas para administradores */}
+            {usuario?.tipo_usuario === 'admin' && (
+              <ProjetoAcoesAdmin 
+                projeto={projeto} 
+                onProjetoAtualizado={refetch}
+              />
+            )}
+          </div>
         </div>
 
         {/* Conteúdo Principal */}

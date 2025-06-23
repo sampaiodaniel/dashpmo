@@ -92,12 +92,12 @@ export function RelatorioVisualContent({ dados }: RelatorioVisualContentProps) {
               return grupos;
             }, {} as Record<string, any[]>);
 
-            // Ordenar projetos dentro de cada grupo por progresso decrescente
+            // Ordenar projetos dentro de cada grupo alfabeticamente
             Object.keys(projetosPorResponsavel).forEach(responsavel => {
               projetosPorResponsavel[responsavel].sort((a, b) => {
-                const progressoA = a.ultimoStatus?.progresso_estimado || 0;
-                const progressoB = b.ultimoStatus?.progresso_estimado || 0;
-                return progressoB - progressoA;
+                const nomeA = a.nome_projeto || a.nome || '';
+                const nomeB = b.nome_projeto || b.nome || '';
+                return nomeA.localeCompare(nomeB, 'pt-BR', { sensitivity: 'base' });
               });
             });
 

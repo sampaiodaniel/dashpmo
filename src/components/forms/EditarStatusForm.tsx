@@ -64,7 +64,11 @@ export function EditarStatusForm({ status, onSuccess }: EditarStatusFormProps) {
 
   return (
     <form onSubmit={(e) => handleSubmit(e, onSuccess)} className="space-y-6">
-      <ProjetoInformacoes status={status} />
+      <ProjetoInformacoes 
+        status={status} 
+        formData={formData}
+        onInputChange={handleInputChange}
+      />
       
       <StatusManagementSection 
         formData={formData}

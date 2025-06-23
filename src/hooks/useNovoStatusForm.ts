@@ -12,6 +12,7 @@ import { EntregaDinamica } from '@/components/forms/EntregasDinamicasNovo';
 
 const statusFormSchema = z.object({
   projeto_id: z.number().min(1, "Projeto é obrigatório"),
+  data_status: z.string().min(1, "Data do status é obrigatória"),
   status_geral: z.enum(['Planejamento', 'Em Andamento', 'Pausado', 'Concluído', 'Cancelado', 'Aguardando Aprovação', 'Aguardando Homologação', 'Em Especificação'], {
     required_error: "Status geral é obrigatório",
   }),
@@ -53,6 +54,7 @@ export function useNovoStatusForm() {
   const form = useForm<StatusFormData>({
     resolver: zodResolver(statusFormSchema),
     defaultValues: {
+      data_status: new Date().toISOString().split('T')[0],
       progresso_estimado: 0,
       entregas_realizadas: '',
       backlog: '',
@@ -206,6 +208,7 @@ export function useNovoStatusForm() {
 
       const statusData = {
         projeto_id: projetoSelecionado,
+        data_atualizacao: data.data_status,
         status_geral: data.status_geral,
         status_visao_gp: data.status_visao_gp,
         progresso_estimado: progressoEstimado,

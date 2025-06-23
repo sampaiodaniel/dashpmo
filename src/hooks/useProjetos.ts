@@ -17,11 +17,16 @@ export function useProjetos(filtros?: FiltrosProjeto) {
             *
           )
         `)
-        .order('data_criacao', { ascending: false });
+        .order('nome_projeto', { ascending: true });
 
       // Aplicar filtro de projetos fechados
       if (!filtros?.incluirFechados) {
         query = query.eq('status_ativo', true);
+      }
+
+      // Aplicar filtro de projetos arquivados
+      if (!filtros?.incluirArquivados) {
+        query = query.or('arquivado.is.null,arquivado.eq.false');
       }
 
       // Aplicar filtros

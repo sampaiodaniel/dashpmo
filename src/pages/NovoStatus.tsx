@@ -107,6 +107,7 @@ export default function NovoStatus() {
               projetoSelecionado={projetoSelecionado}
               onCarteiraChange={handleCarteiraChange}
               onProjetoChange={(value) => handleProjetoChange(Number(value))}
+              form={form}
             />
 
             <StatusInformacaoSection

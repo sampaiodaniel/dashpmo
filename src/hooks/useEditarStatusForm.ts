@@ -72,6 +72,11 @@ export function useEditarStatusForm(status: StatusProjeto) {
   } = useEntregasDinamicas(entregasIniciais);
   
   const [formData, setFormData] = useState({
+    data_atualizacao: typeof status.data_atualizacao === 'string' 
+      ? status.data_atualizacao 
+      : status.data_atualizacao 
+        ? new Date(status.data_atualizacao).toISOString().split('T')[0]
+        : new Date().toISOString().split('T')[0],
     status_geral: status.status_geral,
     status_visao_gp: status.status_visao_gp,
     impacto_riscos: status.impacto_riscos,
@@ -105,6 +110,7 @@ export function useEditarStatusForm(status: StatusProjeto) {
       const entregasParaSalvar = obterEntregasParaSalvar();
 
       const dataToUpdate = {
+        data_atualizacao: formData.data_atualizacao,
         status_geral: formData.status_geral,
         status_visao_gp: formData.status_visao_gp,
         impacto_riscos: formData.impacto_riscos,
@@ -124,7 +130,6 @@ export function useEditarStatusForm(status: StatusProjeto) {
         entrega3: entregasParaSalvar[2]?.nome || null,
         data_marco3: entregasParaSalvar[2]?.data || null,
         entregaveis3: entregasParaSalvar[2]?.entregaveis || null,
-        data_atualizacao: new Date().toISOString().split('T')[0],
         // Se for admin editando status aprovado, voltar para revisão
         ...(status.aprovado && isAdmin() && {
           aprovado: false,

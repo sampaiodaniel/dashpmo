@@ -5,8 +5,9 @@ import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileText, BarChart3, TrendingUp } from 'lucide-react';
+import { FileText, BarChart3, TrendingUp, Smartphone } from 'lucide-react';
 import { RelatorioASAViewer } from '@/components/relatorios/RelatorioASAViewer';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 import { RelatorioConsolidadoContent } from '@/components/relatorios/consolidado/RelatorioConsolidadoContent';
 import { UltimosRelatorios } from '@/components/relatorios/UltimosRelatorios';
@@ -18,6 +19,7 @@ import { CARTEIRAS } from '@/types/pmo';
 
 export default function Relatorios() {
   const { usuario, isLoading } = useAuth();
+  const isMobile = useIsMobile();
   const [tipoRelatorio, setTipoRelatorio] = useState<'asa' | 'visual' | 'consolidado' | null>(null);
   
   // Filtros para relatórios
@@ -31,10 +33,13 @@ export default function Relatorios() {
   const [filtroConsolidado, setFiltroConsolidado] = useState<'carteira' | 'responsavel'>('carteira');
   const [carteiraConsolidado, setCarteiraConsolidado] = useState<string>('');
   const [responsavelConsolidado, setResponsavelConsolidado] = useState<string>('');
+  
+  // Estado para versão do relatório visual
+  const [versaoRelatorioVisual, setVersaoRelatorioVisual] = useState<'desktop' | 'mobile'>('desktop');
 
   // Hooks dos relatórios
   const { gerarRelatorioCarteira, gerarRelatorioGeral, isLoading: isLoadingASA, carteiras } = useRelatorioASA();
-  const { gerarRelatorioCarteira: gerarRelatorioCarteiraVisual, gerarRelatorioResponsavel: gerarRelatorioResponsavelVisual, carteiras: carteirasVisual, responsaveis: responsaveisVisual } = useRelatorioVisual();
+  const { gerarRelatorioCarteira: gerarRelatorioCarteiraVisual, gerarRelatorioResponsavel: gerarRelatorioResponsavelVisual, carteiras: carteirasVisual, responsaveis: responsaveisVisual, isLoading: isLoadingVisual } = useRelatorioVisual();
   const { gerarRelatorioCarteira: gerarRelatorioCarteiraConsolidado, gerarRelatorioResponsavel: gerarRelatorioResponsavelConsolidado, carteiras: carteirasConsolidado, responsaveis: responsaveisConsolidado } = useRelatorioConsolidado();
   const { adicionarRelatorio } = useHistoricoRelatorios();
 
@@ -111,6 +116,27 @@ export default function Relatorios() {
         filtro: filtroVisual === 'carteira' ? 'Carteira' : 'Responsável ASA',
         valor: filtroVisual === 'carteira' ? carteiraVisual : responsavelVisual,
         nomeArquivo: `relatorio-visual-${(filtroVisual === 'carteira' ? carteiraVisual : responsavelVisual).toLowerCase().replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`
+      });
+    }
+  };
+
+  const handleGerarRelatorioVisualMobile = async () => {
+    const dados = filtroVisual === 'carteira' 
+      ? await gerarRelatorioCarteiraVisual(carteiraVisual)
+      : await gerarRelatorioResponsavelVisual(responsavelVisual);
+    
+    if (dados) {
+      // Salvar dados no sessionStorage
+      sessionStorage.setItem('relatorio-visual-dados', JSON.stringify(dados));
+      
+      // Abrir relatório mobile em nova aba
+      window.open('/relatorio-visual-mobile', '_blank');
+      
+      adicionarRelatorio({
+        tipo: 'visual',
+        filtro: filtroVisual === 'carteira' ? 'Carteira' : 'Responsável ASA',
+        valor: filtroVisual === 'carteira' ? carteiraVisual : responsavelVisual,
+        nomeArquivo: `relatorio-visual-mobile-${(filtroVisual === 'carteira' ? carteiraVisual : responsavelVisual).toLowerCase().replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`
       });
     }
   };
@@ -281,16 +307,48 @@ export default function Relatorios() {
                 </div>
               )}
 
-              <Button 
-                onClick={handleGerarRelatorioVisual}
-                disabled={
-                  (filtroVisual === 'carteira' && !carteiraVisual) || 
-                  (filtroVisual === 'responsavel' && !responsavelVisual)
-                }
-                className="w-full bg-pmo-primary hover:bg-pmo-secondary text-white"
-              >
-                Gerar Relatório
-              </Button>
+              <div className="space-y-3">
+                <div>
+                  <label className="text-sm font-medium text-pmo-gray mb-2 block">Versão do Relatório:</label>
+                  <Select 
+                    value={versaoRelatorioVisual} 
+                    onValueChange={(value: 'desktop' | 'mobile') => setVersaoRelatorioVisual(value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione a versão" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="desktop">Versão Desktop</SelectItem>
+                      <SelectItem value="mobile">
+                        <div className="flex items-center gap-2">
+                          <Smartphone className="h-4 w-4" />
+                          Versão Mobile
+                          {isMobile && <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Recomendado</span>}
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <Button 
+                  onClick={() => {
+                    if (versaoRelatorioVisual === 'desktop') {
+                      handleGerarRelatorioVisual();
+                    } else {
+                      handleGerarRelatorioVisualMobile();
+                    }
+                  }}
+                  disabled={
+                    isLoadingVisual ||
+                    (filtroVisual === 'carteira' && !carteiraVisual) || 
+                    (filtroVisual === 'responsavel' && !responsavelVisual) ||
+                    !versaoRelatorioVisual
+                  }
+                  className="w-full bg-pmo-primary hover:bg-pmo-secondary text-white"
+                >
+                  {isLoadingVisual ? 'Gerando...' : 'Gerar Relatório'}
+                </Button>
+              </div>
             </CardContent>
           </Card>
 

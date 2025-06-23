@@ -57,7 +57,8 @@ export function useRelatorioConsolidado() {
         .from('projetos')
         .select('*')
         .eq('carteira_primaria', carteira)
-        .eq('status_ativo', true);
+        .eq('status_ativo', true)
+        .order('nome_projeto', { ascending: true });
 
       if (projetosError) throw projetosError;
 
@@ -117,7 +118,8 @@ export function useRelatorioConsolidado() {
         .from('projetos')
         .select('*')
         .or(`responsavel_asa.eq.${responsavel},responsavel_cwi.eq.${responsavel},gp_responsavel_cwi.eq.${responsavel}`)
-        .eq('status_ativo', true);
+        .eq('status_ativo', true)
+        .order('nome_projeto', { ascending: true });
 
       if (projetosError) throw projetosError;
 
