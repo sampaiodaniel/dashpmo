@@ -14,6 +14,7 @@ import { CriarProjetoModal } from '@/components/forms/CriarProjetoModal';
 import { FiltrosProjeto } from '@/types/pmo';
 import { PaginationFooter } from '@/components/common/PaginationFooter';
 import { usePagination } from '@/hooks/usePagination';
+import { CarteirasTags } from '@/components/common/CarteirasTags';
 
 export default function Projetos() {
   const { usuario, isLoading } = useAuth();
@@ -160,12 +161,7 @@ export default function Projetos() {
                         <span className="text-lg font-semibold text-pmo-primary">
                           {projeto.nome_projeto}
                         </span>
-                        <div className="flex items-center gap-2 bg-blue-50 px-3 py-1 rounded-lg border border-blue-200">
-                          <Building className="h-4 w-4 text-blue-600" />
-                          <span className="font-semibold text-blue-700 text-sm">
-                            {projeto.area_responsavel}
-                          </span>
-                        </div>
+                        <CarteirasTags projeto={projeto} />
                       </div>
                       <div className="flex items-center gap-4 text-sm text-gray-600">
                         <div className="flex items-center gap-1">
@@ -195,6 +191,9 @@ export default function Projetos() {
                     {/* Terceira linha - Status do último status */}
                     {projeto.ultimoStatus && (
                       <div className="bg-gray-50 rounded-lg p-4 ml-6">
+                        <div className="mb-3">
+                          <h4 className="text-sm font-semibold text-gray-700">Último Status</h4>
+                        </div>
                         <div className="grid grid-cols-3 gap-4 text-sm">
                           <div>
                             <span className="text-gray-600">Status Geral:</span>

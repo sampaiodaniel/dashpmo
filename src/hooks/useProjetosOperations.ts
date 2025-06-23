@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Database } from '@/integrations/supabase/types';
 import { useLogger } from '@/utils/logger';
+import { useQueryClient } from '@tanstack/react-query';
 
 type ProjetoInsert = Database['public']['Tables']['projetos']['Insert'];
 type ProjetoUpdate = Database['public']['Tables']['projetos']['Update'];
@@ -10,6 +11,7 @@ type ProjetoUpdate = Database['public']['Tables']['projetos']['Update'];
 export function useProjetosOperations() {
   const [isLoading, setIsLoading] = useState(false);
   const { log } = useLogger();
+  const queryClient = useQueryClient();
 
   const criarProjeto = async (projeto: Omit<ProjetoInsert, 'criado_por'>) => {
     setIsLoading(true);
@@ -101,6 +103,12 @@ export function useProjetosOperations() {
         data.nome_projeto,
         updates
       );
+
+      // Invalidar todas as queries relacionadas ao projeto
+      queryClient.invalidateQueries({ queryKey: ['projetos'] });
+      queryClient.invalidateQueries({ queryKey: ['ultimo-status', projetoId] });
+      queryClient.invalidateQueries({ queryKey: ['status-projetos'] });
+      queryClient.invalidateQueries({ queryKey: ['status-list'] });
 
       return true;
     } catch (error) {

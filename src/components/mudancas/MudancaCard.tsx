@@ -11,6 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { CarteirasTags } from '@/components/common/CarteirasTags';
 
 interface MudancaCardProps {
   mudanca: MudancaReplanejamento;
@@ -57,12 +58,7 @@ export function MudancaCard({ mudanca }: MudancaCardProps) {
               <CardTitle className="text-lg text-pmo-primary">
                 {mudanca.projeto?.nome_projeto || 'Projeto não encontrado'}
               </CardTitle>
-              <div className="flex items-center gap-2 bg-blue-50 px-3 py-1 rounded-lg border border-blue-200">
-                <Building className="h-4 w-4 text-blue-600" />
-                <span className="font-semibold text-blue-700 text-sm">
-                  {mudanca.projeto?.carteira_primaria || mudanca.projeto?.area_responsavel || 'N/A'}
-                </span>
-              </div>
+              {mudanca.projeto && <CarteirasTags projeto={mudanca.projeto} />}
             </div>
             
             <div className="flex items-center gap-2 mb-3">

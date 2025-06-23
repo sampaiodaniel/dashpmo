@@ -127,7 +127,11 @@ export function useEditarProjetoForm({ projeto, onSuccess }: UseEditarProjetoFor
         description: "Projeto atualizado com sucesso!",
       });
 
+      // Invalidar todas as queries relacionadas ao projeto
       queryClient.invalidateQueries({ queryKey: ['projetos'] });
+      queryClient.invalidateQueries({ queryKey: ['ultimo-status', projeto.id] });
+      queryClient.invalidateQueries({ queryKey: ['status-projetos'] });
+      queryClient.invalidateQueries({ queryKey: ['status-list'] });
       onSuccess();
     } catch (error) {
       console.error('💥 Erro inesperado:', error);
