@@ -20,14 +20,33 @@ export function CarteiraProjetoSelect({
   onProjetoChange,
   required = false
 }: CarteiraProjetoSelectProps) {
-  const { data: projetos } = useProjetos();
+  const { data: projetos, isLoading, error } = useProjetos();
+  
+  console.log('📋 Estado useProjetos:', {
+    totalProjetos: projetos?.length,
+    isLoading,
+    error: error?.message,
+    carteiraProp: carteira,
+    projetoProp: projeto
+  });
 
   const projetosFiltrados = useMemo(() => {
     if (!projetos || !carteira) return [];
     
-    return projetos
-      .filter(p => p.area_responsavel === carteira)
+    console.log('🔍 Filtrando projetos para carteira:', carteira);
+    console.log('📋 Total de projetos disponíveis:', projetos.length);
+    
+    const filtered = projetos
+      .filter(p => 
+        p.area_responsavel === carteira ||
+        p.carteira_primaria === carteira ||
+        p.carteira_secundaria === carteira ||
+        p.carteira_terciaria === carteira
+      )
       .sort((a, b) => a.nome_projeto.localeCompare(b.nome_projeto));
+    
+    console.log('📋 Projetos filtrados:', filtered.length, filtered.map(p => p.nome_projeto));
+    return filtered;
   }, [projetos, carteira]);
 
   const handleCarteiraChange = (value: string) => {

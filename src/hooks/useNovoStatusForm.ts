@@ -156,13 +156,22 @@ export function useNovoStatusForm() {
   useEffect(() => {
     if (ultimoStatus && ultimoStatus.id) {
       console.log('🔄 Preenchendo formulário com dados do último status');
+      console.log('📋 Dados do projeto no último status:', ultimoStatus.projeto);
+      console.log('📋 Area responsável:', ultimoStatus.projeto?.area_responsavel);
+      console.log('📋 Carteira primária:', ultimoStatus.projeto?.carteira_primaria);
+      console.log('📋 Nome do projeto:', ultimoStatus.projeto?.nome_projeto);
       
       // Definir carteira e projeto
-      if (ultimoStatus.projeto?.area_responsavel) {
-        setCarteiraSelecionada(ultimoStatus.projeto.area_responsavel);
+      const carteiraParaUsar = ultimoStatus.projeto?.carteira_primaria || ultimoStatus.projeto?.area_responsavel;
+      if (carteiraParaUsar) {
+        console.log('🎯 Definindo carteira como:', carteiraParaUsar);
+        setCarteiraSelecionada(carteiraParaUsar);
+      } else {
+        console.warn('⚠️ Nenhuma carteira encontrada no projeto');
       }
       
       const projetoId = ultimoStatus.projeto_id;
+      console.log('🎯 Definindo projeto ID como:', projetoId);
       setProjetoSelecionado(projetoId);
       form.setValue('projeto_id', projetoId);
 
@@ -223,6 +232,11 @@ export function useNovoStatusForm() {
       setEntregas(entregasPreenchidas);
 
       console.log('✅ Formulário preenchido com sucesso');
+      console.log('📊 Estados finais:', {
+        carteiraSelecionada: carteiraParaUsar,
+        projetoSelecionado: projetoId,
+        projeto_id_form: form.getValues('projeto_id')
+      });
     }
   }, [ultimoStatus?.id]);
 
@@ -524,12 +538,14 @@ export function useNovoStatusForm() {
   });
 
   const handleCarteiraChange = (carteira: string) => {
+    console.log('🔄 Mudança de carteira:', carteira);
     setCarteiraSelecionada(carteira);
     setProjetoSelecionado(null);
     form.setValue('projeto_id', 0);
   };
 
   const handleProjetoChange = (projetoId: number) => {
+    console.log('🔄 Mudança de projeto:', projetoId);
     setProjetoSelecionado(projetoId);
     form.setValue('projeto_id', projetoId);
   };
