@@ -21,6 +21,7 @@ export default function NovoStatus() {
   const { 
     form, 
     isLoading: isSubmitting, 
+    isLoadingListas,
     onSubmit,
     projetoSelecionado,
     carteiraSelecionada,
@@ -39,7 +40,7 @@ export default function NovoStatus() {
   const probabilidadeAtual = form.watch('probabilidade_riscos');
   const matrizRisco = calcularMatrizRisco(impactoAtual, probabilidadeAtual);
 
-  if (isLoading) {
+  if (isLoading || isLoadingListas) {
     return (
       <div className="min-h-screen bg-pmo-background flex items-center justify-center">
         <div className="text-center">
@@ -50,7 +51,9 @@ export default function NovoStatus() {
               className="w-12 h-12" 
             />
           </div>
-          <div className="text-pmo-gray">Carregando...</div>
+          <div className="text-pmo-gray">
+            {isLoadingListas ? 'Carregando configurações...' : 'Carregando...'}
+          </div>
         </div>
       </div>
     );

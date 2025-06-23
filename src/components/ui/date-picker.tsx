@@ -1,7 +1,7 @@
 import * as React from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Calendar as CalendarIcon } from "lucide-react";
+import { Calendar as CalendarIcon, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -32,19 +32,33 @@ export function DatePicker({
     setOpen(false); // Fechar o popover após selecionar a data
   };
 
+  const handleClearDate = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Evitar que o popover abra
+    onDateChange(undefined);
+  };
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
           variant={"outline"}
           className={cn(
-            "w-full justify-start text-left font-normal",
+            "w-full justify-start text-left font-normal relative",
             !date && "text-muted-foreground"
           )}
           disabled={disabled}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
           {date ? format(date, "dd/MM/yyyy", { locale: ptBR }) : placeholder}
+          {date && !disabled && (
+            <div 
+              className="ml-auto cursor-pointer" 
+              onClick={handleClearDate}
+              title="Limpar data"
+            >
+              <X className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+            </div>
+          )}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
@@ -52,10 +66,25 @@ export function DatePicker({
           mode="single"
           selected={date}
           onSelect={handleDateSelect}
-          disabled={(date) => date > new Date() || date < new Date("2020-01-01")}
+          disabled={(date) => date < new Date("2020-01-01")}
           initialFocus
           locale={ptBR}
         />
+        {date && (
+          <div className="p-3 border-t">
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full"
+              onClick={() => {
+                onDateChange(undefined);
+                setOpen(false);
+              }}
+            >
+              Limpar data
+            </Button>
+          </div>
+        )}
       </PopoverContent>
     </Popover>
   );

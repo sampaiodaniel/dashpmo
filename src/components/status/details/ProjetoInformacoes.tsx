@@ -90,7 +90,7 @@ export function ProjetoInformacoes({ status }: ProjetoInformacoesProps) {
               <label className="text-sm font-medium text-gray-600 block mb-4">Tipo de Projeto</label>
               <div className="flex items-center gap-2">
                 <FileType className="h-5 w-5 text-gray-500" />
-                <span className="text-base text-gray-900">{tipoProjeto.valor}</span>
+                <span className="text-base text-gray-900">{tipoProjeto.nome}</span>
               </div>
             </div>
           )}
@@ -147,14 +147,14 @@ export function ProjetoInformacoes({ status }: ProjetoInformacoesProps) {
                 <p className="text-base text-gray-900">{status.projeto?.area_responsavel}</p>
               </div>
 
-              {status.projeto?.carteira_secundaria && (
+              {status.projeto?.carteira_secundaria && status.projeto.carteira_secundaria !== 'none' && (
                 <div>
                   <label className="text-sm font-medium text-gray-600 block mb-3">Carteira Secundária</label>
                   <p className="text-base text-gray-900">{status.projeto.carteira_secundaria}</p>
                 </div>
               )}
 
-              {status.projeto?.carteira_terciaria && (
+              {status.projeto?.carteira_terciaria && status.projeto.carteira_terciaria !== 'none' && (
                 <div>
                   <label className="text-sm font-medium text-gray-600 block mb-3">Carteira Terciária</label>
                   <p className="text-base text-gray-900">{status.projeto.carteira_terciaria}</p>

@@ -1,4 +1,3 @@
-
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useStatusVisaoGP } from '@/hooks/useListaValores';
 
@@ -13,7 +12,7 @@ export function StatusVisaoGPSelect({ value, onValueChange, placeholder = "Selec
   const { data: statusVisaoGP = [] } = useStatusVisaoGP();
 
   return (
-    <Select value={value} onValueChange={onValueChange} disabled={disabled}>
+    <Select value={value || ""} onValueChange={onValueChange} disabled={disabled}>
       <SelectTrigger>
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>

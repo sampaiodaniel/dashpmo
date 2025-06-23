@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { StatusProjeto } from '@/types/pmo';
@@ -74,10 +73,20 @@ export function ProximasEntregasSection({ status }: ProximasEntregasSectionProps
     });
   });
 
-  // Remover duplicatas baseado no nome da entrega
-  const entregasUnicas = entregas.filter((entrega, index, arr) => 
-    arr.findIndex(e => e.nome === entrega.nome) === index
-  );
+  // Remover duplicatas baseado em critérios mais específicos
+  const entregasUnicas = entregas.filter((entrega, index, arr) => {
+    // Para entregas principais, usar ordem como identificador único
+    if (entrega.tipo === 'principal') {
+      return arr.findIndex(e => e.tipo === 'principal' && e.ordem === entrega.ordem) === index;
+    }
+    
+    // Para entregas extras, usar nome + data como identificador único
+    return arr.findIndex(e => 
+      e.tipo === 'extra' && 
+      e.nome === entrega.nome && 
+      e.data === entrega.data
+    ) === index;
+  });
 
   if (entregasUnicas.length === 0) {
     return null;

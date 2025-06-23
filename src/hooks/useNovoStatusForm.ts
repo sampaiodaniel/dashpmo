@@ -3,36 +3,59 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { Database } from '@/integrations/supabase/types';
 import { useAuth } from './useAuth';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import { useState, useEffect } from 'react';
 import { useLogger } from '@/utils/logger';
 import { EntregaDinamica } from '@/components/forms/EntregasDinamicasNovo';
+import { useStatusGeral, useStatusVisaoGP, useNiveisRisco } from './useListaValores';
 
-const statusFormSchema = z.object({
-  projeto_id: z.number().min(1, "Projeto é obrigatório"),
-  data_status: z.string().min(1, "Data do status é obrigatória"),
-  status_geral: z.enum(['Planejamento', 'Em Andamento', 'Pausado', 'Concluído', 'Cancelado', 'Aguardando Aprovação', 'Aguardando Homologação', 'Em Especificação'], {
-    required_error: "Status geral é obrigatório",
-  }),
-  status_visao_gp: z.enum(['Verde', 'Amarelo', 'Vermelho'], {
-    required_error: "Visão Chefe do Projeto é obrigatória",
-  }),
-  progresso_estimado: z.number().min(0).max(100),
-  probabilidade_riscos: z.enum(['Baixo', 'Médio', 'Alto'], {
-    required_error: "Probabilidade de riscos é obrigatória",
-  }),
-  impacto_riscos: z.enum(['Baixo', 'Médio', 'Alto'], {
-    required_error: "Impacto de riscos é obrigatório",
-  }),
-  entregas_realizadas: z.string().min(1, "Itens trabalhados na semana são obrigatórios"),
-  backlog: z.string().optional(),
-  bloqueios_atuais: z.string().optional(),
-  observacoes_gerais: z.string().optional(),
-});
-
-type StatusFormData = z.infer<typeof statusFormSchema>;
+// Schema dinâmico que será criado com base nos dados do banco
+const createStatusFormSchema = (statusGeral: string[], statusVisaoGP: string[], niveisRisco: string[]) => {
+  // Usar valores padrão se as listas não estiverem carregadas ainda
+  const statusGeralOptions = statusGeral.length > 0 ? statusGeral : [
+    'Aguardando Aprovação', 'Aguardando Homologação', 'Cancelado', 'Concluído', 
+    'Em Andamento', 'Em Especificação', 'Pausado', 'Planejamento'
+  ];
+  
+  const statusVisaoGPOptions = statusVisaoGP.length > 0 ? statusVisaoGP : ['Verde', 'Amarelo', 'Vermelho'];
+  
+  const niveisRiscoOptions = niveisRisco.length > 0 ? niveisRisco : ['Baixo', 'Médio', 'Alto'];
+  
+  return z.object({
+    projeto_id: z.number().min(1, "Selecione um projeto"),
+    data_status: z.union([
+      z.string().min(1, "Selecione a data do status"),
+      z.date()
+    ]).transform((val) => {
+      if (typeof val === 'string') return val;
+      // Converter Date para string no formato YYYY-MM-DD sem timezone
+      const year = val.getFullYear();
+      const month = String(val.getMonth() + 1).padStart(2, '0');
+      const day = String(val.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }),
+    status_geral: z.enum(statusGeralOptions as [string, ...string[]], {
+      required_error: "Selecione o status geral do projeto",
+    }),
+    status_visao_gp: z.enum(statusVisaoGPOptions as [string, ...string[]], {
+      required_error: "Selecione a visão do chefe do projeto",
+    }),
+    progresso_estimado: z.number().min(0, "O progresso deve ser no mínimo 0%").max(100, "O progresso deve ser no máximo 100%"),
+    probabilidade_riscos: z.enum(niveisRiscoOptions as [string, ...string[]], {
+      required_error: "Selecione a probabilidade de riscos",
+    }),
+    impacto_riscos: z.enum(niveisRiscoOptions as [string, ...string[]], {
+      required_error: "Selecione o impacto dos riscos",
+    }),
+    entregas_realizadas: z.string().optional().default(""),
+    backlog: z.string().optional(),
+    bloqueios_atuais: z.string().optional(),
+    observacoes_gerais: z.string().optional(),
+  });
+};
 
 export function useNovoStatusForm() {
   const { usuario } = useAuth();
@@ -40,6 +63,11 @@ export function useNovoStatusForm() {
   const queryClient = useQueryClient();
   const { log } = useLogger();
   const [searchParams] = useSearchParams();
+  
+  // Buscar listas de valores para validação dinâmica
+  const { data: statusGeral = [], isLoading: isLoadingStatusGeral } = useStatusGeral();
+  const { data: statusVisaoGP = [], isLoading: isLoadingStatusVisaoGP } = useStatusVisaoGP();
+  const { data: niveisRisco = [], isLoading: isLoadingNiveisRisco } = useNiveisRisco();
   
   const [carteiraSelecionada, setCarteiraSelecionada] = useState('');
   const [projetoSelecionado, setProjetoSelecionado] = useState<number | null>(null);
@@ -51,17 +79,44 @@ export function useNovoStatusForm() {
   // Verificar se há um projeto especificado na URL
   const projetoIdFromUrl = searchParams.get('projeto');
 
+  // Verificar se todas as listas foram carregadas
+  const isLoadingListas = isLoadingStatusGeral || isLoadingStatusVisaoGP || isLoadingNiveisRisco;
+  
+  // Criar schema dinâmico quando as listas estiverem carregadas
+  const statusFormSchema = createStatusFormSchema(statusGeral, statusVisaoGP, niveisRisco);
+  type StatusFormData = z.infer<typeof statusFormSchema>;
+
+  console.log('📊 Status do carregamento das listas:', {
+    statusGeral: statusGeral.length,
+    statusVisaoGP: statusVisaoGP.length,
+    niveisRisco: niveisRisco.length,
+    isLoadingListas
+  });
+
   const form = useForm<StatusFormData>({
     resolver: zodResolver(statusFormSchema),
     defaultValues: {
-      data_status: new Date().toISOString().split('T')[0],
+      projeto_id: 0,
+      data_status: (() => {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      })(),
+      status_geral: '',
+      status_visao_gp: '',
       progresso_estimado: 0,
+      probabilidade_riscos: '',
+      impacto_riscos: '',
       entregas_realizadas: '',
       backlog: '',
       bloqueios_atuais: '',
       observacoes_gerais: '',
     },
   });
+
+
 
   // Buscar último status do projeto quando projetoSelecionado ou projetoIdFromUrl mudar
   const { data: ultimoStatus } = useQuery({
@@ -99,7 +154,7 @@ export function useNovoStatusForm() {
 
   // Pré-preencher formulário quando último status for carregado
   useEffect(() => {
-    if (ultimoStatus) {
+    if (ultimoStatus && ultimoStatus.id) {
       console.log('🔄 Preenchendo formulário com dados do último status');
       
       // Definir carteira e projeto
@@ -169,7 +224,7 @@ export function useNovoStatusForm() {
 
       console.log('✅ Formulário preenchido com sucesso');
     }
-  }, [ultimoStatus, form]);
+  }, [ultimoStatus?.id]);
 
   // Pré-selecionar projeto se especificado na URL
   useEffect(() => {
@@ -178,19 +233,35 @@ export function useNovoStatusForm() {
       setProjetoSelecionado(projetoId);
       form.setValue('projeto_id', projetoId);
     }
-  }, [projetoIdFromUrl, projetoSelecionado, form]);
+  }, [projetoIdFromUrl]);
 
   const mutation = useMutation({
     mutationFn: async (data: StatusFormData) => {
-      if (!usuario || !projetoSelecionado) {
-        throw new Error('Usuário não autenticado ou projeto não selecionado');
+      console.log('🚀 INICIANDO MUTATION - Dados recebidos:', data);
+      console.log('👤 Usuário atual:', usuario);
+      console.log('🎯 Projeto selecionado ID:', projetoSelecionado);
+      
+      if (!usuario) {
+        throw new Error('Você precisa estar logado para criar um status');
+      }
+
+      if (!projetoSelecionado) {
+        throw new Error('Selecione um projeto antes de continuar');
       }
 
       // Validar primeira entrega
       const primeiraEntrega = entregas[0];
+      console.log('🎯 Validando primeira entrega:', primeiraEntrega);
+      
       if (!primeiraEntrega?.nome || !primeiraEntrega?.entregaveis) {
-        throw new Error('A primeira entrega é obrigatória');
+        console.error('❌ Primeira entrega inválida:', {
+          nome: primeiraEntrega?.nome,
+          entregaveis: primeiraEntrega?.entregaveis
+        });
+        throw new Error('Preencha pelo menos a primeira entrega com nome e entregáveis');
       }
+      
+      console.log('✅ Primeira entrega válida');
 
       console.log('📝 Criando status:', data);
 
@@ -203,29 +274,94 @@ export function useNovoStatusForm() {
 
       if (projetoError) {
         console.error('Erro ao buscar projeto:', projetoError);
-        throw projetoError;
+        throw new Error('Não foi possível encontrar as informações do projeto selecionado');
       }
+
+      // Mapeamento dinâmico baseado nos ENUMs reais do banco
+      const enumsValidos = {
+        status_geral: ['Aguardando Aprovação', 'Aguardando Homologação', 'Cancelado', 'Concluído', 'Em Andamento', 'Em Especificação', 'Pausado', 'Planejamento'],
+        status_visao_gp: ['Verde', 'Amarelo', 'Vermelho'],
+        nivel_risco: ['Baixo', 'Médio', 'Alto']
+      };
+
+      // Função inteligente de mapeamento que tenta encontrar correspondência
+      const mapearValorInteligente = (valor: string, enumsValidos: string[]): string => {
+        // Se o valor exato existe, usa ele
+        if (enumsValidos.includes(valor)) {
+          return valor;
+        }
+        
+        // Tenta encontrar correspondência por similaridade (case-insensitive)
+        const valorLower = valor.toLowerCase();
+        const match = enumsValidos.find(enumVal => 
+          enumVal.toLowerCase() === valorLower || 
+          enumVal.toLowerCase().includes(valorLower) ||
+          valorLower.includes(enumVal.toLowerCase())
+        );
+        
+        if (match) {
+          console.log(`🔄 Mapeamento automático: "${valor}" → "${match}"`);
+          return match;
+        }
+        
+        // Mapeamentos especiais conhecidos (para compatibilidade)
+        const mapeamentosEspeciais: Record<string, string> = {
+          'Em Planejamento': 'Planejamento',
+          'Planejando': 'Planejamento',
+          'Planning': 'Planejamento'
+        };
+        
+        if (mapeamentosEspeciais[valor]) {
+          const valorMapeado = mapeamentosEspeciais[valor];
+          if (enumsValidos.includes(valorMapeado)) {
+            console.log(`🔄 Mapeamento especial: "${valor}" → "${valorMapeado}"`);
+            return valorMapeado;
+          }
+        }
+        
+        // Se não encontrou correspondência, mantém o valor original e avisa
+        console.warn(`⚠️ Valor "${valor}" não encontrou correspondência nos ENUMs válidos:`, enumsValidos);
+        return valor;
+      };
 
       const statusData = {
         projeto_id: projetoSelecionado,
         data_atualizacao: data.data_status,
-        status_geral: data.status_geral,
-        status_visao_gp: data.status_visao_gp,
+        status_geral: mapearValorInteligente(data.status_geral, enumsValidos.status_geral) as Database['public']['Enums']['status_geral'],
+        status_visao_gp: mapearValorInteligente(data.status_visao_gp, enumsValidos.status_visao_gp) as Database['public']['Enums']['status_visao_gp'],
         progresso_estimado: progressoEstimado,
-        probabilidade_riscos: data.probabilidade_riscos,
-        impacto_riscos: data.impacto_riscos,
-        realizado_semana_atual: data.entregas_realizadas,
+        probabilidade_riscos: mapearValorInteligente(data.probabilidade_riscos, enumsValidos.nivel_risco) as Database['public']['Enums']['nivel_risco'],
+        impacto_riscos: mapearValorInteligente(data.impacto_riscos, enumsValidos.nivel_risco) as Database['public']['Enums']['nivel_risco'],
+        realizado_semana_atual: data.entregas_realizadas || 'Atualização de status regular - sem itens específicos',
         backlog: data.backlog || null,
         bloqueios_atuais: data.bloqueios_atuais || null,
         observacoes_pontos_atencao: data.observacoes_gerais || null,
         entrega1: entregas[0]?.nome || null,
-        data_marco1: entregas[0]?.data ? entregas[0].data.toISOString().split('T')[0] : null,
+        data_marco1: entregas[0]?.data ? (() => {
+          const date = entregas[0].data;
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const day = String(date.getDate()).padStart(2, '0');
+          return `${year}-${month}-${day}`;
+        })() : null,
         entregaveis1: entregas[0]?.entregaveis || null,
         entrega2: entregas[1]?.nome || null,
-        data_marco2: entregas[1]?.data ? entregas[1].data.toISOString().split('T')[0] : null,
+        data_marco2: entregas[1]?.data ? (() => {
+          const date = entregas[1].data;
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const day = String(date.getDate()).padStart(2, '0');
+          return `${year}-${month}-${day}`;
+        })() : null,
         entregaveis2: entregas[1]?.entregaveis || null,
         entrega3: entregas[2]?.nome || null,
-        data_marco3: entregas[2]?.data ? entregas[2].data.toISOString().split('T')[0] : null,
+        data_marco3: entregas[2]?.data ? (() => {
+          const date = entregas[2].data;
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const day = String(date.getDate()).padStart(2, '0');
+          return `${year}-${month}-${day}`;
+        })() : null,
         entregaveis3: entregas[2]?.entregaveis || null,
         criado_por: usuario.nome,
         responsavel_asa: projeto.responsavel_asa,
@@ -236,6 +372,67 @@ export function useNovoStatusForm() {
         carteira_terciaria: projeto.carteira_terciaria,
       };
 
+      console.log('📋 Dados que serão enviados para o Supabase:', statusData);
+      console.log('🎯 Projeto completo:', projeto);
+      
+      // Validar dados críticos antes de enviar
+      const camposObrigatorios = {
+        projeto_id: statusData.projeto_id,
+        data_atualizacao: statusData.data_atualizacao,
+        status_geral: statusData.status_geral,
+        status_visao_gp: statusData.status_visao_gp,
+        probabilidade_riscos: statusData.probabilidade_riscos,
+        impacto_riscos: statusData.impacto_riscos,
+        criado_por: statusData.criado_por
+      };
+      
+      console.log('🔍 Validando campos obrigatórios:', camposObrigatorios);
+      
+      // Log detalhado dos valores ENUM para debug
+      console.log('🔍 Debug ENUM Values:');
+      console.log('  - status_geral original:', data.status_geral, '→ mapeado:', statusData.status_geral);
+      console.log('  - status_visao_gp original:', data.status_visao_gp, '→ mapeado:', statusData.status_visao_gp);
+      console.log('  - probabilidade_riscos original:', data.probabilidade_riscos, '→ mapeado:', statusData.probabilidade_riscos);
+      console.log('  - impacto_riscos original:', data.impacto_riscos, '→ mapeado:', statusData.impacto_riscos);
+      
+      // ⚠️ IMPORTANTE: Se você alterar nomes na administração que não correspondem aos ENUMs do banco,
+      // adicione-os na seção 'mapeamentosEspeciais' acima para garantir compatibilidade.
+      // 
+      // Os ENUMs do banco são fixos e definidos nas migrações SQL:
+      // - status_geral: ['Aguardando Aprovação', 'Aguardando Homologação', 'Cancelado', 'Concluído', 'Em Andamento', 'Em Especificação', 'Pausado', 'Planejamento']
+      // - status_visao_gp: ['Verde', 'Amarelo', 'Vermelho'] 
+      // - nivel_risco: ['Baixo', 'Médio', 'Alto']
+      
+      // Verificar se os valores correspondem aos ENUMs esperados
+      console.log('🎯 Validação ENUM:');
+      console.log('  - status_geral válido:', enumsValidos.status_geral.includes(statusData.status_geral));
+      console.log('  - status_visao_gp válido:', enumsValidos.status_visao_gp.includes(statusData.status_visao_gp));
+      console.log('  - probabilidade_riscos válido:', enumsValidos.nivel_risco.includes(statusData.probabilidade_riscos));
+      console.log('  - impacto_riscos válido:', enumsValidos.nivel_risco.includes(statusData.impacto_riscos));
+      
+      // Validar ENUMs antes de enviar
+      if (!enumsValidos.status_geral.includes(statusData.status_geral)) {
+        throw new Error(`Status geral inválido: "${statusData.status_geral}". Valores aceitos: ${enumsValidos.status_geral.join(', ')}`);
+      }
+      if (!enumsValidos.status_visao_gp.includes(statusData.status_visao_gp)) {
+        throw new Error(`Status visão GP inválido: "${statusData.status_visao_gp}". Valores aceitos: ${enumsValidos.status_visao_gp.join(', ')}`);
+      }
+      if (!enumsValidos.nivel_risco.includes(statusData.probabilidade_riscos)) {
+        throw new Error(`Probabilidade de risco inválida: "${statusData.probabilidade_riscos}". Valores aceitos: ${enumsValidos.nivel_risco.join(', ')}`);
+      }
+      if (!enumsValidos.nivel_risco.includes(statusData.impacto_riscos)) {
+        throw new Error(`Impacto de risco inválido: "${statusData.impacto_riscos}". Valores aceitos: ${enumsValidos.nivel_risco.join(', ')}`);
+      }
+      
+      console.log('✅ Todas as validações ENUM passaram');
+      
+      for (const [campo, valor] of Object.entries(camposObrigatorios)) {
+        if (!valor && valor !== 0) {
+          console.error(`❌ Campo obrigatório vazio: ${campo} = ${valor}`);
+          throw new Error(`Campo obrigatório não preenchido: ${campo}`);
+        }
+      }
+
       const { data: novoStatus, error } = await supabase
         .from('status_projeto')
         .insert(statusData)
@@ -243,8 +440,25 @@ export function useNovoStatusForm() {
         .single();
 
       if (error) {
-        console.error('Erro ao criar status:', error);
-        throw error;
+        console.error('❌ ERRO DETALHADO DO SUPABASE:', error);
+        console.error('❌ Error message:', error.message);
+        console.error('❌ Error details:', error.details);
+        console.error('❌ Error hint:', error.hint);
+        console.error('❌ Error code:', error.code);
+        console.error('❌ Full error object:', JSON.stringify(error, null, 2));
+        console.error('❌ Status data que causou erro:', JSON.stringify(statusData, null, 2));
+        
+        if (error.message?.includes('duplicate key')) {
+          throw new Error('Já existe um status para este projeto nesta data. Escolha uma data diferente.');
+        } else if (error.message?.includes('foreign key')) {
+          throw new Error('Erro de referência: verifique se o projeto selecionado ainda existe.');
+        } else if (error.message?.includes('violates check constraint')) {
+          throw new Error('Dados inválidos: verifique se todos os campos estão preenchidos corretamente.');
+        } else if (error.message?.includes('enum')) {
+          throw new Error(`Valor inválido de enum: ${error.message}`);
+        } else {
+          throw new Error(`Erro do banco: ${error.message || 'Não foi possível salvar o status.'}`);
+        }
       }
 
       console.log('✅ Status criado com sucesso:', novoStatus);
@@ -259,7 +473,13 @@ export function useNovoStatusForm() {
               .insert({
                 status_id: novoStatus.id,
                 nome_entrega: entrega.nome,
-                data_entrega: entrega.data ? entrega.data.toISOString().split('T')[0] : null,
+                data_entrega: entrega.data ? (() => {
+                  const date = entrega.data;
+                  const year = date.getFullYear();
+                  const month = String(date.getMonth() + 1).padStart(2, '0');
+                  const day = String(date.getDate()).padStart(2, '0');
+                  return `${year}-${month}-${day}`;
+                })() : null,
                 entregaveis: entrega.entregaveis,
                 ordem: entregas.indexOf(entrega) + 1
               });
@@ -288,7 +508,7 @@ export function useNovoStatusForm() {
       queryClient.invalidateQueries({ queryKey: ['status-projetos'] });
       queryClient.invalidateQueries({ queryKey: ['status-list'] });
       toast({
-        title: "Sucesso",
+        title: "Sucesso!",
         description: "Status criado com sucesso!",
       });
       navigate('/status');
@@ -296,8 +516,8 @@ export function useNovoStatusForm() {
     onError: (error) => {
       console.error('Erro ao criar status:', error);
       toast({
-        title: "Erro",
-        description: error.message || "Erro ao criar status. Tente novamente.",
+        title: "Erro ao salvar status",
+        description: error.message || "Ocorreu um erro inesperado. Verifique os dados preenchidos e tente novamente.",
         variant: "destructive",
       });
     },
@@ -320,12 +540,44 @@ export function useNovoStatusForm() {
   };
 
   const onSubmit = (data: StatusFormData) => {
+    console.log('🎯 BOTÃO SALVAR CLICADO! Iniciando processo de submissão...');
+    console.log('🚀 Iniciando submit do formulário');
+    console.log('📊 Dados do formulário:', data);
+    console.log('📋 Listas de valores:', { statusGeral, statusVisaoGP, niveisRisco });
+    console.log('🎯 Projeto selecionado:', projetoSelecionado);
+    console.log('📦 Entregas:', entregas);
+    
+    // Verificar se o schema foi criado corretamente
+    try {
+      const validationResult = statusFormSchema.safeParse(data);
+      if (!validationResult.success) {
+        console.error('❌ Erro de validação do schema:', validationResult.error);
+        console.error('❌ Detalhes dos erros:', validationResult.error.issues);
+        toast({
+          title: "Erro de validação",
+          description: `Campos com erro: ${validationResult.error.issues.map(issue => issue.path.join('.')).join(', ')}`,
+          variant: "destructive",
+        });
+        return;
+      }
+      console.log('✅ Validação do schema passou');
+    } catch (schemaError) {
+      console.error('❌ Erro ao validar schema:', schemaError);
+      toast({
+        title: "Erro interno",
+        description: "Erro na validação dos dados. Recarregue a página e tente novamente.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     mutation.mutate(data);
   };
 
   return {
     form,
     isLoading: mutation.isPending,
+    isLoadingListas,
     onSubmit,
     projetoSelecionado,
     carteiraSelecionada,

@@ -136,14 +136,14 @@ export function ProjetoInfoGerais({ projeto }: ProjetoInfoGeraisProps) {
               <p className="text-base text-gray-900">{projeto.area_responsavel}</p>
             </div>
 
-            {projeto.carteira_secundaria && (
+            {projeto.carteira_secundaria && projeto.carteira_secundaria !== 'none' && (
               <div>
                 <label className="text-base font-medium text-pmo-gray block mb-4">Carteira Secundária</label>
                 <p className="text-base text-gray-900">{projeto.carteira_secundaria}</p>
               </div>
             )}
 
-            {projeto.carteira_terciaria && (
+            {projeto.carteira_terciaria && projeto.carteira_terciaria !== 'none' && (
               <div>
                 <label className="text-base font-medium text-pmo-gray block mb-4">Carteira Terciária</label>
                 <p className="text-base text-gray-900">{projeto.carteira_terciaria}</p>

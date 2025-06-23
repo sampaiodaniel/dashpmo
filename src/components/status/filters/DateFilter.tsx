@@ -4,7 +4,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { Calendar } from 'lucide-react';
+import { Calendar, X } from 'lucide-react';
 import { StatusFilters, updateFilter } from './FilterUtils';
 
 interface DateFilterProps {
@@ -23,6 +23,16 @@ export function DateFilter({ filtros, onFiltroChange }: DateFilterProps) {
     onFiltroChange(novosFiltros);
   };
 
+  const handleClearDataInicio = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    handleDataInicioChange(undefined);
+  };
+
+  const handleClearDataFim = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    handleDataFimChange(undefined);
+  };
+
   return (
     <>
       <div className="flex items-center gap-2">
@@ -32,12 +42,21 @@ export function DateFilter({ filtros, onFiltroChange }: DateFilterProps) {
             <Button
               variant="outline"
               className={cn(
-                "w-40 justify-start text-left font-normal",
+                "w-40 justify-start text-left font-normal relative",
                 !filtros.dataInicio && "text-muted-foreground"
               )}
             >
               <Calendar className="mr-2 h-4 w-4" />
               {filtros.dataInicio ? format(filtros.dataInicio, "dd/MM/yyyy") : "Selecionar"}
+              {filtros.dataInicio && (
+                <div 
+                  className="ml-auto cursor-pointer" 
+                  onClick={handleClearDataInicio}
+                  title="Limpar data"
+                >
+                  <X className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                </div>
+              )}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
@@ -48,6 +67,18 @@ export function DateFilter({ filtros, onFiltroChange }: DateFilterProps) {
               initialFocus
               className="pointer-events-auto"
             />
+            {filtros.dataInicio && (
+              <div className="p-3 border-t">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => handleDataInicioChange(undefined)}
+                >
+                  Limpar data
+                </Button>
+              </div>
+            )}
           </PopoverContent>
         </Popover>
       </div>
@@ -59,12 +90,21 @@ export function DateFilter({ filtros, onFiltroChange }: DateFilterProps) {
             <Button
               variant="outline"
               className={cn(
-                "w-40 justify-start text-left font-normal",
+                "w-40 justify-start text-left font-normal relative",
                 !filtros.dataFim && "text-muted-foreground"
               )}
             >
               <Calendar className="mr-2 h-4 w-4" />
               {filtros.dataFim ? format(filtros.dataFim, "dd/MM/yyyy") : "Selecionar"}
+              {filtros.dataFim && (
+                <div 
+                  className="ml-auto cursor-pointer" 
+                  onClick={handleClearDataFim}
+                  title="Limpar data"
+                >
+                  <X className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                </div>
+              )}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
@@ -75,6 +115,18 @@ export function DateFilter({ filtros, onFiltroChange }: DateFilterProps) {
               initialFocus
               className="pointer-events-auto"
             />
+            {filtros.dataFim && (
+              <div className="p-3 border-t">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => handleDataFimChange(undefined)}
+                >
+                  Limpar data
+                </Button>
+              </div>
+            )}
           </PopoverContent>
         </Popover>
       </div>

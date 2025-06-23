@@ -2,6 +2,20 @@
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
+// Função para converter data string sem timezone
+export function criarDataSemTimezone(dataString: string): Date {
+  if (!dataString) return new Date();
+  
+  // Se for no formato YYYY-MM-DD, criar Date manualmente
+  if (dataString.includes('-') && !dataString.includes('T')) {
+    const [year, month, day] = dataString.split('-').map(Number);
+    return new Date(year, month - 1, day); // month - 1 porque Date usa 0-11
+  }
+  
+  // Para outros formatos, usar Date normal
+  return new Date(dataString);
+}
+
 // Função para formatar datas - suporta string 'TBD' e datas
 export function formatarData(data: any): string {
   if (!data) return 'TBD (A definir)';
