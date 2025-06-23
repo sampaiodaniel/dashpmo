@@ -11,6 +11,14 @@ node_modules
 dist
 dist-ssr
 *.local
+.vite
+package-lock.json
+bun.lockb
+
+# Cache e temporários
+.cache/
+temp/
+tmp/
 
 # Editor directories and files
 .vscode/*

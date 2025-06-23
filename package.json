@@ -5,10 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:switch": "rimraf node_modules .vite dist package-lock.json bun.lockb && npm install && npm run dev",
+    "dev:clean": "rimraf node_modules .vite dist package-lock.json bun.lockb && npm install && npm run dev",
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "clean": "rimraf node_modules .vite dist package-lock.json bun.lockb",
+    "fresh": "npm run clean && npm install",
+    "emergency": "npm run clean && npm cache clean --force && npm install"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
@@ -78,6 +83,7 @@
     "globals": "^15.9.0",
     "lovable-tagger": "^1.1.7",
     "postcss": "^8.4.47",
+    "rimraf": "^6.0.1",
     "tailwindcss": "^3.4.11",
     "terser": "^5.43.1",
     "typescript": "^5.5.3",
