@@ -73,18 +73,12 @@ export function ProximasEntregasSection({ status }: ProximasEntregasSectionProps
     });
   });
 
-  // Remover duplicatas baseado em critérios mais específicos
+  // Remover duplicatas considerando nome, data e entregáveis
   const entregasUnicas = entregas.filter((entrega, index, arr) => {
-    // Para entregas principais, usar ordem como identificador único
-    if (entrega.tipo === 'principal') {
-      return arr.findIndex(e => e.tipo === 'principal' && e.ordem === entrega.ordem) === index;
-    }
-    
-    // Para entregas extras, usar nome + data como identificador único
     return arr.findIndex(e => 
-      e.tipo === 'extra' && 
       e.nome === entrega.nome && 
-      e.data === entrega.data
+      e.data === entrega.data && 
+      e.entregaveis === entrega.entregaveis
     ) === index;
   });
 
