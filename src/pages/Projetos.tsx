@@ -166,7 +166,10 @@ export default function Projetos() {
                       <div className="flex items-center gap-4 text-sm text-gray-600">
                         <div className="flex items-center gap-1">
                           <Calendar className="h-4 w-4" />
-                          {formatarData(projeto.data_criacao)}
+                          {projeto.ultimoStatus ? 
+                            formatarData(projeto.ultimoStatus.data_atualizacao) : 
+                            formatarData(projeto.data_criacao)
+                          }
                         </div>
                         <Badge variant={projeto.status_ativo ? "default" : "secondary"}>
                           {projeto.status_ativo ? "Ativo" : "Inativo"}
@@ -208,15 +211,20 @@ export default function Projetos() {
                               <span className="text-gray-600">Progresso:</span>
                               <div className="font-medium">{(projeto.ultimoStatus as any).progresso_estimado || 0}%</div>
                             </div>
-                            <Badge 
-                              className={`ml-2 ${
-                                projeto.ultimoStatus.aprovado 
-                                  ? "bg-green-100 text-green-800" 
-                                  : "bg-yellow-100 text-yellow-800"
-                              }`}
-                            >
-                              {projeto.ultimoStatus.aprovado ? "Revisado" : "Em Revisão"}
-                            </Badge>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-gray-500">
+                                {formatarData(projeto.ultimoStatus.data_atualizacao)}
+                              </span>
+                              <Badge 
+                                className={`${
+                                  projeto.ultimoStatus.aprovado 
+                                    ? "bg-green-100 text-green-800" 
+                                    : "bg-yellow-100 text-yellow-800"
+                                }`}
+                              >
+                                {projeto.ultimoStatus.aprovado ? "Revisado" : "Em Revisão"}
+                              </Badge>
+                            </div>
                           </div>
                         </div>
                       </div>

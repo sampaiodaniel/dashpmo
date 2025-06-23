@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { LicaoAprendida, CategoriaLicao, StatusAplicacao } from '@/types/pmo';
+import { formatarDataParaBanco } from '@/utils/dateFormatting';
 
 export function useLicoesAprendidas() {
   return useQuery({
@@ -40,7 +41,7 @@ export function useLicoesOperations() {
       const dataToInsert = {
         ...licaoData,
         data_registro: licaoData.data_registro instanceof Date 
-          ? licaoData.data_registro.toISOString().split('T')[0]
+          ? formatarDataParaBanco(licaoData.data_registro)
           : licaoData.data_registro,
         // Mapear status_aplicacao para valores aceitos pelo banco
         status_aplicacao: licaoData.status_aplicacao === 'Em andamento' ? 'Não aplicada' : licaoData.status_aplicacao
@@ -88,7 +89,7 @@ export function useLicoesOperations() {
       
       if (updates.data_registro) {
         dataToUpdate.data_registro = updates.data_registro instanceof Date 
-          ? updates.data_registro.toISOString().split('T')[0]
+          ? formatarDataParaBanco(updates.data_registro)
           : updates.data_registro;
       }
       

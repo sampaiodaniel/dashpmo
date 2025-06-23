@@ -3,6 +3,7 @@ import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Projeto } from '@/types/pmo';
 import { useQueryClient } from '@tanstack/react-query';
+import { formatarDataParaBanco } from '@/utils/dateFormatting';
 
 interface UseEditarProjetoFormProps {
   projeto: Projeto;
@@ -82,9 +83,7 @@ export function useEditarProjetoForm({ projeto, onSuccess }: UseEditarProjetoFor
         carteira_secundaria: formData.carteira_secundaria || null,
         carteira_terciaria: formData.carteira_terciaria || null,
         equipe: formData.equipe.trim() || null,
-        finalizacao_prevista: formData.finalizacao_prevista 
-          ? formData.finalizacao_prevista.toISOString().split('T')[0] 
-          : null,
+        finalizacao_prevista: formatarDataParaBanco(formData.finalizacao_prevista),
         // Manter os campos obrigatórios do banco com valores derivados dos novos campos
         area_responsavel: (formData.carteira_primaria || 'Cadastro') as any,
         responsavel_interno: formData.responsavel_asa || 'Admin',

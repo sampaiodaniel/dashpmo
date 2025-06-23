@@ -1,8 +1,8 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { MudancaReplanejamento, TipoMudanca, StatusAprovacao } from '@/types/pmo';
+import { formatarDataParaBanco } from '@/utils/dateFormatting';
 
 // Mapeamento para tipos aceitos pelo banco
 const tipoMudancaMap: Record<TipoMudanca, string> = {
@@ -73,11 +73,11 @@ export function useMudancasOperations() {
         ...cleanData,
         tipo_mudanca: validatedTipo,
         data_solicitacao: cleanData.data_solicitacao instanceof Date 
-          ? cleanData.data_solicitacao.toISOString().split('T')[0]
+          ? formatarDataParaBanco(cleanData.data_solicitacao)
           : cleanData.data_solicitacao,
         data_aprovacao: cleanData.data_aprovacao 
           ? (cleanData.data_aprovacao instanceof Date
-              ? cleanData.data_aprovacao.toISOString().split('T')[0]
+              ? formatarDataParaBanco(cleanData.data_aprovacao)
               : cleanData.data_aprovacao)
           : undefined
       };
@@ -134,13 +134,13 @@ export function useMudancasOperations() {
       
       if (cleanUpdates.data_solicitacao) {
         dataToUpdate.data_solicitacao = cleanUpdates.data_solicitacao instanceof Date 
-          ? cleanUpdates.data_solicitacao.toISOString().split('T')[0]
+          ? formatarDataParaBanco(cleanUpdates.data_solicitacao)
           : cleanUpdates.data_solicitacao;
       }
       
       if (cleanUpdates.data_aprovacao) {
         dataToUpdate.data_aprovacao = cleanUpdates.data_aprovacao instanceof Date 
-          ? cleanUpdates.data_aprovacao.toISOString().split('T')[0]
+          ? formatarDataParaBanco(cleanUpdates.data_aprovacao)
           : cleanUpdates.data_aprovacao;
       }
 

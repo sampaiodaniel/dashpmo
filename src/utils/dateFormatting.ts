@@ -1,4 +1,3 @@
-
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -14,6 +13,16 @@ export function criarDataSemTimezone(dataString: string): Date {
   
   // Para outros formatos, usar Date normal
   return new Date(dataString);
+}
+
+// Função para formatar data para o banco de dados (YYYY-MM-DD) sem problemas de timezone
+export function formatarDataParaBanco(data: Date | null): string | null {
+  if (!data) return null;
+  
+  const year = data.getFullYear();
+  const month = String(data.getMonth() + 1).padStart(2, '0');
+  const day = String(data.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 // Função para formatar datas - suporta string 'TBD' e datas

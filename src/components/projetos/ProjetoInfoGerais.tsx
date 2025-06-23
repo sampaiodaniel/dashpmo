@@ -11,6 +11,9 @@ interface ProjetoInfoGeraisProps {
 export function ProjetoInfoGerais({ projeto }: ProjetoInfoGeraisProps) {
   const { data: tiposProjeto } = useTiposProjeto();
 
+  console.log('🔍 ProjetoInfoGerais - projeto:', projeto?.nome_projeto);
+  console.log('🔍 ProjetoInfoGerais - tiposProjeto length:', tiposProjeto?.length);
+
   // Função para formatar a data de finalização ou mostrar TBD
   const formatarFinalizacaoPrevista = (finalizacaoPrevista: string | null) => {
     if (!finalizacaoPrevista) {
@@ -31,6 +34,7 @@ export function ProjetoInfoGerais({ projeto }: ProjetoInfoGeraisProps) {
 
   // Buscar o nome do tipo de projeto
   const tipoProjeto = tiposProjeto?.find(tipo => tipo.id === projeto.tipo_projeto_id);
+  console.log('🔍 ProjetoInfoGerais - tipoProjeto encontrado:', tipoProjeto?.nome);
 
   return (
     <div className="space-y-12">

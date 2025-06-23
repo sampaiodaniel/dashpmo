@@ -13,10 +13,13 @@ interface ProjetoStatusProps {
 export function ProjetoStatus({ projeto }: ProjetoStatusProps) {
   const navigate = useNavigate();
   
+  console.log('🔍 ProjetoStatus - projeto:', projeto?.nome_projeto);
+  
   // Buscar o último status, mesmo que não revisado
   const { data: ultimoStatus } = useQuery({
     queryKey: ['ultimo-status', projeto.id],
     queryFn: async () => {
+      console.log('🔍 ProjetoStatus - Buscando último status para projeto:', projeto.id);
       const { data, error } = await supabase
         .from('status_projeto')
         .select('*')
@@ -32,6 +35,7 @@ export function ProjetoStatus({ projeto }: ProjetoStatusProps) {
 
       if (!data) return null;
 
+      console.log('🔍 ProjetoStatus - Último status encontrado:', data.id);
       return {
         ...data,
         data_atualizacao: new Date(data.data_atualizacao),
@@ -44,7 +48,12 @@ export function ProjetoStatus({ projeto }: ProjetoStatusProps) {
     },
   });
 
-  if (!ultimoStatus) return null;
+  console.log('🔍 ProjetoStatus - ultimoStatus:', ultimoStatus?.id);
+
+  if (!ultimoStatus) {
+    console.log('🔍 ProjetoStatus - Sem último status, retornando null');
+    return null;
+  }
 
   const handleVerDetalhes = () => {
     navigate(`/status/${ultimoStatus.id}`);

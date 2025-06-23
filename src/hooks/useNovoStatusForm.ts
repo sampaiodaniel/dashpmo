@@ -11,6 +11,7 @@ import { useState, useEffect } from 'react';
 import { useLogger } from '@/utils/logger';
 import { EntregaDinamica } from '@/components/forms/EntregasDinamicasNovo';
 import { useStatusGeral, useStatusVisaoGP, useNiveisRisco } from './useListaValores';
+import { calcularMatrizRisco } from '@/utils/riskMatrixCalculator';
 
 // Schema dinâmico que será criado com base nos dados do banco
 const createStatusFormSchema = (statusGeral: string[], statusVisaoGP: string[], niveisRisco: string[]) => {
@@ -60,9 +61,10 @@ const createStatusFormSchema = (statusGeral: string[], statusVisaoGP: string[], 
 export function useNovoStatusForm() {
   const { usuario } = useAuth();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const { log } = useLogger();
   const [searchParams] = useSearchParams();
+  const projetoIdFromUrl = searchParams.get('projeto');
+  const { log } = useLogger();
+  const queryClient = useQueryClient();
   
   // Buscar listas de valores para validação dinâmica
   const { data: statusGeral = [], isLoading: isLoadingStatusGeral } = useStatusGeral();
@@ -75,9 +77,6 @@ export function useNovoStatusForm() {
   const [entregas, setEntregas] = useState<EntregaDinamica[]>([
     { id: '1', nome: '', data: null, entregaveis: '' }
   ]);
-
-  // Verificar se há um projeto especificado na URL
-  const projetoIdFromUrl = searchParams.get('projeto');
 
   // Verificar se todas as listas foram carregadas
   const isLoadingListas = isLoadingStatusGeral || isLoadingStatusVisaoGP || isLoadingNiveisRisco;
@@ -119,7 +118,7 @@ export function useNovoStatusForm() {
 
 
   // Buscar último status do projeto quando projetoSelecionado ou projetoIdFromUrl mudar
-  const { data: ultimoStatus } = useQuery({
+  const { data: ultimoStatus, isLoading: isLoadingUltimoStatus, refetch: refetchUltimoStatus } = useQuery({
     queryKey: ['ultimo-status', projetoSelecionado || projetoIdFromUrl],
     queryFn: async () => {
       const projetoId = projetoSelecionado || (projetoIdFromUrl ? parseInt(projetoIdFromUrl) : null);
@@ -147,6 +146,11 @@ export function useNovoStatusForm() {
       return data;
     },
     enabled: !!(projetoSelecionado || projetoIdFromUrl),
+    staleTime: 0, // Sempre considerar dados como obsoletos
+    gcTime: 0, // Não manter cache
+    refetchOnMount: true, // Sempre refetch ao montar
+    refetchOnWindowFocus: false, // Não refetch quando foca na janela
+    retry: 1, // Tentar apenas uma vez se falhar
   });
 
   // Verificar se último status não foi validado
@@ -242,12 +246,61 @@ export function useNovoStatusForm() {
 
   // Pré-selecionar projeto se especificado na URL
   useEffect(() => {
-    if (projetoIdFromUrl && !projetoSelecionado) {
+    console.log('🔍 Verificando projetoIdFromUrl:', projetoIdFromUrl);
+    console.log('🔍 Projeto já selecionado:', projetoSelecionado);
+    
+    if (projetoIdFromUrl) {
       const projetoId = parseInt(projetoIdFromUrl);
-      setProjetoSelecionado(projetoId);
-      form.setValue('projeto_id', projetoId);
+      console.log('🎯 Definindo projeto da URL como selecionado:', projetoId);
+      
+      // Invalidar queries para garantir dados frescos
+      queryClient.invalidateQueries({ queryKey: ['projetos'] });
+      queryClient.invalidateQueries({ queryKey: ['ultimo-status', projetoId] });
+      
+      // Definir projeto imediatamente
+      if (projetoSelecionado !== projetoId) {
+        setProjetoSelecionado(projetoId);
+        form.setValue('projeto_id', projetoId);
+      }
     }
-  }, [projetoIdFromUrl]);
+  }, [projetoIdFromUrl, queryClient, form]);
+
+  // Segundo useEffect separado para garantir que a query seja refeita quando projeto muda
+  useEffect(() => {
+    if (projetoSelecionado && projetoIdFromUrl) {
+      const projetoId = parseInt(projetoIdFromUrl);
+      if (projetoSelecionado === projetoId) {
+        console.log('🔄 Forçando refetch do último status para projeto:', projetoId);
+        // Usar tanto invalidação quanto refetch direto
+        queryClient.invalidateQueries({ queryKey: ['ultimo-status', projetoId] });
+        refetchUltimoStatus();
+      }
+    }
+  }, [projetoSelecionado, projetoIdFromUrl, queryClient, refetchUltimoStatus]);
+
+  // Terceiro useEffect para garantir preenchimento quando navegando via URL
+  useEffect(() => {
+    if (projetoIdFromUrl && ultimoStatus && ultimoStatus.projeto) {
+      const projetoIdUrl = parseInt(projetoIdFromUrl);
+      if (ultimoStatus.projeto_id === projetoIdUrl) {
+        console.log('🎯 Forçando preenchimento do formulário via URL');
+        
+        // Definir carteira
+        const carteiraParaUsar = ultimoStatus.projeto?.carteira_primaria || ultimoStatus.projeto?.area_responsavel;
+        if (carteiraParaUsar && !carteiraSelecionada) {
+          console.log('🎯 Definindo carteira via URL:', carteiraParaUsar);
+          setCarteiraSelecionada(carteiraParaUsar);
+        }
+        
+        // Definir projeto se ainda não foi definido
+        if (!projetoSelecionado || projetoSelecionado !== projetoIdUrl) {
+          console.log('🎯 Definindo projeto via URL:', projetoIdUrl);
+          setProjetoSelecionado(projetoIdUrl);
+          form.setValue('projeto_id', projetoIdUrl);
+        }
+      }
+    }
+  }, [projetoIdFromUrl, ultimoStatus, carteiraSelecionada, projetoSelecionado, form]);
 
   const mutation = useMutation({
     mutationFn: async (data: StatusFormData) => {
