@@ -21,10 +21,10 @@ export function GraficoEvolutivoIncidentes({ carteiraFiltro, responsavelFiltro }
   
   // Estado para controlar quais linhas estão visíveis
   const [legendItems, setLegendItems] = useState<LegendItem[]>([
-    { key: 'entrada', name: 'Entrada', color: '#3b82f6', visible: true },
-    { key: 'atual', name: 'Atual', color: '#f59e0b', visible: true },
-    { key: 'saida', name: 'Saída', color: '#10b981', visible: true },
-    { key: 'criticos', name: 'Críticos', color: '#ef4444', visible: true }
+    { key: 'entrada', name: 'Entrada', color: '#10B981', visible: true },
+    { key: 'atual', name: 'Atual', color: '#1B365D', visible: true },
+    { key: 'saida', name: 'Saída', color: '#F59E0B', visible: true },
+    { key: 'criticos', name: 'Críticos', color: '#EF4444', visible: true }
   ]);
 
   const dadosGrafico = useMemo(() => {
@@ -107,7 +107,7 @@ export function GraficoEvolutivoIncidentes({ carteiraFiltro, responsavelFiltro }
                 <Line 
                   type="monotone" 
                   dataKey="entrada" 
-                  stroke="#3b82f6" 
+                  stroke="#10B981" 
                   strokeWidth={2}
                   dot={{ r: 4 }}
                   name="Entrada" 
@@ -117,7 +117,7 @@ export function GraficoEvolutivoIncidentes({ carteiraFiltro, responsavelFiltro }
                 <Line 
                   type="monotone" 
                   dataKey="atual" 
-                  stroke="#f59e0b" 
+                  stroke="#1B365D" 
                   strokeWidth={2}
                   dot={{ r: 4 }}
                   name="Atual" 
@@ -127,7 +127,7 @@ export function GraficoEvolutivoIncidentes({ carteiraFiltro, responsavelFiltro }
                 <Line 
                   type="monotone" 
                   dataKey="saida" 
-                  stroke="#10b981" 
+                  stroke="#F59E0B" 
                   strokeWidth={2}
                   dot={{ r: 4 }}
                   name="Saída" 
@@ -137,7 +137,7 @@ export function GraficoEvolutivoIncidentes({ carteiraFiltro, responsavelFiltro }
                 <Line 
                   type="monotone" 
                   dataKey="criticos" 
-                  stroke="#ef4444" 
+                  stroke="#EF4444" 
                   strokeWidth={2}
                   dot={{ r: 4 }}
                   name="Críticos" 

@@ -51,7 +51,7 @@ export function GraficoEvolutivoIncidentesRelatorio({ carteira }: GraficoEvoluti
     const value = payload[dataKey];
     const color = dataKey === 'estoqueAtual' ? '#1B365D' : 
                  dataKey === 'entradas' ? '#10B981' : 
-                 dataKey === 'saidas' ? '#2E5984' : '#EF4444';
+                 dataKey === 'saidas' ? '#F59E0B' : '#EF4444';
     
     return (
       <g>
@@ -136,7 +136,7 @@ export function GraficoEvolutivoIncidentesRelatorio({ carteira }: GraficoEvoluti
               <Line 
                 type="monotone" 
                 dataKey="saidas" 
-                stroke="#2E5984" 
+                stroke="#F59E0B" 
                 strokeWidth={2}
                 dot={<CustomDot dataKey="saidas" />}
                 strokeDasharray="5 5"
@@ -167,8 +167,8 @@ export function GraficoEvolutivoIncidentesRelatorio({ carteira }: GraficoEvoluti
             <span className="text-[#10B981] font-medium">Entradas</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-4 h-0.5 bg-[#2E5984] border-dashed border-t-2"></div>
-            <span className="text-[#2E5984] font-medium">Saídas</span>
+            <div className="w-4 h-0.5 bg-[#F59E0B] border-dashed border-t-2"></div>
+            <span className="text-[#F59E0B] font-medium">Saídas</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-0.5 bg-[#EF4444]"></div>

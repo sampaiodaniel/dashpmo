@@ -24,9 +24,10 @@ export function useProjetos(filtros?: FiltrosProjeto) {
         query = query.eq('status_ativo', true);
       }
 
-      // Aplicar filtro de projetos arquivados
+      // Aplicar filtro de projetos arquivados (apenas se o campo existir)
       if (!filtros?.incluirArquivados) {
-        query = query.or('arquivado.is.null,arquivado.eq.false');
+        // Por enquanto, não aplicar filtro de arquivados até a migração ser executada
+        // query = query.or('arquivado.is.null,arquivado.eq.false');
       }
 
       // Aplicar filtros

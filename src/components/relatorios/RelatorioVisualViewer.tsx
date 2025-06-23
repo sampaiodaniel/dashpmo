@@ -19,6 +19,48 @@ interface RelatorioVisualViewerProps {
   dados: DadosRelatorioVisual | null;
 }
 
+// Função para carregar html2pdf dinamicamente
+const loadHtml2Pdf = async (): Promise<any> => {
+  if (typeof window !== 'undefined' && window.html2pdf) {
+    return window.html2pdf;
+  }
+
+  // Carregamento dinâmico via import()
+  try {
+    const html2pdf = await import('html2pdf.js');
+    return html2pdf.default || html2pdf;
+  } catch (error) {
+    console.warn('Erro ao carregar html2pdf via import, tentando CDN...', error);
+    
+    // Fallback para CDN
+    return new Promise((resolve, reject) => {
+      if (window.html2pdf) {
+        resolve(window.html2pdf);
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+      script.async = true;
+      
+      script.onload = () => {
+        resolve(window.html2pdf);
+      };
+      
+      script.onerror = () => {
+        reject(new Error('Falha ao carregar html2pdf do CDN'));
+      };
+      
+      document.head.appendChild(script);
+      
+      // Timeout de segurança
+      setTimeout(() => {
+        reject(new Error('Timeout ao carregar html2pdf'));
+      }, 15000);
+    });
+  }
+};
+
 export function RelatorioVisualViewer({ isOpen, onClose, dados }: RelatorioVisualViewerProps) {
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -40,13 +82,11 @@ export function RelatorioVisualViewer({ isOpen, onClose, dados }: RelatorioVisua
         throw new Error('Elemento não encontrado');
       }
 
-      // Verificar se html2pdf está disponível ou carregar
-      if (!window.html2pdf) {
-        console.log('Carregando html2pdf...');
-        await loadHtml2Pdf();
-      }
+      // Carregar html2pdf dinamicamente
+      console.log('Carregando html2pdf...');
+      const html2pdf = await loadHtml2Pdf();
 
-      if (window.html2pdf) {
+      if (html2pdf) {
         console.log('Gerando PDF com html2pdf...');
         
         // Configuração específica para evitar duplicação de páginas
@@ -83,7 +123,7 @@ export function RelatorioVisualViewer({ isOpen, onClose, dados }: RelatorioVisua
         };
 
         // Gerar PDF de forma segura
-        const worker = window.html2pdf().set(opt).from(element);
+        const worker = html2pdf().set(opt).from(element);
         await worker.save();
         
         console.log('PDF gerado com sucesso!');
@@ -104,59 +144,19 @@ export function RelatorioVisualViewer({ isOpen, onClose, dados }: RelatorioVisua
     }
   }, [dados, isGeneratingPdf]);
 
-  const loadHtml2Pdf = useCallback((): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      if (window.html2pdf) {
-        resolve();
-        return;
-      }
-
-      // Limpar script anterior se existir
-      const existingScript = document.querySelector('script[src*="html2pdf"]');
-      if (existingScript) {
-        existingScript.remove();
-      }
-
-      const script = document.createElement('script');
-      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
-      script.async = true;
-      
-      script.onload = () => {
-        console.log('html2pdf carregado');
-        resolve();
-      };
-      
-      script.onerror = () => {
-        console.error('Erro ao carregar html2pdf');
-        reject(new Error('Falha ao carregar html2pdf'));
-      };
-      
-      document.head.appendChild(script);
-      
-      // Timeout de segurança
-      timeoutRef.current = setTimeout(() => {
-        reject(new Error('Timeout ao carregar html2pdf'));
-      }, 15000);
-    });
-  }, []);
-
   const handlePrintFallback = useCallback(() => {
-    console.log('Executando fallback de impressão...');
+    console.log('Usando fallback de impressão...');
     
-    const printStyles = `
+    // Criar estilos temporários para impressão
+    const tempStyle = document.createElement('style');
+    tempStyle.id = 'print-styles-temp';
+    tempStyle.innerHTML = `
       @media print {
-        * { 
-          -webkit-print-color-adjust: exact !important;
-          color-adjust: exact !important;
-          print-color-adjust: exact !important;
-        }
-        
         body * { 
           visibility: hidden; 
         }
         
-        #relatorio-content, 
-        #relatorio-content * { 
+        #relatorio-content, #relatorio-content * { 
           visibility: visible; 
         }
         
@@ -165,54 +165,22 @@ export function RelatorioVisualViewer({ isOpen, onClose, dados }: RelatorioVisua
           left: 0; 
           top: 0; 
           width: 100% !important;
-          max-width: none !important;
+          background: white !important;
+          padding: 20px !important;
           margin: 0 !important;
-          padding: 15px !important;
-          box-shadow: none !important;
-          border: none !important;
         }
         
-        .no-print, 
-        button, 
-        .cursor-pointer,
-        [data-radix-collection-item] { 
+        .no-print { 
           display: none !important; 
         }
         
-        .break-inside-avoid {
-          page-break-inside: avoid;
-          break-inside: avoid;
-        }
-        
-        .page-break-after {
-          page-break-after: always;
-          break-after: page;
-        }
-        
-        .page-break-before {
-          page-break-before: always;
-          break-before: page;
-        }
-        
-        canvas, svg {
-          max-width: 100% !important;
-          height: auto !important;
-        }
-        
-        .space-y-8 > * + * {
-          margin-top: 1.5rem !important;
-        }
-        
-        .space-y-6 > * + * {
-          margin-top: 1rem !important;
+        @page {
+          margin: 0.5in;
+          size: A4 portrait;
         }
       }
     `;
-    
-    const styleElement = document.createElement('style');
-    styleElement.id = 'print-styles-temp';
-    styleElement.innerHTML = printStyles;
-    document.head.appendChild(styleElement);
+    document.head.appendChild(tempStyle);
     
     // Função de cleanup
     cleanupRef.current = () => {

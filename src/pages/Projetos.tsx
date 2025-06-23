@@ -5,6 +5,7 @@ import { Layout } from '@/components/layout/Layout';
 import { useProjetos } from '@/hooks/useProjetos';
 import { ProjetosKPIs } from '@/components/projetos/ProjetosKPIs';
 import { ProjetoFilters } from '@/components/projetos/ProjetoFilters';
+import { ProjetoSearchBar } from '@/components/projetos/ProjetoSearchBar';
 import { Button } from '@/components/ui/button';
 import { Plus, Building, Calendar, User, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -18,9 +19,16 @@ export default function Projetos() {
   const { usuario, isLoading } = useAuth();
   const [filtros, setFiltros] = useState<FiltrosProjeto>({});
   const [filtroAtivo, setFiltroAtivo] = useState<string | null>(null);
+  const [termoBusca, setTermoBusca] = useState('');
   const navigate = useNavigate();
   
-  const { data: projetos, isLoading: projetosLoading, refetch } = useProjetos(filtros);
+  // Combinar filtros com termo de busca
+  const filtrosComBusca = {
+    ...filtros,
+    ...(termoBusca && { busca: termoBusca })
+  };
+
+  const { data: projetos, isLoading: projetosLoading, refetch } = useProjetos(filtrosComBusca);
 
   const {
     currentPage,
@@ -54,6 +62,11 @@ export default function Projetos() {
     
     setFiltros(novosFiltros);
     goToPage(1);
+  };
+
+  const handleTermoBuscaChange = (termo: string) => {
+    setTermoBusca(termo);
+    goToPage(1); // Reset para primeira página ao buscar
   };
 
   // Extract unique responsaveis from projetos data
@@ -119,6 +132,12 @@ export default function Projetos() {
           filtros={filtros}
           onFiltroChange={setFiltros}
           responsaveis={responsaveis}
+        />
+
+        <ProjetoSearchBar 
+          termoBusca={termoBusca}
+          onTermoBuscaChange={handleTermoBuscaChange}
+          totalResults={projetos?.length || 0}
         />
 
         {projetosLoading ? (

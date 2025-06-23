@@ -1,5 +1,4 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
@@ -8,6 +7,7 @@ import { Projeto } from '@/types/pmo';
 import { useProjetosOperations } from '@/hooks/useProjetosOperations';
 import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ProjetoAcoesAdminProps {
   projeto: Projeto;
@@ -15,9 +15,55 @@ interface ProjetoAcoesAdminProps {
 }
 
 export function ProjetoAcoesAdmin({ projeto, onProjetoAtualizado }: ProjetoAcoesAdminProps) {
-  const [alertAberto, setAlertAberto] = useState<'fechar' | 'arquivar' | 'apagar' | 'reabrir' | 'desarquivar' | null>(null);
+  const [alertAberto, setAlertAberto] = useState<'fechar' | 'arquivar' | 'excluir' | 'reabrir' | 'desarquivar' | null>(null);
+  const [dadosVinculados, setDadosVinculados] = useState<{
+    totalStatus: number;
+    totalMudancas: number;
+    totalLicoes: number;
+    totalDependencias: number;
+    carregando: boolean;
+  }>({
+    totalStatus: 0,
+    totalMudancas: 0,
+    totalLicoes: 0,
+    totalDependencias: 0,
+    carregando: false
+  });
+  
   const { atualizarProjeto, apagarProjeto, isLoading } = useProjetosOperations();
   const navigate = useNavigate();
+
+  const buscarDadosVinculados = async () => {
+    if (!alertAberto || alertAberto !== 'excluir') {
+      return;
+    }
+
+    setDadosVinculados(prev => ({ ...prev, carregando: true }));
+
+    try {
+      const [statusResult, mudancasResult, licoesResult, dependenciasResult] = await Promise.all([
+        supabase.from('status_projeto').select('id').eq('projeto_id', projeto.id),
+        supabase.from('mudancas_replanejamento').select('id').eq('projeto_id', projeto.id),
+        supabase.from('licoes_aprendidas').select('id').eq('projeto_id', projeto.id),
+        supabase.from('dependencias').select('id').eq('projeto_id', projeto.id)
+      ]);
+
+      setDadosVinculados({
+        totalStatus: statusResult.data?.length || 0,
+        totalMudancas: mudancasResult.data?.length || 0,
+        totalLicoes: licoesResult.data?.length || 0,
+        totalDependencias: dependenciasResult.data?.length || 0,
+        carregando: false
+      });
+    } catch (error) {
+      console.error('Erro ao buscar dados vinculados:', error);
+      setDadosVinculados(prev => ({ ...prev, carregando: false }));
+    }
+  };
+
+  useEffect(() => {
+    buscarDadosVinculados();
+  }, [alertAberto]);
 
   const handleFecharProjeto = async () => {
     const sucesso = await atualizarProjeto(projeto.id, { status_ativo: false });
@@ -71,13 +117,9 @@ export function ProjetoAcoesAdmin({ projeto, onProjetoAtualizado }: ProjetoAcoes
     setAlertAberto(null);
   };
 
-  const handleApagarProjeto = async () => {
+  const handleExcluirProjeto = async () => {
     const sucesso = await apagarProjeto(projeto.id);
     if (sucesso) {
-      toast({
-        title: "Projeto apagado",
-        description: "O projeto foi removido permanentemente do sistema.",
-      });
       onProjetoAtualizado?.();
       // Se estamos na página de detalhes, voltar para a lista
       if (window.location.pathname.includes('/projetos/')) {
@@ -97,7 +139,7 @@ export function ProjetoAcoesAdmin({ projeto, onProjetoAtualizado }: ProjetoAcoes
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48">
           {/* Opções para projetos ativos */}
-          {projeto.status_ativo && !projeto.arquivado && (
+          {projeto.status_ativo && (
             <>
               <DropdownMenuItem onClick={() => setAlertAberto('fechar')}>
                 <X className="h-4 w-4 mr-2" />
@@ -110,8 +152,8 @@ export function ProjetoAcoesAdmin({ projeto, onProjetoAtualizado }: ProjetoAcoes
             </>
           )}
           
-          {/* Opções para projetos fechados mas não arquivados */}
-          {!projeto.status_ativo && !projeto.arquivado && (
+          {/* Opções para projetos fechados */}
+          {!projeto.status_ativo && (
             <DropdownMenuItem onClick={() => setAlertAberto('reabrir')}>
               <RefreshCw className="h-4 w-4 mr-2" />
               Reabrir Projeto
@@ -128,11 +170,11 @@ export function ProjetoAcoesAdmin({ projeto, onProjetoAtualizado }: ProjetoAcoes
           
           <DropdownMenuSeparator />
           <DropdownMenuItem 
-            onClick={() => setAlertAberto('apagar')}
+            onClick={() => setAlertAberto('excluir')}
             className="text-red-600 focus:text-red-600"
           >
             <Trash2 className="h-4 w-4 mr-2" />
-            Apagar Projeto
+            Excluir Projeto
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -159,9 +201,14 @@ export function ProjetoAcoesAdmin({ projeto, onProjetoAtualizado }: ProjetoAcoes
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Arquivar Projeto</AlertDialogTitle>
-            <AlertDialogDescription>
-              Tem certeza que deseja arquivar o projeto "{projeto.nome_projeto}"? 
-              Projetos arquivados podem ser consultados através de filtros específicos.
+            <AlertDialogDescription className="space-y-2">
+              <p>
+                Tem certeza que deseja arquivar o projeto "{projeto.nome_projeto}"?
+              </p>
+              <p className="text-sm text-gray-600">
+                Projetos arquivados ficam inativos e são ocultados das visualizações padrão, 
+                mas podem ser consultados através de filtros específicos.
+              </p>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -209,28 +256,46 @@ export function ProjetoAcoesAdmin({ projeto, onProjetoAtualizado }: ProjetoAcoes
         </AlertDialogContent>
       </AlertDialog>
 
-      <AlertDialog open={alertAberto === 'apagar'} onOpenChange={() => setAlertAberto(null)}>
+      <AlertDialog open={alertAberto === 'excluir'} onOpenChange={() => setAlertAberto(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Apagar Projeto</AlertDialogTitle>
-            <AlertDialogDescription className="space-y-2">
+            <AlertDialogTitle>Excluir Projeto</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-3">
               <p className="text-red-600 font-medium">ATENÇÃO: Esta ação é irreversível!</p>
               <p>
-                Tem certeza que deseja apagar permanentemente o projeto "{projeto.nome_projeto}"?
+                Tem certeza que deseja excluir permanentemente o projeto "{projeto.nome_projeto}"?
               </p>
+              
+              {dadosVinculados.carregando ? (
+                <p className="text-sm text-gray-500">Verificando dados vinculados...</p>
+              ) : (
+                <div className="bg-red-50 border border-red-200 p-3 rounded-lg">
+                  <p className="text-sm font-medium text-red-700 mb-2">Dados que serão excluídos junto:</p>
+                  <ul className="text-sm text-red-600 space-y-1">
+                    <li>• {dadosVinculados.totalStatus} status</li>
+                    <li>• {dadosVinculados.totalMudancas} mudanças/replanejamentos</li>
+                    <li>• {dadosVinculados.totalLicoes} lições aprendidas</li>
+                    <li>• {dadosVinculados.totalDependencias} dependências</li>
+                  </ul>
+                  <p className="text-sm text-red-700 mt-2 font-medium">
+                    Total: {dadosVinculados.totalStatus + dadosVinculados.totalMudancas + dadosVinculados.totalLicoes + dadosVinculados.totalDependencias} registros serão removidos
+                  </p>
+                </div>
+              )}
+              
               <p className="text-sm text-gray-600">
-                Só é possível apagar projetos que não possuem status vinculados.
+                Esta operação excluirá o projeto e todos os dados vinculados permanentemente.
               </p>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction 
-              onClick={handleApagarProjeto} 
+              onClick={handleExcluirProjeto} 
               disabled={isLoading}
               className="bg-red-600 hover:bg-red-700"
             >
-              Apagar Permanentemente
+              Excluir Permanentemente
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

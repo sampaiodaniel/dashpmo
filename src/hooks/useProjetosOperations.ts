@@ -120,54 +120,216 @@ export function useProjetosOperations() {
     setIsLoading(true);
     
     try {
+      console.log('🗑️ Iniciando exclusão do projeto ID:', projetoId);
+      
       // Primeiro buscar dados do projeto para o log
-      const { data: projetoData } = await supabase
+      const { data: projetoData, error: selectError } = await supabase
         .from('projetos')
         .select('nome_projeto')
         .eq('id', projetoId)
         .single();
 
-      // Primeiro verificar se há status vinculados
-      const { data: statusVinculados, error: statusError } = await supabase
-        .from('status_projeto')
-        .select('id')
-        .eq('projeto_id', projetoId)
-        .limit(1);
-
-      if (statusError) {
-        console.error('Erro ao verificar status:', statusError);
+      if (selectError) {
+        console.error('❌ Erro ao buscar projeto:', selectError);
         toast({
           title: "Erro",
-          description: "Erro ao verificar status vinculados",
+          description: `Erro ao buscar projeto: ${selectError.message}`,
           variant: "destructive",
         });
         return false;
       }
 
-      if (statusVinculados && statusVinculados.length > 0) {
+      if (!projetoData) {
+        console.error('❌ Projeto não encontrado');
         toast({
-          title: "Não é possível apagar",
-          description: "Este projeto possui status vinculados. Não é possível apagá-lo.",
+          title: "Erro",
+          description: "Projeto não encontrado",
           variant: "destructive",
         });
         return false;
       }
 
-      // Se não há status vinculados, pode apagar
-      const { error } = await supabase
+      console.log('📋 Projeto encontrado:', projetoData.nome_projeto);
+
+      // Verificar dados vinculados ao projeto para o log
+      console.log('🔍 Verificando dados vinculados...');
+      const [statusResult, mudancasResult, licoesResult, dependenciasResult] = await Promise.all([
+        supabase.from('status_projeto').select('id').eq('projeto_id', projetoId),
+        supabase.from('mudancas_replanejamento').select('id').eq('projeto_id', projetoId),
+        supabase.from('licoes_aprendidas').select('id').eq('projeto_id', projetoId),
+        supabase.from('dependencias').select('id').eq('projeto_id', projetoId)
+      ]);
+
+      // Verificar se houve erro em alguma das consultas
+      if (statusResult.error) {
+        console.error('❌ Erro ao verificar status:', statusResult.error);
+      }
+      if (mudancasResult.error) {
+        console.error('❌ Erro ao verificar mudanças:', mudancasResult.error);
+      }
+      if (licoesResult.error) {
+        console.error('❌ Erro ao verificar lições:', licoesResult.error);
+      }
+      if (dependenciasResult.error) {
+        console.error('❌ Erro ao verificar dependências:', dependenciasResult.error);
+      }
+
+      const totalStatus = statusResult.data?.length || 0;
+      const totalMudancas = mudancasResult.data?.length || 0;
+      const totalLicoes = licoesResult.data?.length || 0;
+      const totalDependencias = dependenciasResult.data?.length || 0;
+      const totalVinculos = totalStatus + totalMudancas + totalLicoes + totalDependencias;
+
+      console.log('📊 Dados vinculados encontrados:', {
+        status: totalStatus,
+        mudancas: totalMudancas,
+        licoes: totalLicoes,
+        dependencias: totalDependencias,
+        total: totalVinculos
+      });
+
+      // EXCLUSÃO MANUAL DOS REGISTROS VINCULADOS
+      // Para contornar problemas de foreign key, vamos excluir manualmente na ordem correta
+      
+      console.log('🧹 Iniciando exclusão manual dos dados vinculados...');
+      
+      // 1. Excluir entregas_status (se existir) - elas referenciam status_projeto
+      if (totalStatus > 0) {
+        console.log('🗑️ Excluindo entregas de status...');
+        const statusIds = statusResult.data?.map(s => s.id) || [];
+        if (statusIds.length > 0) {
+          const { error: entregasError } = await supabase
+            .from('entregas_status')
+            .delete()
+            .in('status_id', statusIds);
+          
+          if (entregasError) {
+            console.warn('⚠️ Erro ao excluir entregas (pode não existir):', entregasError);
+          }
+        }
+      }
+      
+      // 2. Excluir status_projeto
+      if (totalStatus > 0) {
+        console.log('🗑️ Excluindo status do projeto...');
+        const { error: statusError } = await supabase
+          .from('status_projeto')
+          .delete()
+          .eq('projeto_id', projetoId);
+        
+        if (statusError) {
+          console.error('❌ Erro ao excluir status:', statusError);
+          toast({
+            title: "Erro na Exclusão",
+            description: `Erro ao excluir status do projeto: ${statusError.message}`,
+            variant: "destructive",
+          });
+          return false;
+        }
+        console.log('✅ Status excluídos:', totalStatus);
+      }
+      
+      // 3. Excluir mudanças/replanejamentos
+      if (totalMudancas > 0) {
+        console.log('🗑️ Excluindo mudanças/replanejamentos...');
+        const { error: mudancasError } = await supabase
+          .from('mudancas_replanejamento')
+          .delete()
+          .eq('projeto_id', projetoId);
+        
+        if (mudancasError) {
+          console.error('❌ Erro ao excluir mudanças:', mudancasError);
+          toast({
+            title: "Erro na Exclusão",
+            description: `Erro ao excluir mudanças do projeto: ${mudancasError.message}`,
+            variant: "destructive",
+          });
+          return false;
+        }
+        console.log('✅ Mudanças excluídas:', totalMudancas);
+      }
+      
+      // 4. Excluir lições aprendidas
+      if (totalLicoes > 0) {
+        console.log('🗑️ Excluindo lições aprendidas...');
+        const { error: licoesError } = await supabase
+          .from('licoes_aprendidas')
+          .delete()
+          .eq('projeto_id', projetoId);
+        
+        if (licoesError) {
+          console.error('❌ Erro ao excluir lições:', licoesError);
+          toast({
+            title: "Erro na Exclusão",
+            description: `Erro ao excluir lições do projeto: ${licoesError.message}`,
+            variant: "destructive",
+          });
+          return false;
+        }
+        console.log('✅ Lições excluídas:', totalLicoes);
+      }
+      
+      // 5. Excluir dependências
+      if (totalDependencias > 0) {
+        console.log('🗑️ Excluindo dependências...');
+        const { error: dependenciasError } = await supabase
+          .from('dependencias')
+          .delete()
+          .eq('projeto_id', projetoId);
+        
+        if (dependenciasError) {
+          console.error('❌ Erro ao excluir dependências:', dependenciasError);
+          toast({
+            title: "Erro na Exclusão",
+            description: `Erro ao excluir dependências do projeto: ${dependenciasError.message}`,
+            variant: "destructive",
+          });
+          return false;
+        }
+        console.log('✅ Dependências excluídas:', totalDependencias);
+      }
+
+      // 6. Finalmente, excluir o projeto
+      console.log('🚀 Executando exclusão do projeto...');
+      const { error: deleteError } = await supabase
         .from('projetos')
         .delete()
         .eq('id', projetoId);
 
-      if (error) {
-        console.error('Erro ao apagar projeto:', error);
+      if (deleteError) {
+        console.error('❌ Erro ao excluir projeto:', deleteError);
+        
+        // Tratar erros específicos
+        let mensagemErro = "Erro ao excluir projeto";
+        
+        if (deleteError.code === '23503') {
+          mensagemErro = "Ainda existem dados vinculados que impedem a exclusão. Tente novamente.";
+        } else if (deleteError.code === '42501') {
+          mensagemErro = "Permissão negada para excluir o projeto";
+        } else if (deleteError.message) {
+          mensagemErro = `Erro: ${deleteError.message}`;
+        }
+        
         toast({
-          title: "Erro",
-          description: "Erro ao apagar projeto",
+          title: "Erro na Exclusão",
+          description: mensagemErro,
           variant: "destructive",
         });
         return false;
       }
+
+      console.log('✅ Projeto excluído com sucesso!');
+
+      // Mensagem de sucesso detalhada
+      let mensagemSucesso = `Projeto "${projetoData.nome_projeto}" foi excluído permanentemente`;
+      if (totalVinculos > 0) {
+        mensagemSucesso += ` junto com todos os dados vinculados (${totalVinculos} registros)`;
+      }
+
+      toast({
+        title: "Projeto excluído com sucesso",
+        description: mensagemSucesso,
+      });
 
       // Registrar log da exclusão
       log(
@@ -175,16 +337,22 @@ export function useProjetosOperations() {
         'exclusao',
         'projeto',
         projetoId,
-        projetoData?.nome_projeto || 'Projeto removido',
-        null
+        `${projetoData.nome_projeto} (${totalVinculos} vínculos removidos)`,
+        { totalStatus, totalMudancas, totalLicoes, totalDependencias }
       );
 
       return true;
     } catch (error) {
-      console.error('Erro inesperado:', error);
+      console.error('💥 Erro inesperado ao excluir projeto:', error);
+      
+      let mensagemErro = "Erro inesperado ao excluir projeto";
+      if (error instanceof Error) {
+        mensagemErro = `Erro inesperado: ${error.message}`;
+      }
+      
       toast({
-        title: "Erro",
-        description: "Erro inesperado ao apagar projeto",
+        title: "Erro Inesperado",
+        description: mensagemErro,
         variant: "destructive",
       });
       return false;

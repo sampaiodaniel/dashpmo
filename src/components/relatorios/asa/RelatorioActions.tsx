@@ -1,48 +1,80 @@
 import { Button } from '@/components/ui/button';
 import { Download, Share, FileText, Copy } from 'lucide-react';
 import { DadosRelatorioASA } from '@/hooks/useRelatorioASA';
-import html2pdf from 'html2pdf.js';
 import { toast } from '@/hooks/use-toast';
 
 interface RelatorioActionsProps {
   dados: DadosRelatorioASA;
 }
 
+// Função para carregar html2pdf dinamicamente
+const loadHtml2Pdf = async (): Promise<any> => {
+  if (typeof window !== 'undefined' && window.html2pdf) {
+    return window.html2pdf;
+  }
+
+  // Carregamento dinâmico via import()
+  try {
+    const html2pdf = await import('html2pdf.js');
+    return html2pdf.default || html2pdf;
+  } catch (error) {
+    console.warn('Erro ao carregar html2pdf via import, tentando CDN...', error);
+    
+    // Fallback para CDN
+    return new Promise((resolve, reject) => {
+      if (window.html2pdf) {
+        resolve(window.html2pdf);
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+      script.async = true;
+      
+      script.onload = () => {
+        resolve(window.html2pdf);
+      };
+      
+      script.onerror = () => {
+        reject(new Error('Falha ao carregar html2pdf do CDN'));
+      };
+      
+      document.head.appendChild(script);
+      
+      // Timeout de segurança
+      setTimeout(() => {
+        reject(new Error('Timeout ao carregar html2pdf'));
+      }, 15000);
+    });
+  }
+};
+
 export function RelatorioActions({ dados }: RelatorioActionsProps) {
   const handleShareReport = async () => {
     try {
-      // Criar um ID único mais simples e consistente
-      const reportId = `${dados.carteira}-${dados.dataRelatorio.replace(/\//g, '')}-${Date.now()}`.replace(/\s+/g, '-');
-
-      // Salvar os dados do relatório no localStorage
-      const reportKey = `shared-report-${reportId}`;
-      const reportData = {
-        ...dados,
-        sharedAt: new Date().toISOString(),
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // 7 dias
-      };
+      // Gerar um link simples baseado na carteira e data
+      const baseUrl = window.location.origin;
+      const reportId = `${dados.carteira}-${dados.dataRelatorio.replace(/\//g, '-')}`;
+      const reportUrl = `${baseUrl}/relatorio-compartilhado/${reportId}`;
       
-      localStorage.setItem(reportKey, JSON.stringify(reportData));
-
-      // Criar URL compartilhável
-      const shareUrl = `${window.location.origin}/relatorio-compartilhado/${reportId}`;
-
-      // Copiar para clipboard
-      await navigator.clipboard.writeText(shareUrl);
-      
-      toast({
-        title: "Link copiado!",
-        description: "O link do relatório foi copiado para a área de transferência. Válido por 7 dias.",
-      });
-
-      console.log('Link compartilhável criado:', shareUrl);
-      console.log('Dados salvos na chave:', reportKey);
-      console.log('ID do relatório:', reportId);
+      if (navigator.share) {
+        await navigator.share({
+          title: `Relatório ASA - ${dados.carteira}`,
+          text: `Relatório ASA da carteira ${dados.carteira} - ${dados.dataRelatorio}`,
+          url: reportUrl,
+        });
+      } else {
+        await navigator.clipboard.writeText(reportUrl);
+        toast({
+          title: "Link copiado!",
+          description: "O link do relatório foi copiado para a área de transferência.",
+        });
+      }
     } catch (error) {
-      console.error('Erro ao criar link compartilhável:', error);
+      console.error('Erro ao compartilhar:', error);
       toast({
         title: "Erro",
-        description: "Não foi possível criar o link compartilhável.",
+        description: "Erro ao compartilhar o relatório.",
         variant: "destructive"
       });
     }
@@ -72,6 +104,9 @@ export function RelatorioActions({ dados }: RelatorioActionsProps) {
         });
         return;
       }
+
+      // Carregar html2pdf dinamicamente
+      const html2pdf = await loadHtml2Pdf();
 
       // Esconder elementos que não devem aparecer no PDF
       const noprint = element.querySelectorAll('.no-print');
@@ -276,10 +311,9 @@ export function RelatorioActions({ dados }: RelatorioActionsProps) {
             .shadow-sm { box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); }
             .border-b { border-bottom: 1px solid #e5e7eb; }
             .border-l-4 { border-left: 4px solid; }
-            .border-\\[\\#1B365D\\] { border-color: #1B365D; }
-            .border-\\[\\#A6926B\\] { border-color: #A6926B; }
-            .border-\\[\\#2E5984\\] { border-color: #2E5984; }
-            .border-\\[\\#EF4444\\] { border-color: #EF4444; }
+            .border-[\\#A6926B] { border-color: #A6926B; }
+            .border-[\\#2E5984] { border-color: #2E5984; }
+            .border-[\\#EF4444] { border-color: #EF4444; }
             .pb-8 { padding-bottom: 2rem; }
             .pt-8 { padding-top: 2rem; }
             .break-inside-avoid { page-break-inside: avoid; }

@@ -92,12 +92,12 @@ export function RelatorioVisualContent({ dados }: RelatorioVisualContentProps) {
               return grupos;
             }, {} as Record<string, any[]>);
 
-            // Ordenar projetos dentro de cada grupo alfabeticamente
+            // Ordenar projetos dentro de cada grupo por progresso decrescente
             Object.keys(projetosPorResponsavel).forEach(responsavel => {
               projetosPorResponsavel[responsavel].sort((a, b) => {
-                const nomeA = a.nome_projeto || a.nome || '';
-                const nomeB = b.nome_projeto || b.nome || '';
-                return nomeA.localeCompare(nomeB, 'pt-BR', { sensitivity: 'base' });
+                const progressoA = a.ultimoStatus?.progresso_estimado || 0;
+                const progressoB = b.ultimoStatus?.progresso_estimado || 0;
+                return progressoB - progressoA; // Ordem decrescente de progresso
               });
             });
 
@@ -264,7 +264,15 @@ export function RelatorioVisualContent({ dados }: RelatorioVisualContentProps) {
 
                 {/* Timeline de entregas do projeto específico */}
                 <div className="mb-8">
-                  <TimelineEntregas projetos={[projeto]} />
+                  <TimelineEntregas 
+                    projetos={[projeto]} 
+                    forceMobile={
+                      typeof window !== 'undefined' && (
+                        window.location.pathname.includes('relatorio-visual-mobile') ||
+                        document.querySelector('.mobile-report-wrapper') !== null
+                      )
+                    }
+                  />
                 </div>
               </div>
             ));

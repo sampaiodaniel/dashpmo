@@ -100,16 +100,23 @@ export default function Relatorios() {
   };
 
   const handleGerarRelatorioVisual = async () => {
+    console.log('🚀 Iniciando geração do relatório visual desktop');
+    console.log('Filtro:', filtroVisual, 'Carteira:', carteiraVisual, 'Responsável:', responsavelVisual);
+    
     const dados = filtroVisual === 'carteira' 
       ? await gerarRelatorioCarteiraVisual(carteiraVisual)
       : await gerarRelatorioResponsavelVisual(responsavelVisual);
     
+    console.log('📊 Dados do relatório:', dados);
+    
     if (dados) {
       // Salvar dados no sessionStorage
       sessionStorage.setItem('relatorio-visual-dados', JSON.stringify(dados));
+      console.log('💾 Dados salvos no sessionStorage');
       
       // Abrir relatório em nova aba
       window.open('/relatorio-visual', '_blank');
+      console.log('🔗 Nova aba aberta para /relatorio-visual');
       
       adicionarRelatorio({
         tipo: 'visual',
@@ -117,6 +124,8 @@ export default function Relatorios() {
         valor: filtroVisual === 'carteira' ? carteiraVisual : responsavelVisual,
         nomeArquivo: `relatorio-visual-${(filtroVisual === 'carteira' ? carteiraVisual : responsavelVisual).toLowerCase().replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`
       });
+    } else {
+      console.log('❌ Nenhum dado retornado para o relatório');
     }
   };
 

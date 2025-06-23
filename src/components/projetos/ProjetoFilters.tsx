@@ -107,7 +107,8 @@ export function ProjetoFilters({ filtros, onFiltroChange, responsaveis }: Projet
               </label>
             </div>
 
-            <div className="flex items-center gap-2">
+            {/* Temporariamente desabilitado até migração ser executada */}
+            {/* <div className="flex items-center gap-2">
               <Checkbox
                 id="incluir-arquivados"
                 checked={filtros.incluirArquivados || false}
@@ -116,7 +117,7 @@ export function ProjetoFilters({ filtros, onFiltroChange, responsaveis }: Projet
               <label htmlFor="incluir-arquivados" className="text-sm text-pmo-gray">
                 Incluir projetos arquivados
               </label>
-            </div>
+            </div> */}
           </div>
         </div>
       </CardContent>

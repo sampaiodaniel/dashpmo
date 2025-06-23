@@ -62,7 +62,7 @@ export function TabelaIncidentes({ incidentes, carteira }: TabelaIncidentesProps
                   <TableCell className="font-medium text-[#1B365D]">{incidente.carteira}</TableCell>
                   <TableCell className="text-center text-[#6B7280]">{incidente.anterior}</TableCell>
                   <TableCell className="text-center text-[#10B981] font-medium">+{incidente.entrada}</TableCell>
-                  <TableCell className="text-center text-[#2E5984] font-medium">-{incidente.saida}</TableCell>
+                  <TableCell className="text-center text-[#F59E0B] font-medium">-{incidente.saida}</TableCell>
                   <TableCell className="text-center font-bold text-[#1B365D]">{incidente.atual}</TableCell>
                   <TableCell className="text-center text-[#F59E0B] font-medium">{incidente.mais_15_dias}</TableCell>
                   <TableCell className="text-center text-[#EF4444] font-bold">{incidente.criticos}</TableCell>

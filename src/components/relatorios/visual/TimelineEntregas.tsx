@@ -6,9 +6,10 @@ import { formatarData } from '@/utils/dateFormatting';
 
 interface TimelineEntregasProps {
   projetos: any[];
+  forceMobile?: boolean;
 }
 
-export function TimelineEntregas({ projetos }: TimelineEntregasProps) {
+export function TimelineEntregas({ projetos, forceMobile = false }: TimelineEntregasProps) {
   const [paginaAtual, setPaginaAtual] = useState(0);
   
   // Coletar todas as entregas com datas dos projetos
@@ -73,22 +74,30 @@ export function TimelineEntregas({ projetos }: TimelineEntregasProps) {
 
   if (entregas.length === 0) {
     return (
-      <Card>
+      <Card className="timeline-card">
         <CardHeader>
           <CardTitle>Timeline de Entregas</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8 text-gray-500">
-            <p>Nenhuma entrega registrada</p>
+            <p>Nenhuma entrega reportada</p>
           </div>
         </CardContent>
       </Card>
     );
   }
 
-  // Dividir entregas em páginas (máximo 3 por página)
+  // Dividir entregas em páginas (máximo 3 por página no desktop, todas no mobile)
   const entregasPorPagina = 3;
   const totalPaginas = Math.ceil(entregas.length / entregasPorPagina);
+  
+  // Detectar se estamos no mobile - verificar múltiplas condições
+  const isMobile = forceMobile || (typeof window !== 'undefined' && (
+    window.innerWidth < 768 || 
+    /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+    window.location.pathname.includes('relatorio-visual-mobile') ||
+    document.querySelector('.mobile-report-wrapper') !== null
+  ));
   
   // Função para calcular semanas entre duas datas
   const calcularSemanas = (data1: string, data2: string): number => {
@@ -136,6 +145,159 @@ export function TimelineEntregas({ projetos }: TimelineEntregasProps) {
     return posicoes;
   };
 
+  // Renderizar timeline vertical para mobile
+  const renderTimelineMobile = (entregasPagina: any[]) => {
+    return (
+      <div style={{ 
+        position: 'relative', 
+        padding: '1rem', 
+        minHeight: '200px',
+        width: '100%',
+        overflow: 'hidden'
+      }}>
+        {/* Linha vertical da timeline */}
+        <div style={{
+          position: 'absolute',
+          left: '1.5rem',
+          top: '2rem',
+          bottom: '2rem',
+          width: '4px',
+          backgroundColor: '#A6926B',
+          borderRadius: '2px',
+          zIndex: 1
+        }}></div>
+        
+        {/* Conteúdo da timeline */}
+        <div style={{
+          paddingLeft: '3rem',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '1.5rem'
+        }}>
+          {entregasPagina.map((entrega, index) => (
+            <div key={index} style={{ position: 'relative', width: '100%' }}>
+              {/* Marcador circular */}
+              <div style={{
+                position: 'absolute',
+                left: '-2.25rem',
+                top: '1rem',
+                width: '16px',
+                height: '16px',
+                borderRadius: '50%',
+                backgroundColor: entrega.cor,
+                border: '3px solid white',
+                boxShadow: `0 0 0 2px ${entrega.cor}`,
+                zIndex: 2
+              }}></div>
+              
+              {/* Box da entrega */}
+              <div style={{
+                padding: '1rem',
+                borderRadius: '0.5rem',
+                border: `2px solid ${entrega.corBorda}`,
+                backgroundColor: entrega.cor,
+                color: entrega.corTexto,
+                minHeight: '120px',
+                width: '100%',
+                maxWidth: '100%',
+                position: 'relative',
+                overflow: 'hidden',
+                wordWrap: 'break-word',
+                overflowWrap: 'break-word'
+              }}>
+                {/* Título da entrega */}
+                <div style={{
+                  fontSize: '0.875rem',
+                  fontWeight: '600',
+                  marginBottom: '0.75rem',
+                  paddingBottom: '0.5rem',
+                  borderBottom: `1px solid rgba(255, 255, 255, 0.3)`,
+                  lineHeight: '1.3',
+                  wordWrap: 'break-word',
+                  overflowWrap: 'break-word',
+                  textAlign: 'left'
+                }}>
+                  {entrega.titulo}
+                </div>
+                
+                {/* Nome do projeto (se for timeline geral) */}
+                {projetos.length > 1 && (
+                  <div style={{
+                    fontSize: '0.75rem',
+                    opacity: '0.9',
+                    marginBottom: '0.75rem',
+                    paddingBottom: '0.5rem',
+                    borderBottom: `1px solid rgba(255, 255, 255, 0.2)`,
+                    fontWeight: '500',
+                    lineHeight: '1.3',
+                    wordWrap: 'break-word',
+                    overflowWrap: 'break-word',
+                    textAlign: 'left'
+                  }}>
+                    Projeto: {entrega.projeto}
+                  </div>
+                )}
+                
+                {/* Data da entrega */}
+                <div style={{
+                  fontSize: '0.75rem',
+                  fontWeight: '600',
+                  marginBottom: '0.75rem',
+                  paddingBottom: '0.5rem',
+                  borderBottom: `1px solid rgba(255, 255, 255, 0.2)`,
+                  lineHeight: '1.3',
+                  textAlign: 'left'
+                }}>
+                  Data: {formatarData(entrega.data)}
+                </div>
+                
+                {/* Entregáveis */}
+                {entrega.entregaveis && (
+                  <div style={{
+                    fontSize: '0.75rem',
+                    lineHeight: '1.4',
+                    textAlign: 'left'
+                  }}>
+                    <div style={{ fontWeight: '600', marginBottom: '0.5rem', textAlign: 'left' }}>
+                      Entregáveis:
+                    </div>
+                    <div style={{
+                      maxHeight: 'none',
+                      overflow: 'visible'
+                    }}>
+                      {entrega.entregaveis.split('\n').filter((item: string) => item.trim()).map((item: string, i: number) => (
+                        <div key={i} style={{
+                          display: 'flex',
+                          alignItems: 'flex-start',
+                          marginBottom: '0.25rem',
+                          lineHeight: '1.4'
+                        }}>
+                          <span style={{
+                            marginRight: '0.5rem',
+                            marginTop: '0.125rem',
+                            flexShrink: 0,
+                            fontSize: '0.75rem'
+                          }}>•</span>
+                          <span style={{
+                            flex: 1,
+                            fontSize: '0.75rem',
+                            wordWrap: 'break-word',
+                            overflowWrap: 'break-word',
+                            hyphens: 'auto'
+                          }}>{item.trim()}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   const renderTimeline = (entregasPagina: any[], numeroPagina: number) => {
     const tracosSemanas = gerarPosicoesSemanas(entregasPagina);
     
@@ -173,7 +335,7 @@ export function TimelineEntregas({ projetos }: TimelineEntregasProps) {
     const posicaoTimeline = alturaContainer - 50; // Reduzido de 60 para 50
     
     return (
-      <div className="relative py-4 mb-4">
+      <div style={{ position: 'relative', padding: '1rem 0', marginBottom: '1rem' }}>
         {/* Container com altura dinâmica para conter todos os elementos */}
         <div className="relative" style={{ height: `${alturaContainer}px` }}>
           
@@ -316,7 +478,7 @@ export function TimelineEntregas({ projetos }: TimelineEntregasProps) {
 
   return (
     <div className="space-y-4">
-      <Card>
+      <Card className="timeline-card">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>
@@ -354,7 +516,26 @@ export function TimelineEntregas({ projetos }: TimelineEntregasProps) {
             const inicio = paginaAtual * entregasPorPagina;
             const fim = inicio + entregasPorPagina;
             const entregasPagina = entregas.slice(inicio, fim);
-            return renderTimeline(entregasPagina, paginaAtual + 1);
+            // No mobile, usar todas as entregas
+            const entregasMobile = isMobile ? entregas : entregasPagina;
+            
+            return (
+              <>
+                {/* Desktop Timeline */}
+                {!isMobile && (
+                  <div className="timeline-desktop">
+                    {renderTimeline(entregasPagina, paginaAtual + 1)}
+                  </div>
+                )}
+                
+                {/* Mobile Timeline */}
+                {isMobile && (
+                  <div className="timeline-mobile">
+                    {renderTimelineMobile(entregasMobile)}
+                  </div>
+                )}
+              </>
+            );
           })()}
         </CardContent>
       </Card>

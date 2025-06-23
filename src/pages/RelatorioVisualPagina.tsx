@@ -17,10 +17,15 @@ export default function RelatorioVisualPagina() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [dados, setDados] = useState<DadosRelatorioVisual | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log('🔄 RelatorioVisualPagina: useEffect executado');
+    
     // Recuperar dados do sessionStorage
     const dadosString = searchParams.get('dados');
+    console.log('📝 Dados da URL:', dadosString);
+    
     if (dadosString) {
       try {
         const dadosDecodificados = JSON.parse(decodeURIComponent(dadosString));
@@ -28,26 +33,33 @@ export default function RelatorioVisualPagina() {
         if (dadosDecodificados.dataGeracao) {
           dadosDecodificados.dataGeracao = new Date(dadosDecodificados.dataGeracao);
         }
+        console.log('✅ Dados decodificados da URL:', dadosDecodificados);
         setDados(dadosDecodificados);
+        setLoading(false);
       } catch (error) {
-        console.error('Erro ao decodificar dados do relatório:', error);
+        console.error('❌ Erro ao decodificar dados do relatório:', error);
         navigate('/relatorios');
       }
     } else {
       // Tentar recuperar do sessionStorage como fallback
       const dadosSession = sessionStorage.getItem('relatorio-visual-dados');
+      console.log('💾 Dados do sessionStorage:', dadosSession);
+      
       if (dadosSession) {
         try {
           const dadosParsed = JSON.parse(dadosSession);
           if (dadosParsed.dataGeracao) {
             dadosParsed.dataGeracao = new Date(dadosParsed.dataGeracao);
           }
+          console.log('✅ Dados recuperados do sessionStorage:', dadosParsed);
           setDados(dadosParsed);
+          setLoading(false);
         } catch (error) {
-          console.error('Erro ao recuperar dados do sessionStorage:', error);
+          console.error('❌ Erro ao recuperar dados do sessionStorage:', error);
           navigate('/relatorios');
         }
       } else {
+        console.log('❌ Nenhum dado encontrado, redirecionando para /relatorios');
         navigate('/relatorios');
       }
     }
@@ -310,12 +322,28 @@ export default function RelatorioVisualPagina() {
     navigate('/relatorios');
   };
 
-  if (!dados) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Carregando relatório...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!dados) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-red-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+            <Printer className="h-8 w-8 text-red-600" />
+          </div>
+          <div className="text-red-600 mb-4">Erro ao carregar dados do relatório</div>
+          <Button onClick={handleVoltar} variant="outline">
+            Voltar aos Relatórios
+          </Button>
         </div>
       </div>
     );
