@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
@@ -15,6 +15,7 @@ import { FiltrosProjeto } from '@/types/pmo';
 import { PaginationFooter } from '@/components/common/PaginationFooter';
 import { usePagination } from '@/hooks/usePagination';
 import { CarteirasTags } from '@/components/common/CarteirasTags';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function Projetos() {
   const { usuario, isLoading } = useAuth();
@@ -22,6 +23,7 @@ export default function Projetos() {
   const [filtroAtivo, setFiltroAtivo] = useState<string | null>(null);
   const [termoBusca, setTermoBusca] = useState('');
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   
   // Combinar filtros com termo de busca
   const filtrosComBusca = {
@@ -29,7 +31,34 @@ export default function Projetos() {
     ...(termoBusca && { busca: termoBusca })
   };
 
-  const { data: projetos, isLoading: projetosLoading, refetch } = useProjetos(filtrosComBusca);
+  const { data: projetos, isLoading: projetosLoading, error: projetosError, refetch } = useProjetos(filtrosComBusca);
+
+  // Sistema de detecção e correção automática de cache
+  useEffect(() => {
+    console.log('🏠 Página Projetos montada - verificando estado');
+    
+    // Se há erro ou dados não carregaram após 5 segundos, forçar refetch
+    const timeoutTimer = setTimeout(() => {
+      if (!projetos || projetos.length === 0) {
+        console.warn('⚠️ Dados não carregaram após 5 segundos, limpando cache e recarregando');
+        queryClient.removeQueries({ queryKey: ['projetos'] });
+        refetch();
+      }
+    }, 5000);
+
+    return () => clearTimeout(timeoutTimer);
+  }, [projetos, queryClient, refetch]);
+
+  // Verificar estado dos dados e aplicar correção se necessário
+  useEffect(() => {
+    if (!projetosLoading && !projetosError && (!projetos || projetos.length === 0)) {
+      console.log('🔧 Detectado estado inconsistente - aplicando correção automática');
+      setTimeout(() => {
+        queryClient.clear();
+        refetch();
+      }, 1000);
+    }
+  }, [projetosLoading, projetosError, projetos, queryClient, refetch]);
 
   const {
     currentPage,

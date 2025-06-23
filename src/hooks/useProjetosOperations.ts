@@ -54,6 +54,9 @@ export function useProjetosOperations() {
         }
       );
 
+      // Invalidar queries para atualizar a lista
+      queryClient.invalidateQueries({ queryKey: ['projetos'] });
+
       toast({
         title: "Sucesso",
         description: "Projeto criado com sucesso!",
@@ -349,6 +352,12 @@ export function useProjetosOperations() {
         { totalStatus, totalMudancas, totalLicoes, totalDependencias }
       );
 
+      // Invalidar todas as queries relacionadas
+      queryClient.invalidateQueries({ queryKey: ['projetos'] });
+      queryClient.invalidateQueries({ queryKey: ['status-projetos'] });
+      queryClient.invalidateQueries({ queryKey: ['status-list'] });
+      queryClient.invalidateQueries({ queryKey: ['ultimo-status'] });
+
       return true;
     } catch (error) {
       console.error('💥 Erro inesperado ao excluir projeto:', error);
@@ -445,6 +454,9 @@ export function useProjetosOperations() {
         });
         return null;
       }
+
+      // Invalidar queries para atualizar a lista
+      queryClient.invalidateQueries({ queryKey: ['projetos'] });
 
       toast({
         title: "Sucesso",

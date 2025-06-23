@@ -571,13 +571,31 @@ export function useNovoStatusForm() {
 
       return novoStatus;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['status-projetos'] });
-      queryClient.invalidateQueries({ queryKey: ['status-list'] });
+    onSuccess: async () => {
+      // Invalidação robusta - múltiplas estratégias para garantir que dados sejam atualizados
+      console.log('✅ Status criado - executando invalidação robusta de cache');
+      
+      // Estratégia 1: Remover queries específicas
+      queryClient.removeQueries({ queryKey: ['projetos'] });
+      queryClient.removeQueries({ queryKey: ['ultimo-status'] });
+      queryClient.removeQueries({ queryKey: ['status'] });
+      
+      // Estratégia 2: Invalidar queries relacionadas
+      await queryClient.invalidateQueries({ queryKey: ['projetos'] });
+      await queryClient.invalidateQueries({ queryKey: ['ultimo-status'] });
+      await queryClient.invalidateQueries({ queryKey: ['status'] });
+      
+      // Estratégia 3: Aguardar um pouco e refetch forçado
+      setTimeout(() => {
+        console.log('🔄 Executando refetch forçado após criar status');
+        queryClient.refetchQueries({ queryKey: ['projetos'] });
+      }, 500);
+
       toast({
-        title: "Sucesso!",
-        description: "Status criado com sucesso!",
+        title: "Status criado com sucesso!",
+        description: "O status do projeto foi atualizado.",
       });
+      
       navigate('/status');
     },
     onError: (error) => {

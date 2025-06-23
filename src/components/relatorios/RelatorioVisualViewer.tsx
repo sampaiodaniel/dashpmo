@@ -3,6 +3,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
 import { RelatorioVisualContent } from './visual/RelatorioVisualContent';
+import { 
+  compressPdf,
+  getBasicHtml2CanvasConfig,
+  getBasicJsPDFConfig,
+  getBasicImageConfig
+} from '@/utils/pdfOptimizer';
 
 interface DadosRelatorioVisual {
   carteira?: string;
@@ -89,45 +95,48 @@ export function RelatorioVisualViewer({ isOpen, onClose, dados }: RelatorioVisua
       if (html2pdf) {
         console.log('Gerando PDF com html2pdf...');
         
-        // Configuração específica para evitar duplicação de páginas
+        // Configuração mais conservadora para evitar corrupção
         const opt = {
           margin: [0.4, 0.4, 0.4, 0.4],
           filename: `relatorio-visual-${dados?.carteira || dados?.responsavel || 'dashboard'}-${new Date().toISOString().split('T')[0]}.pdf`,
-          image: { 
-            type: 'jpeg', 
-            quality: 0.8
-          },
-          html2canvas: { 
-            scale: 1,
-            useCORS: true,
-            allowTaint: true,
-            backgroundColor: '#ffffff',
-            scrollX: 0,
-            scrollY: 0,
-            logging: false,
-            removeContainer: true,
-            imageTimeout: 0,
-            // Configurações específicas para evitar duplicação
-            windowWidth: element.scrollWidth,
-            windowHeight: element.scrollHeight,
-          },
-          jsPDF: { 
-            unit: 'in', 
-            format: 'a4', 
-            orientation: 'portrait',
-            compress: true
-          },
+          image: getBasicImageConfig(),
+          html2canvas: getBasicHtml2CanvasConfig(element),
+          jsPDF: getBasicJsPDFConfig('landscape'),
           pagebreak: { 
             mode: 'avoid-all'
           }
         };
 
-        // Gerar PDF de forma segura
+        // Gerar PDF de forma simples primeiro
         const worker = html2pdf().set(opt).from(element);
-        await worker.save();
+        
+        // Opção de compressão opcional
+        const shouldCompress = false; // Pode ser configurado depois
+        
+        if (shouldCompress) {
+          console.log('Gerando PDF com compressão...');
+          const pdfBlob = await worker.outputPdf('blob');
+          const arrayBuffer = await pdfBlob.arrayBuffer();
+          const pdfBytes = new Uint8Array(arrayBuffer);
+          
+          const compressedBytes = await compressPdf(pdfBytes);
+          
+          // Download do PDF comprimido
+          const compressedBlob = new Blob([compressedBytes], { type: 'application/pdf' });
+          const url = URL.createObjectURL(compressedBlob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = opt.filename;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        } else {
+          // Download direto sem compressão
+          await worker.save();
+        }
         
         console.log('PDF gerado com sucesso!');
-        
       } else {
         throw new Error('html2pdf não disponível');
       }
@@ -176,7 +185,7 @@ export function RelatorioVisualViewer({ isOpen, onClose, dados }: RelatorioVisua
         
         @page {
           margin: 0.5in;
-          size: A4 portrait;
+          size: A4 landscape;
         }
       }
     `;

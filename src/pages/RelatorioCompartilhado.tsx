@@ -115,80 +115,34 @@ export default function RelatorioCompartilhado() {
       // Carregar html2pdf dinamicamente
       const html2pdf = await loadHtml2Pdf();
 
-      const options = {
-        margin: [10, 10, 10, 10],
-        filename: `relatorio-asa-${dados.carteira}-${dados.dataRelatorio.replace(/\//g, '-')}.pdf`,
-        image: { 
-          type: 'jpeg', 
-          quality: 0.98
-        },
-        html2canvas: { 
-          scale: 2,
-          useCORS: true,
-          allowTaint: true,
-          backgroundColor: '#ffffff',
-          logging: true,
-          letterRendering: true,
-          foreignObjectRendering: true,
-          removeContainer: false,
-          scrollX: 0,
-          scrollY: 0,
-          x: 0,
-          y: 0,
-          width: element.offsetWidth,
-          height: element.offsetHeight,
-          windowWidth: element.offsetWidth + 100,
-          windowHeight: element.offsetHeight + 100
-        },
-        jsPDF: { 
-          unit: 'mm', 
-          format: 'a4', 
-          orientation: 'portrait',
-          compress: true,
-          precision: 16
-        },
-        pagebreak: {
-          mode: ['avoid-all', 'css', 'legacy'],
-          before: '.page-break-before',
-          after: '.page-break-after'
-        }
-      };
+      if (html2pdf) {
+        const opt = {
+          margin: [0.4, 0.4, 0.4, 0.4],
+          filename: `relatorio-compartilhado-${new Date().toISOString().split('T')[0]}.pdf`,
+          image: { 
+            type: 'jpeg', 
+            quality: 0.8 
+          },
+          html2canvas: { 
+            scale: 1,
+            useCORS: true,
+            allowTaint: true,
+            backgroundColor: '#ffffff',
+            logging: false
+          },
+          jsPDF: { 
+            unit: 'in', 
+            format: 'a4', 
+            orientation: 'landscape',
+            compress: true
+          },
+          pagebreak: { 
+            mode: 'avoid-all'
+          }
+        };
 
-      const noprint = element.querySelectorAll('.no-print');
-      noprint.forEach(el => {
-        (el as HTMLElement).style.display = 'none';
-      });
-
-      const originalStyle = element.style.cssText;
-      
-      element.style.cssText = `
-        position: relative !important;
-        top: 0 !important;
-        left: 0 !important;
-        transform: none !important;
-        margin: 0 !important;
-        padding: 30px !important;
-        width: 210mm !important;
-        max-width: 210mm !important;
-        background: white !important;
-        font-family: 'Inter', sans-serif !important;
-        color: #1B365D !important;
-        box-sizing: border-box !important;
-        overflow: visible !important;
-        font-size: 14px !important;
-        line-height: 1.5 !important;
-        min-height: auto !important;
-        height: auto !important;
-        display: block !important;
-      `;
-
-      await html2pdf().set(options).from(element).save();
-
-      element.style.cssText = originalStyle;
-      
-      noprint.forEach(el => {
-        (el as HTMLElement).style.display = '';
-      });
+        await html2pdf().set(opt).from(element).save();
+      }
 
     } catch (error) {
       console.error('Erro ao gerar PDF:', error);

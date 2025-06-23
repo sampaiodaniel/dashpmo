@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Projeto, FiltrosProjeto, CARTEIRAS } from '@/types/pmo';
@@ -90,5 +89,13 @@ export function useProjetos(filtros?: FiltrosProjeto) {
 
       return projetos;
     },
+    // Configurações melhoradas para evitar problemas de cache
+    staleTime: 15 * 1000, // 15 segundos - dados ficam stale mais rápido
+    gcTime: 2 * 60 * 1000, // 2 minutos - garbage collection mais agressivo
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    refetchOnReconnect: true,
+    retry: 2, // Apenas 2 tentativas
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 3000),
   });
 }
