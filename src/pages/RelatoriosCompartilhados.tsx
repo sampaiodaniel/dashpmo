@@ -27,7 +27,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 export default function RelatoriosCompartilhados() {
-  const { usuario, isLoading } = useAuth();
+  const { usuario, userUuid, isLoading } = useAuth();
   const { 
     relatoriosCompartilhados, 
     listarRelatoriosCompartilhados, 
@@ -40,10 +40,10 @@ export default function RelatoriosCompartilhados() {
   const [busca, setBusca] = useState('');
 
   useEffect(() => {
-    if (usuario) {
-      listarRelatoriosCompartilhados();
+    if (userUuid) {
+      listarRelatoriosCompartilhados(userUuid);
     }
-  }, [usuario, listarRelatoriosCompartilhados]);
+  }, [userUuid]);
 
   if (isLoading) {
     return (
@@ -87,9 +87,11 @@ export default function RelatoriosCompartilhados() {
     return matchTipo && matchBusca && matchStatus;
   });
 
-  const handleExcluirRelatorio = async (id: string) => {
-    if (confirm('Tem certeza que deseja excluir este relatório compartilhado?')) {
-      await excluirRelatorioCompartilhado(id);
+  const handleExcluir = (id: string) => {
+    if (userUuid) {
+      excluirRelatorioCompartilhado(id, userUuid);
+    } else {
+      console.error("UUID do usuário não encontrado para exclusão.");
     }
   };
 
@@ -397,10 +399,10 @@ export default function RelatoriosCompartilhados() {
                           <ExternalLink className="h-4 w-4" />
                         </Button>
                         <Button
-                          onClick={() => handleExcluirRelatorio(relatorio.id)}
-                          variant="outline"
+                          onClick={() => handleExcluir(relatorio.id)}
+                          variant="destructive"
                           size="sm"
-                          className="text-red-600 border-red-200 hover:bg-red-50"
+                          className="shrink-0"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>

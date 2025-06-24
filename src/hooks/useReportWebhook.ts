@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
 import { Database } from '@/integrations/supabase/types';
+import type { Usuario } from '@/hooks/useAuth';
 
 export interface RelatorioCompartilhavel {
   id: string;
@@ -42,10 +42,9 @@ export interface CriarRelatorioCompartilhavelParams {
 export function useReportWebhook() {
   const [loading, setLoading] = useState(false);
   const [relatoriosCompartilhados, setRelatoriosCompartilhados] = useState<RelatorioCompartilhavel[]>([]);
-  const { usuario, userUuid } = useAuth();
 
   // Log para depuração do contexto
-  console.log('[useReportWebhook] hook | userUuid:', userUuid, '| usuario:', usuario);
+  console.log('[useReportWebhook] hook instanciado');
 
   // Gerar ID seguro para URL
   const gerarIdSeguro = (): string => uuidv4();
@@ -64,11 +63,15 @@ export function useReportWebhook() {
   };
 
   // Criar relatório compartilhável
-  const criarRelatorioCompartilhavel = async (params: CriarRelatorioCompartilhavelParams): Promise<RelatorioCompartilhavel | null> => {
+  const criarRelatorioCompartilhavel = async (
+    params: CriarRelatorioCompartilhavelParams,
+    userUuid: string,
+    usuario: Usuario | null
+  ): Promise<RelatorioCompartilhavel | null> => {
     setLoading(true);
     try {
       console.log('[useReportWebhook] criarRelatorioCompartilhavel | userUuid:', userUuid, '| usuario:', usuario);
-      if (!userUuid) throw new Error('Usuário não autenticado');
+      if (!userUuid) throw new Error('Usuário não autenticado. UUID não fornecido.');
       if (!params.titulo?.trim()) throw new Error('Título é obrigatório');
       if (!params.dados) throw new Error('Dados do relatório são obrigatórios');
 
@@ -145,7 +148,7 @@ export function useReportWebhook() {
   };
 
   // Listar relatórios compartilhados do usuário
-  const listarRelatoriosCompartilhados = async (): Promise<void> => {
+  const listarRelatoriosCompartilhados = async (userUuid: string): Promise<void> => {
     if (!userUuid) return;
     setLoading(true);
     try {
@@ -187,7 +190,7 @@ export function useReportWebhook() {
           metadados,
           url: `${window.location.origin}/relatorio-compartilhado/${item.id}`,
           criadoEm: item.criado_em,
-          criadoPor: usuario?.nome || usuario?.email || '',
+          criadoPor: item.descricao || 'N/A',
           acessos: item.acessos || 0,
           ultimoAcesso: item.ultimo_acesso
         } as RelatorioCompartilhavel;
@@ -205,7 +208,11 @@ export function useReportWebhook() {
   };
 
   // Excluir relatório compartilhado
-  const excluirRelatorioCompartilhado = async (id: string): Promise<void> => {
+  const excluirRelatorioCompartilhado = async (id: string, userUuid: string): Promise<void> => {
+    if (!userUuid) {
+      toast({ title: "Erro", description: "Usuário não identificado para exclusão.", variant: "destructive" });
+      return;
+    }
     setLoading(true);
     try {
       const { error } = await supabase

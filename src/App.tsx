@@ -39,43 +39,43 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/projetos" element={<Projetos />} />
-                <Route path="/projetos/:id" element={<ProjetoDetalhes />} />
-                <Route path="/status" element={<Status />} />
-                <Route path="/status/:id" element={<StatusDetalhes />} />
-                <Route path="/status/novo" element={<NovoStatus />} />
-                <Route path="/novo-status" element={<NovoStatus />} />
-                <Route path="/status/editar/:id" element={<EditarStatus />} />
-                <Route path="/aprovacoes" element={<Aprovacoes />} />
-                <Route path="/incidentes" element={<Incidentes />} />
-                <Route path="/incidentes-registros" element={<IncidentesRegistros />} />
-                <Route path="/mudancas" element={<Mudancas />} />
-                <Route path="/nova-mudanca" element={<Mudancas />} />
-                <Route path="/mudancas/:id" element={<MudancaDetalhes />} />
-                <Route path="/mudancas/editar/:id" element={<EditarMudanca />} />
-                <Route path="/licoes" element={<Licoes />} />
-                <Route path="/licoes/:id" element={<LicaoDetalhes />} />
-                <Route path="/relatorios" element={<Relatorios />} />
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/projetos" element={<Projetos />} />
+              <Route path="/projetos/:id" element={<ProjetoDetalhes />} />
+              <Route path="/status" element={<Status />} />
+              <Route path="/status/:id" element={<StatusDetalhes />} />
+              <Route path="/status/novo" element={<NovoStatus />} />
+              <Route path="/novo-status" element={<NovoStatus />} />
+              <Route path="/status/editar/:id" element={<EditarStatus />} />
+              <Route path="/aprovacoes" element={<Aprovacoes />} />
+              <Route path="/incidentes" element={<Incidentes />} />
+              <Route path="/incidentes-registros" element={<IncidentesRegistros />} />
+              <Route path="/mudancas" element={<Mudancas />} />
+              <Route path="/nova-mudanca" element={<Mudancas />} />
+              <Route path="/mudancas/:id" element={<MudancaDetalhes />} />
+              <Route path="/mudancas/editar/:id" element={<EditarMudanca />} />
+              <Route path="/licoes" element={<Licoes />} />
+              <Route path="/licoes/:id" element={<LicaoDetalhes />} />
+              <Route path="/relatorios" element={<Relatorios />} />
                 <Route path="/relatorio-compartilhado/:id" element={<RelatorioCompartilhado />} />
                 <Route path="/relatorios-compartilhados" element={<RelatoriosCompartilhados />} />
-                <Route path="/relatorio-consolidado" element={<RelatorioConsolidado />} />
-                <Route path="/relatorio-visual" element={<RelatorioVisualPagina />} />
-                <Route path="/relatorio-visual-mobile" element={<RelatorioVisualMobile />} />
-                <Route path="/administracao" element={<Administracao />} />
-                <Route path="/configuracoes" element={<Configuracoes />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          </TooltipProvider>
-        </ThemeProvider>
+              <Route path="/relatorio-consolidado" element={<RelatorioConsolidado />} />
+              <Route path="/relatorio-visual" element={<RelatorioVisualPagina />} />
+              <Route path="/relatorio-visual-mobile" element={<RelatorioVisualMobile />} />
+              <Route path="/administracao" element={<Administracao />} />
+              <Route path="/configuracoes" element={<Configuracoes />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </ThemeProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

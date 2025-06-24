@@ -47,7 +47,7 @@ const loadHtml2Pdf = async (): Promise<any> => {
       script.onload = () => {
         console.log('html2pdf carregado via CDN');
         if (window.html2pdf) {
-          resolve(window.html2pdf);
+        resolve(window.html2pdf);
         } else {
           reject(new Error('html2pdf não disponível após carregamento'));
         }
@@ -63,7 +63,7 @@ const loadHtml2Pdf = async (): Promise<any> => {
       // Timeout de 15 segundos
       setTimeout(() => {
         if (!window.html2pdf) {
-          reject(new Error('Timeout ao carregar html2pdf'));
+        reject(new Error('Timeout ao carregar html2pdf'));
         }
       }, 15000);
     });
@@ -139,7 +139,7 @@ export default function RelatorioCompartilhado() {
             setLoading(false);
             return;
           }
-
+          
           // Verificar se é protegido por senha
           if (reportData.configuracao?.protegidoPorSenha) {
             setProtegidoPorSenha(true);
@@ -299,17 +299,17 @@ export default function RelatorioCompartilhado() {
         margin: 10,
         filename: filename,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { 
+          html2canvas: { 
           scale: 2,
-          useCORS: true,
-          allowTaint: true,
-          backgroundColor: '#ffffff',
+            useCORS: true,
+            allowTaint: true,
+            backgroundColor: '#ffffff',
           logging: false,
           letterRendering: true
-        },
-        jsPDF: { 
+          },
+          jsPDF: { 
           unit: 'mm', 
-          format: 'a4', 
+            format: 'a4', 
           orientation: dados.tipo === 'visual' ? 'landscape' : 'portrait'
         }
       };
@@ -548,7 +548,7 @@ ${protegidoPorSenha ? '🔒 Relatório protegido por senha' : ''}
                   {dados.titulo}
                 </h1>
                 <div className="flex items-center gap-3 mt-1">
-                  <p className="text-gray-600">
+                <p className="text-gray-600">
                     Gerado em {new Date(dados.metadados.dataGeracao).toLocaleDateString('pt-BR')}
                   </p>
                   <Badge variant="outline" className="capitalize">

@@ -765,6 +765,25 @@ export type Database = {
           }
         ];
       };
+      tipos_status_entrega: {
+        Row: TipoStatusEntrega;
+        Insert: Omit<TipoStatusEntrega, 'id' | 'criado_em' | 'atualizado_em'>;
+        Update: Partial<Omit<TipoStatusEntrega, 'id' | 'criado_em' | 'atualizado_em'>>;
+        Relationships: [];
+      };
+      relatorios_salvos: {
+        Row: RelatorioSalvo;
+        Insert: Omit<RelatorioSalvo, 'id' | 'criado_em' | 'atualizado_em' | 'visualizacoes'>;
+        Update: Partial<Omit<RelatorioSalvo, 'id' | 'criado_em' | 'atualizado_em'>>;
+        Relationships: [
+          {
+            foreignKeyName: "relatorios_salvos_usuario_id_fkey";
+            columns: ["usuario_id"];
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
     }
     Views: {
       [_ in never]: never
@@ -1002,3 +1021,31 @@ export const Constants = {
     },
   },
 } as const
+
+export interface TipoStatusEntrega {
+  id: number;
+  nome: string;
+  cor: string;
+  descricao?: string;
+  ordem: number;
+  ativo: boolean;
+  criado_em: string;
+  atualizado_em: string;
+}
+
+export interface RelatorioSalvo {
+  id: number;
+  usuario_id: string;
+  tipo_relatorio: 'asa' | 'visual' | 'consolidado';
+  titulo: string;
+  descricao?: string;
+  parametros: Record<string, any>;
+  link_compartilhavel?: string;
+  data_geracao: string;
+  data_expiracao?: string;
+  visualizacoes: number;
+  publico: boolean;
+  ativo: boolean;
+  criado_em: string;
+  atualizado_em: string;
+}

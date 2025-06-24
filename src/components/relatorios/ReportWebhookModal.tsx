@@ -32,7 +32,7 @@ export function ReportWebhookModal({
   responsavel
 }: ReportWebhookModalProps) {
   const { criarRelatorioCompartilhavel, loading } = useReportWebhook();
-  const { userUuid, isLoading: isAuthLoading } = useAuth();
+  const { userUuid, usuario, isLoading: isAuthLoading } = useAuth();
   
   // Log para depuração
   console.log('[ReportWebhookModal] userUuid:', userUuid, '| isAuthLoading:', isAuthLoading);
@@ -74,7 +74,7 @@ export function ReportWebhookModal({
       senha: protegidoPorSenha ? senha : undefined
     };
 
-    const resultado = await criarRelatorioCompartilhavel(parametros);
+    const resultado = await criarRelatorioCompartilhavel(parametros, userUuid, usuario);
     if (resultado) {
       setRelatorioGerado(resultado);
     }
@@ -334,12 +334,12 @@ ${protegidoPorSenha ? '🔒 Relatório protegido por senha' : ''}
               </Button>
             <Button 
                 onClick={handleGerarRelatorio}
-                disabled={loading || isAuthLoading || (!titulo.trim() && !tituloSugerido.trim()) || (protegidoPorSenha && !senha.trim())}
+                disabled={loading || isAuthLoading || !userUuid || (!titulo.trim() && !tituloSugerido.trim()) || (protegidoPorSenha && !senha.trim())}
                 className="bg-blue-600 hover:bg-blue-700"
-                title={isAuthLoading ? 'Aguardando autenticação...' : undefined}
-              >
+                title={!userUuid ? 'Aguarde a autenticação para compartilhar o relatório.' : undefined}
+            >
                 {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                {isAuthLoading ? 'Aguardando autenticação...' : 'Gerar Link'}
+                {isAuthLoading || !userUuid ? 'Aguardando autenticação...' : 'Gerar Link'}
               </Button>
                 </>
               ) : (

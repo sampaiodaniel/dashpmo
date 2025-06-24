@@ -10,9 +10,10 @@ import { TipoProjetoModal } from './TipoProjetoModal';
 import { ConfiguracaoSistema } from '@/types/admin';
 import { TipoProjeto } from '@/hooks/useTiposProjeto';
 import { useQueryClient } from '@tanstack/react-query';
+import { AdminStatusEntrega } from './AdminStatusEntrega';
 
 export function AdminConfiguracoes() {
-  const [tipoAtivo, setTipoAtivo] = useState<string>('responsavel_cwi');
+  const [tipoAtivo, setTipoAtivo] = useState<string>('carteira');
   const [modalAberto, setModalAberto] = useState(false);
   const [tipoProjetoModalAberto, setTipoProjetoModalAberto] = useState(false);
   const [configuracaoEditando, setConfiguracaoEditando] = useState<ConfiguracaoSistema | null>(null);
@@ -26,14 +27,14 @@ export function AdminConfiguracoes() {
 
   // Todas as listas usadas no sistema - organizadas em 2 linhas
   const tiposConfiguracao = [
-    { key: 'responsavel_cwi', label: 'Responsáveis CWI', descricao: 'Gerentes de Projeto e Responsáveis técnicos da CWI' },
     { key: 'carteira', label: 'Carteiras', descricao: 'Carteiras/áreas de negócio (primária, secundária, terciária)' },
     { key: 'status_geral', label: 'Status Geral', descricao: 'Status gerais dos projetos' },
-    { key: 'status_visao_gp', label: 'Status Visão Chefe do Projeto', descricao: 'Cores de status na visão do Chefe do Projeto (Verde, Amarelo, Vermelho)' },
+    { key: 'status_visao_gp', label: 'Status Visão GP', descricao: 'Cores de status na visão do Chefe do Projeto' },
     { key: 'nivel_risco', label: 'Níveis de Risco', descricao: 'Níveis de risco para probabilidade e impacto' },
     { key: 'tipo_mudanca', label: 'Tipos de Mudança', descricao: 'Tipos de mudança/replanejamento' },
     { key: 'categoria_licao', label: 'Categorias de Lição', descricao: 'Categorias para lições aprendidas' },
-    { key: 'tipos_projeto', label: 'Tipos de Projeto', descricao: 'Tipos de projeto configuráveis' }
+    { key: 'tipos_projeto', label: 'Tipos de Projeto', descricao: 'Tipos de projeto configuráveis' },
+    { key: 'status_entrega', label: 'Status de Entrega', descricao: 'Gerencie os status que podem ser aplicados a uma entrega.'}
   ];
 
   const handleEditar = (config: ConfiguracaoSistema) => {
@@ -108,7 +109,7 @@ export function AdminConfiguracoes() {
               </TabsList>
             </div>
 
-            {tiposConfiguracao.slice(0, 7).map((tipo) => (
+            {tiposConfiguracao.filter(t => t.key !== 'status_entrega').map((tipo) => (
               <TabsContent key={tipo.key} value={tipo.key} className="mt-6">
                 <div className="space-y-4">
                   <div className="flex justify-between items-start">
@@ -166,6 +167,11 @@ export function AdminConfiguracoes() {
                 </div>
               </TabsContent>
             ))}
+
+            {/* Aba especial para status de entrega */}
+            <TabsContent value="status_entrega" className="mt-6">
+              <AdminStatusEntrega />
+            </TabsContent>
 
             {/* Aba especial para tipos de projeto */}
             <TabsContent value="tipos_projeto" className="mt-6">

@@ -4,157 +4,117 @@ import { StatusProjeto } from '@/types/pmo';
 import { formatarData } from '@/utils/dateFormatting';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { StatusEntregaBadge } from '@/components/common/StatusEntregaBadge';
-import { useStatusEntrega } from '@/hooks/useStatusEntrega';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Loader2 } from 'lucide-react';
 
 interface ProximasEntregasSectionProps {
   status: StatusProjeto;
 }
 
-function obterStatusEntregaId(status: any, cacheStatus: Record<string, number>, campoBanco: string, campoCache: string, statusEntrega: any[]): number {
-  if (status[campoBanco]) return status[campoBanco];
-  if (cacheStatus[campoCache]) return cacheStatus[campoCache];
-  return statusEntrega.length > 0 ? statusEntrega[0].id : 1;
+// Novo tipo para representar a entrega como ela vem do banco
+interface EntregaStatus {
+  id: number;
+  nome_entrega: string;
+  data_entrega: string | null;
+  entregaveis: string | null;
+  status_da_entrega: string;
+  ordem: number;
 }
 
+// Componente para exibir o status com cor
+const StatusBadge = ({ status }: { status: string }) => {
+  const statusInfo: { [key: string]: { label: string; color: string } } = {
+    'No Prazo': { label: 'No Prazo', color: 'bg-green-100 text-green-800 border-green-200' },
+    'Atenção': { label: 'Atenção', color: 'bg-yellow-100 text-yellow-800 border-yellow-200' },
+    'Atrasado': { label: 'Atrasado', color: 'bg-red-100 text-red-800 border-red-200' },
+    'Não iniciado': { label: 'Não iniciado', color: 'bg-gray-100 text-gray-800 border-gray-200' },
+    'Concluído': { label: 'Concluído', color: 'bg-blue-100 text-blue-800 border-blue-200' },
+  };
+
+  const info = statusInfo[status] || statusInfo['Não iniciado'];
+
+  return (
+    <Badge className={`text-sm font-normal ${info.color}`}>{info.label}</Badge>
+  );
+};
+
 export function ProximasEntregasSection({ status }: ProximasEntregasSectionProps) {
-  const { carregarStatusCache, statusEntrega } = useStatusEntrega();
   
-  // Carregar cache de status se os campos não existirem no banco
-  const cacheStatus = carregarStatusCache(status.id);
-  
-  // Buscar entregas extras da tabela entregas_status
-  const { data: entregasExtras = [] } = useQuery({
-    queryKey: ['entregas-status', status.id],
+  const { data: entregas, isLoading, error } = useQuery<EntregaStatus[]>({
+    queryKey: ['entregas_status_detalhes', status.id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('entregas_status')
-        .select('*')
+        .select('id, nome_entrega, data_entrega, entregaveis, status_da_entrega, ordem')
         .eq('status_id', status.id)
         .order('ordem', { ascending: true });
 
-      if (error) {
-        console.error('Erro ao buscar entregas extras:', error);
-        return [];
-      }
-
+      if (error) throw new Error(error.message);
       return data || [];
     },
   });
 
-  const entregas = [];
-  
-  // Adicionar entregas principais apenas uma vez
-  if (status.entrega1) {
-    const statusId = obterStatusEntregaId(status, cacheStatus, 'status_entrega1_id', 'entrega1', statusEntrega);
-    
-    const entrega1 = {
-      nome: status.entrega1,
-      data: status.data_marco1,
-      entregaveis: status.entregaveis1,
-      ordem: 1,
-      tipo: 'principal',
-      statusEntregaId: statusId
-    };
-    entregas.push(entrega1);
-  }
-  
-  if (status.entrega2) {
-    const statusId = obterStatusEntregaId(status, cacheStatus, 'status_entrega2_id', 'entrega2', statusEntrega);
-    
-    const entrega2 = {
-      nome: status.entrega2,
-      data: status.data_marco2,
-      entregaveis: status.entregaveis2,
-      ordem: 2,
-      tipo: 'principal',
-      statusEntregaId: statusId
-    };
-    entregas.push(entrega2);
-  }
-  
-  if (status.entrega3) {
-    const statusId = obterStatusEntregaId(status, cacheStatus, 'status_entrega3_id', 'entrega3', statusEntrega);
-    
-    const entrega3 = {
-      nome: status.entrega3,
-      data: status.data_marco3,
-      entregaveis: status.entregaveis3,
-      ordem: 3,
-      tipo: 'principal',
-      statusEntregaId: statusId
-    };
-    entregas.push(entrega3);
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-left">Próximas Entregas</CardTitle>
+        </CardHeader>
+        <CardContent className="flex items-center justify-center p-8">
+          <Loader2 className="h-6 w-6 animate-spin text-pmo-primary" />
+          <span className="ml-2">Carregando entregas...</span>
+        </CardContent>
+      </Card>
+    );
   }
 
-  // Adicionar entregas extras vindas da tabela entregas_status
-  entregasExtras.forEach((entrega: any, index: number) => {
-    const statusId = obterStatusEntregaId(entrega, cacheStatus, `status_entrega_id`, `extra${index + 4}`, statusEntrega);
-    
-    const entregaExtra = {
-      nome: entrega.nome_entrega,
-      data: entrega.data_entrega,
-      entregaveis: entrega.entregaveis,
-      ordem: entrega.ordem,
-      tipo: 'extra',
-      statusEntregaId: statusId
-    };
-    entregas.push(entregaExtra);
-  });
+  if (error) {
+     return (
+      <Alert variant="destructive">
+        <AlertDescription>Erro ao carregar as entregas: {error.message}</AlertDescription>
+      </Alert>
+    );
+  }
 
-  // Remover duplicatas considerando nome, data e entregáveis
-  const entregasUnicas = entregas.filter((entrega, index, arr) => {
-    return arr.findIndex(e => 
-      e.nome === entrega.nome && 
-      e.data === entrega.data && 
-      e.entregaveis === entrega.entregaveis
-    ) === index;
-  });
-
-  if (entregasUnicas.length === 0) {
-    return null;
+  if (!entregas || entregas.length === 0) {
+    return (
+       <Card>
+        <CardHeader>
+          <CardTitle className="text-left">Próximas Entregas</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-gray-500 text-center p-4">Nenhuma entrega cadastrada para este status.</p>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-left">Próximas Entregas ({entregasUnicas.length})</CardTitle>
+        <CardTitle className="text-left">Próximas Entregas ({entregas.length})</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4 text-left">
-        {entregasUnicas.map((entrega, index) => (
-          <div key={`${entrega.tipo}-${entrega.ordem}-${index}`} className="border rounded-lg p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <h4 className="font-medium text-pmo-primary text-left">{entrega.nome}</h4>
-              <div className="flex items-center gap-2">
-                {entrega.statusEntregaId && (
-                  <StatusEntregaBadge statusId={entrega.statusEntregaId} size="sm" showText={false} />
-                )}
-                <Badge variant="outline">Entrega {entrega.ordem}</Badge>
+        {entregas.map((entrega) => (
+          <div key={entrega.id} className="border rounded-lg p-4 space-y-3 bg-gray-50/50">
+            <div className="flex items-start justify-between">
+              <h4 className="font-semibold text-pmo-primary text-left flex-1 pr-4">{entrega.nome_entrega}</h4>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <StatusBadge status={entrega.status_da_entrega} />
               </div>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {entrega.statusEntregaId && (
-                <div className="text-left">
-                  <span className="text-sm font-medium text-pmo-gray">Status:</span>
-                  <div className="mt-1">
-                    <StatusEntregaBadge statusId={entrega.statusEntregaId} size="sm" />
-                  </div>
-                </div>
-              )}
-            
-              {entrega.data && (
-                <div className="text-left">
-                  <span className="text-sm font-medium text-pmo-gray">Data prevista:</span>
-                  <p className="text-sm text-gray-700 mt-1">{formatarData(entrega.data)}</p>
-                </div>
-              )}
-            </div>
+            {entrega.data_entrega && (
+              <div className="text-left">
+                <span className="text-sm font-medium text-pmo-gray">Data prevista:</span>
+                <p className="text-sm text-gray-800 mt-1">{formatarData(entrega.data_entrega)}</p>
+              </div>
+            )}
             
             {entrega.entregaveis && (
               <div className="text-left">
-                <span className="text-sm font-medium text-pmo-gray">Entregáveis:</span>
-                <p className="text-sm text-gray-700 mt-1 whitespace-pre-wrap text-left">
+                <span className="text-sm font-medium text-pmo-gray">Entregáveis / Critérios de Aceite:</span>
+                <p className="text-sm text-gray-800 mt-1 whitespace-pre-wrap text-left">
                   {entrega.entregaveis}
                 </p>
               </div>

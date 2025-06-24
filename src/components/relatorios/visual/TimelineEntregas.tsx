@@ -19,8 +19,8 @@ export function TimelineEntregas({ projetos, forceMobile = false }: TimelineEntr
   // Função para coletar entregas de um projeto
   const coletarEntregasProjeto = (projeto: any) => {
     const status = projeto.ultimoStatus;
-    const entregas = [];
-    
+  const entregas = [];
+  
     if (!status) {
       console.log('❌ Projeto sem ultimo status:', projeto.nome_projeto);
       return entregas;
@@ -28,9 +28,9 @@ export function TimelineEntregas({ projetos, forceMobile = false }: TimelineEntr
     
     const cacheStatus = carregarStatusCache(status.id);
     const fallbackStatusId = statusEntrega.length > 0 ? statusEntrega[0].id : 1;
-    
+      
     // Marco 1
-    if (status.entrega1) {
+      if (status.entrega1) {
       let statusEntregaId = null;
       if (status.status_entrega1_id !== undefined && status.status_entrega1_id !== null) {
         statusEntregaId = status.status_entrega1_id;
@@ -42,21 +42,21 @@ export function TimelineEntregas({ projetos, forceMobile = false }: TimelineEntr
       if (!statusEntregaId) {
         statusEntregaId = fallbackStatusId;
       }
-      entregas.push({
-        data: status.data_marco1 || 'TBD',
-        titulo: status.entrega1,
-        entregaveis: status.entregaveis1,
-        projeto: projeto.nome_projeto || 'Projeto',
-        tipo: 'marco1',
-        cor: '#A6926B',
-        corTexto: '#FFFFFF',
+        entregas.push({
+          data: status.data_marco1 || 'TBD',
+          titulo: status.entrega1,
+          entregaveis: status.entregaveis1,
+          projeto: projeto.nome_projeto || 'Projeto',
+          tipo: 'marco1',
+          cor: '#A6926B',
+          corTexto: '#FFFFFF',
         corBorda: '#A6926B',
         statusEntregaId: statusEntregaId
-      });
-    }
-    
+        });
+      }
+      
     // Marco 2
-    if (status.entrega2) {
+      if (status.entrega2) {
       let statusEntregaId = null;
       if (status.status_entrega2_id !== undefined && status.status_entrega2_id !== null) {
         statusEntregaId = status.status_entrega2_id;
@@ -68,21 +68,21 @@ export function TimelineEntregas({ projetos, forceMobile = false }: TimelineEntr
       if (!statusEntregaId) {
         statusEntregaId = fallbackStatusId;
       }
-      entregas.push({
-        data: status.data_marco2 || 'TBD',
-        titulo: status.entrega2,
-        entregaveis: status.entregaveis2,
-        projeto: projeto.nome_projeto || 'Projeto',
-        tipo: 'marco2',
-        cor: '#2E5984',
-        corTexto: '#FFFFFF',
+        entregas.push({
+          data: status.data_marco2 || 'TBD',
+          titulo: status.entrega2,
+          entregaveis: status.entregaveis2,
+          projeto: projeto.nome_projeto || 'Projeto',
+          tipo: 'marco2',
+          cor: '#2E5984',
+          corTexto: '#FFFFFF',
         corBorda: '#2E5984',
         statusEntregaId: statusEntregaId
-      });
-    }
-    
+        });
+      }
+      
     // Marco 3
-    if (status.entrega3) {
+      if (status.entrega3) {
       let statusEntregaId = null;
       if (status.status_entrega3_id !== undefined && status.status_entrega3_id !== null) {
         statusEntregaId = status.status_entrega3_id;
@@ -94,18 +94,18 @@ export function TimelineEntregas({ projetos, forceMobile = false }: TimelineEntr
       if (!statusEntregaId) {
         statusEntregaId = fallbackStatusId;
       }
-      entregas.push({
-        data: status.data_marco3 || 'TBD',
-        titulo: status.entrega3,
-        entregaveis: status.entregaveis3,
-        projeto: projeto.nome_projeto || 'Projeto',
-        tipo: 'marco3',
-        cor: '#6B7280',
-        corTexto: '#FFFFFF',
+        entregas.push({
+          data: status.data_marco3 || 'TBD',
+          titulo: status.entrega3,
+          entregaveis: status.entregaveis3,
+          projeto: projeto.nome_projeto || 'Projeto',
+          tipo: 'marco3',
+          cor: '#6B7280',
+          corTexto: '#FFFFFF',
         corBorda: '#6B7280',
         statusEntregaId: statusEntregaId
-      });
-    }
+    });
+  }
 
     // Extras
     if (status.entregasExtras && Array.isArray(status.entregasExtras)) {
@@ -143,7 +143,7 @@ export function TimelineEntregas({ projetos, forceMobile = false }: TimelineEntr
     projetos.forEach(projeto => {
       const entregasProjeto = coletarEntregasProjeto(projeto);
       todasEntregas.push(...entregasProjeto);
-    });
+  });
   }
 
   if (projetos.length === 0) {
