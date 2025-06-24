@@ -41,7 +41,7 @@ const loadHtml2Pdf = async (): Promise<any> => {
       script.onload = () => {
         console.log('html2pdf carregado via CDN');
         if (window.html2pdf) {
-          resolve(window.html2pdf);
+        resolve(window.html2pdf);
         } else {
           reject(new Error('html2pdf não disponível após carregamento'));
         }
@@ -57,7 +57,7 @@ const loadHtml2Pdf = async (): Promise<any> => {
       // Timeout de 15 segundos
       setTimeout(() => {
         if (!window.html2pdf) {
-          reject(new Error('Timeout ao carregar html2pdf'));
+        reject(new Error('Timeout ao carregar html2pdf'));
         }
       }, 15000);
     });
@@ -136,17 +136,17 @@ export function RelatorioActions({ dados }: RelatorioActionsProps) {
         margin: 10,
         filename: filename,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { 
+          html2canvas: { 
           scale: 2,
-          useCORS: true,
-          allowTaint: true,
-          backgroundColor: '#ffffff',
+            useCORS: true,
+            allowTaint: true,
+            backgroundColor: '#ffffff',
           logging: false,
           letterRendering: true
-        },
-        jsPDF: { 
-          unit: 'mm', 
-          format: 'a4', 
+          },
+          jsPDF: { 
+            unit: 'mm', 
+            format: 'a4', 
           orientation: 'portrait'
         }
       };
@@ -167,7 +167,7 @@ export function RelatorioActions({ dados }: RelatorioActionsProps) {
       
       await Promise.all(promises);
       console.log('Todas as imagens carregadas');
-
+      
       // Gerar PDF
       await html2pdf()
         .set(config)

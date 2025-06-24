@@ -13,16 +13,16 @@ export interface RelatorioHistorico {
 
 export function useHistoricoRelatorios() {
   const [historico, setHistorico] = useState<RelatorioHistorico[]>([]);
-  const { usuario } = useAuth();
+  const { userUuid } = useAuth();
 
   // Buscar histórico do banco ao logar
   useEffect(() => {
     const fetchHistorico = async () => {
-      if (!usuario?.id) return;
+      if (!userUuid) return;
       const { data, error } = await supabase
         .from('relatorios_usuario')
         .select('*')
-        .eq('usuario_id', usuario.id)
+        .eq('usuario_id', userUuid)
         .order('criado_em', { ascending: false });
       if (error) {
         console.error('Erro ao buscar histórico de relatórios:', error);
@@ -39,13 +39,13 @@ export function useHistoricoRelatorios() {
       setHistorico(historicoDb);
     };
     fetchHistorico();
-  }, [usuario?.id]);
+  }, [userUuid]);
 
   // Adicionar relatório ao histórico (e ao banco)
   const adicionarRelatorio = async (relatorio: Omit<RelatorioHistorico, 'id' | 'dataGeracao'>) => {
-    if (!usuario?.id) return;
+    if (!userUuid) return;
     const novoRelatorio = {
-      usuario_id: usuario.id,
+      usuario_id: userUuid,
       tipo: relatorio.tipo,
       titulo: relatorio.nomeArquivo,
       dados: {
@@ -64,13 +64,14 @@ export function useHistoricoRelatorios() {
       return;
     }
     if (data && data[0]) {
+      const dados = data[0].dados && typeof data[0].dados === 'object' && !Array.isArray(data[0].dados) ? data[0].dados : {};
       setHistorico(prev => [{
         id: data[0].id,
-        tipo: data[0].tipo,
-        filtro: data[0].dados?.filtro || '',
-        valor: data[0].dados?.valor || '',
+        tipo: (['asa','visual','consolidado'].includes(data[0].tipo) ? data[0].tipo : 'visual') as 'asa'|'visual'|'consolidado',
+        filtro: typeof dados.filtro === 'string' ? dados.filtro : '',
+        valor: typeof dados.valor === 'string' ? dados.valor : '',
         dataGeracao: data[0].criado_em ? new Date(data[0].criado_em) : new Date(),
-        nomeArquivo: data[0].dados?.nomeArquivo || ''
+        nomeArquivo: typeof dados.nomeArquivo === 'string' ? dados.nomeArquivo : ''
       }, ...prev]);
     }
   };
@@ -90,11 +91,11 @@ export function useHistoricoRelatorios() {
 
   // Limpar histórico do usuário (deleta todos do banco)
   const limparHistorico = async () => {
-    if (!usuario?.id) return;
+    if (!userUuid) return;
     const { error } = await supabase
       .from('relatorios_usuario')
       .delete()
-      .eq('usuario_id', usuario.id);
+      .eq('usuario_id', userUuid);
     if (error) {
       console.error('Erro ao limpar histórico:', error);
       return;

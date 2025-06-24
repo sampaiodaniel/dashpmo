@@ -10,6 +10,7 @@ import { useReportWebhook, CriarRelatorioCompartilhavelParams, RelatorioComparti
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import React from 'react';
+import { useAuth } from '@/hooks/useAuth';
 
 interface ReportWebhookModalProps {
   isOpen: boolean;
@@ -31,7 +32,11 @@ export function ReportWebhookModal({
   responsavel
 }: ReportWebhookModalProps) {
   const { criarRelatorioCompartilhavel, loading } = useReportWebhook();
+  const { userUuid, isLoading: isAuthLoading } = useAuth();
   
+  // Log para depuração
+  console.log('[ReportWebhookModal] userUuid:', userUuid, '| isAuthLoading:', isAuthLoading);
+
   // Estados do formulário
   const [titulo, setTitulo] = useState('');
   const [expiraEm, setExpiraEm] = useState(30);
@@ -181,21 +186,21 @@ ${protegidoPorSenha ? '🔒 Relatório protegido por senha' : ''}
               <div className="space-y-2">
                 <Label htmlFor="expiracao">Válido por</Label>
                 <Select value={expiraEm.toString()} onValueChange={(value) => setExpiraEm(parseInt(value))}>
-                  <SelectTrigger>
+              <SelectTrigger>
                     <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
+              </SelectTrigger>
+              <SelectContent>
                     {opcoesExpiracao.map(opcao => (
                       <SelectItem key={opcao.valor} value={opcao.valor.toString()}>
                         <div className="flex items-center gap-2">
                           <Calendar className="h-4 w-4" />
                           {opcao.label}
                         </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
               <div className="space-y-2">
                 <Label>Informações</Label>
@@ -267,10 +272,10 @@ ${protegidoPorSenha ? '🔒 Relatório protegido por senha' : ''}
             </div>
 
             <div className="space-y-4">
-              <div>
+          <div>
                 <Label>Link do Relatório</Label>
                 <div className="flex gap-2 mt-1">
-                  <Input
+            <Input
                     value={relatorioGerado.url}
                     readOnly
                     className="font-mono text-sm"
@@ -327,17 +332,18 @@ ${protegidoPorSenha ? '🔒 Relatório protegido por senha' : ''}
               <Button variant="outline" onClick={handleClose}>
                 Cancelar
               </Button>
-              <Button
+            <Button 
                 onClick={handleGerarRelatorio}
-                disabled={loading || (!titulo.trim() && !tituloSugerido.trim()) || (protegidoPorSenha && !senha.trim())}
+                disabled={loading || isAuthLoading || (!titulo.trim() && !tituloSugerido.trim()) || (protegidoPorSenha && !senha.trim())}
                 className="bg-blue-600 hover:bg-blue-700"
+                title={isAuthLoading ? 'Aguardando autenticação...' : undefined}
               >
                 {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                Gerar Link
+                {isAuthLoading ? 'Aguardando autenticação...' : 'Gerar Link'}
               </Button>
-            </>
-          ) : (
-            <>
+                </>
+              ) : (
+                <>
               <Button variant="outline" onClick={handleReset}>
                 Gerar Novo
               </Button>
@@ -356,8 +362,8 @@ ${protegidoPorSenha ? '🔒 Relatório protegido por senha' : ''}
                 <ExternalLink className="h-4 w-4 mr-2" />
                 Abrir Relatório
               </Button>
-            </>
-          )}
+                </>
+              )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

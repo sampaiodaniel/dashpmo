@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { verificarCriacaoNoLogin } from '@/utils/debugIncidentes';
@@ -13,6 +12,7 @@ interface Usuario {
 
 interface AuthContextType {
   usuario: Usuario | null;
+  userUuid: string | null;
   isLoading: boolean;
   login: (email: string, senha: string) => Promise<boolean>;
   logout: () => void;
@@ -24,6 +24,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [usuario, setUsuario] = useState<Usuario | null>(null);
+  const [userUuid, setUserUuid] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const checkAuthStatus = async () => {
@@ -56,6 +57,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             areas_acesso: data.areas_acesso || []
           };
           setUsuario(usuarioMapeado);
+          // Buscar UUID do usuário autenticado no Supabase Auth
+          const { data: authUser } = await supabase.auth.getUser();
+          setUserUuid(authUser?.user?.id || null);
           console.log('✅ Usuário autenticado:', usuarioMapeado.nome);
         }
       }
@@ -69,6 +73,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     checkAuthStatus();
   }, []);
+
+  // Garantir que o userUuid e usuario estejam preenchidos mesmo se o usuário já estiver autenticado no Supabase Auth
+  useEffect(() => {
+    const fetchUserUuid = async () => {
+      const { data: authUser } = await supabase.auth.getUser();
+      setUserUuid(authUser?.user?.id || null);
+      if (authUser?.user?.id) {
+        // Se não houver usuario local, criar um mínimo para liberar o fluxo de compartilhamento
+        if (!usuario) {
+          setUsuario({
+            id: -1,
+            nome: authUser.user.email || 'Usuário Supabase',
+            email: authUser.user.email || '',
+            tipo_usuario: 'visualizador',
+            areas_acesso: []
+          });
+          console.log('👤 Usuário local mínimo criado via Supabase Auth:', authUser.user.email);
+        }
+        setIsLoading(false);
+        console.log('🔑 userUuid preenchido via Supabase Auth:', authUser.user.id);
+      }
+    };
+    fetchUserUuid();
+    // Listener para mudanças de sessão do Supabase Auth
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUserUuid(session?.user?.id || null);
+      if (session?.user?.id) {
+        if (!usuario) {
+          setUsuario({
+            id: -1,
+            nome: session.user.email || 'Usuário Supabase',
+            email: session.user.email || '',
+            tipo_usuario: 'visualizador',
+            areas_acesso: []
+          });
+          console.log('👤 Usuário local mínimo criado via onAuthStateChange:', session.user.email);
+        }
+        setIsLoading(false);
+        console.log('🔄 userUuid atualizado via onAuthStateChange:', session.user.id);
+      }
+    });
+    return () => {
+      listener?.subscription.unsubscribe();
+    };
+  }, [usuario]);
 
   const login = async (email: string, senha: string): Promise<boolean> => {
     try {
@@ -115,6 +164,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem('pmo_user', JSON.stringify(usuarioMapeado));
       
       setUsuario(usuarioMapeado);
+      // Buscar UUID do usuário autenticado no Supabase Auth
+      const { data: authUser } = await supabase.auth.getUser();
+      setUserUuid(authUser?.user?.id || null);
       console.log('✅ Login realizado com sucesso:', usuarioMapeado.nome);
       
       // INVESTIGAÇÃO: Verificar criação de incidentes após login
@@ -133,6 +185,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('pmo_token');
     localStorage.removeItem('pmo_user');
     setUsuario(null);
+    setUserUuid(null);
     console.log('👋 Logout realizado');
   };
 
@@ -149,6 +202,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return (
     <AuthContext.Provider value={{
       usuario,
+      userUuid,
       isLoading,
       login,
       logout,

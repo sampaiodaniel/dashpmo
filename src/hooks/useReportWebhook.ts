@@ -42,15 +42,13 @@ export interface CriarRelatorioCompartilhavelParams {
 export function useReportWebhook() {
   const [loading, setLoading] = useState(false);
   const [relatoriosCompartilhados, setRelatoriosCompartilhados] = useState<RelatorioCompartilhavel[]>([]);
-  const { usuario } = useAuth();
+  const { usuario, userUuid } = useAuth();
+
+  // Log para depuração do contexto
+  console.log('[useReportWebhook] hook | userUuid:', userUuid, '| usuario:', usuario);
 
   // Gerar ID seguro para URL
-  const gerarIdSeguro = (): string => {
-    const uuid = uuidv4().replace(/-/g, '');
-    const timestamp = Date.now().toString(36);
-    const random = Math.random().toString(36).substring(2, 8);
-    return `${timestamp}-${random}-${uuid.substring(0, 16)}`;
-  };
+  const gerarIdSeguro = (): string => uuidv4();
 
   // Calcular tamanho em MB dos dados
   const calcularTamanho = (dados: any): number => {
@@ -69,7 +67,8 @@ export function useReportWebhook() {
   const criarRelatorioCompartilhavel = async (params: CriarRelatorioCompartilhavelParams): Promise<RelatorioCompartilhavel | null> => {
     setLoading(true);
     try {
-      if (!usuario?.id) throw new Error('Usuário não autenticado');
+      console.log('[useReportWebhook] criarRelatorioCompartilhavel | userUuid:', userUuid, '| usuario:', usuario);
+      if (!userUuid) throw new Error('Usuário não autenticado');
       if (!params.titulo?.trim()) throw new Error('Título é obrigatório');
       if (!params.dados) throw new Error('Dados do relatório são obrigatórios');
 
@@ -96,7 +95,7 @@ export function useReportWebhook() {
         },
         url: `${window.location.origin}/relatorio-compartilhado/${id}`,
         criadoEm: agora.toISOString(),
-        criadoPor: usuario.nome || usuario.email,
+        criadoPor: usuario?.nome || usuario?.email || userUuid,
         acessos: 0
       };
 
@@ -104,7 +103,7 @@ export function useReportWebhook() {
       const { error } = await supabase.from('relatorios_usuario').insert([
         {
           id,
-          usuario_id: String(usuario.id),
+          usuario_id: userUuid,
           tipo: params.tipo,
           titulo: params.titulo,
           dados: {
@@ -147,22 +146,37 @@ export function useReportWebhook() {
 
   // Listar relatórios compartilhados do usuário
   const listarRelatoriosCompartilhados = async (): Promise<void> => {
-    if (!usuario?.id) return;
+    if (!userUuid) return;
     setLoading(true);
     try {
       const { data, error } = await supabase
         .from('relatorios_usuario')
         .select('*')
-        .eq('usuario_id', String(usuario.id))
+        .eq('usuario_id', userUuid)
         .eq('compartilhado', true)
         .order('criado_em', { ascending: false });
       if (error) throw new Error('Erro ao buscar relatórios: ' + error.message);
       const relatorios = (data || []).map((item: Database['public']['Tables']['relatorios_usuario']['Row']) => {
         let configuracao: RelatorioCompartilhavel['configuracao'] = { expiraEm: 30 };
         let metadados: RelatorioCompartilhavel['metadados'] = { dataGeracao: '', tamanhoMB: 0 };
-        if (item.dados && typeof item.dados === 'object') {
-          if ('configuracao' in item.dados) configuracao = item.dados.configuracao;
-          if ('metadados' in item.dados) metadados = item.dados.metadados;
+        if (item.dados && typeof item.dados === 'object' && !Array.isArray(item.dados)) {
+          if ('configuracao' in item.dados && typeof item.dados.configuracao === 'object' && !Array.isArray(item.dados.configuracao)) {
+            const conf = item.dados.configuracao;
+            configuracao = {
+              expiraEm: typeof conf.expiraEm === 'number' ? conf.expiraEm : 30,
+              protegidoPorSenha: typeof conf.protegidoPorSenha === 'boolean' ? conf.protegidoPorSenha : false,
+              senha: typeof conf.senha === 'string' ? conf.senha : undefined
+            };
+          }
+          if ('metadados' in item.dados && typeof item.dados.metadados === 'object' && !Array.isArray(item.dados.metadados)) {
+            const meta = item.dados.metadados;
+            metadados = {
+              carteira: typeof meta.carteira === 'string' ? meta.carteira : undefined,
+              responsavel: typeof meta.responsavel === 'string' ? meta.responsavel : undefined,
+              dataGeracao: typeof meta.dataGeracao === 'string' ? meta.dataGeracao : '',
+              tamanhoMB: typeof meta.tamanhoMB === 'number' ? meta.tamanhoMB : 0
+            };
+          }
         }
         return {
           id: item.id,
@@ -173,14 +187,14 @@ export function useReportWebhook() {
           metadados,
           url: `${window.location.origin}/relatorio-compartilhado/${item.id}`,
           criadoEm: item.criado_em,
-          criadoPor: usuario.nome || usuario.email,
+          criadoPor: usuario?.nome || usuario?.email || '',
           acessos: item.acessos || 0,
           ultimoAcesso: item.ultimo_acesso
-        };
+        } as RelatorioCompartilhavel;
       });
       setRelatoriosCompartilhados(relatorios);
     } catch (error) {
-      toast({
+          toast({
         title: "Erro",
         description: error instanceof Error ? error.message : 'Erro ao listar relatórios',
         variant: "destructive"
@@ -198,15 +212,15 @@ export function useReportWebhook() {
         .from('relatorios_usuario')
         .delete()
         .eq('id', id)
-        .eq('usuario_id', String(usuario?.id));
+        .eq('usuario_id', userUuid);
       if (error) throw new Error('Erro ao excluir relatório: ' + error.message);
       setRelatoriosCompartilhados(prev => prev.filter(r => r.id !== id));
-      toast({
+            toast({
         title: "Relatório excluído",
         description: "O relatório compartilhado foi removido com sucesso.",
       });
     } catch (error) {
-      toast({
+            toast({
         title: "Erro",
         description: error instanceof Error ? error.message : 'Erro ao excluir relatório',
         variant: "destructive"
