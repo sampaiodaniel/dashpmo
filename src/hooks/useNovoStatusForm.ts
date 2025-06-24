@@ -13,6 +13,34 @@ import { EntregaDinamica } from '@/components/forms/EntregasDinamicasNovo';
 import { useStatusGeral, useStatusVisaoGP, useNiveisRisco } from './useListaValores';
 import { calcularMatrizRisco } from '@/utils/riskMatrixCalculator';
 
+// Função para verificar se os campos de status_entrega existem
+async function verificarCamposStatusEntrega() {
+  try {
+    console.log('🔍 Verificando se campos de status_entrega existem...');
+    
+    const { data, error } = await supabase
+      .from('status_projeto')
+      .select('status_entrega1_id')
+      .limit(1);
+    
+    console.log('📊 Resultado da verificação:', { data, error });
+    
+    // Se o erro for sobre coluna não existir, retornar false
+    if (error && error.message && error.message.includes('column') && error.message.includes('does not exist')) {
+      console.log('❌ Campos de status_entrega não existem na tabela');
+      return false;
+    }
+    
+    // Se não deu erro, os campos existem
+    const existe = !error;
+    console.log('✅ Campos existem:', existe);
+    return existe;
+  } catch (error) {
+    console.log('❌ Erro ao verificar campos de status_entrega:', error);
+    return false;
+  }
+}
+
 // Schema dinâmico que será criado com base nos dados do banco
 const createStatusFormSchema = (statusGeral: string[], statusVisaoGP: string[], niveisRisco: string[]) => {
   // Usar valores padrão se as listas não estiverem carregadas ainda
@@ -75,8 +103,9 @@ export function useNovoStatusForm() {
   const [projetoSelecionado, setProjetoSelecionado] = useState<number | null>(null);
   const [progressoEstimado, setProgressoEstimado] = useState(0);
   const [entregas, setEntregas] = useState<EntregaDinamica[]>([
-    { id: '1', nome: '', data: null, entregaveis: '' }
+    { id: '1', nome: '', data: null, entregaveis: '', statusEntregaId: null }
   ]);
+  const [camposStatusEntregaExistem, setCamposStatusEntregaExistem] = useState(true);
 
   // Verificar se todas as listas foram carregadas
   const isLoadingListas = isLoadingStatusGeral || isLoadingStatusVisaoGP || isLoadingNiveisRisco;
@@ -115,7 +144,16 @@ export function useNovoStatusForm() {
     },
   });
 
-
+  // Verificar se os campos de status_entrega existem no banco
+  useEffect(() => {
+    const verificarCampos = async () => {
+      console.log('🚀 Iniciando verificação de campos de status entrega...');
+      const existe = await verificarCamposStatusEntrega();
+      console.log('🎯 Campos de status entrega existem:', existe);
+      setCamposStatusEntregaExistem(existe);
+    };
+    verificarCampos();
+  }, []);
 
   // Buscar último status do projeto quando projetoSelecionado ou projetoIdFromUrl mudar
   const { data: ultimoStatus, isLoading: isLoadingUltimoStatus, refetch: refetchUltimoStatus } = useQuery({
@@ -206,7 +244,8 @@ export function useNovoStatusForm() {
           id: '1',
           nome: ultimoStatus.entrega1,
           data: ultimoStatus.data_marco1 ? new Date(ultimoStatus.data_marco1) : null,
-          entregaveis: ultimoStatus.entregaveis1 || ''
+          entregaveis: ultimoStatus.entregaveis1 || '',
+          statusEntregaId: (ultimoStatus as any).status_entrega1_id || null
         });
       }
       
@@ -215,7 +254,8 @@ export function useNovoStatusForm() {
           id: '2',
           nome: ultimoStatus.entrega2,
           data: ultimoStatus.data_marco2 ? new Date(ultimoStatus.data_marco2) : null,
-          entregaveis: ultimoStatus.entregaveis2 || ''
+          entregaveis: ultimoStatus.entregaveis2 || '',
+          statusEntregaId: (ultimoStatus as any).status_entrega2_id || null
         });
       }
       
@@ -224,13 +264,14 @@ export function useNovoStatusForm() {
           id: '3',
           nome: ultimoStatus.entrega3,
           data: ultimoStatus.data_marco3 ? new Date(ultimoStatus.data_marco3) : null,
-          entregaveis: ultimoStatus.entregaveis3 || ''
+          entregaveis: ultimoStatus.entregaveis3 || '',
+          statusEntregaId: (ultimoStatus as any).status_entrega3_id || null
         });
       }
 
       // Se não houver entregas, criar uma vazia
       if (entregasPreenchidas.length === 0) {
-        entregasPreenchidas.push({ id: '1', nome: '', data: null, entregaveis: '' });
+        entregasPreenchidas.push({ id: '1', nome: '', data: null, entregaveis: '', statusEntregaId: null });
       }
 
       setEntregas(entregasPreenchidas);
@@ -412,6 +453,7 @@ export function useNovoStatusForm() {
           return `${year}-${month}-${day}`;
         })() : null,
         entregaveis1: entregas[0]?.entregaveis || null,
+        ...(camposStatusEntregaExistem && { status_entrega1_id: entregas[0]?.statusEntregaId || null }),
         entrega2: entregas[1]?.nome || null,
         data_marco2: entregas[1]?.data ? (() => {
           const date = entregas[1].data;
@@ -421,6 +463,7 @@ export function useNovoStatusForm() {
           return `${year}-${month}-${day}`;
         })() : null,
         entregaveis2: entregas[1]?.entregaveis || null,
+        ...(camposStatusEntregaExistem && { status_entrega2_id: entregas[1]?.statusEntregaId || null }),
         entrega3: entregas[2]?.nome || null,
         data_marco3: entregas[2]?.data ? (() => {
           const date = entregas[2].data;
@@ -430,6 +473,7 @@ export function useNovoStatusForm() {
           return `${year}-${month}-${day}`;
         })() : null,
         entregaveis3: entregas[2]?.entregaveis || null,
+        ...(camposStatusEntregaExistem && { status_entrega3_id: entregas[2]?.statusEntregaId || null }),
         criado_por: usuario.nome,
         responsavel_asa: projeto.responsavel_asa,
         responsavel_cwi: projeto.responsavel_cwi,
@@ -441,6 +485,13 @@ export function useNovoStatusForm() {
 
       console.log('📋 Dados que serão enviados para o Supabase:', statusData);
       console.log('🎯 Projeto completo:', projeto);
+      console.log('🔧 Campos de status entrega existem:', camposStatusEntregaExistem);
+      
+      if (!camposStatusEntregaExistem) {
+        console.log('⚠️ Campos de status_entrega não existem na tabela, salvando sem eles');
+      } else {
+        console.log('✅ Campos de status_entrega existem, incluindo no salvamento');
+      }
       
       // Validar dados críticos antes de enviar
       const camposObrigatorios = {
@@ -548,6 +599,7 @@ export function useNovoStatusForm() {
                   return `${year}-${month}-${day}`;
                 })() : null,
                 entregaveis: entrega.entregaveis,
+                ...(camposStatusEntregaExistem && { status_entrega_id: entrega.statusEntregaId || null }),
                 ordem: entregas.indexOf(entrega) + 1
               });
           }

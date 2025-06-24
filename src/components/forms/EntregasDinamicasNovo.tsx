@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DatePicker } from '@/components/ui/date-picker';
+import { StatusEntregaSelect } from '@/components/forms/StatusEntregaSelect';
 import { Plus, Trash2 } from 'lucide-react';
 import { UseFormReturn } from 'react-hook-form';
 
@@ -13,6 +14,7 @@ export interface EntregaDinamica {
   nome: string;
   data: Date | null;
   entregaveis: string;
+  statusEntregaId?: number | null;
 }
 
 interface EntregasDinamicasProps {
@@ -29,7 +31,8 @@ export function EntregasDinamicasNovo({ form, entregas, onEntregasChange }: Entr
       id: nextId.toString(),
       nome: '',
       data: null,
-      entregaveis: ''
+      entregaveis: '',
+      statusEntregaId: null
     };
     onEntregasChange([...entregas, novaEntrega]);
     setNextId(nextId + 1);
@@ -41,7 +44,7 @@ export function EntregasDinamicasNovo({ form, entregas, onEntregasChange }: Entr
     }
   };
 
-  const atualizarEntrega = (id: string, campo: keyof EntregaDinamica, valor: string | Date | null) => {
+  const atualizarEntrega = (id: string, campo: keyof EntregaDinamica, valor: string | Date | number | null) => {
     const novasEntregas = entregas.map(entrega => 
       entrega.id === id ? { ...entrega, [campo]: valor } : entrega
     );
@@ -71,7 +74,7 @@ export function EntregasDinamicasNovo({ form, entregas, onEntregasChange }: Entr
               )}
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <Label htmlFor={`entrega-nome-${entrega.id}`}>
                   Nome da Entrega {index === 0 && <span className="text-red-500">*</span>}
@@ -94,6 +97,18 @@ export function EntregasDinamicasNovo({ form, entregas, onEntregasChange }: Entr
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   Pode ser deixado em branco se não houver definição
+                </p>
+              </div>
+              
+              <div>
+                <Label>Status da Entrega</Label>
+                <StatusEntregaSelect
+                  value={entrega.statusEntregaId}
+                  onChange={(value) => atualizarEntrega(entrega.id, 'statusEntregaId', value)}
+                  placeholder="Selecionar status"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Status atual da entrega (opcional)
                 </p>
               </div>
             </div>

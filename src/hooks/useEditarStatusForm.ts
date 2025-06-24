@@ -1,16 +1,76 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { StatusProjeto } from '@/types/pmo';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { useEntregasDinamicas, Entrega } from '@/hooks/useEntregasDinamicas';
+import { useStatusEntrega } from '@/hooks/useStatusEntrega';
+
+// Função para verificar se os campos de status_entrega existem
+async function verificarCamposStatusEntrega() {
+  try {
+    console.log('🔍 Verificando se campos de status_entrega existem...');
+    
+    const { data, error } = await supabase
+      .from('status_projeto')
+      .select('status_entrega1_id')
+      .limit(1);
+    
+    console.log('📊 Resultado da verificação:', { data, error });
+    
+    // Se o erro for sobre coluna não existir, retornar false
+    if (error && error.message && error.message.includes('column') && error.message.includes('does not exist')) {
+      console.log('❌ Campos de status_entrega não existem na tabela');
+      return false;
+    }
+    
+    // Se não deu erro, os campos existem
+    const existe = !error;
+    console.log('✅ Campos existem:', existe);
+    return existe;
+  } catch (error) {
+    console.log('❌ Erro ao verificar campos de status_entrega:', error);
+    return false;
+  }
+}
 
 export function useEditarStatusForm(status: StatusProjeto) {
   const queryClient = useQueryClient();
   const { isAdmin } = useAuth();
+  const { salvarStatusCache, carregarStatusCache } = useStatusEntrega();
   const [carregando, setCarregando] = useState(false);
+  const [statusObrigatorio, setStatusObrigatorio] = useState(false);
+
+  // Verificar se os campos de status_entrega existem
+  useEffect(() => {
+    const verificarCampos = async () => {
+      console.log('🚀 Iniciando verificação de campos...');
+      const existe = await verificarCamposStatusEntrega();
+      console.log('🎯 StatusObrigatorio definido como:', existe);
+      setStatusObrigatorio(existe);
+    };
+    verificarCampos();
+  }, []);
+
+  // Buscar entregas extras da tabela entregas_status
+  const { data: entregasExtras = [] } = useQuery({
+    queryKey: ['entregas-status', status.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('entregas_status')
+        .select('*')
+        .eq('status_id', status.id)
+        .order('ordem', { ascending: true });
+
+      if (error) {
+        console.error('Erro ao buscar entregas extras:', error);
+        return [];
+      }
+
+      return data || [];
+    },
+  });
   
   // Estados para controlar TBD nos marcos - verificar se é string 'TBD'
   const [marco1TBD, setMarco1TBD] = useState(
@@ -34,33 +94,7 @@ export function useEditarStatusForm(status: StatusProjeto) {
     (status.data_marco3 && typeof status.data_marco3 !== 'string') ? new Date(status.data_marco3) : null
   );
 
-  // Inicializar entregas dinâmicas com dados existentes
-  const entregasIniciais: Entrega[] = [];
-  if (status.entrega1) {
-    entregasIniciais.push({
-      id: '1',
-      nome: status.entrega1,
-      data: typeof status.data_marco1 === 'string' ? status.data_marco1 : (status.data_marco1 ? status.data_marco1.toISOString().split('T')[0] : ''),
-      entregaveis: status.entregaveis1 || ''
-    });
-  }
-  if (status.entrega2) {
-    entregasIniciais.push({
-      id: '2',
-      nome: status.entrega2,
-      data: typeof status.data_marco2 === 'string' ? status.data_marco2 : (status.data_marco2 ? status.data_marco2.toISOString().split('T')[0] : ''),
-      entregaveis: status.entregaveis2 || ''
-    });
-  }
-  if (status.entrega3) {
-    entregasIniciais.push({
-      id: '3',
-      nome: status.entrega3,
-      data: typeof status.data_marco3 === 'string' ? status.data_marco3 : (status.data_marco3 ? status.data_marco3.toISOString().split('T')[0] : ''),
-      entregaveis: status.entregaveis3 || ''
-    });
-  }
-
+  // Inicializar entregas dinâmicas com dados existentes (será atualizado com useEffect)
   const {
     entregas,
     setEntregas,
@@ -69,7 +103,75 @@ export function useEditarStatusForm(status: StatusProjeto) {
     atualizarEntrega,
     validarEntregas,
     obterEntregasParaSalvar
-  } = useEntregasDinamicas(entregasIniciais);
+  } = useEntregasDinamicas([], statusObrigatorio);
+
+  // Efeito para carregar todas as entregas quando os dados estiverem prontos
+  useEffect(() => {
+    console.log('🔄 Carregando entregas do status:', status.id);
+    console.log('📊 Status objeto recebido:', status);
+    console.log('📋 Entregas extras:', entregasExtras);
+    
+    // Carregar cache de status se os campos não existirem no banco
+    const cacheStatus = carregarStatusCache(status.id);
+    
+    const entregasCompletas: Entrega[] = [];
+    
+    // Adicionar entregas principais
+    if (status.entrega1) {
+      const entrega1 = {
+        id: '1',
+        nome: status.entrega1,
+        data: typeof status.data_marco1 === 'string' ? status.data_marco1 : (status.data_marco1 ? status.data_marco1.toISOString().split('T')[0] : ''),
+        entregaveis: status.entregaveis1 || '',
+        statusEntregaId: (status as any).status_entrega1_id || cacheStatus['entrega1'] || null
+      };
+      console.log('📌 Entrega 1:', entrega1);
+      entregasCompletas.push(entrega1);
+    }
+    if (status.entrega2) {
+      const entrega2 = {
+        id: '2',
+        nome: status.entrega2,
+        data: typeof status.data_marco2 === 'string' ? status.data_marco2 : (status.data_marco2 ? status.data_marco2.toISOString().split('T')[0] : ''),
+        entregaveis: status.entregaveis2 || '',
+        statusEntregaId: (status as any).status_entrega2_id || cacheStatus['entrega2'] || null
+      };
+      console.log('📌 Entrega 2:', entrega2);
+      entregasCompletas.push(entrega2);
+    }
+    if (status.entrega3) {
+      const entrega3 = {
+        id: '3',
+        nome: status.entrega3,
+        data: typeof status.data_marco3 === 'string' ? status.data_marco3 : (status.data_marco3 ? status.data_marco3.toISOString().split('T')[0] : ''),
+        entregaveis: status.entregaveis3 || '',
+        statusEntregaId: (status as any).status_entrega3_id || cacheStatus['entrega3'] || null
+      };
+      console.log('📌 Entrega 3:', entrega3);
+      entregasCompletas.push(entrega3);
+    }
+
+    // Adicionar entregas extras da tabela entregas_status
+    entregasExtras.forEach((entrega: any, index: number) => {
+      const entregaExtra = {
+        id: entrega.id.toString(),
+        nome: entrega.nome_entrega,
+        data: entrega.data_entrega || '',
+        entregaveis: entrega.entregaveis || '',
+        statusEntregaId: entrega.status_entrega_id || cacheStatus[`extra${index + 4}`] || null
+      };
+      console.log('📌 Entrega extra:', entregaExtra);
+      entregasCompletas.push(entregaExtra);
+    });
+
+    // Se não houver entregas, criar uma vazia
+    if (entregasCompletas.length === 0) {
+      entregasCompletas.push({ id: '1', nome: '', data: '', entregaveis: '', statusEntregaId: null });
+    }
+
+    console.log('✅ Entregas completas carregadas:', entregasCompletas);
+    setEntregas(entregasCompletas);
+  }, [status.id, entregasExtras, setEntregas, carregarStatusCache]);
   
   const [formData, setFormData] = useState({
     data_atualizacao: typeof status.data_atualizacao === 'string' 
@@ -96,9 +198,13 @@ export function useEditarStatusForm(status: StatusProjeto) {
     e.preventDefault();
 
     if (!validarEntregas()) {
+      const mensagem = statusObrigatorio 
+        ? "Todas as entregas devem ter nome, entregáveis e status de entrega preenchidos."
+        : "A primeira entrega é obrigatória e deve ter nome e entregáveis preenchidos.";
+      
       toast({
         title: "Erro",
-        description: "A primeira entrega é obrigatória e deve ter nome e entregáveis preenchidos.",
+        description: mensagem,
         variant: "destructive",
       });
       return;
@@ -108,6 +214,11 @@ export function useEditarStatusForm(status: StatusProjeto) {
 
     try {
       const entregasParaSalvar = obterEntregasParaSalvar();
+      console.log('📝 Entregas para salvar:', entregasParaSalvar);
+      
+      // Verificar se os campos de status_entrega existem na tabela
+      const camposExistem = await verificarCamposStatusEntrega();
+      console.log('🔧 Campos existem no momento do salvamento:', camposExistem);
 
       const dataToUpdate = {
         data_atualizacao: formData.data_atualizacao,
@@ -124,12 +235,15 @@ export function useEditarStatusForm(status: StatusProjeto) {
         entrega1: entregasParaSalvar[0]?.nome || null,
         data_marco1: entregasParaSalvar[0]?.data || null,
         entregaveis1: entregasParaSalvar[0]?.entregaveis || null,
+        ...(camposExistem && { status_entrega1_id: entregasParaSalvar[0]?.statusEntregaId || null }),
         entrega2: entregasParaSalvar[1]?.nome || null,
         data_marco2: entregasParaSalvar[1]?.data || null,
         entregaveis2: entregasParaSalvar[1]?.entregaveis || null,
+        ...(camposExistem && { status_entrega2_id: entregasParaSalvar[1]?.statusEntregaId || null }),
         entrega3: entregasParaSalvar[2]?.nome || null,
         data_marco3: entregasParaSalvar[2]?.data || null,
         entregaveis3: entregasParaSalvar[2]?.entregaveis || null,
+        ...(camposExistem && { status_entrega3_id: entregasParaSalvar[2]?.statusEntregaId || null }),
         // Se for admin editando status aprovado, voltar para revisão
         ...(status.aprovado && isAdmin() && {
           aprovado: false,
@@ -138,7 +252,7 @@ export function useEditarStatusForm(status: StatusProjeto) {
         })
       };
 
-      console.log('Dados a serem salvos:', dataToUpdate);
+      console.log('💾 Dados finais a serem salvos:', dataToUpdate);
 
       const { error } = await supabase
         .from('status_projeto')
@@ -155,27 +269,47 @@ export function useEditarStatusForm(status: StatusProjeto) {
         return;
       }
 
-      // Atualizar entregas dinâmicas na tabela separada
-      if (entregasParaSalvar.length > 3) {
-        // Remover entregas existentes
+      // Se os campos não existem no banco, salvar no cache local
+      if (!camposExistem) {
+        const statusCache: Record<string, number> = {};
+        entregasParaSalvar.forEach((entrega, index) => {
+          if (entrega.statusEntregaId) {
+            if (index < 3) {
+              statusCache[`entrega${index + 1}`] = entrega.statusEntregaId;
+            } else {
+              statusCache[`extra${index + 1}`] = entrega.statusEntregaId;
+            }
+          }
+        });
+        salvarStatusCache(status.id, statusCache);
+      }
+
+      // Gerenciar entregas extras na tabela separada
+      // Primeiro, remover todas as entregas existentes
         await supabase
           .from('entregas_status')
           .delete()
           .eq('status_id', status.id);
 
-        // Inserir novas entregas
+      // Inserir entregas extras (acima das 3 principais)
+      if (entregasParaSalvar.length > 3) {
         const entregasAdicionais = entregasParaSalvar.slice(3).map((entrega, index) => ({
           status_id: status.id,
           ordem: index + 4,
           nome_entrega: entrega.nome,
           data_entrega: entrega.data || null,
-          entregaveis: entrega.entregaveis
+          entregaveis: entrega.entregaveis,
+          ...(camposExistem && { status_entrega_id: entrega.statusEntregaId || null })
         }));
 
         if (entregasAdicionais.length > 0) {
-          await supabase
+          const { error: insertError } = await supabase
             .from('entregas_status')
             .insert(entregasAdicionais);
+
+          if (insertError) {
+            console.error('Erro ao inserir entregas extras:', insertError);
+          }
         }
       }
 

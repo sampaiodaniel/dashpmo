@@ -3,6 +3,8 @@ import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 import { formatarData } from '@/utils/dateFormatting';
+import { StatusEntregaBadge } from '@/components/common/StatusEntregaBadge';
+import { useStatusEntrega } from '@/hooks/useStatusEntrega';
 
 interface TimelineEntregasProps {
   projetos: any[];
@@ -10,18 +12,23 @@ interface TimelineEntregasProps {
 }
 
 export function TimelineEntregas({ projetos, forceMobile = false }: TimelineEntregasProps) {
-  const [paginaAtual, setPaginaAtual] = useState(0);
+  // Estado para controlar a página de cada projeto individualmente
+  const [paginasProjetos, setPaginasProjetos] = useState<{[key: string]: number}>({});
+  const { carregarStatusCache } = useStatusEntrega();
   
-  // Coletar todas as entregas com datas dos projetos
+  // Função para coletar entregas de um projeto específico
+  const coletarEntregasProjeto = (projeto: any) => {
   const entregas = [];
-  
-  if (projetos && projetos.length > 0) {
-    projetos.forEach(projeto => {
       const status = projeto.ultimoStatus;
-      if (!status) return;
+    if (!status) return [];
+    
+    // Carregar cache de status para este projeto
+    const cacheStatus = carregarStatusCache(status.id);
       
       // Marco 1 - incluir mesmo se data for TBD ou não definida
       if (status.entrega1) {
+      const statusEntregaId = (status as any).status_entrega1_id || cacheStatus['entrega1'] || null;
+      console.log('🔵 Marco 1 - StatusEntregaId:', statusEntregaId, 'Cache:', cacheStatus);
         entregas.push({
           data: status.data_marco1 || 'TBD',
           titulo: status.entrega1,
@@ -30,12 +37,15 @@ export function TimelineEntregas({ projetos, forceMobile = false }: TimelineEntr
           tipo: 'marco1',
           cor: '#A6926B',
           corTexto: '#FFFFFF',
-          corBorda: '#A6926B'
+        corBorda: '#A6926B',
+        statusEntregaId: statusEntregaId
         });
       }
       
       // Marco 2 - incluir mesmo se data for TBD ou não definida
       if (status.entrega2) {
+      const statusEntregaId = (status as any).status_entrega2_id || cacheStatus['entrega2'] || null;
+      console.log('🟡 Marco 2 - StatusEntregaId:', statusEntregaId, 'Cache:', cacheStatus);
         entregas.push({
           data: status.data_marco2 || 'TBD',
           titulo: status.entrega2,
@@ -44,12 +54,15 @@ export function TimelineEntregas({ projetos, forceMobile = false }: TimelineEntr
           tipo: 'marco2',
           cor: '#2E5984',
           corTexto: '#FFFFFF',
-          corBorda: '#2E5984'
+        corBorda: '#2E5984',
+        statusEntregaId: statusEntregaId
         });
       }
       
       // Marco 3 - incluir mesmo se data for TBD ou não definida
       if (status.entrega3) {
+      const statusEntregaId = (status as any).status_entrega3_id || cacheStatus['entrega3'] || null;
+      console.log('🟢 Marco 3 - StatusEntregaId:', statusEntregaId, 'Cache:', cacheStatus);
         entregas.push({
           data: status.data_marco3 || 'TBD',
           titulo: status.entrega3,
@@ -58,9 +71,27 @@ export function TimelineEntregas({ projetos, forceMobile = false }: TimelineEntr
           tipo: 'marco3',
           cor: '#6B7280',
           corTexto: '#FFFFFF',
-          corBorda: '#6B7280'
+        corBorda: '#6B7280',
+        statusEntregaId: statusEntregaId
         });
       }
+
+    // Adicionar entregas extras se existirem no status
+    if (status.entregasExtras && Array.isArray(status.entregasExtras)) {
+      // console.log('🎯 Processando entregas extras na timeline:', status.entregasExtras);
+      const cores = ['#8B5A2B', '#4A5568', '#2D3748', '#1A202C']; // Cores para entregas extras
+      status.entregasExtras.forEach((entregaExtra: any, index: number) => {
+        entregas.push({
+          data: entregaExtra.data_entrega || 'TBD',
+          titulo: entregaExtra.nome_entrega,
+          entregaveis: entregaExtra.entregaveis,
+          projeto: projeto.nome_projeto || 'Projeto',
+          tipo: `extra${index + 4}`,
+          cor: cores[index % cores.length],
+          corTexto: '#FFFFFF',
+          corBorda: cores[index % cores.length],
+          statusEntregaId: entregaExtra.status_entrega_id || cacheStatus[`extra${index + 4}`] || null
+        });
     });
   }
 
@@ -72,7 +103,27 @@ export function TimelineEntregas({ projetos, forceMobile = false }: TimelineEntr
     return new Date(a.data).getTime() - new Date(b.data).getTime();
   });
 
-  if (entregas.length === 0) {
+    return entregas;
+  };
+
+  // Coletar todas as entregas de todos os projetos para timeline geral (para backward compatibility)
+  const todasEntregas = [];
+  if (projetos && projetos.length > 1) {
+    projetos.forEach(projeto => {
+      const entregasProjeto = coletarEntregasProjeto(projeto);
+      todasEntregas.push(...entregasProjeto);
+    });
+    
+    // Ordenar todas as entregas por data
+    todasEntregas.sort((a, b) => {
+      if (a.data === 'TBD' && b.data === 'TBD') return 0;
+      if (a.data === 'TBD') return 1;
+      if (b.data === 'TBD') return -1;
+      return new Date(a.data).getTime() - new Date(b.data).getTime();
+    });
+  }
+
+  if (projetos.length === 0) {
     return (
       <Card className="timeline-card">
         <CardHeader>
@@ -87,9 +138,8 @@ export function TimelineEntregas({ projetos, forceMobile = false }: TimelineEntr
     );
   }
 
-  // Dividir entregas em páginas (máximo 3 por página no desktop, todas no mobile)
+  // Constantes
   const entregasPorPagina = 3;
-  const totalPaginas = Math.ceil(entregas.length / entregasPorPagina);
   
   // Detectar se estamos no mobile - verificar múltiplas condições
   const isMobile = forceMobile || (typeof window !== 'undefined' && (
@@ -112,7 +162,7 @@ export function TimelineEntregas({ projetos, forceMobile = false }: TimelineEntr
   };
 
   // Função para gerar posições dos traços baseado nas semanas
-  const gerarPosicoesSemanas = (entregasPagina: any[]) => {
+  const gerarPosicoesSemanas = (entregasPagina: any[], todasEntregas: any[], paginaAtual: number) => {
     if (entregasPagina.length <= 1) return [];
     
     const posicoes = [];
@@ -122,9 +172,26 @@ export function TimelineEntregas({ projetos, forceMobile = false }: TimelineEntr
     
     const posEntregas = [posicaoEntrega1, posicaoEntrega2, posicaoEntrega3];
     
+    // Processar todas as entregas da página atual
     for (let i = 1; i < entregasPagina.length; i++) {
-      const entregaAnterior = entregasPagina[i - 1];
-      const entregaAtual = entregasPagina[i];
+      let entregaAnterior, entregaAtual;
+      
+      if (i === 1 && paginaAtual > 0 && todasEntregas.length > 0) {
+        // Para a primeira entrega da página (que não é a primeira página),
+        // usar a última entrega da página anterior
+        const indiceAnterior = (paginaAtual * entregasPorPagina) - 1;
+        if (indiceAnterior >= 0 && indiceAnterior < todasEntregas.length) {
+          entregaAnterior = todasEntregas[indiceAnterior];
+          entregaAtual = entregasPagina[i];
+        } else {
+          entregaAnterior = entregasPagina[i - 1];
+          entregaAtual = entregasPagina[i];
+        }
+      } else {
+        entregaAnterior = entregasPagina[i - 1];
+        entregaAtual = entregasPagina[i];
+      }
+      
       const semanas = calcularSemanas(entregaAnterior.data, entregaAtual.data);
       
       // Calcular posições dos traços entre as entregas
@@ -139,6 +206,40 @@ export function TimelineEntregas({ projetos, forceMobile = false }: TimelineEntr
           tipo: 'semana',
           posicao: posInicio + (intervaloPorSemana * j)
         });
+      }
+    }
+    
+    // Se há mais entregas após esta página, adicionar traços entre a última entrega
+    // desta página e a primeira da próxima página
+    if (paginaAtual >= 0 && todasEntregas.length > 0) {
+      const indiceFinalPagina = ((paginaAtual + 1) * entregasPorPagina) - 1;
+      const indiceProximaEntrega = indiceFinalPagina + 1;
+      
+      if (indiceFinalPagina < todasEntregas.length && indiceProximaEntrega < todasEntregas.length) {
+        const ultimaEntregaPagina = todasEntregas[indiceFinalPagina];
+        const primeiraEntregaProxima = todasEntregas[indiceProximaEntrega];
+        
+        if (ultimaEntregaPagina && primeiraEntregaProxima) {
+          const semanas = calcularSemanas(ultimaEntregaPagina.data, primeiraEntregaProxima.data);
+          
+          // Os traços vão da última posição (83.33%) até além da página (simular continuidade)
+          const posInicio = 83.33;
+          const posFim = 100; // Vai até o final da página atual
+          const distancia = posFim - posInicio;
+          const intervaloPorSemana = distancia / semanas;
+          
+          // Adicionar apenas alguns traços para mostrar continuidade
+          const maxTracos = Math.min(semanas - 1, 2); // Máximo 2 traços para não poluir
+          for (let j = 1; j <= maxTracos; j++) {
+            const posicao = posInicio + (intervaloPorSemana * j);
+            if (posicao <= 95) { // Não ultrapassar muito a borda
+              posicoes.push({
+                tipo: 'semana',
+                posicao: posicao
+              });
+            }
+          }
+        }
       }
     }
     
@@ -215,9 +316,23 @@ export function TimelineEntregas({ projetos, forceMobile = false }: TimelineEntr
                   lineHeight: '1.3',
                   wordWrap: 'break-word',
                   overflowWrap: 'break-word',
-                  textAlign: 'left'
+                  textAlign: 'left',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between'
                 }}>
-                  {entrega.titulo}
+                  <span>{entrega.titulo}</span>
+                  {entrega.statusEntregaId ? (
+                    <StatusEntregaBadge 
+                      statusId={entrega.statusEntregaId} 
+                      size="lg" 
+                      showText={false} 
+                    />
+                  ) : (
+                    <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.7)' }}>
+                      (sem status)
+                    </span>
+                  )}
                 </div>
                 
                 {/* Nome do projeto (se for timeline geral) */}
@@ -298,8 +413,8 @@ export function TimelineEntregas({ projetos, forceMobile = false }: TimelineEntr
     );
   };
 
-  const renderTimeline = (entregasPagina: any[], numeroPagina: number) => {
-    const tracosSemanas = gerarPosicoesSemanas(entregasPagina);
+  const renderTimeline = (entregasPagina: any[], numeroPagina: number, todasEntregasProjeto: any[] = []) => {
+    const tracosSemanas = gerarPosicoesSemanas(entregasPagina, todasEntregasProjeto, numeroPagina - 1);
     
     // Função para calcular altura mais precisa baseada no conteúdo real
     const calcularAlturaBox = (entrega: any) => {
@@ -326,11 +441,11 @@ export function TimelineEntregas({ projetos, forceMobile = false }: TimelineEntr
           alturaTotal += 18 + 8; // 18px altura + 8px mb
           
           // Cada linha de entregável
-          linhas.forEach((linha: string) => {
+        linhas.forEach((linha: string) => {
             const caracteresPorLinha = 38; // Mais conservador para garantir quebras adequadas
             const linhasNecessarias = Math.max(1, Math.ceil(linha.trim().length / caracteresPorLinha));
             alturaTotal += (linhasNecessarias * 16) + 3; // 16px por linha + 3px espaçamento
-          });
+        });
           
           // Espaçamento final da seção
           alturaTotal += 8;
@@ -396,8 +511,19 @@ export function TimelineEntregas({ projetos, forceMobile = false }: TimelineEntr
                     }}
                   >
                     {/* Nome da entrega - SEMPRE NO TOPO */}
-                    <div className="text-sm font-semibold text-left leading-tight mb-3 pb-2 border-b border-current border-opacity-20">
-                      {entrega.titulo}
+                    <div className="text-sm font-semibold text-left leading-tight mb-3 pb-2 border-b border-current border-opacity-20 flex items-center justify-between">
+                      <span>{entrega.titulo}</span>
+                      {entrega.statusEntregaId ? (
+                        <StatusEntregaBadge 
+                          statusId={entrega.statusEntregaId} 
+                          size="lg" 
+                          showText={false} 
+                        />
+                      ) : (
+                        <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.7)' }}>
+                          (sem status)
+                        </span>
+                      )}
                     </div>
                     
                     {/* Nome do projeto (se for timeline geral) */}
@@ -491,24 +617,40 @@ export function TimelineEntregas({ projetos, forceMobile = false }: TimelineEntr
     );
   };
 
+  // Função para renderizar timeline de um projeto específico
+  const renderTimelineProjeto = (projeto: any, indexProjeto: number) => {
+    const entregasProjeto = coletarEntregasProjeto(projeto);
+    if (entregasProjeto.length === 0) return null;
+
+    const chaveProjetoPagina = `projeto-${indexProjeto}`;
+    const paginaAtualProjeto = paginasProjetos[chaveProjetoPagina] || 0;
+    const totalPaginasProjeto = Math.ceil(entregasProjeto.length / entregasPorPagina);
+
+    const navegarPagina = (novaPagina: number) => {
+      setPaginasProjetos(prev => ({
+        ...prev,
+        [chaveProjetoPagina]: novaPagina
+      }));
+  };
+
   return (
-    <div className="space-y-4">
-      <Card className="timeline-card">
+      <Card key={indexProjeto} className="timeline-card mb-6">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>
-              Timeline de Entregas
-              {totalPaginas > 1 && ` - ${paginaAtual + 1} de ${totalPaginas}`}
+              Timeline de Entregas{projetos.length === 1 ? '' : ` - ${projeto.nome_projeto}`}
+              {totalPaginasProjeto > 1 && ` (${paginaAtualProjeto + 1} de ${totalPaginasProjeto})`}
             </CardTitle>
             
-            {totalPaginas > 1 && (
+            {totalPaginasProjeto > 1 && (
               <div className="flex items-center gap-2 no-print">
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setPaginaAtual(Math.max(0, paginaAtual - 1))}
-                  disabled={paginaAtual === 0}
+                  onClick={() => navegarPagina(Math.max(0, paginaAtualProjeto - 1))}
+                  disabled={paginaAtualProjeto === 0}
                   className="h-8 w-8 p-0"
+                  title="Página anterior"
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
@@ -516,9 +658,10 @@ export function TimelineEntregas({ projetos, forceMobile = false }: TimelineEntr
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setPaginaAtual(Math.min(totalPaginas - 1, paginaAtual + 1))}
-                  disabled={paginaAtual === totalPaginas - 1}
+                  onClick={() => navegarPagina(Math.min(totalPaginasProjeto - 1, paginaAtualProjeto + 1))}
+                  disabled={paginaAtualProjeto === totalPaginasProjeto - 1}
                   className="h-8 w-8 p-0"
+                  title="Próxima página"
                 >
                   <ChevronRight className="h-4 w-4" />
                 </Button>
@@ -528,25 +671,23 @@ export function TimelineEntregas({ projetos, forceMobile = false }: TimelineEntr
         </CardHeader>
         <CardContent>
           {(() => {
-            const inicio = paginaAtual * entregasPorPagina;
+            const inicio = paginaAtualProjeto * entregasPorPagina;
             const fim = inicio + entregasPorPagina;
-            const entregasPagina = entregas.slice(inicio, fim);
-            // No mobile, usar todas as entregas
-            const entregasMobile = isMobile ? entregas : entregasPagina;
+            const entregasPagina = entregasProjeto.slice(inicio, fim);
             
             return (
               <>
                 {/* Desktop Timeline */}
                 {!isMobile && (
                   <div className="timeline-desktop">
-                    {renderTimeline(entregasPagina, paginaAtual + 1)}
+                    {renderTimeline(entregasPagina, paginaAtualProjeto + 1, entregasProjeto)}
                   </div>
                 )}
                 
                 {/* Mobile Timeline */}
                 {isMobile && (
                   <div className="timeline-mobile">
-                    {renderTimelineMobile(entregasMobile)}
+                    {renderTimelineMobile(entregasProjeto)}
                   </div>
                 )}
               </>
@@ -554,6 +695,84 @@ export function TimelineEntregas({ projetos, forceMobile = false }: TimelineEntr
           })()}
         </CardContent>
       </Card>
+    );
+  };
+
+  // Renderizar timeline geral (múltiplos projetos) ou timelines individuais
+  if (projetos.length > 1) {
+    // Timeline geral para múltiplos projetos (backward compatibility)
+    const [paginaGeral, setPaginaGeral] = useState(0);
+    const totalPaginasGeral = Math.ceil(todasEntregas.length / entregasPorPagina);
+
+    return (
+      <div className="space-y-4">
+        <Card className="timeline-card">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle>
+                Timeline Geral de Entregas
+                {totalPaginasGeral > 1 && ` - ${paginaGeral + 1} de ${totalPaginasGeral}`}
+              </CardTitle>
+              
+              {totalPaginasGeral > 1 && (
+                <div className="flex items-center gap-2 no-print">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPaginaGeral(Math.max(0, paginaGeral - 1))}
+                    disabled={paginaGeral === 0}
+                    className="h-8 w-8 p-0"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPaginaGeral(Math.min(totalPaginasGeral - 1, paginaGeral + 1))}
+                    disabled={paginaGeral === totalPaginasGeral - 1}
+                    className="h-8 w-8 p-0"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent>
+            {(() => {
+              const inicio = paginaGeral * entregasPorPagina;
+              const fim = inicio + entregasPorPagina;
+              const entregasPagina = todasEntregas.slice(inicio, fim);
+              
+              return (
+                <>
+                  {/* Desktop Timeline */}
+                  {!isMobile && (
+                    <div className="timeline-desktop">
+                      {renderTimeline(entregasPagina, paginaGeral + 1, todasEntregas)}
+                    </div>
+                  )}
+                  
+                  {/* Mobile Timeline */}
+                  {isMobile && (
+                    <div className="timeline-mobile">
+                      {renderTimelineMobile(todasEntregas)}
+                    </div>
+                  )}
+                </>
+              );
+            })()}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  } else {
+    // Timeline individual para projeto único
+    return (
+      <div className="space-y-4">
+        {projetos.map((projeto, index) => renderTimelineProjeto(projeto, index))}
     </div>
   );
+  }
 }

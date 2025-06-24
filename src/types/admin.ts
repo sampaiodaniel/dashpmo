@@ -26,7 +26,8 @@ export const TIPOS_CONFIGURACAO = [
   'status_visao_gp',
   'nivel_risco',
   'tipo_mudanca',
-  'categoria_licao'
+  'categoria_licao',
+  'status_entrega'
 ] as const;
 
 export type TipoConfiguracao = typeof TIPOS_CONFIGURACAO[number];
@@ -44,6 +45,16 @@ export interface LogAlteracao {
   ip_usuario?: string;
   user_agent?: string;
   data_criacao: Date;
+}
+
+export interface TipoStatusEntrega {
+  id: number;
+  nome: string;
+  cor: string;
+  descricao?: string;
+  ordem: number;
+  ativo: boolean;
+  data_criacao: string;
 }
 
 export type ModuloSistema = 'projetos' | 'status' | 'mudancas' | 'licoes' | 'incidentes' | 'usuarios' | 'configuracoes';

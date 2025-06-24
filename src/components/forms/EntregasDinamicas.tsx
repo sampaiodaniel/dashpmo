@@ -5,13 +5,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Plus, Trash2 } from 'lucide-react';
-
-interface Entrega {
-  id: string;
-  nome: string;
-  data: Date | null;
-  entregaveis: string;
-}
+import { StatusEntregaSelect } from '@/components/forms/StatusEntregaSelect';
+import { Entrega } from '@/hooks/useEntregasDinamicas';
 
 interface EntregasDinamicasProps {
   entregas: Entrega[];
@@ -23,8 +18,9 @@ export function EntregasDinamicas({ entregas, onChange }: EntregasDinamicasProps
     const novaEntrega: Entrega = {
       id: Date.now().toString(),
       nome: '',
-      data: null,
-      entregaveis: ''
+      data: '',
+      entregaveis: '',
+      statusEntregaId: null
     };
     onChange([...entregas, novaEntrega]);
   };
@@ -35,9 +31,20 @@ export function EntregasDinamicas({ entregas, onChange }: EntregasDinamicasProps
     }
   };
 
-  const atualizarEntrega = (id: string, campo: keyof Entrega, valor: string | Date | null) => {
+  const atualizarEntrega = (id: string, campo: keyof Entrega, valor: string | Date | number | null) => {
+    // Converter Date para string se for o campo data
+    let valorFinal;
+    if (campo === 'data' && valor instanceof Date) {
+      // Corrigir timezone para evitar "dia a menos"
+      const offset = valor.getTimezoneOffset();
+      const corrigida = new Date(valor.getTime() - (offset * 60 * 1000));
+      valorFinal = corrigida.toISOString().split('T')[0];
+    } else {
+      valorFinal = valor;
+    }
+      
     onChange(entregas.map(entrega => 
-      entrega.id === id ? { ...entrega, [campo]: valor } : entrega
+      entrega.id === id ? { ...entrega, [campo]: valorFinal } : entrega
     ));
   };
 
@@ -65,7 +72,7 @@ export function EntregasDinamicas({ entregas, onChange }: EntregasDinamicasProps
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor={`nome-${entrega.id}`}>
                 Nome da Entrega
@@ -81,9 +88,28 @@ export function EntregasDinamicas({ entregas, onChange }: EntregasDinamicasProps
             </div>
             
             <div className="space-y-2">
+              <Label>
+                Status da Entrega
+                {index === 0 && <span className="text-red-500 ml-1">*</span>}
+              </Label>
+              <StatusEntregaSelect
+                value={entrega.statusEntregaId}
+                onChange={(value) => atualizarEntrega(entrega.id, 'statusEntregaId', value)}
+                placeholder="Selecionar status"
+              />
+            </div>
+            
+            <div className="space-y-2">
               <Label>Data de Entrega</Label>
               <DatePicker
-                date={entrega.data}
+                date={entrega.data ? (() => {
+                  // Corrigir timezone ao converter string para Date
+                  const parts = entrega.data.split('-');
+                  if (parts.length === 3) {
+                    return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+                  }
+                  return new Date(entrega.data);
+                })() : null}
                 onDateChange={(date) => atualizarEntrega(entrega.id, 'data', date)}
                 placeholder="Selecione a data de entrega"
               />

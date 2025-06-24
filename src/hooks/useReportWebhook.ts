@@ -1,263 +1,311 @@
-
 import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { v4 as uuidv4 } from 'uuid';
 import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+
+export interface RelatorioCompartilhavel {
+  id: string;
+  titulo: string;
+  tipo: 'visual' | 'asa' | 'consolidado';
+  dados: any;
+  configuracao: {
+    expiraEm: number; // dias
+    protegidoPorSenha?: boolean;
+    senha?: string;
+  };
+  metadados: {
+    carteira?: string;
+    responsavel?: string;
+    dataGeracao: string;
+    tamanhoMB: number;
+  };
+  url: string;
+  criadoEm: string;
+  criadoPor: string;
+  acessos: number;
+  ultimoAcesso?: string;
+}
+
+export interface CriarRelatorioCompartilhavelParams {
+  tipo: 'visual' | 'asa' | 'consolidado';
+  titulo: string;
+  dados: any;
+  carteira?: string;
+  responsavel?: string;
+  expiraEm?: number; // dias, padrão 30
+  protegidoPorSenha?: boolean;
+  senha?: string;
+}
 
 export function useReportWebhook() {
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [relatoriosCompartilhados, setRelatoriosCompartilhados] = useState<RelatorioCompartilhavel[]>([]);
 
-  const enviarReport = async (carteira: string, webhookUrl: string) => {
-    setIsLoading(true);
+  // Gerar ID seguro para URL
+  const gerarIdSeguro = (): string => {
+    const uuid = uuidv4().replace(/-/g, '');
+    const timestamp = Date.now().toString(36);
+    const random = Math.random().toString(36).substring(2, 8);
+    return `${timestamp}-${random}-${uuid.substring(0, 16)}`;
+  };
+
+  // Calcular tamanho em MB dos dados
+  const calcularTamanho = (dados: any): number => {
+    try {
+      if (!dados) return 0;
+      const jsonString = JSON.stringify(dados);
+      const bytes = new Blob([jsonString]).size;
+      return Math.round((bytes / (1024 * 1024)) * 100) / 100;
+    } catch (error) {
+      console.warn('Erro ao calcular tamanho dos dados:', error);
+      return 0;
+    }
+  };
+
+  // Criar relatório compartilhável
+  const criarRelatorioCompartilhavel = async (params: CriarRelatorioCompartilhavelParams): Promise<RelatorioCompartilhavel | null> => {
+    setLoading(true);
     
     try {
-      console.log('🚀 Iniciando envio de report para carteira:', carteira);
-      console.log('🔗 URL do webhook:', webhookUrl);
+      console.log('🚀 Iniciando criação de relatório compartilhável:', params);
       
-      // Buscar TODOS os status aprovados da carteira com dados dos projetos
-      const { data: statusAprovados, error: statusError } = await supabase
-        .from('status_projeto')
-        .select(`
-          *,
-          projeto:projetos!inner (
-            id,
-            nome_projeto,
-            area_responsavel,
-            gp_responsavel,
-            responsavel_interno,
-            equipe,
-            descricao_projeto
-          )
-        `)
-        .eq('aprovado', true)
-        .eq('projeto.area_responsavel', carteira)
-        .order('data_aprovacao', { ascending: false });
-
-      if (statusError) {
-        console.error('❌ Erro ao buscar status:', statusError);
-        throw statusError;
+      // Validar parâmetros obrigatórios
+      if (!params.titulo?.trim()) {
+        throw new Error('Título é obrigatório');
+      }
+      
+      if (!params.dados) {
+        throw new Error('Dados do relatório são obrigatórios');
       }
 
-      console.log('📊 Status aprovados encontrados:', statusAprovados?.length || 0);
-
-      // Buscar último registro de incidentes da carteira
-      const { data: ultimosIncidentes, error: incidentesError } = await supabase
-        .from('incidentes')
-        .select('*')
-        .eq('carteira', carteira)
-        .order('data_registro', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (incidentesError) {
-        console.error('❌ Erro ao buscar incidentes:', incidentesError);
+      // Obter usuário atual do sistema customizado
+      const token = localStorage.getItem('pmo_token');
+      const userData = localStorage.getItem('pmo_user');
+      
+      if (!token || !userData) {
+        throw new Error('Usuário não autenticado');
       }
 
-      console.log('🎯 Últimos incidentes encontrados:', ultimosIncidentes);
+      let user;
+      try {
+        user = JSON.parse(userData);
+      } catch (error) {
+        throw new Error('Dados de usuário inválidos');
+      }
 
-      // Organizar dados detalhados por projeto
-      const projetosPorId = new Map();
-      
-      statusAprovados?.forEach(status => {
-        const projetoId = status.projeto?.id;
-        if (!projetoId) return;
-        
-        if (!projetosPorId.has(projetoId)) {
-          projetosPorId.set(projetoId, {
-            projeto_id: projetoId,
-            nome_projeto: status.projeto.nome_projeto,
-            area_responsavel: status.projeto.area_responsavel,
-            gp_responsavel: status.projeto.gp_responsavel,
-            responsavel_interno: status.projeto.responsavel_interno,
-            equipe: status.projeto.equipe,
-            descricao_projeto: status.projeto.descricao_projeto,
-            status_aprovados: []
-          });
-        }
-        
-        // Adicionar o status completo à lista do projeto
-        projetosPorId.get(projetoId).status_aprovados.push({
-          status_id: status.id,
-          status_geral: status.status_geral,
-          status_visao_gp: status.status_visao_gp,
-          data_atualizacao: status.data_atualizacao,
-          data_aprovacao: status.data_aprovacao,
-          aprovado_por: status.aprovado_por,
-          realizado_semana_atual: status.realizado_semana_atual,
-          backlog: status.backlog,
-          bloqueios_atuais: status.bloqueios_atuais,
-          observacoes_pontos_atencao: status.observacoes_pontos_atencao,
-          entregaveis1: status.entregaveis1,
-          entrega1: status.entrega1,
-          data_marco1: status.data_marco1,
-          entregaveis2: status.entregaveis2,
-          entrega2: status.entrega2,
-          data_marco2: status.data_marco2,
-          entregaveis3: status.entregaveis3,
-          entrega3: status.entrega3,
-          data_marco3: status.data_marco3,
-          probabilidade_riscos: status.probabilidade_riscos,
-          impacto_riscos: status.impacto_riscos,
-          progresso_estimado: status.progresso_estimado
-        });
+      console.log('✅ Usuário autenticado:', user.nome || user.email);
+
+      const id = gerarIdSeguro();
+      const agora = new Date();
+      const dataExpiracao = new Date();
+      dataExpiracao.setDate(agora.getDate() + (params.expiraEm || 30));
+
+      console.log('📝 Dados processados:', {
+        id,
+        titulo: params.titulo,
+        tipo: params.tipo,
+        expiraEm: params.expiraEm || 30
       });
 
-      const projetos = Array.from(projetosPorId.values());
-
-      // Preparar dados para envio
-      const reportData = {
-        carteira,
-        timestamp: new Date().toISOString(),
-        total_projetos: projetos.length,
-        total_status_aprovados: statusAprovados?.length || 0,
-        projetos: projetos,
-        incidentes: ultimosIncidentes || null,
-        enviado_de: window.location.origin,
-        resumo: {
-          projetos_com_status: projetos.length,
-          status_verde: statusAprovados?.filter(s => s.status_visao_gp === 'Verde').length || 0,
-          status_amarelo: statusAprovados?.filter(s => s.status_visao_gp === 'Amarelo').length || 0,
-          status_vermelho: statusAprovados?.filter(s => s.status_visao_gp === 'Vermelho').length || 0
-        }
+      const relatorio: RelatorioCompartilhavel = {
+        id,
+        titulo: params.titulo,
+        tipo: params.tipo,
+        dados: params.dados,
+        configuracao: {
+          expiraEm: params.expiraEm || 30,
+          protegidoPorSenha: params.protegidoPorSenha || false,
+          senha: params.senha
+        },
+        metadados: {
+          carteira: params.carteira,
+          responsavel: params.responsavel,
+          dataGeracao: agora.toISOString(),
+          tamanhoMB: calcularTamanho(params.dados)
+        },
+        url: `${window.location.origin}/relatorio-compartilhado/${id}`,
+        criadoEm: agora.toISOString(),
+        criadoPor: user.nome || user.email,
+        acessos: 0
       };
 
-      console.log('📦 Dados preparados para envio:', JSON.stringify(reportData, null, 2));
+      console.log('💾 Salvando no localStorage e sessionStorage para melhor persistência');
 
-      // Validar URL do webhook
-      try {
-        new URL(webhookUrl);
-      } catch (urlError) {
-        console.error('❌ URL inválida:', webhookUrl);
-        toast({
-          title: "URL Inválida",
-          description: "Por favor, verifique se a URL do webhook está correta",
-          variant: "destructive",
-        });
-        return false;
-      }
-
-      // Tentar primeiro GET com query parameters
-      try {
-        console.log('🌐 Tentando GET com query parameters...');
-        
-        const queryParams = new URLSearchParams({
-          carteira,
-          timestamp: reportData.timestamp,
-          total_projetos: reportData.total_projetos.toString(),
-          total_status_aprovados: reportData.total_status_aprovados.toString(),
-          projetos: JSON.stringify(reportData.projetos),
-          incidentes: JSON.stringify(reportData.incidentes),
-          enviado_de: reportData.enviado_de,
-          resumo: JSON.stringify(reportData.resumo)
-        });
-
-        const getUrl = `${webhookUrl}?${queryParams.toString()}`;
-        console.log('📡 URL GET:', getUrl);
-
-        const getResponse = await fetch(getUrl, {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-          },
-        });
-
-        console.log('📡 Resposta GET recebida:', {
-          status: getResponse.status,
-          statusText: getResponse.statusText,
-          ok: getResponse.ok,
-          type: getResponse.type,
-          url: getResponse.url
-        });
-
-        if (getResponse.ok) {
-          console.log('✅ Webhook chamado com sucesso usando GET!');
-          toast({
-            title: "Report enviado",
-            description: `Dados da carteira ${carteira} enviados para o webhook com sucesso! ${projetos.length} projetos e ${statusAprovados?.length || 0} status enviados.`,
-          });
-          return true;
-        }
-      } catch (getError) {
-        console.log('❌ GET falhou, tentando métodos POST:', getError);
-      }
-
-      // Se GET falhar, tentar diferentes métodos POST
-      const methods = ['POST', 'PUT', 'PATCH'];
-      let lastError = null;
+      // Salvar no localStorage e sessionStorage para melhor persistência
+      const reportKey = `shared-report-${id}`;
+      const reportData = {
+        ...relatorio,
+        expiresAt: dataExpiracao.toISOString()
+      };
       
-      for (const method of methods) {
+      try {
+        localStorage.setItem(reportKey, JSON.stringify(reportData));
+        sessionStorage.setItem(reportKey, JSON.stringify(reportData));
+        // Também salvar com chave sem prefixo para fallback
+        localStorage.setItem(id, JSON.stringify(reportData));
+        sessionStorage.setItem(id, JSON.stringify(reportData));
+        console.log('✅ Salvo em localStorage e sessionStorage com sucesso');
+      } catch (localStorageError) {
+        console.error('❌ Erro ao salvar:', localStorageError);
         try {
-          console.log(`🌐 Tentando ${method} para:`, webhookUrl);
-
-          const response = await fetch(webhookUrl, {
-            method,
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(reportData),
-          });
-
-          console.log('📡 Resposta recebida:', {
-            method,
-            status: response.status,
-            statusText: response.statusText,
-            ok: response.ok,
-            type: response.type,
-            url: response.url
-          });
-
-          if (response.ok) {
-            console.log(`✅ Webhook chamado com sucesso usando ${method}!`);
-            toast({
-              title: "Report enviado",
-              description: `Dados da carteira ${carteira} enviados para o webhook com sucesso! ${projetos.length} projetos e ${statusAprovados?.length || 0} status enviados.`,
-            });
-            return true;
-          } else if (response.status !== 404 && response.status !== 405) {
-            // Se não for erro de método não permitido, parar tentativas
-            throw new Error(`Erro ${response.status}: ${response.statusText}`);
-          }
-          
-          lastError = `${method}: ${response.status} ${response.statusText}`;
-        } catch (methodError) {
-          console.error(`❌ Erro com método ${method}:`, methodError);
-          lastError = methodError;
-          
-          // Se é erro de CORS, pode ter funcionado
-          if (methodError instanceof TypeError && methodError.message.includes('Failed to fetch')) {
-            console.log('🌐 Possível erro de CORS detectado - requisição pode ter sido enviada mesmo assim');
-            toast({
-              title: "Requisição enviada",
-              description: `Dados enviados para ${webhookUrl}. ${projetos.length} projetos e ${statusAprovados?.length || 0} status foram processados. Verifique o histórico do seu webhook para confirmar o recebimento.`,
-            });
-            return true;
-          }
+          // Tentar apenas sessionStorage se localStorage falhar
+          sessionStorage.setItem(reportKey, JSON.stringify(reportData));
+          sessionStorage.setItem(id, JSON.stringify(reportData));
+          console.log('✅ Salvo apenas em sessionStorage');
+        } catch (sessionError) {
+          console.error('❌ Erro também no sessionStorage:', sessionError);
+          throw new Error('Erro ao salvar dados. Verifique o espaço disponível.');
         }
       }
-      
-      // Se chegou aqui, nenhum método funcionou
-      console.error('❌ Nenhum método HTTP funcionou:', lastError);
+
+      // Sistema usando apenas localStorage para simplificar
+      console.log('💾 Sistema configurado para usar apenas localStorage');
+
+      // Atualizar lista local
+      setRelatoriosCompartilhados(prev => [relatorio, ...prev]);
+
+      console.log('🎉 Relatório compartilhável criado com sucesso!');
+
       toast({
-        title: "Erro no webhook",
-        description: `Falha ao enviar dados. Último erro: ${lastError}`,
-        variant: "destructive",
+        title: "Relatório compartilhável criado!",
+        description: `Link gerado com sucesso. Expira em ${params.expiraEm || 30} dias.`,
       });
-      return false;
+
+      return relatorio;
 
     } catch (error) {
-      console.error('💥 Erro geral ao enviar report:', error);
+      console.error('❌ Erro ao criar relatório compartilhável:', error);
+      
+      const mensagemErro = error instanceof Error ? error.message : 'Erro desconhecido ao criar relatório compartilhável';
+      
       toast({
         title: "Erro",
-        description: `Erro ao enviar report: ${error.message}`,
-        variant: "destructive",
+        description: mensagemErro,
+        variant: "destructive"
       });
-      return false;
+      return null;
     } finally {
-      setIsLoading(false);
+      setLoading(false);
+    }
+  };
+
+  // Listar relatórios compartilhados do usuário
+  const listarRelatoriosCompartilhados = async (): Promise<void> => {
+    try {
+      // Obter usuário atual do sistema customizado
+      const token = localStorage.getItem('pmo_token');
+      const userData = localStorage.getItem('pmo_user');
+      
+      if (!token || !userData) return;
+
+      let user;
+      try {
+        user = JSON.parse(userData);
+      } catch (error) {
+        console.warn('Erro ao parsear dados do usuário:', error);
+        return;
+      }
+
+      // Buscar do localStorage
+      const relatoriosLocal: RelatorioCompartilhavel[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key?.startsWith('shared-report-')) {
+          try {
+            const data = JSON.parse(localStorage.getItem(key)!);
+            const criadoPorUsuario = data.criadoPor === (user.nome || user.email);
+            
+            if (criadoPorUsuario) {
+              // Verificar se não expirou
+              const expiraEm = new Date(data.expiresAt);
+              if (new Date() <= expiraEm) {
+                relatoriosLocal.push(data);
+              } else {
+                // Remover expirado
+                localStorage.removeItem(key);
+              }
+            }
+          } catch (e) {
+            console.warn('Erro ao parsear relatório local:', e);
+          }
+        }
+      }
+
+      setRelatoriosCompartilhados(relatoriosLocal.sort((a, b) => 
+        new Date(b.criadoEm).getTime() - new Date(a.criadoEm).getTime()
+      ));
+
+    } catch (error) {
+      console.error('Erro ao listar relatórios:', error);
+    }
+  };
+
+  // Excluir relatório compartilhado
+  const excluirRelatorioCompartilhado = async (id: string): Promise<void> => {
+    try {
+      // Remover do localStorage
+      localStorage.removeItem(`shared-report-${id}`);
+
+      // Atualizar lista local
+      setRelatoriosCompartilhados(prev => prev.filter(r => r.id !== id));
+
+      toast({
+        title: "Relatório excluído",
+        description: "O relatório compartilhado foi removido com sucesso.",
+      });
+
+    } catch (error) {
+      console.error('Erro ao excluir relatório:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao excluir relatório compartilhado",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Copiar link para clipboard
+  const copiarLink = async (relatorio: RelatorioCompartilhavel): Promise<void> => {
+    try {
+      await navigator.clipboard.writeText(relatorio.url);
+      toast({
+        title: "Link copiado!",
+        description: "O link do relatório foi copiado para a área de transferência.",
+      });
+    } catch (error) {
+      console.error('Erro ao copiar link:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao copiar link",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Registrar acesso ao relatório
+  const registrarAcesso = async (id: string): Promise<void> => {
+    try {
+      const reportKey = `shared-report-${id}`;
+      const reportData = localStorage.getItem(reportKey);
+      
+      if (reportData) {
+        const data = JSON.parse(reportData);
+        data.acessos = (data.acessos || 0) + 1;
+        data.ultimoAcesso = new Date().toISOString();
+        localStorage.setItem(reportKey, JSON.stringify(data));
+      }
+    } catch (error) {
+      console.warn('Erro ao registrar acesso:', error);
     }
   };
 
   return {
-    enviarReport,
-    isLoading,
+    loading,
+    relatoriosCompartilhados,
+    criarRelatorioCompartilhavel,
+    listarRelatoriosCompartilhados,
+    excluirRelatorioCompartilhado,
+    copiarLink,
+    registrarAcesso
   };
 }

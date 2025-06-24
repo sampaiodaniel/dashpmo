@@ -36,6 +36,11 @@ export function RelatorioVisualContent({ dados }: RelatorioVisualContentProps) {
       new Date(a.data_aprovacao || a.data_criacao).getTime()
     )[0];
 
+    // Log para debug
+    // if (ultimoStatus && ultimoStatus.entregasExtras) {
+    //   console.log('🔍 Status com entregas extras no relatório visual:', ultimoStatus.id, ultimoStatus.entregasExtras);
+    // }
+
     return {
       ...projeto,
       ultimoStatus

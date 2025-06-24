@@ -73,17 +73,28 @@ export function useRelatorioVisual() {
 
       const projetoIds = projetos.map(p => p.id);
 
-      // Buscar status mais recentes dos projetos
+      // Buscar status mais recentes dos projetos com entregas extras
       const { data: statusProjetos, error: statusError } = await supabase
         .from('status_projeto')
         .select(`
           *,
-          projeto:projetos(id, nome_projeto)
+          projeto:projetos(id, nome_projeto),
+          entregas_extras:entregas_status(*)
         `)
         .in('projeto_id', projetoIds)
         .order('data_criacao', { ascending: false });
 
       if (statusError) throw statusError;
+
+      // Processar e anexar entregas extras a cada status
+      if (statusProjetos) {
+        statusProjetos.forEach((status: any) => {
+          if (status.entregas_extras && status.entregas_extras.length > 0) {
+            // console.log('📦 Entregas extras encontradas no status (carteira):', status.id, status.entregas_extras);
+            status.entregasExtras = status.entregas_extras;
+          }
+        });
+      }
 
       // Buscar incidentes da carteira
       const { data: incidentes, error: incidentesError } = await supabase
@@ -145,17 +156,28 @@ export function useRelatorioVisual() {
       const projetoIds = projetos.map(p => p.id);
       const carteiras = [...new Set(projetos.map(p => p.carteira_primaria).filter(Boolean))];
 
-      // Buscar status mais recentes dos projetos
+      // Buscar status mais recentes dos projetos com entregas extras
       const { data: statusProjetos, error: statusError } = await supabase
         .from('status_projeto')
         .select(`
           *,
-          projeto:projetos(id, nome_projeto)
+          projeto:projetos(id, nome_projeto),
+          entregas_extras:entregas_status(*)
         `)
         .in('projeto_id', projetoIds)
         .order('data_criacao', { ascending: false });
 
       if (statusError) throw statusError;
+
+      // Processar e anexar entregas extras a cada status
+      if (statusProjetos) {
+        statusProjetos.forEach((status: any) => {
+          if (status.entregas_extras && status.entregas_extras.length > 0) {
+            // console.log('📦 Entregas extras encontradas no status (responsável):', status.id, status.entregas_extras);
+            status.entregasExtras = status.entregas_extras;
+          }
+        });
+      }
 
       // Buscar incidentes das carteiras relacionadas
       const { data: incidentes, error: incidentesError } = await supabase

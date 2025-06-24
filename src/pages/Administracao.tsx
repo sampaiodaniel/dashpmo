@@ -6,7 +6,8 @@ import { AdminUsuarios } from '@/components/admin/AdminUsuarios';
 import { AdminConfiguracoes } from '@/components/admin/AdminConfiguracoes';
 import { AdminResponsaveisASA } from '@/components/admin/AdminResponsaveisASA';
 import { AdminLogs } from '@/components/admin/AdminLogs';
-import { Users, Settings, UserCheck, FileText } from 'lucide-react';
+import { AdminStatusEntrega } from '@/components/admin/AdminStatusEntrega';
+import { Users, Settings, UserCheck, FileText, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function Administracao() {
@@ -70,6 +71,14 @@ export default function Administracao() {
                 Responsáveis ASA
               </Button>
               <Button
+                variant={activeTab === 'status-entrega' ? 'default' : 'ghost'}
+                onClick={() => setActiveTab('status-entrega')}
+                className="flex items-center gap-2"
+              >
+                <CheckCircle className="h-4 w-4" />
+                Status Entrega
+              </Button>
+              <Button
                 variant={activeTab === 'logs' ? 'default' : 'ghost'}
                 onClick={() => setActiveTab('logs')}
                 className="flex items-center gap-2"
@@ -84,6 +93,7 @@ export default function Administracao() {
             {activeTab === 'usuarios' && <AdminUsuarios />}
             {activeTab === 'configuracoes' && <AdminConfiguracoes />}
             {activeTab === 'responsaveis-asa' && <AdminResponsaveisASA />}
+            {activeTab === 'status-entrega' && <AdminStatusEntrega />}
             {activeTab === 'logs' && <AdminLogs />}
           </div>
         </div>

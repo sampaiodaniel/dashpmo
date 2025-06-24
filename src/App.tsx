@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -23,6 +22,7 @@ import Licoes from "./pages/Licoes";
 import LicaoDetalhes from "./pages/LicaoDetalhes";
 import Relatorios from "./pages/Relatorios";
 import RelatorioCompartilhado from "./pages/RelatorioCompartilhado";
+import RelatoriosCompartilhados from "./pages/RelatoriosCompartilhados";
 import RelatorioConsolidado from "./pages/RelatorioConsolidado";
 import RelatorioVisualPagina from "./pages/RelatorioVisualPagina";
 import RelatorioVisualMobile from "./pages/RelatorioVisualMobile";
@@ -62,7 +62,8 @@ function App() {
               <Route path="/licoes" element={<Licoes />} />
               <Route path="/licoes/:id" element={<LicaoDetalhes />} />
               <Route path="/relatorios" element={<Relatorios />} />
-              <Route path="/relatorio-compartilhado" element={<RelatorioCompartilhado />} />
+              <Route path="/relatorio-compartilhado/:id" element={<RelatorioCompartilhado />} />
+              <Route path="/relatorios-compartilhados" element={<RelatoriosCompartilhados />} />
               <Route path="/relatorio-consolidado" element={<RelatorioConsolidado />} />
               <Route path="/relatorio-visual" element={<RelatorioVisualPagina />} />
               <Route path="/relatorio-visual-mobile" element={<RelatorioVisualMobile />} />

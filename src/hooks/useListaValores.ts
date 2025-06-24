@@ -9,21 +9,21 @@ export function useListaValores(tipo: string) {
       console.log(`Buscando lista de valores para tipo: ${tipo}`);
       
       try {
-        const { data, error } = await supabase
-          .from('configuracoes_sistema')
-          .select('valor')
-          .eq('tipo', tipo)
-          .eq('ativo', true)
-          .order('ordem', { ascending: true })
-          .order('valor', { ascending: true });
+      const { data, error } = await supabase
+        .from('configuracoes_sistema')
+        .select('valor')
+        .eq('tipo', tipo)
+        .eq('ativo', true)
+        .order('ordem', { ascending: true })
+        .order('valor', { ascending: true });
 
-        if (error) {
-          console.error(`Erro ao buscar lista de valores para ${tipo}:`, error);
+      if (error) {
+        console.error(`Erro ao buscar lista de valores para ${tipo}:`, error);
           // Retornar valores padrão em caso de erro
           return getValoresPadrao(tipo);
-        }
+      }
 
-        console.log(`Lista de valores para ${tipo}:`, data);
+      console.log(`Lista de valores para ${tipo}:`, data);
         const valores = data?.map(item => item.valor) || [];
         
         // Se não houver dados, usar valores padrão

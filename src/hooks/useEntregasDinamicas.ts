@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 
 export interface Entrega {
@@ -6,13 +5,14 @@ export interface Entrega {
   nome: string;
   data: string;
   entregaveis: string;
+  statusEntregaId?: number | null;
 }
 
-export function useEntregasDinamicas(entregasIniciais?: Entrega[]) {
+export function useEntregasDinamicas(entregasIniciais?: Entrega[], statusObrigatorio: boolean = false) {
   const [entregas, setEntregas] = useState<Entrega[]>(
     entregasIniciais && entregasIniciais.length > 0 
       ? entregasIniciais 
-      : [{ id: '1', nome: '', data: '', entregaveis: '' }]
+      : [{ id: '1', nome: '', data: '', entregaveis: '', statusEntregaId: null }]
   );
 
   const adicionarEntrega = () => {
@@ -20,7 +20,8 @@ export function useEntregasDinamicas(entregasIniciais?: Entrega[]) {
       id: Date.now().toString(),
       nome: '',
       data: '',
-      entregaveis: ''
+      entregaveis: '',
+      statusEntregaId: null
     };
     setEntregas([...entregas, novaEntrega]);
   };
@@ -31,7 +32,7 @@ export function useEntregasDinamicas(entregasIniciais?: Entrega[]) {
     }
   };
 
-  const atualizarEntrega = (id: string, campo: keyof Entrega, valor: string) => {
+  const atualizarEntrega = (id: string, campo: keyof Entrega, valor: string | number | null) => {
     setEntregas(entregas.map(entrega => 
       entrega.id === id ? { ...entrega, [campo]: valor } : entrega
     ));
@@ -40,9 +41,22 @@ export function useEntregasDinamicas(entregasIniciais?: Entrega[]) {
   const validarEntregas = () => {
     // Primeira entrega é obrigatória
     const primeiraEntrega = entregas[0];
-    if (!primeiraEntrega?.nome || !primeiraEntrega?.entregaveis) {
+    const validacaoBasica = !primeiraEntrega?.nome || !primeiraEntrega?.entregaveis;
+    const validacaoStatus = statusObrigatorio && !primeiraEntrega?.statusEntregaId;
+    
+    if (validacaoBasica || validacaoStatus) {
       return false;
     }
+    
+    // Validar que todas as entregas preenchidas tenham status (se obrigatório)
+    if (statusObrigatorio) {
+      for (const entrega of entregas) {
+        if (entrega.nome.trim() !== '' && !entrega.statusEntregaId) {
+          return false;
+        }
+      }
+    }
+    
     return true;
   };
 
@@ -60,3 +74,5 @@ export function useEntregasDinamicas(entregasIniciais?: Entrega[]) {
     obterEntregasParaSalvar
   };
 }
+
+

@@ -5,9 +5,10 @@ import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileText, BarChart3, TrendingUp, Smartphone } from 'lucide-react';
+import { FileText, BarChart3, TrendingUp, Smartphone, Share } from 'lucide-react';
 import { RelatorioASAViewer } from '@/components/relatorios/RelatorioASAViewer';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { ReportWebhookModal } from '@/components/relatorios/ReportWebhookModal';
 
 import { RelatorioConsolidadoContent } from '@/components/relatorios/consolidado/RelatorioConsolidadoContent';
 import { UltimosRelatorios } from '@/components/relatorios/UltimosRelatorios';
@@ -36,6 +37,14 @@ export default function Relatorios() {
   
   // Estado para versão do relatório visual
   const [versaoRelatorioVisual, setVersaoRelatorioVisual] = useState<'desktop' | 'mobile'>('desktop');
+
+  // Estados para o modal de compartilhamento
+  const [modalCompartilhamento, setModalCompartilhamento] = useState(false);
+  const [dadosCompartilhamento, setDadosCompartilhamento] = useState<any>(null);
+  const [tipoCompartilhamento, setTipoCompartilhamento] = useState<'visual' | 'asa' | 'consolidado'>('visual');
+  const [tituloCompartilhamento, setTituloCompartilhamento] = useState('');
+  const [carteiraCompartilhamento, setCarteiraCompartilhamento] = useState<string | undefined>();
+  const [responsavelCompartilhamento, setResponsavelCompartilhamento] = useState<string | undefined>();
 
   // Hooks dos relatórios
   const { gerarRelatorioCarteira, gerarRelatorioGeral, isLoading: isLoadingASA, carteiras } = useRelatorioASA();
@@ -174,6 +183,74 @@ export default function Relatorios() {
     }
   };
 
+  // Função para gerar título automático
+  const gerarTituloAutomatico = (tipo: string, filtro: string, valor?: string): string => {
+    const dataAtual = new Date().toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+    
+    const tipoFormatado = tipo === 'asa' ? 'ASA' : tipo === 'visual' ? 'Visual' : 'Consolidado';
+    const carteiraFormatada = valor || 'Geral';
+    
+    return `Report - ${carteiraFormatada} - ${dataAtual}`;
+  };
+
+  // Funções para compartilhamento de relatórios
+  const handleCompartilharRelatorioASA = async () => {
+    const dados = filtroASA === 'geral' 
+      ? await gerarRelatorioGeral()
+      : await gerarRelatorioCarteira(carteiraSelecionada);
+    
+    if (dados) {
+      const titulo = gerarTituloAutomatico('asa', filtroASA, filtroASA === 'carteira' ? carteiraSelecionada : undefined);
+      
+      setDadosCompartilhamento(dados);
+      setTipoCompartilhamento('asa');
+      setTituloCompartilhamento(titulo);
+      setCarteiraCompartilhamento(filtroASA === 'carteira' ? carteiraSelecionada : undefined);
+      setResponsavelCompartilhamento(undefined);
+      setModalCompartilhamento(true);
+    }
+  };
+
+  const handleCompartilharRelatorioVisual = async () => {
+    const dados = filtroVisual === 'carteira' 
+      ? await gerarRelatorioCarteiraVisual(carteiraVisual)
+      : await gerarRelatorioResponsavelVisual(responsavelVisual);
+    
+    if (dados) {
+      const valor = filtroVisual === 'carteira' ? carteiraVisual : responsavelVisual;
+      const titulo = gerarTituloAutomatico('visual', filtroVisual, valor);
+      
+      setDadosCompartilhamento(dados);
+      setTipoCompartilhamento('visual');
+      setTituloCompartilhamento(titulo);
+      setCarteiraCompartilhamento(filtroVisual === 'carteira' ? carteiraVisual : undefined);
+      setResponsavelCompartilhamento(filtroVisual === 'responsavel' ? responsavelVisual : undefined);
+      setModalCompartilhamento(true);
+    }
+  };
+
+  const handleCompartilharRelatorioConsolidado = async () => {
+    const dados = filtroConsolidado === 'carteira' 
+      ? await gerarRelatorioCarteiraConsolidado(carteiraConsolidado)
+      : await gerarRelatorioResponsavelConsolidado(responsavelConsolidado);
+    
+    if (dados) {
+      const valor = filtroConsolidado === 'carteira' ? carteiraConsolidado : responsavelConsolidado;
+      const titulo = gerarTituloAutomatico('consolidado', filtroConsolidado, valor);
+      
+      setDadosCompartilhamento(dados);
+      setTipoCompartilhamento('consolidado');
+      setTituloCompartilhamento(titulo);
+      setCarteiraCompartilhamento(filtroConsolidado === 'carteira' ? carteiraConsolidado : undefined);
+      setResponsavelCompartilhamento(filtroConsolidado === 'responsavel' ? responsavelConsolidado : undefined);
+      setModalCompartilhamento(true);
+    }
+  };
+
   if (tipoRelatorio === 'asa') {
     return (
       <Layout>
@@ -188,8 +265,6 @@ export default function Relatorios() {
       </Layout>
     );
   }
-
-
 
   return (
     <Layout>
@@ -245,13 +320,24 @@ export default function Relatorios() {
                 </div>
               )}
 
-              <Button 
-                onClick={handleGerarRelatorioASA}
-                disabled={isLoadingASA || (filtroASA === 'carteira' && !carteiraSelecionada)}
-                className="w-full bg-pmo-primary hover:bg-pmo-secondary text-white"
-              >
-                {isLoadingASA ? 'Gerando...' : 'Gerar Relatório'}
-              </Button>
+              <div className="space-y-2">
+                <Button 
+                  onClick={handleGerarRelatorioASA}
+                  disabled={isLoadingASA || (filtroASA === 'carteira' && !carteiraSelecionada)}
+                  className="w-full bg-pmo-primary hover:bg-pmo-secondary text-white"
+                >
+                  {isLoadingASA ? 'Gerando...' : 'Gerar Relatório'}
+                </Button>
+                <Button 
+                  onClick={handleCompartilharRelatorioASA}
+                  disabled={isLoadingASA || (filtroASA === 'carteira' && !carteiraSelecionada)}
+                  variant="outline"
+                  className="w-full border-blue-600 text-blue-600 hover:bg-blue-50"
+                >
+                  <Share className="h-4 w-4 mr-2" />
+                  Gerar Link
+                </Button>
+              </div>
             </CardContent>
           </Card>
 
@@ -339,24 +425,39 @@ export default function Relatorios() {
                   </Select>
                 </div>
 
-                <Button 
-                  onClick={() => {
-                    if (versaoRelatorioVisual === 'desktop') {
-                      handleGerarRelatorioVisual();
-                    } else {
-                      handleGerarRelatorioVisualMobile();
+                <div className="space-y-2">
+                  <Button 
+                    onClick={() => {
+                      if (versaoRelatorioVisual === 'desktop') {
+                        handleGerarRelatorioVisual();
+                      } else {
+                        handleGerarRelatorioVisualMobile();
+                      }
+                    }}
+                    disabled={
+                      isLoadingVisual ||
+                      (filtroVisual === 'carteira' && !carteiraVisual) || 
+                      (filtroVisual === 'responsavel' && !responsavelVisual) ||
+                      !versaoRelatorioVisual
                     }
-                  }}
-                  disabled={
-                    isLoadingVisual ||
-                    (filtroVisual === 'carteira' && !carteiraVisual) || 
-                    (filtroVisual === 'responsavel' && !responsavelVisual) ||
-                    !versaoRelatorioVisual
-                  }
-                  className="w-full bg-pmo-primary hover:bg-pmo-secondary text-white"
-                >
-                  {isLoadingVisual ? 'Gerando...' : 'Gerar Relatório'}
-                </Button>
+                    className="w-full bg-pmo-primary hover:bg-pmo-secondary text-white"
+                  >
+                    {isLoadingVisual ? 'Gerando...' : 'Gerar Relatório'}
+                  </Button>
+                  <Button 
+                    onClick={handleCompartilharRelatorioVisual}
+                    disabled={
+                      isLoadingVisual ||
+                      (filtroVisual === 'carteira' && !carteiraVisual) || 
+                      (filtroVisual === 'responsavel' && !responsavelVisual)
+                    }
+                    variant="outline"
+                    className="w-full border-blue-600 text-blue-600 hover:bg-blue-50"
+                  >
+                    <Share className="h-4 w-4 mr-2" />
+                    Gerar Link
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -422,22 +523,47 @@ export default function Relatorios() {
                 </div>
               )}
 
-              <Button 
-                onClick={handleGerarRelatorioConsolidado}
-                disabled={
-                  (filtroConsolidado === 'carteira' && !carteiraConsolidado) || 
-                  (filtroConsolidado === 'responsavel' && !responsavelConsolidado)
-                }
-                className="w-full bg-pmo-primary hover:bg-pmo-secondary text-white"
-              >
-                Gerar Relatório
-              </Button>
+              <div className="space-y-2">
+                <Button 
+                  onClick={handleGerarRelatorioConsolidado}
+                  disabled={
+                    (filtroConsolidado === 'carteira' && !carteiraConsolidado) || 
+                    (filtroConsolidado === 'responsavel' && !responsavelConsolidado)
+                  }
+                  className="w-full bg-pmo-primary hover:bg-pmo-secondary text-white"
+                >
+                  Gerar Relatório
+                </Button>
+                <Button 
+                  onClick={handleCompartilharRelatorioConsolidado}
+                  disabled={
+                    (filtroConsolidado === 'carteira' && !carteiraConsolidado) || 
+                    (filtroConsolidado === 'responsavel' && !responsavelConsolidado)
+                  }
+                  variant="outline"
+                  className="w-full border-blue-600 text-blue-600 hover:bg-blue-50"
+                >
+                  <Share className="h-4 w-4 mr-2" />
+                  Gerar Link
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>
 
         <UltimosRelatorios />
       </div>
+
+      {/* Modal de compartilhamento */}
+      <ReportWebhookModal
+        isOpen={modalCompartilhamento}
+        onClose={() => setModalCompartilhamento(false)}
+        dadosRelatorio={dadosCompartilhamento}
+        tipoRelatorio={tipoCompartilhamento}
+        tituloSugerido={tituloCompartilhamento}
+        carteira={carteiraCompartilhamento}
+        responsavel={responsavelCompartilhamento}
+      />
     </Layout>
   );
 }
