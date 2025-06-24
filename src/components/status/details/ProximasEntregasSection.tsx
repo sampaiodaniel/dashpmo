@@ -11,9 +11,14 @@ interface ProximasEntregasSectionProps {
   status: StatusProjeto;
 }
 
+function obterStatusEntregaId(status: any, cacheStatus: Record<string, number>, campoBanco: string, campoCache: string, statusEntrega: any[]): number {
+  if (status[campoBanco]) return status[campoBanco];
+  if (cacheStatus[campoCache]) return cacheStatus[campoCache];
+  return statusEntrega.length > 0 ? statusEntrega[0].id : 1;
+}
+
 export function ProximasEntregasSection({ status }: ProximasEntregasSectionProps) {
-  console.log('👁️ ProximasEntregasSection - Status recebido:', status);
-  const { carregarStatusCache } = useStatusEntrega();
+  const { carregarStatusCache, statusEntrega } = useStatusEntrega();
   
   // Carregar cache de status se os campos não existirem no banco
   const cacheStatus = carregarStatusCache(status.id);
@@ -33,7 +38,6 @@ export function ProximasEntregasSection({ status }: ProximasEntregasSectionProps
         return [];
       }
 
-      console.log('📋 Entregas extras carregadas:', data);
       return data || [];
     },
   });
@@ -42,54 +46,60 @@ export function ProximasEntregasSection({ status }: ProximasEntregasSectionProps
   
   // Adicionar entregas principais apenas uma vez
   if (status.entrega1) {
+    const statusId = obterStatusEntregaId(status, cacheStatus, 'status_entrega1_id', 'entrega1', statusEntrega);
+    
     const entrega1 = {
       nome: status.entrega1,
       data: status.data_marco1,
       entregaveis: status.entregaveis1,
       ordem: 1,
       tipo: 'principal',
-      statusEntregaId: (status as any).status_entrega1_id || cacheStatus['entrega1']
+      statusEntregaId: statusId
     };
-    console.log('👁️ Entrega 1 para exibição:', entrega1);
     entregas.push(entrega1);
   }
   
   if (status.entrega2) {
+    const statusId = obterStatusEntregaId(status, cacheStatus, 'status_entrega2_id', 'entrega2', statusEntrega);
+    
     const entrega2 = {
       nome: status.entrega2,
       data: status.data_marco2,
       entregaveis: status.entregaveis2,
       ordem: 2,
       tipo: 'principal',
-      statusEntregaId: (status as any).status_entrega2_id || cacheStatus['entrega2']
+      statusEntregaId: statusId
     };
-    console.log('👁️ Entrega 2 para exibição:', entrega2);
     entregas.push(entrega2);
   }
   
   if (status.entrega3) {
+    const statusId = obterStatusEntregaId(status, cacheStatus, 'status_entrega3_id', 'entrega3', statusEntrega);
+    
     const entrega3 = {
       nome: status.entrega3,
       data: status.data_marco3,
       entregaveis: status.entregaveis3,
       ordem: 3,
       tipo: 'principal',
-      statusEntregaId: (status as any).status_entrega3_id || cacheStatus['entrega3']
+      statusEntregaId: statusId
     };
-    console.log('👁️ Entrega 3 para exibição:', entrega3);
     entregas.push(entrega3);
   }
 
   // Adicionar entregas extras vindas da tabela entregas_status
   entregasExtras.forEach((entrega: any, index: number) => {
-    entregas.push({
+    const statusId = obterStatusEntregaId(entrega, cacheStatus, `status_entrega_id`, `extra${index + 4}`, statusEntrega);
+    
+    const entregaExtra = {
       nome: entrega.nome_entrega,
       data: entrega.data_entrega,
       entregaveis: entrega.entregaveis,
       ordem: entrega.ordem,
       tipo: 'extra',
-      statusEntregaId: entrega.status_entrega_id || cacheStatus[`extra${index + 4}`]
-    });
+      statusEntregaId: statusId
+    };
+    entregas.push(entregaExtra);
   });
 
   // Remover duplicatas considerando nome, data e entregáveis
@@ -119,7 +129,7 @@ export function ProximasEntregasSection({ status }: ProximasEntregasSectionProps
                 {entrega.statusEntregaId && (
                   <StatusEntregaBadge statusId={entrega.statusEntregaId} size="sm" showText={false} />
                 )}
-              <Badge variant="outline">Entrega {entrega.ordem}</Badge>
+                <Badge variant="outline">Entrega {entrega.ordem}</Badge>
               </div>
             </div>
             
@@ -133,12 +143,12 @@ export function ProximasEntregasSection({ status }: ProximasEntregasSectionProps
                 </div>
               )}
             
-            {entrega.data && (
+              {entrega.data && (
                 <div className="text-left">
                   <span className="text-sm font-medium text-pmo-gray">Data prevista:</span>
                   <p className="text-sm text-gray-700 mt-1">{formatarData(entrega.data)}</p>
                 </div>
-            )}
+              )}
             </div>
             
             {entrega.entregaveis && (

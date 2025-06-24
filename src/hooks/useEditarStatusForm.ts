@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { StatusProjeto } from '@/types/pmo';
@@ -38,9 +38,10 @@ async function verificarCamposStatusEntrega() {
 export function useEditarStatusForm(status: StatusProjeto) {
   const queryClient = useQueryClient();
   const { isAdmin } = useAuth();
-  const { salvarStatusCache, carregarStatusCache } = useStatusEntrega();
+  const { salvarStatusCache, carregarStatusCache, statusEntrega } = useStatusEntrega();
   const [carregando, setCarregando] = useState(false);
   const [statusObrigatorio, setStatusObrigatorio] = useState(false);
+  const inicializadoRef = useRef<{ [id: number]: boolean }>({});
 
   // Verificar se os campos de status_entrega existem
   useEffect(() => {
@@ -107,69 +108,73 @@ export function useEditarStatusForm(status: StatusProjeto) {
 
   // Efeito para carregar todas as entregas quando os dados estiverem prontos
   useEffect(() => {
-    console.log('🔄 Carregando entregas do status:', status.id);
-    console.log('📊 Status objeto recebido:', status);
-    console.log('📋 Entregas extras:', entregasExtras);
-    
+    if (inicializadoRef.current[status.id]) return;
+    inicializadoRef.current[status.id] = true;
     // Carregar cache de status se os campos não existirem no banco
     const cacheStatus = carregarStatusCache(status.id);
-    
     const entregasCompletas: Entrega[] = [];
-    
+    const primeiroStatusId = statusEntrega.length > 0 ? statusEntrega[0].id : 1;
     // Adicionar entregas principais
     if (status.entrega1) {
+      let statusEntregaId = (status as any).status_entrega1_id || cacheStatus['entrega1'] || null;
+      if (!statusEntregaId) {
+        statusEntregaId = primeiroStatusId;
+      }
       const entrega1 = {
         id: '1',
         nome: status.entrega1,
         data: typeof status.data_marco1 === 'string' ? status.data_marco1 : (status.data_marco1 ? status.data_marco1.toISOString().split('T')[0] : ''),
         entregaveis: status.entregaveis1 || '',
-        statusEntregaId: (status as any).status_entrega1_id || cacheStatus['entrega1'] || null
+        statusEntregaId: statusEntregaId
       };
-      console.log('📌 Entrega 1:', entrega1);
       entregasCompletas.push(entrega1);
     }
     if (status.entrega2) {
+      let statusEntregaId = (status as any).status_entrega2_id || cacheStatus['entrega2'] || null;
+      if (!statusEntregaId) {
+        statusEntregaId = primeiroStatusId;
+      }
       const entrega2 = {
         id: '2',
         nome: status.entrega2,
         data: typeof status.data_marco2 === 'string' ? status.data_marco2 : (status.data_marco2 ? status.data_marco2.toISOString().split('T')[0] : ''),
         entregaveis: status.entregaveis2 || '',
-        statusEntregaId: (status as any).status_entrega2_id || cacheStatus['entrega2'] || null
+        statusEntregaId: statusEntregaId
       };
-      console.log('📌 Entrega 2:', entrega2);
       entregasCompletas.push(entrega2);
     }
     if (status.entrega3) {
+      let statusEntregaId = (status as any).status_entrega3_id || cacheStatus['entrega3'] || null;
+      if (!statusEntregaId) {
+        statusEntregaId = primeiroStatusId;
+      }
       const entrega3 = {
         id: '3',
         nome: status.entrega3,
         data: typeof status.data_marco3 === 'string' ? status.data_marco3 : (status.data_marco3 ? status.data_marco3.toISOString().split('T')[0] : ''),
         entregaveis: status.entregaveis3 || '',
-        statusEntregaId: (status as any).status_entrega3_id || cacheStatus['entrega3'] || null
+        statusEntregaId: statusEntregaId
       };
-      console.log('📌 Entrega 3:', entrega3);
       entregasCompletas.push(entrega3);
     }
-
     // Adicionar entregas extras da tabela entregas_status
     entregasExtras.forEach((entrega: any, index: number) => {
+      let statusEntregaId = entrega.status_entrega_id || cacheStatus[`extra${index + 4}`] || null;
+      if (!statusEntregaId) {
+        statusEntregaId = primeiroStatusId;
+      }
       const entregaExtra = {
         id: entrega.id.toString(),
         nome: entrega.nome_entrega,
         data: entrega.data_entrega || '',
         entregaveis: entrega.entregaveis || '',
-        statusEntregaId: entrega.status_entrega_id || cacheStatus[`extra${index + 4}`] || null
+        statusEntregaId: statusEntregaId
       };
-      console.log('📌 Entrega extra:', entregaExtra);
       entregasCompletas.push(entregaExtra);
     });
-
-    // Se não houver entregas, criar uma vazia
     if (entregasCompletas.length === 0) {
-      entregasCompletas.push({ id: '1', nome: '', data: '', entregaveis: '', statusEntregaId: null });
+      entregasCompletas.push({ id: '1', nome: '', data: '', entregaveis: '', statusEntregaId: primeiroStatusId });
     }
-
-    console.log('✅ Entregas completas carregadas:', entregasCompletas);
     setEntregas(entregasCompletas);
   }, [status.id, entregasExtras, setEntregas, carregarStatusCache]);
   

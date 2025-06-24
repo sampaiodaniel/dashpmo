@@ -74,82 +74,41 @@ export function RelatorioVisualViewer({ isOpen, onClose, dados }: RelatorioVisua
 
   const handleDownload = useCallback(async () => {
     if (isGeneratingPdf) return;
-    
     setIsGeneratingPdf(true);
-    console.log('Download PDF iniciado...');
-    
     try {
       // Aguardar renderização completa
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
       const element = document.getElementById('relatorio-content');
-      if (!element) {
-        console.error('Elemento relatorio-content não encontrado');
-        throw new Error('Elemento não encontrado');
-      }
+      if (!element) throw new Error('Elemento não encontrado');
+
+      // Garantir que todas as imagens estejam carregadas
+      const images = Array.from(element.getElementsByTagName('img'));
+      await Promise.all(images.map(img => {
+        if (img.complete) return Promise.resolve();
+        return new Promise(res => {
+          img.onload = img.onerror = res;
+        });
+      }));
 
       // Carregar html2pdf dinamicamente
-      console.log('Carregando html2pdf...');
       const html2pdf = await loadHtml2Pdf();
+      if (!html2pdf) throw new Error('html2pdf não disponível');
 
-      if (html2pdf) {
-        console.log('Gerando PDF com html2pdf...');
-        
-        // Configuração mais conservadora para evitar corrupção
-        const opt = {
-          margin: [0.4, 0.4, 0.4, 0.4],
-          filename: `relatorio-visual-${dados?.carteira || dados?.responsavel || 'dashboard'}-${new Date().toISOString().split('T')[0]}.pdf`,
-          image: getBasicImageConfig(),
-          html2canvas: getBasicHtml2CanvasConfig(element),
-          jsPDF: getBasicJsPDFConfig('landscape'),
-          pagebreak: { 
-            mode: 'avoid-all'
-          }
-        };
+      // Configuração compatível com 0.9.3
+      const opt = {
+        margin: 10,
+        filename: `relatorio-visual-${dados?.carteira || dados?.responsavel || 'dashboard'}-${new Date().toISOString().split('T')[0]}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#fff', logging: false },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+      };
 
-        // Gerar PDF de forma simples primeiro
-        const worker = html2pdf().set(opt).from(element);
-        
-        // Opção de compressão opcional
-        const shouldCompress = false; // Pode ser configurado depois
-        
-        if (shouldCompress) {
-          console.log('Gerando PDF com compressão...');
-          const pdfBlob = await worker.outputPdf('blob');
-          const arrayBuffer = await pdfBlob.arrayBuffer();
-          const pdfBytes = new Uint8Array(arrayBuffer);
-          
-          const compressedBytes = await compressPdf(pdfBytes);
-          
-          // Download do PDF comprimido
-          const compressedBlob = new Blob([compressedBytes], { type: 'application/pdf' });
-          const url = URL.createObjectURL(compressedBlob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = opt.filename;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-        } else {
-          // Download direto sem compressão
-          await worker.save();
-        }
-        
-        console.log('PDF gerado com sucesso!');
-      } else {
-        throw new Error('html2pdf não disponível');
-      }
-      
+      await html2pdf().from(element).set(opt).save();
     } catch (error) {
-      console.error('Erro ao gerar PDF:', error);
-      // Usar fallback simples sem alertas
-      handlePrintFallback();
+      alert('Erro ao gerar PDF: ' + (error instanceof Error ? error.message : error));
     } finally {
-      // Garantir que o estado seja limpo
-      setTimeout(() => {
-        setIsGeneratingPdf(false);
-      }, 500);
+      setIsGeneratingPdf(false);
     }
   }, [dados, isGeneratingPdf]);
 

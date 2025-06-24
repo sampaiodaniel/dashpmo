@@ -12,19 +12,18 @@ interface StatusEntregaSelectProps {
 export function StatusEntregaSelect({ value, onChange, placeholder = "Selecionar status", disabled = false }: StatusEntregaSelectProps) {
   const { statusEntrega, isLoading } = useStatusEntrega();
 
+  // Se value for null ou undefined, selecionar o primeiro status disponível
+  const selectedValue = value ? value.toString() : (statusEntrega.length > 0 ? statusEntrega[0].id.toString() : "");
+
   const handleValueChange = (newValue: string) => {
-    if (newValue === "none") {
-      onChange(null);
-    } else {
-      onChange(parseInt(newValue));
-    }
+    onChange(parseInt(newValue));
   };
 
-  const selectedStatus = statusEntrega.find(s => s.id === value);
+  const selectedStatus = statusEntrega.find(s => s.id.toString() === selectedValue);
 
   return (
     <Select 
-      value={value ? value.toString() : "none"} 
+      value={selectedValue}
       onValueChange={handleValueChange}
       disabled={disabled || isLoading}
     >
@@ -44,9 +43,6 @@ export function StatusEntregaSelect({ value, onChange, placeholder = "Selecionar
         </SelectValue>
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="none">
-          <span className="text-gray-500">Nenhum status</span>
-        </SelectItem>
         {statusEntrega.map((status: TipoStatusEntrega) => (
           <SelectItem key={status.id} value={status.id.toString()}>
             <div className="flex items-center gap-2">

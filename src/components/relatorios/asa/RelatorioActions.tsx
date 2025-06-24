@@ -9,41 +9,56 @@ interface RelatorioActionsProps {
 
 // Função para carregar html2pdf dinamicamente
 const loadHtml2Pdf = async (): Promise<any> => {
+  // Verificar se já está carregado
   if (typeof window !== 'undefined' && window.html2pdf) {
+    console.log('html2pdf já disponível');
     return window.html2pdf;
   }
 
-  // Carregamento dinâmico via import()
+  // Tentar carregar via import primeiro
   try {
+    console.log('Carregando html2pdf via import...');
     const html2pdf = await import('html2pdf.js');
-    return html2pdf.default || html2pdf;
+    const lib = html2pdf.default || html2pdf;
+    console.log('html2pdf carregado via import');
+    return lib;
   } catch (error) {
-    console.warn('Erro ao carregar html2pdf via import, tentando CDN...', error);
+    console.warn('Falha no import, tentando CDN...', error);
     
     // Fallback para CDN
     return new Promise((resolve, reject) => {
+      // Verificar novamente se não foi carregado por outro processo
       if (window.html2pdf) {
         resolve(window.html2pdf);
         return;
       }
 
+      console.log('Carregando html2pdf via CDN...');
       const script = document.createElement('script');
-      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
-      script.async = true;
+      script.src = 'https://unpkg.com/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js';
+      script.crossOrigin = 'anonymous';
       
       script.onload = () => {
-        resolve(window.html2pdf);
+        console.log('html2pdf carregado via CDN');
+        if (window.html2pdf) {
+          resolve(window.html2pdf);
+        } else {
+          reject(new Error('html2pdf não disponível após carregamento'));
+        }
       };
       
-      script.onerror = () => {
-        reject(new Error('Falha ao carregar html2pdf do CDN'));
+      script.onerror = (error) => {
+        console.error('Erro ao carregar html2pdf via CDN:', error);
+        reject(new Error('Falha ao carregar html2pdf via CDN'));
       };
       
       document.head.appendChild(script);
       
-      // Timeout de segurança
+      // Timeout de 15 segundos
       setTimeout(() => {
-        reject(new Error('Timeout ao carregar html2pdf'));
+        if (!window.html2pdf) {
+          reject(new Error('Timeout ao carregar html2pdf'));
+        }
       }, 15000);
     });
   }
@@ -81,113 +96,111 @@ export function RelatorioActions({ dados }: RelatorioActionsProps) {
   };
 
   const handleDownloadPDF = async () => {
+    if (!dados) return;
+
     try {
       const element = document.getElementById('relatorio-content');
       if (!element) {
         console.error('Elemento relatorio-content não encontrado');
-        return;
-      }
-
-      console.log('Elemento encontrado:', element);
-      console.log('Dimensões do elemento:', element.scrollWidth, element.scrollHeight);
-
-      // Aguardar renderização completa - tempo maior
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      // Verificar se há conteúdo
-      if (element.children.length === 0) {
-        console.error('Elemento não possui conteúdo');
         toast({
           title: "Erro",
-          description: "Conteúdo do relatório não encontrado. Aguarde o carregamento completo.",
+          description: "Elemento do relatório não encontrado",
           variant: "destructive"
         });
         return;
       }
 
+      console.log('Iniciando geração de PDF...');
+
+      // Aguardar renderização completa
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
       // Carregar html2pdf dinamicamente
       const html2pdf = await loadHtml2Pdf();
 
-      // Esconder elementos que não devem aparecer no PDF
-      const noprint = element.querySelectorAll('.no-print');
-      noprint.forEach(el => {
-        (el as HTMLElement).style.display = 'none';
-      });
-
-      // Salvar estilo original
-      const originalStyle = element.style.cssText;
-      
-      // Aplicar estilos otimizados para PDF
-      element.style.cssText = `
-        position: relative !important;
-        top: 0 !important;
-        left: 0 !important;
-        transform: none !important;
-        margin: 0 !important;
-        padding: 30px !important;
-        width: 210mm !important;
-        max-width: 210mm !important;
-        background: white !important;
-        font-family: 'Inter', sans-serif !important;
-        color: #1B365D !important;
-        box-sizing: border-box !important;
-        overflow: visible !important;
-        font-size: 14px !important;
-        line-height: 1.5 !important;
-        min-height: auto !important;
-        height: auto !important;
-        display: block !important;
-      `;
-
-      if (html2pdf) {
-        const opt = {
-          margin: [8, 8, 8, 8],
-          filename: `relatorio-asa-${dados.carteira}-${dados.dataRelatorio.replace(/\//g, '-')}.pdf`,
-          image: { 
-            type: 'jpeg', 
-            quality: 0.8 
-          },
-          html2canvas: { 
-            scale: 1,
-            useCORS: true,
-            allowTaint: true,
-            backgroundColor: '#ffffff',
-            logging: false
-          },
-          jsPDF: { 
-            unit: 'mm', 
-            format: 'a4', 
-            orientation: 'portrait',
-            compress: true
-          },
-          pagebreak: { 
-            mode: 'avoid-all'
-          }
-        };
-
-        await html2pdf().set(opt).from(element).save();
+      if (!html2pdf) {
+        console.error('html2pdf não disponível');
+        toast({
+          title: "Erro",
+          description: "Biblioteca de PDF não carregada. Usando impressão do navegador...",
+          variant: "destructive"
+        });
+        window.print();
+        return;
       }
 
-      // Restaurar estilos originais
-      element.style.cssText = originalStyle;
+      // Configuração mais simples e robusta
+      const filename = `relatorio-asa-${dados.carteira.replace(/[^a-zA-Z0-9\s]/g, '-').replace(/\s+/g, '-')}-${dados.dataRelatorio.replace(/\//g, '-')}.pdf`;
       
-      // Restaurar elementos ocultos
-      noprint.forEach(el => {
-        (el as HTMLElement).style.display = '';
+      const config = {
+        margin: 10,
+        filename: filename,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { 
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: '#ffffff',
+          logging: false,
+          letterRendering: true
+        },
+        jsPDF: { 
+          unit: 'mm', 
+          format: 'a4', 
+          orientation: 'portrait'
+        }
+      };
+
+      console.log('Configuração do PDF:', config);
+      console.log('Elemento a ser convertido:', element);
+
+      // Aguardar imagens carregarem
+      const images = element.getElementsByTagName('img');
+      const promises = Array.from(images).map(img => {
+        if (img.complete) return Promise.resolve();
+        return new Promise((resolve, reject) => {
+          img.onload = resolve;
+          img.onerror = resolve; // Continue mesmo se a imagem falhar
+          setTimeout(resolve, 3000); // Timeout após 3s
+        });
       });
+      
+      await Promise.all(promises);
+      console.log('Todas as imagens carregadas');
+
+      // Gerar PDF
+      await html2pdf()
+        .set(config)
+        .from(element)
+        .save();
+
+      console.log('PDF gerado com sucesso!');
 
       toast({
-        title: "Sucesso",
-        description: "PDF gerado com sucesso!",
+        title: "PDF Gerado!",
+        description: "O download foi iniciado com sucesso.",
       });
 
     } catch (error) {
       console.error('Erro ao gerar PDF:', error);
+      
       toast({
-        title: "Erro",
-        description: "Erro ao gerar PDF. Tente novamente.",
+        title: "Erro ao gerar PDF",
+        description: "Tentando abrir impressão do navegador...",
         variant: "destructive"
       });
+      
+      // Fallback: usar impressão do navegador
+      try {
+        window.print();
+      } catch (printError) {
+        console.error('Erro na impressão:', printError);
+        toast({
+          title: "Erro Crítico",
+          description: "Não foi possível gerar o PDF nem abrir a impressão.",
+          variant: "destructive"
+        });
+      }
     }
   };
 

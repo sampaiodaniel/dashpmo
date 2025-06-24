@@ -706,6 +706,65 @@ export type Database = {
         }
         Relationships: []
       }
+      relatorios_usuario: {
+        Row: {
+          id: string;
+          usuario_id: string;
+          tipo: string;
+          titulo: string;
+          dados: Json;
+          criado_em: string;
+          expira_em: string | null;
+          protegido_por_senha: boolean | null;
+          senha_hash: string | null;
+          acessos: number | null;
+          ultimo_acesso: string | null;
+          compartilhado: boolean | null;
+          compartilhado_com: string[] | null;
+          descricao: string | null;
+        };
+        Insert: {
+          id?: string;
+          usuario_id: string;
+          tipo: string;
+          titulo: string;
+          dados: Json;
+          criado_em?: string;
+          expira_em?: string | null;
+          protegido_por_senha?: boolean | null;
+          senha_hash?: string | null;
+          acessos?: number | null;
+          ultimo_acesso?: string | null;
+          compartilhado?: boolean | null;
+          compartilhado_com?: string[] | null;
+          descricao?: string | null;
+        };
+        Update: {
+          id?: string;
+          usuario_id?: string;
+          tipo?: string;
+          titulo?: string;
+          dados?: Json;
+          criado_em?: string;
+          expira_em?: string | null;
+          protegido_por_senha?: boolean | null;
+          senha_hash?: string | null;
+          acessos?: number | null;
+          ultimo_acesso?: string | null;
+          compartilhado?: boolean | null;
+          compartilhado_com?: string[] | null;
+          descricao?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "relatorios_usuario_usuario_id_fkey";
+            columns: ["usuario_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
     }
     Views: {
       [_ in never]: never

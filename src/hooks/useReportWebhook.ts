@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { Database } from '@/integrations/supabase/types';
 
 export interface RelatorioCompartilhavel {
   id: string;
@@ -40,6 +42,7 @@ export interface CriarRelatorioCompartilhavelParams {
 export function useReportWebhook() {
   const [loading, setLoading] = useState(false);
   const [relatoriosCompartilhados, setRelatoriosCompartilhados] = useState<RelatorioCompartilhavel[]>([]);
+  const { usuario } = useAuth();
 
   // Gerar ID seguro para URL
   const gerarIdSeguro = (): string => {
@@ -65,47 +68,15 @@ export function useReportWebhook() {
   // Criar relatório compartilhável
   const criarRelatorioCompartilhavel = async (params: CriarRelatorioCompartilhavelParams): Promise<RelatorioCompartilhavel | null> => {
     setLoading(true);
-    
     try {
-      console.log('🚀 Iniciando criação de relatório compartilhável:', params);
-      
-      // Validar parâmetros obrigatórios
-      if (!params.titulo?.trim()) {
-        throw new Error('Título é obrigatório');
-      }
-      
-      if (!params.dados) {
-        throw new Error('Dados do relatório são obrigatórios');
-      }
-
-      // Obter usuário atual do sistema customizado
-      const token = localStorage.getItem('pmo_token');
-      const userData = localStorage.getItem('pmo_user');
-      
-      if (!token || !userData) {
-        throw new Error('Usuário não autenticado');
-      }
-
-      let user;
-      try {
-        user = JSON.parse(userData);
-      } catch (error) {
-        throw new Error('Dados de usuário inválidos');
-      }
-
-      console.log('✅ Usuário autenticado:', user.nome || user.email);
+      if (!usuario?.id) throw new Error('Usuário não autenticado');
+      if (!params.titulo?.trim()) throw new Error('Título é obrigatório');
+      if (!params.dados) throw new Error('Dados do relatório são obrigatórios');
 
       const id = gerarIdSeguro();
       const agora = new Date();
       const dataExpiracao = new Date();
       dataExpiracao.setDate(agora.getDate() + (params.expiraEm || 30));
-
-      console.log('📝 Dados processados:', {
-        id,
-        titulo: params.titulo,
-        tipo: params.tipo,
-        expiraEm: params.expiraEm || 30
-      });
 
       const relatorio: RelatorioCompartilhavel = {
         id,
@@ -125,59 +96,44 @@ export function useReportWebhook() {
         },
         url: `${window.location.origin}/relatorio-compartilhado/${id}`,
         criadoEm: agora.toISOString(),
-        criadoPor: user.nome || user.email,
+        criadoPor: usuario.nome || usuario.email,
         acessos: 0
       };
 
-      console.log('💾 Salvando no localStorage e sessionStorage para melhor persistência');
-
-      // Salvar no localStorage e sessionStorage para melhor persistência
-      const reportKey = `shared-report-${id}`;
-      const reportData = {
-        ...relatorio,
-        expiresAt: dataExpiracao.toISOString()
-      };
-      
-      try {
-        localStorage.setItem(reportKey, JSON.stringify(reportData));
-        sessionStorage.setItem(reportKey, JSON.stringify(reportData));
-        // Também salvar com chave sem prefixo para fallback
-        localStorage.setItem(id, JSON.stringify(reportData));
-        sessionStorage.setItem(id, JSON.stringify(reportData));
-        console.log('✅ Salvo em localStorage e sessionStorage com sucesso');
-      } catch (localStorageError) {
-        console.error('❌ Erro ao salvar:', localStorageError);
-        try {
-          // Tentar apenas sessionStorage se localStorage falhar
-          sessionStorage.setItem(reportKey, JSON.stringify(reportData));
-          sessionStorage.setItem(id, JSON.stringify(reportData));
-          console.log('✅ Salvo apenas em sessionStorage');
-        } catch (sessionError) {
-          console.error('❌ Erro também no sessionStorage:', sessionError);
-          throw new Error('Erro ao salvar dados. Verifique o espaço disponível.');
+      // Persistir no Supabase
+      const { error } = await supabase.from('relatorios_usuario').insert([
+        {
+          id,
+          usuario_id: String(usuario.id),
+          tipo: params.tipo,
+          titulo: params.titulo,
+          dados: {
+            ...params.dados,
+            carteira: params.carteira,
+            responsavel: params.responsavel,
+            configuracao: relatorio.configuracao,
+            metadados: relatorio.metadados
+          },
+          criado_em: agora.toISOString(),
+          expira_em: dataExpiracao.toISOString(),
+          protegido_por_senha: params.protegidoPorSenha || false,
+          senha_hash: params.senha || null,
+          acessos: 0,
+          compartilhado: true,
+          compartilhado_com: [],
+          descricao: params.titulo
         }
-      }
+      ]);
+      if (error) throw new Error('Erro ao salvar relatório no banco: ' + error.message);
 
-      // Sistema usando apenas localStorage para simplificar
-      console.log('💾 Sistema configurado para usar apenas localStorage');
-
-      // Atualizar lista local
       setRelatoriosCompartilhados(prev => [relatorio, ...prev]);
-
-      console.log('🎉 Relatório compartilhável criado com sucesso!');
-
       toast({
         title: "Relatório compartilhável criado!",
         description: `Link gerado com sucesso. Expira em ${params.expiraEm || 30} dias.`,
       });
-
       return relatorio;
-
     } catch (error) {
-      console.error('❌ Erro ao criar relatório compartilhável:', error);
-      
       const mensagemErro = error instanceof Error ? error.message : 'Erro desconhecido ao criar relatório compartilhável';
-      
       toast({
         title: "Erro",
         description: mensagemErro,
@@ -191,76 +147,72 @@ export function useReportWebhook() {
 
   // Listar relatórios compartilhados do usuário
   const listarRelatoriosCompartilhados = async (): Promise<void> => {
+    if (!usuario?.id) return;
+    setLoading(true);
     try {
-      // Obter usuário atual do sistema customizado
-      const token = localStorage.getItem('pmo_token');
-      const userData = localStorage.getItem('pmo_user');
-      
-      if (!token || !userData) return;
-
-      let user;
-      try {
-        user = JSON.parse(userData);
-      } catch (error) {
-        console.warn('Erro ao parsear dados do usuário:', error);
-        return;
-      }
-
-      // Buscar do localStorage
-      const relatoriosLocal: RelatorioCompartilhavel[] = [];
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key?.startsWith('shared-report-')) {
-          try {
-            const data = JSON.parse(localStorage.getItem(key)!);
-            const criadoPorUsuario = data.criadoPor === (user.nome || user.email);
-            
-            if (criadoPorUsuario) {
-              // Verificar se não expirou
-              const expiraEm = new Date(data.expiresAt);
-              if (new Date() <= expiraEm) {
-                relatoriosLocal.push(data);
-              } else {
-                // Remover expirado
-                localStorage.removeItem(key);
-              }
-            }
-          } catch (e) {
-            console.warn('Erro ao parsear relatório local:', e);
-          }
+      const { data, error } = await supabase
+        .from('relatorios_usuario')
+        .select('*')
+        .eq('usuario_id', String(usuario.id))
+        .eq('compartilhado', true)
+        .order('criado_em', { ascending: false });
+      if (error) throw new Error('Erro ao buscar relatórios: ' + error.message);
+      const relatorios = (data || []).map((item: Database['public']['Tables']['relatorios_usuario']['Row']) => {
+        let configuracao: RelatorioCompartilhavel['configuracao'] = { expiraEm: 30 };
+        let metadados: RelatorioCompartilhavel['metadados'] = { dataGeracao: '', tamanhoMB: 0 };
+        if (item.dados && typeof item.dados === 'object') {
+          if ('configuracao' in item.dados) configuracao = item.dados.configuracao;
+          if ('metadados' in item.dados) metadados = item.dados.metadados;
         }
-      }
-
-      setRelatoriosCompartilhados(relatoriosLocal.sort((a, b) => 
-        new Date(b.criadoEm).getTime() - new Date(a.criadoEm).getTime()
-      ));
-
+        return {
+          id: item.id,
+          titulo: item.titulo,
+          tipo: (['visual','asa','consolidado'].includes(item.tipo) ? item.tipo : 'visual') as 'visual'|'asa'|'consolidado',
+          dados: item.dados,
+          configuracao,
+          metadados,
+          url: `${window.location.origin}/relatorio-compartilhado/${item.id}`,
+          criadoEm: item.criado_em,
+          criadoPor: usuario.nome || usuario.email,
+          acessos: item.acessos || 0,
+          ultimoAcesso: item.ultimo_acesso
+        };
+      });
+      setRelatoriosCompartilhados(relatorios);
     } catch (error) {
-      console.error('Erro ao listar relatórios:', error);
+      toast({
+        title: "Erro",
+        description: error instanceof Error ? error.message : 'Erro ao listar relatórios',
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
   // Excluir relatório compartilhado
   const excluirRelatorioCompartilhado = async (id: string): Promise<void> => {
+    setLoading(true);
     try {
-      // Remover do localStorage
-      localStorage.removeItem(`shared-report-${id}`);
-
-      // Atualizar lista local
+      const { error } = await supabase
+        .from('relatorios_usuario')
+        .delete()
+        .eq('id', id)
+        .eq('usuario_id', String(usuario?.id));
+      if (error) throw new Error('Erro ao excluir relatório: ' + error.message);
       setRelatoriosCompartilhados(prev => prev.filter(r => r.id !== id));
-
       toast({
         title: "Relatório excluído",
         description: "O relatório compartilhado foi removido com sucesso.",
       });
-
     } catch (error) {
-      console.error('Erro ao excluir relatório:', error);
       toast({
         title: "Erro",
-        description: "Erro ao excluir relatório compartilhado",
+        description: error instanceof Error ? error.message : 'Erro ao excluir relatório',
         variant: "destructive"
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -273,7 +225,6 @@ export function useReportWebhook() {
         description: "O link do relatório foi copiado para a área de transferência.",
       });
     } catch (error) {
-      console.error('Erro ao copiar link:', error);
       toast({
         title: "Erro",
         description: "Erro ao copiar link",
@@ -285,17 +236,19 @@ export function useReportWebhook() {
   // Registrar acesso ao relatório
   const registrarAcesso = async (id: string): Promise<void> => {
     try {
-      const reportKey = `shared-report-${id}`;
-      const reportData = localStorage.getItem(reportKey);
-      
-      if (reportData) {
-        const data = JSON.parse(reportData);
-        data.acessos = (data.acessos || 0) + 1;
-        data.ultimoAcesso = new Date().toISOString();
-        localStorage.setItem(reportKey, JSON.stringify(data));
-      }
+      const { data, error } = await supabase
+        .from('relatorios_usuario')
+        .select('acessos')
+        .eq('id', id)
+        .single();
+      if (error) return;
+      const acessos = (data?.acessos || 0) + 1;
+      await supabase
+        .from('relatorios_usuario')
+        .update({ acessos, ultimo_acesso: new Date().toISOString() })
+        .eq('id', id);
     } catch (error) {
-      console.warn('Erro ao registrar acesso:', error);
+      // Silencioso
     }
   };
 
