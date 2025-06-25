@@ -1,241 +1,188 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { TipoStatusEntrega } from '@/integrations/supabase/types';
+import { TipoStatusEntrega } from '@/types/admin';
+
+// Valores padrão para status de entrega - atualizados conforme solicitação
+const STATUS_ENTREGA_PADRAO: TipoStatusEntrega[] = [
+  {
+    id: 1,
+    nome: 'No Prazo',
+    descricao: 'A entrega está dentro do prazo estabelecido',
+    cor: '#10B981', // Verde
+    ordem: 1,
+    ativo: true,
+    data_criacao: new Date().toISOString()
+  },
+  {
+    id: 2,
+    nome: 'Atenção',
+    descricao: 'A entrega requer atenção especial',
+    cor: '#F59E0B', // Amarelo
+    ordem: 2,
+    ativo: true,
+    data_criacao: new Date().toISOString()
+  },
+  {
+    id: 3,
+    nome: 'Atrasado',
+    descricao: 'A entrega está atrasada',
+    cor: '#EF4444', // Vermelho
+    ordem: 3,
+    ativo: true,
+    data_criacao: new Date().toISOString()
+  },
+  {
+    id: 4,
+    nome: 'Não iniciado',
+    descricao: 'A entrega ainda não foi iniciada',
+    cor: '#6B7280', // Cinza
+    ordem: 4,
+    ativo: true,
+    data_criacao: new Date().toISOString()
+  },
+  {
+    id: 5,
+    nome: 'Concluído',
+    descricao: 'A entrega foi finalizada com sucesso',
+    cor: '#3B82F6', // Azul
+    ordem: 5,
+    ativo: true,
+    data_criacao: new Date().toISOString()
+  }
+];
 
 export function useStatusEntrega() {
+  const [carregando, setCarregando] = useState(false);
   const [statusEntrega, setStatusEntrega] = useState<TipoStatusEntrega[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [carregando, setCarregando] = useState(false);
-  const { toast } = useToast();
 
-  // Carregar status de entrega do banco
-  const carregarStatusEntrega = async () => {
+  // Carregar status do localStorage ou usar padrão
+  useEffect(() => {
     try {
-      setIsLoading(true);
-      
-      const { data, error } = await supabase
-        .from('tipos_status_entrega')
-        .select('*')
-        .eq('ativo', true)
-        .order('ordem', { ascending: true });
-
-      if (error) {
-        console.error('❌ Erro ao carregar status de entrega:', error);
-        toast({
-          title: "Erro",
-          description: "Erro ao carregar tipos de status de entrega",
-          variant: "destructive",
-        });
-        return;
+      const statusSalvos = localStorage.getItem('status_entrega_configurados');
+      if (statusSalvos) {
+        const parsed = JSON.parse(statusSalvos);
+        setStatusEntrega(parsed);
+      } else {
+        // Primeira vez - usar padrão e salvar
+        setStatusEntrega(STATUS_ENTREGA_PADRAO);
+        localStorage.setItem('status_entrega_configurados', JSON.stringify(STATUS_ENTREGA_PADRAO));
       }
-
-      console.log('✅ Status de entrega carregados do banco:', data);
-      setStatusEntrega(data || []);
-      
     } catch (error) {
-      console.error('❌ Erro inesperado:', error);
-    } finally {
-      setIsLoading(false);
+      console.error('Erro ao carregar status:', error);
+      setStatusEntrega(STATUS_ENTREGA_PADRAO);
+    }
+    setIsLoading(false);
+  }, []);
+
+  // Função para carregar cache de status locais por projeto
+  const carregarStatusCache = (statusProjetoId: number): Record<string, number> => {
+    try {
+      const cacheKey = `status_entrega_cache_${statusProjetoId}`;
+      const cached = localStorage.getItem(cacheKey);
+      
+      if (cached) {
+        const parsedCache = JSON.parse(cached);
+        return parsedCache;
+      } else {
+        return {};
+      }
+    } catch (error) {
+      console.error('❌ useStatusEntrega: Erro ao carregar cache:', error);
+      return {};
     }
   };
 
-  // Criar novo status
-  const criarStatusEntrega = {
-    mutate: async (novoStatus: Omit<TipoStatusEntrega, 'id' | 'criado_em' | 'atualizado_em'>) => {
-      try {
-        setCarregando(true);
-        
-        const { data, error } = await supabase
-          .from('tipos_status_entrega')
-          .insert(novoStatus)
-          .select()
-          .single();
-
-        if (error) {
-          console.error('❌ Erro ao criar status:', error);
-          toast({
-            title: "Erro",
-            description: "Erro ao criar status de entrega: " + error.message,
-            variant: "destructive",
-          });
-          return;
-        }
-
-        console.log('✅ Status criado:', data);
-        setStatusEntrega(prev => [...prev, data].sort((a, b) => a.ordem - b.ordem));
-        
-        toast({
-          title: "Sucesso",
-          description: "Status de entrega criado com sucesso!",
-        });
-
-      } catch (error) {
-        console.error('❌ Erro inesperado:', error);
-        toast({
-          title: "Erro",
-          description: "Erro inesperado ao criar status",
-          variant: "destructive",
-        });
-      } finally {
-        setCarregando(false);
-      }
-    },
-    isPending: carregando
+  // Função para salvar cache de status locais por projeto
+  const salvarStatusCache = (statusProjetoId: number, statusMap: Record<string, number>) => {
+    try {
+      const cacheKey = `status_entrega_cache_${statusProjetoId}`;
+      localStorage.setItem(cacheKey, JSON.stringify(statusMap));
+    } catch (error) {
+      console.error('❌ useStatusEntrega: Erro ao salvar cache:', error);
+    }
   };
 
-  // Atualizar status
+  // Função para salvar os status configurados
+  const salvarStatusConfigurados = (novosStatus: TipoStatusEntrega[]) => {
+    try {
+      localStorage.setItem('status_entrega_configurados', JSON.stringify(novosStatus));
+      setStatusEntrega(novosStatus);
+    } catch (error) {
+      console.error('Erro ao salvar status configurados:', error);
+    }
+  };
+
+  // Implementação das funções de CRUD usando localStorage
+  const criarStatusEntrega = {
+    mutate: async (dados: { nome: string; cor: string; descricao?: string; ordem: number }) => {
+      try {
+        const novoId = Math.max(...statusEntrega.map(s => s.id)) + 1;
+        const novoStatus: TipoStatusEntrega = {
+          id: novoId,
+          nome: dados.nome,
+          cor: dados.cor,
+          descricao: dados.descricao || '',
+          ordem: dados.ordem,
+          ativo: true,
+          data_criacao: new Date().toISOString()
+        };
+        
+        const novosStatus = [...statusEntrega, novoStatus].sort((a, b) => a.ordem - b.ordem);
+        salvarStatusConfigurados(novosStatus);
+      } catch (error) {
+        console.error('Erro ao criar status:', error);
+        throw error;
+      }
+    },
+    isPending: false
+  };
+
   const atualizarStatusEntrega = {
     mutate: async ({ id, dados }: { id: number; dados: Partial<TipoStatusEntrega> }) => {
       try {
-        setCarregando(true);
+        const novosStatus = statusEntrega.map(status => 
+          status.id === id 
+            ? { ...status, ...dados }
+            : status
+        ).sort((a, b) => a.ordem - b.ordem);
         
-        const { data, error } = await supabase
-          .from('tipos_status_entrega')
-          .update(dados)
-          .eq('id', id)
-          .select()
-          .single();
-
-        if (error) {
-          console.error('❌ Erro ao atualizar status:', error);
-          toast({
-            title: "Erro",
-            description: "Erro ao atualizar status: " + error.message,
-            variant: "destructive",
-          });
-          return;
-        }
-
-        console.log('✅ Status atualizado:', data);
-        setStatusEntrega(prev => 
-          prev.map(s => s.id === id ? data : s).sort((a, b) => a.ordem - b.ordem)
-        );
-        
-        toast({
-          title: "Sucesso",
-          description: "Status atualizado com sucesso!",
-        });
-
+        salvarStatusConfigurados(novosStatus);
       } catch (error) {
-        console.error('❌ Erro inesperado:', error);
-        toast({
-          title: "Erro",
-          description: "Erro inesperado ao atualizar status",
-          variant: "destructive",
-        });
-      } finally {
-        setCarregando(false);
+        console.error('Erro ao atualizar status:', error);
+        throw error;
       }
     },
-    isPending: carregando
+    isPending: false
   };
 
-  // Deletar status
   const deletarStatusEntrega = {
     mutate: async (id: number) => {
       try {
-        setCarregando(true);
-        
-        // Marcar como inativo ao invés de deletar
-        const { error } = await supabase
-          .from('tipos_status_entrega')
-          .update({ ativo: false })
-          .eq('id', id);
-
-        if (error) {
-          console.error('❌ Erro ao deletar status:', error);
-          toast({
-            title: "Erro",
-            description: "Erro ao deletar status: " + error.message,
-            variant: "destructive",
-          });
-          return;
-        }
-
-        console.log('✅ Status deletado (marcado como inativo)');
-        setStatusEntrega(prev => prev.filter(s => s.id !== id));
-        
-        toast({
-          title: "Sucesso",
-          description: "Status removido com sucesso!",
-        });
-
+        const novosStatus = statusEntrega.filter(status => status.id !== id);
+        salvarStatusConfigurados(novosStatus);
       } catch (error) {
-        console.error('❌ Erro inesperado:', error);
-        toast({
-          title: "Erro",
-          description: "Erro inesperado ao deletar status",
-          variant: "destructive",
-        });
-      } finally {
-        setCarregando(false);
+        console.error('Erro ao deletar status:', error);
+        throw error;
       }
     },
-    isPending: carregando
+    isPending: false
   };
 
-  // Reordenar status
   const reordenarStatusEntrega = async (statusReordenados: TipoStatusEntrega[]) => {
+    setCarregando(true);
     try {
-      setCarregando(true);
+      // Atualizar a ordem dos status
+      const statusComNovaOrdem = statusReordenados.map((status, index) => ({
+        ...status,
+        ordem: index + 1
+      }));
       
-      // Atualizar ordem de cada status
-      const updates = statusReordenados.map((status, index) => 
-        supabase
-          .from('tipos_status_entrega')
-          .update({ ordem: index + 1 })
-          .eq('id', status.id)
-      );
-
-      await Promise.all(updates);
-      
-      console.log('✅ Ordem dos status atualizada');
-      setStatusEntrega(statusReordenados);
-      
-      toast({
-        title: "Sucesso",
-        description: "Ordem dos status atualizada!",
-      });
-
+      salvarStatusConfigurados(statusComNovaOrdem);
     } catch (error) {
-      console.error('❌ Erro ao reordenar:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao reordenar status",
-        variant: "destructive",
-      });
-    } finally {
-      setCarregando(false);
+      console.error('Erro ao reordenar status:', error);
     }
+    setCarregando(false);
   };
-
-  // Buscar status por ID
-  const buscarStatusPorId = (id: number | null): TipoStatusEntrega | null => {
-    if (!id) return null;
-    return statusEntrega.find(s => s.id === id) || null;
-  };
-
-  // Verificar se migração foi aplicada
-  const verificarCamposStatusEntrega = async (): Promise<boolean> => {
-    try {
-      // Testar se a tabela e colunas existem
-      const { error } = await supabase
-        .from('status_projeto')
-        .select('status_entrega1_id')
-        .limit(1);
-
-      return !error;
-    } catch (error) {
-      console.log('⚠️ Campos de status de entrega não encontrados:', error);
-      return false;
-    }
-  };
-
-  // Carregar ao montar o componente
-  useEffect(() => {
-    carregarStatusEntrega();
-  }, []);
 
   return {
     statusEntrega,
@@ -245,8 +192,7 @@ export function useStatusEntrega() {
     atualizarStatusEntrega,
     deletarStatusEntrega,
     reordenarStatusEntrega,
-    buscarStatusPorId,
-    verificarCamposStatusEntrega,
-    recarregar: carregarStatusEntrega
+    salvarStatusCache,
+    carregarStatusCache,
   };
 } 
