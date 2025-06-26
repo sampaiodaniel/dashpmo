@@ -15,7 +15,7 @@ export function useEditarStatusForm(status: StatusProjeto) {
   const [carregando, setCarregando] = useState(false);
   const [entregasCarregadas, setEntregasCarregadas] = useState(false);
 
-  // Buscar entregas da tabela entregas_status com migração automática
+  // Buscar entregas da tabela entregas_status SEM migração automática
   const { data: entregasExistentes = [] } = useQuery({
     queryKey: ['entregas-status-edit', status.id],
     queryFn: async () => {
@@ -32,89 +32,75 @@ export function useEditarStatusForm(status: StatusProjeto) {
         return [];
       }
 
-      console.log('📦 Entregas encontradas para edição:', data?.length || 0, data);
+      console.log('📦 Entregas encontradas na tabela entregas_status:', data?.length || 0, data);
 
-      // Se não há entregas na nova tabela, verificar dados legados
-      if (!data || data.length === 0) {
-        console.log('⚠️ Verificando dados legados para migração durante edição...');
-        
-        // Buscar dados legados específicos
-        const { data: statusData, error: statusError } = await supabase
-          .from('status_projeto')
-          .select('entrega1, entrega2, entrega3, entregaveis1, entregaveis2, entregaveis3, data_marco1, data_marco2, data_marco3, status_entrega1_id, status_entrega2_id, status_entrega3_id')
-          .eq('id', status.id)
-          .single();
-
-        if (statusError) {
-          console.error('Erro ao buscar dados legados:', statusError);
-          return [];
-        }
-
-        console.log('📋 Dados legados para migração:', statusData);
-
-        // Migrar automaticamente se houver dados legados
-        const entregasParaMigrar = [];
-        
-        if (statusData?.entrega1) {
-          entregasParaMigrar.push({
-            status_id: status.id,
-            ordem: 1,
-            nome_entrega: statusData.entrega1,
-            data_entrega: statusData.data_marco1,
-            entregaveis: statusData.entregaveis1,
-            status_entrega_id: statusData.status_entrega1_id,
-            status_da_entrega: 'Em andamento'
-          });
-        }
-
-        if (statusData?.entrega2) {
-          entregasParaMigrar.push({
-            status_id: status.id,
-            ordem: 2,
-            nome_entrega: statusData.entrega2,
-            data_entrega: statusData.data_marco2,
-            entregaveis: statusData.entregaveis2,
-            status_entrega_id: statusData.status_entrega2_id,
-            status_da_entrega: 'Em andamento'
-          });
-        }
-
-        if (statusData?.entrega3) {
-          entregasParaMigrar.push({
-            status_id: status.id,
-            ordem: 3,
-            nome_entrega: statusData.entrega3,
-            data_entrega: statusData.data_marco3,
-            entregaveis: statusData.entregaveis3,
-            status_entrega_id: statusData.status_entrega3_id,
-            status_da_entrega: 'Em andamento'
-          });
-        }
-
-        if (entregasParaMigrar.length > 0) {
-          console.log('🔄 Migrando entregas legadas durante edição:', entregasParaMigrar);
-          
-          try {
-            const { data: migradedData, error: migrateError } = await supabase
-              .from('entregas_status')
-              .insert(entregasParaMigrar)
-              .select();
-
-            if (migrateError) {
-              console.error('❌ Erro ao migrar entregas durante edição:', migrateError);
-              return [];
-            }
-
-            console.log('✅ Entregas migradas durante edição:', migradedData);
-            return migradedData || [];
-          } catch (migrationError) {
-            console.error('❌ Erro no processo de migração durante edição:', migrationError);
-            return [];
-          }
-        }
+      // Se há entregas na nova tabela, usar elas diretamente (sem migração)
+      if (data && data.length > 0) {
+        console.log('✅ Usando entregas existentes da tabela entregas_status');
+        return data;
       }
 
-      return data || [];
+      // Somente se não há entregas na nova tabela, verificar dados legados
+      console.log('⚠️ Nenhuma entrega encontrada na tabela nova, verificando dados legados...');
+      
+      const { data: statusData, error: statusError } = await supabase
+        .from('status_projeto')
+        .select('entrega1, entrega2, entrega3, entregaveis1, entregaveis2, entregaveis3, data_marco1, data_marco2, data_marco3, status_entrega1_id, status_entrega2_id, status_entrega3_id')
+        .eq('id', status.id)
+        .single();
+
+      if (statusError) {
+        console.error('Erro ao buscar dados legados:', statusError);
+        return [];
+      }
+
+      console.log('📋 Dados legados encontrados:', statusData);
+
+      // Se há dados legados, criar entregas para migração
+      const entregasParaMigrar = [];
+      
+      if (statusData?.entrega1) {
+        entregasParaMigrar.push({
+          status_id: status.id,
+          ordem: 1,
+          nome_entrega: statusData.entrega1,
+          data_entrega: statusData.data_marco1,
+          entregaveis: statusData.entregaveis1,
+          status_entrega_id: statusData.status_entrega1_id,
+          status_da_entrega: 'Em andamento'
+        });
+      }
+
+      if (statusData?.entrega2) {
+        entregasParaMigrar.push({
+          status_id: status.id,
+          ordem: 2,
+          nome_entrega: statusData.entrega2,
+          data_entrega: statusData.data_marco2,
+          entregaveis: statusData.entregaveis2,
+          status_entrega_id: statusData.status_entrega2_id,
+          status_da_entrega: 'Em andamento'
+        });
+      }
+
+      if (statusData?.entrega3) {
+        entregasParaMigrar.push({
+          status_id: status.id,
+          ordem: 3,
+          nome_entrega: statusData.entrega3,
+          data_entrega: statusData.data_marco3,
+          entregaveis: statusData.entregaveis3,
+          status_entrega_id: statusData.status_entrega3_id,
+          status_da_entrega: 'Em andamento'
+        });
+      }
+
+      // Apenas retornar os dados legados como referência, SEM fazer migração automática
+      if (entregasParaMigrar.length > 0) {
+        console.log('📝 Dados legados disponíveis para migração manual:', entregasParaMigrar);
+      }
+
+      return [];
     },
   });
   
@@ -127,7 +113,7 @@ export function useEditarStatusForm(status: StatusProjeto) {
     atualizarEntrega,
     validarEntregas,
     obterEntregasParaSalvar
-  } = useEntregasDinamicas([], true); // statusObrigatorio = true
+  } = useEntregasDinamicas([], true);
 
   // Carregar entregas quando os dados estiverem prontos
   useEffect(() => {
@@ -136,30 +122,33 @@ export function useEditarStatusForm(status: StatusProjeto) {
     console.log('🔄 Carregando entregas para edição do status:', status.id);
     console.log('📦 Entregas encontradas:', entregasExistentes);
     
-    const entregasCompletas: Entrega[] = entregasExistentes.map((entrega: any) => ({
-      id: entrega.id.toString(),
-      nome: entrega.nome_entrega || '',
-      data: entrega.data_entrega || '',
-      entregaveis: entrega.entregaveis || '',
-      statusEntregaId: entrega.status_entrega_id || (statusEntrega.length > 0 ? statusEntrega[0].id : null)
-    }));
-    
-    // Garantir que sempre temos pelo menos uma entrega
-    if (entregasCompletas.length === 0) {
-      entregasCompletas.push({ 
+    if (entregasExistentes && entregasExistentes.length > 0) {
+      const entregasCompletas: Entrega[] = entregasExistentes.map((entrega: any) => ({
+        id: entrega.id.toString(),
+        nome: entrega.nome_entrega || '',
+        data: entrega.data_entrega || '',
+        entregaveis: entrega.entregaveis || '',
+        statusEntregaId: entrega.status_entrega_id || (statusEntrega.length > 0 ? statusEntrega[0].id : null)
+      }));
+      
+      console.log('✅ Carregando entregas existentes:', entregasCompletas.length);
+      setEntregas(entregasCompletas);
+    } else {
+      // Se não há entregas, criar uma entrega vazia
+      const entregaVazia: Entrega = { 
         id: 'nova-1', 
         nome: '', 
         data: '', 
         entregaveis: '', 
         statusEntregaId: statusEntrega.length > 0 ? statusEntrega[0].id : null 
-      });
+      };
+      
+      console.log('📝 Criando entrega vazia para novo status');
+      setEntregas([entregaVazia]);
     }
     
-    console.log('✅ Total de entregas carregadas para edição:', entregasCompletas.length);
-    setEntregas(entregasCompletas);
     setEntregasCarregadas(true);
   }, [entregasExistentes, statusEntrega, status.id, setEntregas, entregasCarregadas]);
-  
   
   const [formData, setFormData] = useState({
     data_atualizacao: typeof status.data_atualizacao === 'string' 
@@ -241,19 +230,21 @@ export function useEditarStatusForm(status: StatusProjeto) {
         bloqueios_atuais: formData.bloqueios_atuais,
         observacoes_pontos_atencao: formData.observacoes_pontos_atencao,
         progresso_estimado: formData.progresso_estimado,
-        // Limpar campos de entrega legados
-        entrega1: null,
-        entrega2: null,
-        entrega3: null,
-        entregaveis1: null,
-        entregaveis2: null,
-        entregaveis3: null,
-        data_marco1: null,
-        data_marco2: null,
-        data_marco3: null,
-        status_entrega1_id: null,
-        status_entrega2_id: null,
-        status_entrega3_id: null,
+        // Limpar campos de entrega legados apenas se houver entregas para salvar
+        ...(entregasParaSalvar.length > 0 && {
+          entrega1: null,
+          entrega2: null,
+          entrega3: null,
+          entregaveis1: null,
+          entregaveis2: null,
+          entregaveis3: null,
+          data_marco1: null,
+          data_marco2: null,
+          data_marco3: null,
+          status_entrega1_id: null,
+          status_entrega2_id: null,
+          status_entrega3_id: null,
+        }),
         // Se for admin editando status aprovado, voltar para revisão
         ...(status.aprovado && isAdmin() && {
           aprovado: false,
@@ -302,12 +293,9 @@ export function useEditarStatusForm(status: StatusProjeto) {
         if (entregasParaSalvar.length > 0) {
           console.log('📦 Inserindo entregas durante edição:', entregasParaSalvar.length, 'entregas');
 
-          // Tentar inserir uma por vez para melhor controle de erro
-          const entregasInseridas = [];
           for (let index = 0; index < entregasParaSalvar.length; index++) {
             const entrega = entregasParaSalvar[index];
             
-            // Garantir que todos os campos obrigatórios estão preenchidos
             const entregaFormatada = {
               status_id: status.id,
               ordem: index + 1,
@@ -315,39 +303,32 @@ export function useEditarStatusForm(status: StatusProjeto) {
               data_entrega: entrega.data || null,
               entregaveis: entrega.entregaveis?.trim() || '',
               status_entrega_id: entrega.statusEntregaId || null,
-              status_da_entrega: 'Em andamento' // Garantir que sempre tem um valor válido
+              status_da_entrega: 'Em andamento'
             };
 
             console.log(`📦 Inserindo entrega ${index + 1}/${entregasParaSalvar.length}:`, entregaFormatada);
 
-            try {
-              const { error: insertError, data: insertedData } = await supabase
-                .from('entregas_status')
-                .insert(entregaFormatada)
-                .select()
-                .single();
+            const { error: insertError, data: insertedData } = await supabase
+              .from('entregas_status')
+              .insert(entregaFormatada)
+              .select()
+              .single();
 
-              if (insertError) {
-                console.error('❌ Erro ao inserir entrega individual:', entregaFormatada.nome_entrega, insertError);
-                console.error('❌ Detalhes do erro:', insertError.message, insertError.details);
-                throw new Error(`Erro ao salvar entrega "${entregaFormatada.nome_entrega}": ${insertError.message}`);
-              } else {
-                console.log('✅ Entrega inserida com sucesso:', entregaFormatada.nome_entrega, insertedData);
-                entregasInseridas.push(insertedData);
-              }
-            } catch (individualError: any) {
-              console.error('❌ Erro crítico ao inserir entrega:', entregaFormatada.nome_entrega, individualError);
-              throw new Error(`Falha crítica ao salvar entrega "${entregaFormatada.nome_entrega}": ${individualError.message}`);
+            if (insertError) {
+              console.error('❌ Erro ao inserir entrega individual:', entregaFormatada.nome_entrega, insertError);
+              throw new Error(`Erro ao salvar entrega "${entregaFormatada.nome_entrega}": ${insertError.message}`);
+            } else {
+              console.log('✅ Entrega inserida com sucesso:', entregaFormatada.nome_entrega, insertedData);
             }
           }
 
-          console.log('✅ Todas as entregas inseridas com sucesso:', entregasInseridas.length);
+          console.log('✅ Todas as entregas inseridas com sucesso');
         }
       } catch (entregasError: any) {
         console.error('❌ Erro ao gerenciar entregas:', entregasError);
         toast({
           title: "Erro ao Salvar Entregas",
-          description: entregasError.message || 'Erro desconhecido ao salvar entregas. Verifique os logs para mais detalhes.',
+          description: entregasError.message || 'Erro desconhecido ao salvar entregas.',
           variant: "destructive",
         });
         return;
