@@ -1,3 +1,4 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { CARTEIRAS, FiltrosDashboard } from '@/types/pmo';
@@ -83,17 +84,6 @@ export function useCarteiraOverview(filtros?: FiltrosDashboard) {
         throw mudancasError;
       }
 
-      // Buscar TODAS as entregas da tabela entregas_status
-      const { data: todasEntregas, error: entregasError } = await supabase
-        .from('entregas_status')
-        .select('*')
-        .order('ordem', { ascending: true });
-
-      if (entregasError) {
-        console.error('Erro ao buscar entregas:', entregasError);
-        throw entregasError;
-      }
-
       // Mapear status mais recente por projeto
       const statusPorProjeto = new Map();
       statusData?.forEach(status => {
@@ -157,12 +147,15 @@ export function useCarteiraOverview(filtros?: FiltrosDashboard) {
               else comAtraso++;
             }
 
-            // Contar entregas nos próximos 15 dias usando a tabela entregas_status
-            const entregasDoStatus = todasEntregas?.filter(e => e.status_id === status.id) || [];
-            entregasDoStatus.forEach(entrega => {
-              if (entrega.data_entrega) {
-                const dataEntrega = new Date(entrega.data_entrega);
-                if (dataEntrega >= hoje && dataEntrega <= em15Dias) {
+            // Contar entregas nos próximos 15 dias
+            [
+              { data: status.data_marco1, entrega: status.entrega1 },
+              { data: status.data_marco2, entrega: status.entrega2 },
+              { data: status.data_marco3, entrega: status.entrega3 }
+            ].forEach(marco => {
+              if (marco.data && marco.entrega) {
+                const dataMarco = new Date(marco.data);
+                if (dataMarco >= hoje && dataMarco <= em15Dias) {
                   entregasProximos15Dias++;
                 }
               }
