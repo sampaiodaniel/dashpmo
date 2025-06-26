@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -299,48 +300,48 @@ export function useEditarStatusForm(status: StatusProjeto) {
 
         // Inserir todas as entregas atualizadas
         if (entregasParaSalvar.length > 0) {
-          const entregasParaInserir = entregasParaSalvar.map((entrega, index) => {
-            const entregaFormatada = {
-              status_id: status.id,
-              ordem: index + 1,
-              nome_entrega: entrega.nome.trim(),
-              data_entrega: entrega.data || null,
-              entregaveis: entrega.entregaveis.trim(),
-              status_entrega_id: entrega.statusEntregaId || null,
-              status_da_entrega: 'Em andamento' // Campo obrigatório com valor padrão
-            };
-
-            console.log('📦 Entrega formatada para inserção:', entregaFormatada);
-            return entregaFormatada;
-          });
-
-          console.log('📦 Inserindo entregas durante edição:', entregasParaInserir);
+          console.log('📦 Inserindo entregas durante edição:', entregasParaSalvar.length, 'entregas');
 
           // Tentar inserir uma por vez para melhor controle de erro
           const entregasInseridas = [];
-          for (const entrega of entregasParaInserir) {
+          for (let index = 0; index < entregasParaSalvar.length; index++) {
+            const entrega = entregasParaSalvar[index];
+            
+            // Garantir que todos os campos obrigatórios estão preenchidos
+            const entregaFormatada = {
+              status_id: status.id,
+              ordem: index + 1,
+              nome_entrega: entrega.nome?.trim() || '',
+              data_entrega: entrega.data || null,
+              entregaveis: entrega.entregaveis?.trim() || '',
+              status_entrega_id: entrega.statusEntregaId || null,
+              status_da_entrega: 'Em andamento' // Garantir que sempre tem um valor válido
+            };
+
+            console.log(`📦 Inserindo entrega ${index + 1}/${entregasParaSalvar.length}:`, entregaFormatada);
+
             try {
               const { error: insertError, data: insertedData } = await supabase
                 .from('entregas_status')
-                .insert(entrega)
+                .insert(entregaFormatada)
                 .select()
                 .single();
 
               if (insertError) {
-                console.error('❌ Erro ao inserir entrega individual:', entrega.nome_entrega, insertError);
+                console.error('❌ Erro ao inserir entrega individual:', entregaFormatada.nome_entrega, insertError);
                 console.error('❌ Detalhes do erro:', insertError.message, insertError.details);
-                throw new Error(`Erro ao salvar entrega "${entrega.nome_entrega}": ${insertError.message}`);
+                throw new Error(`Erro ao salvar entrega "${entregaFormatada.nome_entrega}": ${insertError.message}`);
               } else {
-                console.log('✅ Entrega inserida com sucesso:', entrega.nome_entrega, insertedData);
+                console.log('✅ Entrega inserida com sucesso:', entregaFormatada.nome_entrega, insertedData);
                 entregasInseridas.push(insertedData);
               }
             } catch (individualError: any) {
-              console.error('❌ Erro crítico ao inserir entrega:', entrega.nome_entrega, individualError);
-              throw new Error(`Falha crítica ao salvar entrega "${entrega.nome_entrega}": ${individualError.message}`);
+              console.error('❌ Erro crítico ao inserir entrega:', entregaFormatada.nome_entrega, individualError);
+              throw new Error(`Falha crítica ao salvar entrega "${entregaFormatada.nome_entrega}": ${individualError.message}`);
             }
           }
 
-          console.log('✅ Todas as entregas inseridas com sucesso:', entregasInseridas);
+          console.log('✅ Todas as entregas inseridas com sucesso:', entregasInseridas.length);
         }
       } catch (entregasError: any) {
         console.error('❌ Erro ao gerenciar entregas:', entregasError);

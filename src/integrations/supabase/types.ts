@@ -88,7 +88,7 @@ export type Database = {
           id: number
           nome_entrega: string
           ordem: number
-          status_da_entrega: string
+          status_da_entrega: string | null
           status_entrega_id: number | null
           status_id: number
         }
@@ -99,7 +99,7 @@ export type Database = {
           id?: number
           nome_entrega: string
           ordem?: number
-          status_da_entrega: string
+          status_da_entrega?: string | null
           status_entrega_id?: number | null
           status_id: number
         }
@@ -110,7 +110,7 @@ export type Database = {
           id?: number
           nome_entrega?: string
           ordem?: number
-          status_da_entrega?: string
+          status_da_entrega?: string | null
           status_entrega_id?: number | null
           status_id?: number
         }
