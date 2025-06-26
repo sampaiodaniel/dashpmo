@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,6 +9,7 @@ import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Projetos from "./pages/Projetos";
 import ProjetoDetalhes from "./pages/ProjetoDetalhes";
+import EditarProjeto from "./pages/EditarProjeto";
 import Status from "./pages/Status";
 import StatusDetalhes from "./pages/StatusDetalhes";
 import NovoStatus from "./pages/NovoStatus";
@@ -49,6 +51,7 @@ function App() {
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/projetos" element={<Projetos />} />
               <Route path="/projetos/:id" element={<ProjetoDetalhes />} />
+              <Route path="/editar-projeto/:id" element={<EditarProjeto />} />
               <Route path="/status" element={<Status />} />
               <Route path="/status/:id" element={<StatusDetalhes />} />
               <Route path="/status/novo" element={<NovoStatus />} />
