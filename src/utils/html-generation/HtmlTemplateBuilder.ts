@@ -96,6 +96,33 @@ export class HtmlTemplateBuilder {
             opacity: 1 !important;
         }
         
+        /* Melhorar botões de navegação da timeline */
+        button[data-direction] {
+            position: relative !important;
+            z-index: 1000 !important;
+            cursor: pointer !important;
+            pointer-events: auto !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+        
+        button[data-direction]:hover {
+            opacity: 0.8 !important;
+            transform: scale(1.1) !important;
+        }
+        
+        button[data-direction]:active {
+            transform: scale(0.95) !important;
+        }
+        
+        /* Garantir que itens da timeline sejam posicionáveis */
+        .timeline-box,
+        [class*="absolute"][style*="left"],
+        .delivery-item,
+        [data-entrega] {
+            transition: opacity 0.3s ease !important;
+        }
+        
         /* Melhorar layout de tabelas */
         table {
             width: 100% !important;
@@ -122,6 +149,9 @@ export class HtmlTemplateBuilder {
                 size: A4 landscape;
             }
             .no-print {
+                display: none !important;
+            }
+            button[data-direction] {
                 display: none !important;
             }
         }
@@ -153,11 +183,15 @@ export class HtmlTemplateBuilder {
                 });
             });
             
+            // Configurar estado inicial das timelines
+            initializeTimelineNavigation();
+            
             // Log para debug
             console.log('Links configurados:', document.querySelectorAll('a[href^="#"]').length);
             console.log('Botões configurados:', document.querySelectorAll('button[onclick]').length);
             console.log('Linhas clicáveis:', document.querySelectorAll('tr[onclick]').length);
             console.log('Elementos timeline clicáveis:', document.querySelectorAll('[data-projeto-id][onclick]').length);
+            console.log('Botões de navegação timeline:', document.querySelectorAll('button[data-direction]').length);
         });
         
         // Função auxiliar para scroll suave
@@ -172,6 +206,90 @@ export class HtmlTemplateBuilder {
                 return true;
             }
             return false;
+        }
+        
+        // Função para inicializar navegação da timeline
+        function initializeTimelineNavigation() {
+            console.log('Inicializando navegação da timeline...');
+            
+            // Encontrar todos os containers de timeline
+            const timelineContainers = document.querySelectorAll('.timeline-card, [class*="timeline"]');
+            
+            timelineContainers.forEach((container, index) => {
+                const deliveryItems = container.querySelectorAll(
+                    '.timeline-box, [class*="absolute"][style*="left"], .delivery-item, [data-entrega]'
+                );
+                
+                console.log(\`Timeline \${index}: \${deliveryItems.length} itens encontrados\`);
+                
+                if (deliveryItems.length > 3) {
+                    // Mostrar apenas os primeiros 3 itens
+                    deliveryItems.forEach((item, itemIndex) => {
+                        if (itemIndex >= 3) {
+                            item.style.display = 'none';
+                        } else {
+                            item.style.display = 'block';
+                            item.style.visibility = 'visible';
+                        }
+                    });
+                    
+                    console.log(\`Timeline \${index}: Ocultados \${deliveryItems.length - 3} itens\`);
+                }
+                
+                // Adicionar indicadores visuais aos botões de navegação
+                const navButtons = container.querySelectorAll('button[data-direction]');
+                navButtons.forEach(button => {
+                    button.style.border = '2px solid #A6926B';
+                    button.style.borderRadius = '6px';
+                    button.title = button.getAttribute('data-direction') === 'previous' 
+                        ? 'Página anterior (3 entregas)' 
+                        : 'Próxima página (3 entregas)';
+                });
+            });
+            
+            console.log('Navegação da timeline inicializada com sucesso');
+        }
+        
+        // Função de fallback para navegação manual
+        function navigateTimeline(containerId, direction) {
+            console.log(\`Navegação manual: container \${containerId}, direção \${direction}\`);
+            
+            const container = document.querySelector(\`[data-container-id="\${containerId}"], .timeline-card:nth-child(\${containerId + 1})\`);
+            if (!container) {
+                console.warn('Container não encontrado para navegação manual');
+                return;
+            }
+            
+            const deliveryItems = container.querySelectorAll(
+                '.timeline-box, [class*="absolute"][style*="left"], .delivery-item, [data-entrega]'
+            );
+            
+            // Implementar lógica de paginação simples
+            let currentPage = 0;
+            const itemsPerPage = 3;
+            
+            // Encontrar página atual
+            for (let i = 0; i < deliveryItems.length; i += itemsPerPage) {
+                if (deliveryItems[i] && deliveryItems[i].style.display !== 'none') {
+                    currentPage = Math.floor(i / itemsPerPage);
+                    break;
+                }
+            }
+            
+            const totalPages = Math.ceil(deliveryItems.length / itemsPerPage);
+            let newPage = direction === 'previous' 
+                ? Math.max(0, currentPage - 1)
+                : Math.min(totalPages - 1, currentPage + 1);
+            
+            if (newPage !== currentPage) {
+                // Aplicar nova página
+                deliveryItems.forEach((item, index) => {
+                    const pageIndex = Math.floor(index / itemsPerPage);
+                    item.style.display = pageIndex === newPage ? 'block' : 'none';
+                });
+                
+                console.log(\`Navegação concluída: página \${currentPage} -> \${newPage}\`);
+            }
         }
     </script>
 </body>
