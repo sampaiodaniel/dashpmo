@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Usuario } from '@/types/pmo';
@@ -12,58 +11,53 @@ export interface UsuarioComPerfil extends Usuario {
   };
 }
 
+// Hash da senha padrão "123asa" em base64
+const SENHA_PADRAO_HASH = btoa('123asa');
+
 export function useUsuarios() {
-  return useQuery({
+  const { data: usuarios, isLoading, error, refetch } = useQuery({
     queryKey: ['usuarios'],
-    queryFn: async (): Promise<UsuarioComPerfil[]> => {
+    queryFn: async () => {
       console.log('Buscando usuários...');
-      
       const { data, error } = await supabase
         .from('usuarios')
-        .select(`
-          *,
-          perfis_usuario (
-            nome,
-            sobrenome,
-            foto_url
-          )
-        `)
-        .order('nome', { ascending: true });
+        .select('*')
+        .order('nome');
 
       if (error) {
         console.error('Erro ao buscar usuários:', error);
         throw error;
       }
 
-      console.log('Usuários encontrados:', data);
-      
-      return data.map((usuario): UsuarioComPerfil => {
-        // O perfis_usuario pode vir como array ou objeto dependendo da consulta
-        let perfilData = null;
-        if (usuario.perfis_usuario) {
-          if (Array.isArray(usuario.perfis_usuario)) {
-            perfilData = usuario.perfis_usuario.length > 0 ? usuario.perfis_usuario[0] : null;
-          } else {
-            perfilData = usuario.perfis_usuario;
-          }
-        }
-
-        console.log(`Usuario ${usuario.id} - perfil:`, perfilData);
+      // Processar usuários para detectar senha padrão
+      const usuariosProcessados = data?.map((usuario: any) => {
+        // Detectar se está usando senha padrão
+        const temSenhaPadrao = 
+          usuario.senha_padrao === true || 
+          usuario.senha_hash === SENHA_PADRAO_HASH ||
+          usuario.senha_hash === btoa('123asa');
 
         return {
-          id: usuario.id,
-          nome: usuario.nome,
-          email: usuario.email,
-          tipo_usuario: usuario.tipo_usuario as 'GP' | 'Responsavel' | 'Admin',
-          areas_acesso: usuario.areas_acesso || [],
-          ativo: usuario.ativo,
-          ultimo_login: usuario.ultimo_login ? new Date(usuario.ultimo_login) : undefined,
-          data_criacao: new Date(usuario.data_criacao),
-          perfil: perfilData || undefined
+          ...usuario,
+          // tipo_usuario já está no formato novo
+          senha_padrao: temSenhaPadrao,
+          areas_atuacao: usuario.areas_atuacao || []
         };
-      });
+      }) || [];
+
+      console.log('Usuários carregados:', usuariosProcessados);
+      return usuariosProcessados;
     },
+    retry: 3,
+    staleTime: 30000,
   });
+
+  return {
+    data: usuarios,
+    isLoading,
+    error,
+    refetch,
+  };
 }
 
 export function useUsuariosOperations() {
@@ -75,47 +69,31 @@ export function useUsuariosOperations() {
       sobrenome?: string;
       email: string;
       senha: string;
-      tipo_usuario: 'GP' | 'Responsavel' | 'Admin';
+      tipo_usuario: 'Administrador' | 'Aprovador' | 'Editor' | 'Leitor' | 'GP' | 'Responsavel' | 'Admin';
       areas_acesso: string[];
       ativo: boolean;
     }) => {
       console.log('Criando usuário:', novoUsuario);
 
-      // Para simplicidade, vamos usar um hash básico da senha
-      // Em produção, use uma biblioteca de hash adequada
-      const senhaHash = btoa(novoUsuario.senha); // Base64 básico - não seguro para produção!
+      const senhaHash = btoa(novoUsuario.senha);
 
       const { data, error } = await supabase
         .from('usuarios')
         .insert([{
           nome: novoUsuario.nome,
+          sobrenome: novoUsuario.sobrenome || null,
           email: novoUsuario.email,
           senha_hash: senhaHash,
-          tipo_usuario: novoUsuario.tipo_usuario,
+          tipo_usuario: novoUsuario.tipo_usuario as any,
           areas_acesso: novoUsuario.areas_acesso,
           ativo: novoUsuario.ativo,
-        }])
+        } as any])
         .select()
         .single();
 
       if (error) {
         console.error('Erro ao criar usuário:', error);
         throw error;
-      }
-
-      // Se foi fornecido nome/sobrenome, criar perfil
-      if (novoUsuario.sobrenome) {
-        const { error: perfilError } = await supabase
-          .from('perfis_usuario')
-          .insert([{
-            usuario_id: data.id,
-            nome: novoUsuario.nome,
-            sobrenome: novoUsuario.sobrenome,
-          }]);
-
-        if (perfilError) {
-          console.error('Erro ao criar perfil:', perfilError);
-        }
       }
 
       console.log('Usuário criado:', data);
@@ -145,7 +123,7 @@ export function useUsuariosOperations() {
       sobrenome?: string;
       email: string;
       senha?: string;
-      tipo_usuario: 'GP' | 'Responsavel' | 'Admin';
+      tipo_usuario: 'Administrador' | 'Aprovador' | 'Editor' | 'Leitor' | 'GP' | 'Responsavel' | 'Admin';
       areas_acesso: string[];
       ativo: boolean;
     }) => {
@@ -159,9 +137,20 @@ export function useUsuariosOperations() {
         ativo: usuarioAtualizado.ativo,
       };
 
-      // Se uma nova senha foi fornecida, inclui no update
+      // Adicionar campos opcionais se existirem
+      if (usuarioAtualizado.sobrenome !== undefined) {
+        updateData.sobrenome = usuarioAtualizado.sobrenome || null;
+      }
+
       if (usuarioAtualizado.senha) {
-        updateData.senha_hash = btoa(usuarioAtualizado.senha); // Base64 básico
+        updateData.senha_hash = btoa(usuarioAtualizado.senha);
+        // Se mudou a senha e não é mais a padrão, marcar como false
+        const isNovaSenhaPadrao = usuarioAtualizado.senha === '123asa';
+        try {
+          updateData.senha_padrao = isNovaSenhaPadrao;
+        } catch (e) {
+          // Campo não existe ainda
+        }
       }
 
       const { data, error } = await supabase
@@ -176,44 +165,13 @@ export function useUsuariosOperations() {
         throw error;
       }
 
-      // Atualizar ou criar perfil se fornecido sobrenome
-      if (usuarioAtualizado.sobrenome !== undefined) {
-        const { data: existingProfile } = await supabase
-          .from('perfis_usuario')
-          .select('id')
-          .eq('usuario_id', usuarioAtualizado.id)
-          .maybeSingle();
-
-        if (existingProfile) {
-          // Atualizar perfil existente
-          await supabase
-            .from('perfis_usuario')
-            .update({
-              nome: usuarioAtualizado.nome,
-              sobrenome: usuarioAtualizado.sobrenome,
-            })
-            .eq('usuario_id', usuarioAtualizado.id);
-        } else {
-          // Criar novo perfil
-          await supabase
-            .from('perfis_usuario')
-            .insert([{
-              usuario_id: usuarioAtualizado.id,
-              nome: usuarioAtualizado.nome,
-              sobrenome: usuarioAtualizado.sobrenome,
-            }]);
-        }
-      }
-
       console.log('Usuário atualizado:', data);
       return data;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['usuarios'] });
-      // Invalidar também o perfil do usuário atualizado
       queryClient.invalidateQueries({ queryKey: ['perfil-usuario', data.id] });
       
-      // Se o usuário logado foi atualizado, atualizar o localStorage
       const savedUser = localStorage.getItem('pmo-user');
       if (savedUser) {
         const currentUser = JSON.parse(savedUser);
@@ -227,7 +185,6 @@ export function useUsuariosOperations() {
             ativo: data.ativo
           };
           localStorage.setItem('pmo-user', JSON.stringify(updatedUser));
-          // Forçar atualização da página para refletir mudanças
           window.location.reload();
         }
       }
@@ -280,9 +237,56 @@ export function useUsuariosOperations() {
     },
   });
 
+  const resetarSenha = useMutation({
+    mutationFn: async (usuarioId: number) => {
+      console.log('Resetando senha para usuário:', usuarioId);
+
+      // Primeiro, resetar apenas o hash da senha (campo que sempre existe)
+      const { error } = await supabase
+        .from('usuarios')
+        .update({
+          senha_hash: SENHA_PADRAO_HASH
+        })
+        .eq('id', usuarioId);
+
+      if (error) {
+        console.error('Erro ao resetar senha:', error);
+        throw error;
+      }
+
+      // Tentar atualizar senha_padrao separadamente se a coluna existir
+      try {
+        await supabase
+          .from('usuarios')
+          .update({ senha_padrao: true } as any)
+          .eq('id', usuarioId);
+      } catch (extraError) {
+        console.log('Campo senha_padrao não existe ainda, ignorando');
+      }
+
+      console.log('Senha resetada para usuário:', usuarioId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['usuarios'] });
+      toast({
+        title: "Senha resetada",
+        description: "A senha foi resetada para '123asa'.",
+      });
+    },
+    onError: (error: any) => {
+      console.error('Erro ao resetar senha:', error);
+      toast({
+        title: "Erro ao resetar senha",
+        description: error.message || "Ocorreu um erro ao resetar a senha.",
+        variant: "destructive",
+      });
+    },
+  });
+
   return {
     createUsuario,
     updateUsuario,
     deleteUsuario,
+    resetarSenha,
   };
 }

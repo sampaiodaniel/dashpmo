@@ -1,11 +1,11 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { FiltrosDashboard, AreaResponsavel, CARTEIRAS } from '@/types/pmo';
 import { ResponsavelHierarchy } from './useDashboardHierarchy';
 
 export async function fetchDashboardProjects(
   filtros: FiltrosDashboard,
-  hierarchy: ResponsavelHierarchy
+  hierarchy: ResponsavelHierarchy,
+  carteirasUser: string[]
 ) {
   const { responsaveisHierarquia, carteirasPermitidas } = hierarchy;
 
@@ -23,9 +23,12 @@ export async function fetchDashboardProjects(
       query = query.eq('area_responsavel', carteiraValida);
       console.log('🏢 Filtro de carteira aplicado:', carteiraValida);
     }
+  } else if (carteirasUser.length > 0) {
+    query = (query as any).in('area_responsavel', carteirasUser as any);
+    console.log('🔒 Filtro de carteiras do usuário aplicado no dashboard:', carteirasUser);
   } else if (carteirasPermitidas.length > 0) {
     // Se temos hierarquia ASA mas não filtro específico de carteira, usar carteiras permitidas
-    query = query.in('area_responsavel', carteirasPermitidas);
+    query = (query as any).in('area_responsavel', carteirasPermitidas as any);
     console.log('🏢 Filtro de carteiras por hierarquia ASA aplicado:', carteirasPermitidas);
   }
 

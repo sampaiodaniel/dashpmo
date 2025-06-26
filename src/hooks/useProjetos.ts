@@ -1,21 +1,21 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Projeto, FiltrosProjeto, CARTEIRAS } from '@/types/pmo';
+import { useAuth } from './useAuth';
+import { useCarteirasPermitidas } from './useCarteirasPermitidas';
 
 export function useProjetos(filtros?: FiltrosProjeto) {
+  const { isAdmin } = useAuth();
+  const carteirasPermitidas = useCarteirasPermitidas();
+
   return useQuery({
-    queryKey: ['projetos', filtros],
+    queryKey: ['projetos', filtros, carteirasPermitidas.join('-')],
     queryFn: async (): Promise<Projeto[]> => {
       console.log('📋 Buscando projetos com filtros:', filtros);
 
       let query = supabase
         .from('projetos')
-        .select(`
-          *,
-          ultimoStatus:status_projeto (
-            *
-          )
-        `)
+        .select('*')
         .order('nome_projeto', { ascending: true });
 
       // Aplicar filtro de projetos fechados
@@ -29,7 +29,16 @@ export function useProjetos(filtros?: FiltrosProjeto) {
         // query = query.or('arquivado.is.null,arquivado.eq.false');
       }
 
-      // Aplicar filtros
+      // Filtrar por áreas de atuação do usuário (se não for admin)
+      if (!isAdmin() && carteirasPermitidas.length > 0) {
+        const areasCondition = carteirasPermitidas.map(area => 
+          `area_responsavel.eq.${area},carteira_primaria.eq.${area},carteira_secundaria.eq.${area},carteira_terciaria.eq.${area}`
+        ).join(',');
+        query = query.or(areasCondition);
+        console.log('🔒 Filtrando por áreas de atuação do usuário:', carteirasPermitidas);
+      }
+
+      // Aplicar filtros adicionais
       if (filtros?.area && filtros.area !== 'Todas') {
         // Check if the area is valid by finding it in the CARTEIRAS array
         const carteiraValida = CARTEIRAS.find(c => c === filtros.area);
@@ -49,6 +58,11 @@ export function useProjetos(filtros?: FiltrosProjeto) {
 
       if (filtros?.busca) {
         query = query.ilike('nome_projeto', `%${filtros.busca}%`);
+      }
+
+      // Aplicar filtro de carteiras somente se o usuário não for administrador e possuir carteiras atribuídas
+      if (!isAdmin() && carteirasPermitidas.length > 0) {
+        query = (query as any).in('area_responsavel', carteirasPermitidas as any);
       }
 
       const { data, error } = await query;
@@ -97,5 +111,6 @@ export function useProjetos(filtros?: FiltrosProjeto) {
     refetchOnReconnect: true,
     retry: 2, // Apenas 2 tentativas
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 3000),
+    enabled: true,
   });
 }

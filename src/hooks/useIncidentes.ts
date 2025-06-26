@@ -1,7 +1,7 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useCarteirasPermitidas } from './useCarteirasPermitidas';
 
 export interface IncidenteData {
   carteira: string;
@@ -15,6 +15,7 @@ export interface IncidenteData {
 }
 
 export function useIncidentes() {
+  const carteirasPermitidas = useCarteirasPermitidas();
   return useQuery({
     queryKey: ['incidentes-recentes'],
     queryFn: async () => {
@@ -42,9 +43,14 @@ export function useIncidentes() {
         }
       });
 
-      const registrosRecentes = Array.from(registrosPorCarteira.values());
-      console.log('📊 Registros mais recentes por carteira:', registrosRecentes);
-      
+      let registrosRecentes = Array.from(registrosPorCarteira.values());
+
+      // Filtrar por carteiras se o usuário não for admin
+      if (carteirasPermitidas.length > 0) {
+        registrosRecentes = registrosRecentes.filter(r => carteirasPermitidas.includes(r.carteira));
+        console.log('🔒 Filtro de carteiras aplicado nos incidentes:', carteirasPermitidas);
+      }
+
       return registrosRecentes;
     },
   });

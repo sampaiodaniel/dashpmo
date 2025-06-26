@@ -1,4 +1,3 @@
-
 import { cn } from "@/lib/utils";
 import { 
   LayoutDashboard, 
@@ -11,8 +10,9 @@ import {
   Settings
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 
-const menuItems = [
+const baseMenuItems = [
   { 
     title: "Dashboard", 
     icon: LayoutDashboard, 
@@ -48,15 +48,20 @@ const menuItems = [
     icon: BarChart3, 
     href: "/relatorios" 
   },
-  { 
-    title: "Administração", 
-    icon: Settings, 
-    href: "/administracao" 
-  },
 ];
+
+const adminMenuItem = { 
+  title: "Administração", 
+  icon: Settings, 
+  href: "/administracao" 
+};
 
 export function Sidebar() {
   const location = useLocation();
+  const { isAdmin } = useAuth();
+
+  // Adicionar menu de Administração apenas para usuários Admin
+  const menuItems = isAdmin() ? [...baseMenuItems, adminMenuItem] : baseMenuItems;
 
   return (
     <div className="w-64 bg-white border-r border-gray-200 px-4 py-6 h-full overflow-y-auto shadow-sm">

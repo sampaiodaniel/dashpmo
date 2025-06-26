@@ -14,6 +14,7 @@ export interface RelatorioCompartilhavel {
     expiraEm: number; // dias
     protegidoPorSenha?: boolean;
     senha?: string;
+    descricao?: string;
   };
   metadados: {
     carteira?: string;
@@ -37,6 +38,7 @@ export interface CriarRelatorioCompartilhavelParams {
   expiraEm?: number; // dias, padrão 30
   protegidoPorSenha?: boolean;
   senha?: string;
+  descricao?: string;
 }
 
 export function useReportWebhook() {
@@ -88,7 +90,8 @@ export function useReportWebhook() {
         configuracao: {
           expiraEm: params.expiraEm || 30,
           protegidoPorSenha: params.protegidoPorSenha || false,
-          senha: params.senha
+          senha: params.senha,
+          descricao: params.titulo
         },
         metadados: {
           carteira: params.carteira,

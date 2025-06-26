@@ -87,8 +87,13 @@ export function ProximasEntregasSection({ status }: ProximasEntregasSectionProps
     entregas.push(entrega3);
   }
 
-  // Adicionar entregas extras vindas da tabela entregas_status
-  entregasExtras.forEach((entrega: any, index: number) => {
+  // Caso a lista vinda do Supabase esteja vazia mas o status possua a propriedade "entregasExtras" (join), usar essa fonte
+  const extrasFonte = entregasExtras.length === 0 && Array.isArray((status as any).entregasExtras)
+    ? (status as any).entregasExtras
+    : entregasExtras;
+
+  // Adicionar entregas extras vindas da tabela (ou da propriedade join)
+  extrasFonte.forEach((entrega: any, index: number) => {
     const statusId = obterStatusEntregaId(entrega, cacheStatus, `status_entrega_id`, `extra${index + 4}`, statusEntrega);
     
     const entregaExtra = {
@@ -102,14 +107,33 @@ export function ProximasEntregasSection({ status }: ProximasEntregasSectionProps
     entregas.push(entregaExtra);
   });
 
-  // Remover duplicatas considerando nome, data e entregáveis
-  const entregasUnicas = entregas.filter((entrega, index, arr) => {
-    return arr.findIndex(e => 
-      e.nome === entrega.nome && 
-      e.data === entrega.data && 
-      e.entregaveis === entrega.entregaveis
-    ) === index;
-  });
+  // Fallback para campos legados entrega4..entrega10 que possam existir diretamente no status
+  if (extrasFonte.length === 0) {
+    for (let i = 4; i <= 10; i++) {
+      const nomeCampo = `entrega${i}`;
+      const dataCampo = `data_marco${i}`;
+      const entregaveisCampo = `entregaveis${i}`;
+      if ((status as any)[nomeCampo]) {
+        const entregaLegado = {
+          nome: (status as any)[nomeCampo],
+          data: (status as any)[dataCampo],
+          entregaveis: (status as any)[entregaveisCampo],
+          ordem: i,
+          tipo: 'principal',
+          statusEntregaId: obterStatusEntregaId(status, cacheStatus, `status_entrega${i}_id`, nomeCampo, statusEntrega)
+        };
+        entregas.push(entregaLegado);
+      }
+    }
+  }
+
+  // Ordenar por ordem (se disponível) para exibir em sequência lógica
+  const entregasOrdenadas = entregas.sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
+
+  // Remover duplicatas por ordem (primeira ocorrência prevalece)
+  const entregasUnicas = entregasOrdenadas.filter((ent, idx, arr) =>
+    arr.findIndex(e => e.ordem === ent.ordem) === idx
+  );
 
   if (entregasUnicas.length === 0) {
     return null;

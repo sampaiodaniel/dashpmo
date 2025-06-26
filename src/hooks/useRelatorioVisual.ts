@@ -86,12 +86,30 @@ export function useRelatorioVisual() {
 
       if (statusError) throw statusError;
 
-      // Processar e anexar entregas extras a cada status
+      // Processar e anexar entregas extras (via join) ou campos legados
       if (statusProjetos) {
         statusProjetos.forEach((status: any) => {
           if (status.entregas_extras && status.entregas_extras.length > 0) {
-            // console.log('📦 Entregas extras encontradas no status (carteira):', status.id, status.entregas_extras);
             status.entregasExtras = status.entregas_extras;
+          } else {
+            // Fallback para campos legados entrega4..entrega10
+            const extras: any[] = [];
+            for (let i = 4; i <= 10; i++) {
+              const nomeCampo = `entrega${i}`;
+              const dataCampo = `data_marco${i}`;
+              const entregaveisCampo = `entregaveis${i}`;
+              if (status[nomeCampo]) {
+                extras.push({
+                  nome_entrega: status[nomeCampo],
+                  data_entrega: status[dataCampo],
+                  entregaveis: status[entregaveisCampo],
+                  ordem: i
+                });
+              }
+            }
+            if (extras.length > 0) {
+              status.entregasExtras = extras;
+            }
           }
         });
       }
@@ -169,12 +187,30 @@ export function useRelatorioVisual() {
 
       if (statusError) throw statusError;
 
-      // Processar e anexar entregas extras a cada status
+      // Processar e anexar entregas extras (via join) ou campos legados
       if (statusProjetos) {
         statusProjetos.forEach((status: any) => {
           if (status.entregas_extras && status.entregas_extras.length > 0) {
-            // console.log('📦 Entregas extras encontradas no status (responsável):', status.id, status.entregas_extras);
             status.entregasExtras = status.entregas_extras;
+          } else {
+            // Fallback para campos legados entrega4..entrega10
+            const extras: any[] = [];
+            for (let i = 4; i <= 10; i++) {
+              const nomeCampo = `entrega${i}`;
+              const dataCampo = `data_marco${i}`;
+              const entregaveisCampo = `entregaveis${i}`;
+              if (status[nomeCampo]) {
+                extras.push({
+                  nome_entrega: status[nomeCampo],
+                  data_entrega: status[dataCampo],
+                  entregaveis: status[entregaveisCampo],
+                  ordem: i
+                });
+              }
+            }
+            if (extras.length > 0) {
+              status.entregasExtras = extras;
+            }
           }
         });
       }
