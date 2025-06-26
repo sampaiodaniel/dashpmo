@@ -1,3 +1,4 @@
+
 interface DadosRelatorioVisual {
   carteira?: string;
   responsavel?: string;
@@ -154,15 +155,13 @@ export class HtmlGenerator {
       }
     });
 
-    // Processar cliques em linhas de tabela (overview) - corrigido para capturar corretamente
+    // Processar cliques em linhas de tabela (overview)
     const tableRows = clonedElement.querySelectorAll('tr[class*="cursor-pointer"]');
     tableRows.forEach((row) => {
-      // Tentar encontrar o ID do projeto a partir do conteúdo da linha
       const cells = row.querySelectorAll('td');
       if (cells.length > 0) {
         const projetoNome = cells[0].textContent?.trim();
         if (projetoNome) {
-          // Tentar encontrar o ID correspondente nos dados
           const projeto = this.dados.projetos.find(p => 
             p.nome_projeto === projetoNome || p.nome === projetoNome
           );
@@ -174,7 +173,6 @@ export class HtmlGenerator {
               }
             `);
             row.setAttribute('data-projeto-id', projeto.id.toString());
-            // Garantir que o cursor pointer seja mantido
             const rowEl = row as HTMLElement;
             rowEl.style.cursor = 'pointer';
           }
@@ -195,7 +193,7 @@ export class HtmlGenerator {
       }
     });
 
-    // Processar elementos clicáveis da timeline - melhorado
+    // Processar elementos clicáveis da timeline
     const timelineElements = clonedElement.querySelectorAll('[data-projeto-id]');
     timelineElements.forEach(element => {
       const projetoId = element.getAttribute('data-projeto-id');
@@ -211,71 +209,94 @@ export class HtmlGenerator {
       }
     });
 
-    // Processar setas de navegação da timeline - IMPLEMENTAÇÃO CORRIGIDA
-    const timelineCards = clonedElement.querySelectorAll('.timeline-card');
-    timelineCards.forEach((timelineCard, cardIndex) => {
-      // Encontrar todos os botões dentro deste card
-      const buttons = timelineCard.querySelectorAll('button');
+    // NOVA IMPLEMENTAÇÃO: Processar setinhas de navegação da timeline
+    const timelineContainers = clonedElement.querySelectorAll('[id^="timeline-"]');
+    timelineContainers.forEach((container, containerIndex) => {
+      // Criar ID único para este container
+      const timelineId = `timeline-container-${containerIndex}`;
+      container.setAttribute('id', timelineId);
       
-      buttons.forEach(button => {
-        const buttonHTML = button.innerHTML;
-        const isLeftArrow = buttonHTML.includes('ChevronLeft') || button.textContent?.includes('←');
-        const isRightArrow = buttonHTML.includes('ChevronRight') || button.textContent?.includes('→');
+      // Encontrar as setinhas dentro deste container
+      const leftArrows = container.querySelectorAll('button[class*="ChevronLeft"], button svg[class*="lucide-chevron-left"]');
+      const rightArrows = container.querySelectorAll('button[class*="ChevronRight"], button svg[class*="lucide-chevron-right"]');
+      
+      // Processar setinhas baseado no SVG ou ícone dentro do botão
+      const allButtons = container.querySelectorAll('button');
+      allButtons.forEach((button, buttonIndex) => {
+        const buttonHTML = button.innerHTML.toLowerCase();
+        const hasLeftIcon = buttonHTML.includes('chevron-left') || buttonHTML.includes('chevronleft');
+        const hasRightIcon = buttonHTML.includes('chevron-right') || buttonHTML.includes('chevronright');
         
-        if (isLeftArrow || isRightArrow) {
-          const direction = isLeftArrow ? -1 : 1;
-          
-          // Criar um ID único para este card de timeline
-          const timelineId = `timeline-card-${cardIndex}`;
-          timelineCard.setAttribute('id', timelineId);
+        if (hasLeftIcon || hasRightIcon) {
+          const direction = hasLeftIcon ? 'left' : 'right';
+          const buttonId = `timeline-nav-${timelineId}-${direction}-${buttonIndex}`;
+          button.setAttribute('id', buttonId);
           
           button.setAttribute('onclick', `
             event.preventDefault();
             event.stopPropagation();
             
-            const timelineCard = document.getElementById('${timelineId}');
-            if (!timelineCard) return false;
+            console.log('Timeline navigation clicked: ${direction}');
             
-            // Encontrar todas as páginas de timeline dentro deste card
-            const timelineDesktop = timelineCard.querySelector('.timeline-desktop');
-            const timelineMobile = timelineCard.querySelector('.timeline-mobile');
+            // Encontrar o container da timeline
+            const timelineContainer = document.getElementById('${timelineId}');
+            if (!timelineContainer) {
+              console.error('Timeline container not found');
+              return false;
+            }
             
-            if (timelineDesktop && !timelineDesktop.style.display === 'none') {
-              // Navegação para desktop - simular paginação
-              const timelineBoxes = timelineDesktop.querySelectorAll('.timeline-box');
+            // Encontrar o scroll container (onde estão as entregas)
+            const scrollContainer = timelineContainer.querySelector('[class*="overflow-x-auto"], [class*="flex"], .embla__container, [style*="transform"]');
+            
+            if (scrollContainer) {
+              console.log('Scroll container found');
+              
+              // Encontrar todas as entregas/boxes
+              const timelineBoxes = scrollContainer.querySelectorAll('[class*="timeline-box"], [class*="bg-"], .timeline-item');
+              console.log('Timeline boxes found:', timelineBoxes.length);
+              
               if (timelineBoxes.length > 0) {
-                // Encontrar qual box está atualmente visível
-                let currentVisibleIndex = 0;
+                // Calcular largura de uma entrega (assumindo 3 por página)
+                const boxWidth = timelineBoxes[0].offsetWidth || 300;
+                const gap = 20; // Gap entre boxes
+                const scrollAmount = (boxWidth + gap) * 3; // 3 boxes por vez
                 
-                // Procurar por um indicador de página atual ou usar o primeiro como padrão
-                const pageIndicator = timelineCard.querySelector('[data-current-page]');
-                if (pageIndicator) {
-                  currentVisibleIndex = parseInt(pageIndicator.getAttribute('data-current-page') || '0');
+                // Obter posição atual do scroll
+                let currentScroll = scrollContainer.scrollLeft || 0;
+                
+                // Calcular nova posição
+                let newScroll;
+                if ('${direction}' === 'left') {
+                  newScroll = Math.max(0, currentScroll - scrollAmount);
+                } else {
+                  const maxScroll = scrollContainer.scrollWidth - scrollContainer.clientWidth;
+                  newScroll = Math.min(maxScroll, currentScroll + scrollAmount);
                 }
                 
-                // Calcular nova página (assumindo 3 boxes por página)
-                const boxesPerPage = 3;
-                const currentPage = Math.floor(currentVisibleIndex / boxesPerPage);
-                const newPage = Math.max(0, currentPage + ${direction});
-                const newIndex = newPage * boxesPerPage;
+                console.log('Scrolling from', currentScroll, 'to', newScroll);
                 
-                // Scroll para o primeiro box da nova página
-                if (newIndex < timelineBoxes.length) {
-                  const targetBox = timelineBoxes[newIndex];
-                  if (targetBox) {
-                    targetBox.scrollIntoView({ 
-                      behavior: 'smooth', 
-                      block: 'nearest', 
-                      inline: 'center' 
-                    });
-                  }
-                }
+                // Executar scroll suave
+                scrollContainer.scrollTo({
+                  left: newScroll,
+                  behavior: 'smooth'
+                });
               }
-            } else if (timelineMobile) {
-              // Navegação para mobile - scroll vertical
-              const timelineContainer = timelineMobile.querySelector('[style*="flex-direction: column"]');
-              if (timelineContainer) {
-                timelineContainer.scrollTop += ${direction} * 200;
+            } else {
+              console.error('Scroll container not found in timeline');
+              
+              // Fallback: tentar rolar o próprio container
+              const fallbackContainer = timelineContainer.querySelector('[class*="overflow"]');
+              if (fallbackContainer) {
+                const scrollAmount = 300;
+                const currentScroll = fallbackContainer.scrollLeft || 0;
+                const newScroll = '${direction}' === 'left' 
+                  ? Math.max(0, currentScroll - scrollAmount)
+                  : currentScroll + scrollAmount;
+                
+                fallbackContainer.scrollTo({
+                  left: newScroll,
+                  behavior: 'smooth'
+                });
               }
             }
             
@@ -285,6 +306,9 @@ export class HtmlGenerator {
           // Garantir que o botão tenha cursor pointer
           const buttonEl = button as HTMLElement;
           buttonEl.style.cursor = 'pointer';
+          buttonEl.style.pointerEvents = 'auto';
+          
+          console.log(`Timeline navigation button configured: ${direction} for ${timelineId}`);
         }
       });
     });
