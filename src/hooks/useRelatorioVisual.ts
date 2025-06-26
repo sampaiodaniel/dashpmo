@@ -74,7 +74,7 @@ export function useRelatorioVisual() {
 
       const projetoIds = projetos.map(p => p.id);
 
-      // Buscar status mais recentes dos projetos com entregas da tabela entregas_status
+      // Buscar status mais recentes dos projetos
       const { data: statusProjetos, error: statusError } = await supabase
         .from('status_projeto')
         .select(`
@@ -86,7 +86,7 @@ export function useRelatorioVisual() {
 
       if (statusError) throw statusError;
 
-      // Buscar entregas para cada status da tabela entregas_status
+      // Buscar entregas para cada status apenas da tabela entregas_status (não duplicar com campos legados)
       if (statusProjetos && statusProjetos.length > 0) {
         const statusIds = statusProjetos.map(s => s.id);
         
@@ -101,7 +101,53 @@ export function useRelatorioVisual() {
         } else {
           // Anexar entregas a cada status
           statusProjetos.forEach((status: any) => {
-            status.entregasExtras = todasEntregas?.filter(e => e.status_id === status.id) || [];
+            const entregasDoStatus = todasEntregas?.filter(e => e.status_id === status.id) || [];
+            
+            // Só usar entregas da tabela nova se existirem, senão usar campos legados
+            if (entregasDoStatus.length > 0) {
+              status.entregasExtras = entregasDoStatus;
+            } else {
+              // Migrar campos legados apenas se não há entregas na tabela nova
+              const entregasLegadas = [];
+              
+              if (status.entrega1) {
+                entregasLegadas.push({
+                  id: `legado-${status.id}-1`,
+                  status_id: status.id,
+                  ordem: 1,
+                  nome_entrega: status.entrega1,
+                  data_entrega: status.data_marco1,
+                  entregaveis: status.entregaveis1,
+                  status_entrega_id: status.status_entrega1_id
+                });
+              }
+
+              if (status.entrega2) {
+                entregasLegadas.push({
+                  id: `legado-${status.id}-2`,
+                  status_id: status.id,
+                  ordem: 2,
+                  nome_entrega: status.entrega2,
+                  data_entrega: status.data_marco2,
+                  entregaveis: status.entregaveis2,
+                  status_entrega_id: status.status_entrega2_id
+                });
+              }
+
+              if (status.entrega3) {
+                entregasLegadas.push({
+                  id: `legado-${status.id}-3`,
+                  status_id: status.id,
+                  ordem: 3,
+                  nome_entrega: status.entrega3,
+                  data_entrega: status.data_marco3,
+                  entregaveis: status.entregaveis3,
+                  status_entrega_id: status.status_entrega3_id
+                });
+              }
+
+              status.entregasExtras = entregasLegadas;
+            }
           });
         }
       }
@@ -166,7 +212,7 @@ export function useRelatorioVisual() {
       const projetoIds = projetos.map(p => p.id);
       const carteiras = [...new Set(projetos.map(p => p.carteira_primaria).filter(Boolean))];
 
-      // Buscar status mais recentes dos projetos com entregas da tabela entregas_status
+      // Buscar status mais recentes dos projetos
       const { data: statusProjetos, error: statusError } = await supabase
         .from('status_projeto')
         .select(`
@@ -178,7 +224,7 @@ export function useRelatorioVisual() {
 
       if (statusError) throw statusError;
 
-      // Buscar entregas para cada status da tabela entregas_status
+      // Buscar entregas para cada status apenas da tabela entregas_status (não duplicar com campos legados)
       if (statusProjetos && statusProjetos.length > 0) {
         const statusIds = statusProjetos.map(s => s.id);
         
@@ -193,7 +239,53 @@ export function useRelatorioVisual() {
         } else {
           // Anexar entregas a cada status
           statusProjetos.forEach((status: any) => {
-            status.entregasExtras = todasEntregas?.filter(e => e.status_id === status.id) || [];
+            const entregasDoStatus = todasEntregas?.filter(e => e.status_id === status.id) || [];
+            
+            // Só usar entregas da tabela nova se existirem, senão usar campos legados
+            if (entregasDoStatus.length > 0) {
+              status.entregasExtras = entregasDoStatus;
+            } else {
+              // Migrar campos legados apenas se não há entregas na tabela nova
+              const entregasLegadas = [];
+              
+              if (status.entrega1) {
+                entregasLegadas.push({
+                  id: `legado-${status.id}-1`,
+                  status_id: status.id,
+                  ordem: 1,
+                  nome_entrega: status.entrega1,
+                  data_entrega: status.data_marco1,
+                  entregaveis: status.entregaveis1,
+                  status_entrega_id: status.status_entrega1_id
+                });
+              }
+
+              if (status.entrega2) {
+                entregasLegadas.push({
+                  id: `legado-${status.id}-2`,
+                  status_id: status.id,
+                  ordem: 2,
+                  nome_entrega: status.entrega2,
+                  data_entrega: status.data_marco2,
+                  entregaveis: status.entregaveis2,
+                  status_entrega_id: status.status_entrega2_id
+                });
+              }
+
+              if (status.entrega3) {
+                entregasLegadas.push({
+                  id: `legado-${status.id}-3`,
+                  status_id: status.id,
+                  ordem: 3,
+                  nome_entrega: status.entrega3,
+                  data_entrega: status.data_marco3,
+                  entregaveis: status.entregaveis3,
+                  status_entrega_id: status.status_entrega3_id
+                });
+              }
+
+              status.entregasExtras = entregasLegadas;
+            }
           });
         }
       }

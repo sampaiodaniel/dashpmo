@@ -1,4 +1,3 @@
-
 import { MetricasVisuais } from './MetricasVisuais';
 import { GraficosIndicadores } from './GraficosIndicadores';
 import { TimelineEntregas } from './TimelineEntregas';
@@ -36,11 +35,6 @@ export function RelatorioVisualContent({ dados }: RelatorioVisualContentProps) {
       new Date(b.data_aprovacao || b.data_criacao).getTime() - 
       new Date(a.data_aprovacao || a.data_criacao).getTime()
     )[0];
-
-    // Log para debug
-    // if (ultimoStatus && ultimoStatus.entregasExtras) {
-    //   console.log('🔍 Status com entregas extras no relatório visual:', ultimoStatus.id, ultimoStatus.entregasExtras);
-    // }
 
     return {
       ...projeto,
@@ -246,15 +240,15 @@ export function RelatorioVisualContent({ dados }: RelatorioVisualContentProps) {
                     </div>
                   </div>
 
-                  {/* Bloqueios */}
+                  {/* Bloqueios - corrigido para verificar ambos os campos */}
                   <div>
                     <div className="bg-[#6B7280] text-white p-3 rounded-t-lg">
                       <h4 className="font-semibold text-base text-center">Bloqueios</h4>
                     </div>
                     <div className="bg-gray-50 p-4 rounded-b-lg border-l-4 border-[#6B7280] min-h-[120px]">
-                      {projeto.ultimoStatus?.bloqueios_atuais ? (
+                      {(projeto.ultimoStatus?.bloqueios_atuais || projeto.ultimoStatus?.bloqueios) ? (
                         <div className="space-y-2 text-left">
-                          {projeto.ultimoStatus.bloqueios_atuais.split('\n').filter((item: string) => item.trim()).map((item: string, i: number) => (
+                          {(projeto.ultimoStatus.bloqueios_atuais || projeto.ultimoStatus.bloqueios).split('\n').filter((item: string) => item.trim()).map((item: string, i: number) => (
                             <div key={i} className="text-sm text-[#6B7280] leading-relaxed flex items-start">
                               <span className="font-medium text-[#6B7280] mr-2 mt-0.5 flex-shrink-0">🚫</span>
                               <span className="flex-1">{item.trim()}</span>
