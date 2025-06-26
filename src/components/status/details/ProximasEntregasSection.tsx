@@ -12,7 +12,7 @@ interface ProximasEntregasSectionProps {
 }
 
 export function ProximasEntregasSection({ status }: ProximasEntregasSectionProps) {
-  // Buscar todas as entregas da tabela entregas_status
+  // Buscar entregas da tabela entregas_status
   const { data: entregas = [] } = useQuery({
     queryKey: ['entregas-status', status.id],
     queryFn: async () => {
@@ -29,7 +29,103 @@ export function ProximasEntregasSection({ status }: ProximasEntregasSectionProps
         return [];
       }
 
-      console.log('📦 Entregas encontradas:', data?.length || 0);
+      console.log('📦 Entregas encontradas na tabela entregas_status:', data?.length || 0, data);
+      
+      // Se não encontrou entregas na nova tabela, verificar se existem na tabela antiga e migrar
+      if (!data || data.length === 0) {
+        console.log('⚠️ Nenhuma entrega encontrada na tabela nova, verificando tabela antiga...');
+        
+        // Verificar se existem entregas nos campos legados
+        const { data: statusData, error: statusError } = await supabase
+          .from('status_projeto')
+          .select('entrega1, entrega2, entrega3, entregaveis1, entregaveis2, entregaveis3, data_marco1, data_marco2, data_marco3, status_entrega1_id, status_entrega2_id, status_entrega3_id')
+          .eq('id', status.id)
+          .single();
+
+        if (statusError) {
+          console.error('Erro ao buscar dados do status:', statusError);
+          return [];
+        }
+
+        console.log('📋 Dados legados encontrados:', statusData);
+
+        // Migrar entregas legadas para a nova tabela se existirem
+        const entregasParaMigrar = [];
+        
+        if (statusData.entrega1) {
+          entregasParaMigrar.push({
+            status_id: status.id,
+            ordem: 1,
+            nome_entrega: statusData.entrega1,
+            data_entrega: statusData.data_marco1,
+            entregaveis: statusData.entregaveis1,
+            status_entrega_id: statusData.status_entrega1_id,
+            status_da_entrega: 'Em andamento'
+          });
+        }
+
+        if (statusData.entrega2) {
+          entregasParaMigrar.push({
+            status_id: status.id,
+            ordem: 2,
+            nome_entrega: statusData.entrega2,
+            data_entrega: statusData.data_marco2,
+            entregaveis: statusData.entregaveis2,
+            status_entrega_id: statusData.status_entrega2_id,
+            status_da_entrega: 'Em andamento'
+          });
+        }
+
+        if (statusData.entrega3) {
+          entregasParaMigrar.push({
+            status_id: status.id,
+            ordem: 3,
+            nome_entrega: statusData.entrega3,
+            data_entrega: statusData.data_marco3,
+            entregaveis: statusData.entregaveis3,
+            status_entrega_id: statusData.status_entrega3_id,
+            status_da_entrega: 'Em andamento'
+          });
+        }
+
+        if (entregasParaMigrar.length > 0) {
+          console.log('🔄 Migrando entregas para a nova tabela:', entregasParaMigrar);
+          
+          const { data: migradedData, error: migrateError } = await supabase
+            .from('entregas_status')
+            .insert(entregasParaMigrar)
+            .select();
+
+          if (migrateError) {
+            console.error('Erro ao migrar entregas:', migrateError);
+            return [];
+          }
+
+          console.log('✅ Entregas migradas com sucesso:', migradedData);
+          
+          // Limpar campos legados após migração bem-sucedida
+          await supabase
+            .from('status_projeto')
+            .update({
+              entrega1: null,
+              entrega2: null,
+              entrega3: null,
+              entregaveis1: null,
+              entregaveis2: null,
+              entregaveis3: null,
+              data_marco1: null,
+              data_marco2: null,
+              data_marco3: null,
+              status_entrega1_id: null,
+              status_entrega2_id: null,
+              status_entrega3_id: null
+            })
+            .eq('id', status.id);
+
+          return migradedData;
+        }
+      }
+
       return data || [];
     },
   });

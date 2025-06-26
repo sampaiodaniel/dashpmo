@@ -1,3 +1,4 @@
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ExternalLink, FileText, Plus } from 'lucide-react';
@@ -87,16 +88,6 @@ export function ProjetoStatus({ projeto }: ProjetoStatusProps) {
           </Badge>
         </div>
         <div className="flex items-center gap-2">
-          {ultimoStatus.aprovado && (
-            <Button 
-              onClick={handleNovoStatus}
-              className="bg-pmo-primary hover:bg-pmo-secondary text-white flex items-center gap-2"
-              size="sm"
-            >
-              <Plus className="h-4 w-4" />
-              Novo Status
-            </Button>
-          )}
           <Button 
             onClick={handleVerDetalhes}
             className="bg-pmo-primary hover:bg-pmo-secondary text-white flex items-center gap-2"
@@ -104,6 +95,14 @@ export function ProjetoStatus({ projeto }: ProjetoStatusProps) {
           >
             <ExternalLink className="h-4 w-4" />
             Ver detalhes
+          </Button>
+          <Button 
+            onClick={handleNovoStatus}
+            className="bg-pmo-primary hover:bg-pmo-secondary text-white flex items-center gap-2"
+            size="sm"
+          >
+            <Plus className="h-4 w-4" />
+            Novo Status
           </Button>
         </div>
       </div>

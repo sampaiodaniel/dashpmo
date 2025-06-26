@@ -4,15 +4,13 @@ import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, History, Trash2, MoreVertical } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, MoreVertical } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { useProjetos } from '@/hooks/useProjetos';
 import { ProjetoInfoGerais } from '@/components/projetos/ProjetoInfoGerais';
 import { ProjetoStatus } from '@/components/projetos/ProjetoStatus';
-import { ProjetoAcoes } from '@/components/projetos/ProjetoAcoes';
 import { ProjetoAcoesAdmin } from '@/components/projetos/ProjetoAcoesAdmin';
-import { HistoricoProjetoModal } from '@/components/modals/HistoricoProjetoModal';
 import { useState } from 'react';
 import { useScrollToTop } from '@/hooks/useScrollToTop';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -24,7 +22,6 @@ export default function ProjetoDetalhes() {
   const { usuario, isLoading, isAdmin } = useAuth();
   const { data: projetos, isLoading: projetosLoading, refetch } = useProjetos();
   const { data: tiposProjeto } = useTiposProjeto();
-  const [isHistoricoOpen, setIsHistoricoOpen] = useState(false);
   
   useScrollToTop();
 
@@ -114,16 +111,14 @@ export default function ProjetoDetalhes() {
           <div className="flex items-center gap-2">
             <div className="hidden md:flex gap-2">
               <Button 
-                onClick={() => setIsHistoricoOpen(true)}
+                onClick={() => navigate(`/editar-projeto/${projeto.id}`)}
                 size="sm"
                 variant="outline"
                 className="border-blue-300 text-blue-600 hover:bg-blue-50"
               >
-                <History className="h-4 w-4 mr-1" />
-                Histórico
+                <Edit className="h-4 w-4 mr-1" />
+                Editar Projeto
               </Button>
-              
-              <ProjetoAcoes projeto={projeto} onRefresh={handleRefresh} />
               
               {isAdmin() && (
                 <ProjetoAcoesAdmin projeto={projeto} onRefresh={handleRefresh} />
@@ -139,13 +134,9 @@ export default function ProjetoDetalhes() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => setIsHistoricoOpen(true)}>
-                    <History className="h-4 w-4 mr-2" />
-                    Histórico
-                  </DropdownMenuItem>
-                  
-                  <DropdownMenuItem onClick={() => navigate(`/novo-status?projeto=${projeto.id}`)}>
-                    Novo Status
+                  <DropdownMenuItem onClick={() => navigate(`/editar-projeto/${projeto.id}`)}>
+                    <Edit className="h-4 w-4 mr-2" />
+                    Editar Projeto
                   </DropdownMenuItem>
                   
                   {isAdmin() && (
@@ -173,13 +164,6 @@ export default function ProjetoDetalhes() {
           <ProjetoStatus projeto={projeto} />
         </div>
       </div>
-
-      <HistoricoProjetoModal 
-        projetoId={projeto.id}
-        nomeProjeto={projeto.nome_projeto}
-        aberto={isHistoricoOpen}
-        onFechar={() => setIsHistoricoOpen(false)}
-      />
     </Layout>
   );
 }
