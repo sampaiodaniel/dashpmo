@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { verificarCriacaoNoLogin } from '@/utils/debugIncidentes';
@@ -234,11 +233,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const isAdmin = () => {
-    return usuario?.tipo_usuario === 'Admin';
+    console.log('🔍 isAdmin check - usuario:', usuario);
+    console.log('🔍 isAdmin check - tipo_usuario:', usuario?.tipo_usuario);
+    
+    // Verificar tanto "Admin" quanto "Administrador" para compatibilidade
+    return usuario?.tipo_usuario === 'Admin' || usuario?.tipo_usuario === 'Administrador';
   };
 
   const isGestor = () => {
-    return usuario?.tipo_usuario === 'Gestor' || usuario?.tipo_usuario === 'Admin';
+    return usuario?.tipo_usuario === 'Gestor' || usuario?.tipo_usuario === 'Admin' || usuario?.tipo_usuario === 'Administrador';
   };
 
   const canAccess = (area: string) => {
