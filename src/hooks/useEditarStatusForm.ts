@@ -47,7 +47,7 @@ export function useEditarStatusForm(status: StatusProjeto) {
 
   // Carregar entregas quando os dados estiverem prontos
   useEffect(() => {
-    if (entregasCarregadas || !entregasExistentes.length || statusEntrega.length === 0) return;
+    if (entregasCarregadas || !statusEntrega.length) return;
     
     console.log('🔄 Carregando entregas para edição do status:', status.id);
     console.log('📦 Entregas encontradas:', entregasExistentes);
@@ -185,7 +185,7 @@ export function useEditarStatusForm(status: StatusProjeto) {
 
       // Gerenciar entregas na tabela entregas_status
       try {
-        // Primeiro, remover todas as entregas existentes
+        // Primeiro, remover todas as entregas existentes para este status
         const { error: deleteError } = await supabase
           .from('entregas_status')
           .delete()
@@ -193,6 +193,7 @@ export function useEditarStatusForm(status: StatusProjeto) {
 
         if (deleteError) {
           console.error('Erro ao remover entregas existentes:', deleteError);
+          throw deleteError;
         }
 
         // Inserir todas as entregas atualizadas
@@ -203,9 +204,11 @@ export function useEditarStatusForm(status: StatusProjeto) {
             nome_entrega: entrega.nome,
             data_entrega: entrega.data || null,
             entregaveis: entrega.entregaveis,
-            status_entrega_id: entrega.statusEntregaId || null,
-            status_da_entrega: 'Em andamento' // Valor padrão obrigatório
+            status_entrega_id: entrega.statusEntregaId,
+            status_da_entrega: 'Em andamento' // Campo obrigatório
           }));
+
+          console.log('📦 Inserindo entregas:', entregasParaInserir);
 
           const { error: insertError, data: insertedData } = await supabase
             .from('entregas_status')
@@ -213,17 +216,18 @@ export function useEditarStatusForm(status: StatusProjeto) {
             .select();
 
           if (insertError) {
-            console.error('Erro ao inserir entregas:', insertError);
+            console.error('Erro detalhado ao inserir entregas:', insertError);
+            console.error('Dados que causaram erro:', entregasParaInserir);
             throw insertError;
           } else {
-            console.log('✅ Entregas inseridas:', insertedData);
+            console.log('✅ Entregas inseridas com sucesso:', insertedData);
           }
         }
-      } catch (entregasError) {
+      } catch (entregasError: any) {
         console.error('Erro ao gerenciar entregas:', entregasError);
         toast({
           title: "Erro",
-          description: "Erro ao salvar entregas. Verifique os dados e tente novamente.",
+          description: `Erro ao salvar entregas: ${entregasError.message || 'Verifique os dados e tente novamente.'}`,
           variant: "destructive",
         });
         return;
