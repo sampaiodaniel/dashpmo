@@ -143,164 +143,117 @@ export default function RelatorioVisualPagina() {
   }, [searchParams, navigate]);
 
   const handleGenerateHtml = async () => {
-    if (isGeneratingHtml) return;
+    if (isGeneratingHtml || !dados) return;
     setIsGeneratingHtml(true);
 
     try {
-      console.log('🔄 Iniciando captura completa da página...');
+      console.log('🔄 Iniciando geração de HTML...');
 
-      // Aguardar renderização completa
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Aguardar um momento para garantir que tudo está renderizado
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
-      // Capturar o HTML completo da página
-      const documentClone = document.cloneNode(true) as Document;
+      // Capturar o elemento principal do relatório
+      const relatorioElement = document.getElementById('relatorio-content');
+      if (!relatorioElement) {
+        throw new Error('Elemento do relatório não encontrado');
+      }
+
+      // Clonar o elemento principal
+      const clonedElement = relatorioElement.cloneNode(true) as HTMLElement;
+
+      // Capturar todos os estilos CSS das folhas de estilo
+      let allCSS = `
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+      `;
       
-      // Remover scripts desnecessários do clone
-      const scripts = documentClone.querySelectorAll('script');
-      scripts.forEach(script => {
-        if (!script.src.includes('fonts.googleapis.com') && !script.innerHTML.includes('scroll')) {
-          script.remove();
-        }
-      });
-
-      // Capturar todos os estilos CSS aplicados
-      const styleSheets = Array.from(document.styleSheets);
-      let allCSS = '';
-
-      for (const styleSheet of styleSheets) {
+      // Capturar CSS das folhas de estilo
+      Array.from(document.styleSheets).forEach(styleSheet => {
         try {
           if (styleSheet.cssRules) {
-            const rules = Array.from(styleSheet.cssRules);
-            for (const rule of rules) {
+            Array.from(styleSheet.cssRules).forEach(rule => {
               allCSS += rule.cssText + '\n';
-            }
+            });
           }
         } catch (e) {
           // Ignorar erros de CORS
           console.warn('Não foi possível acessar stylesheet:', e);
         }
-      }
+      });
 
-      // Capturar estilos inline e computados dos elementos principais
-      const allElements = document.querySelectorAll('*');
-      const computedStyles: string[] = [];
-
-      allElements.forEach((element, index) => {
+      // Capturar estilos inline específicos para elementos importantes
+      const importantElements = clonedElement.querySelectorAll('*');
+      importantElements.forEach((element, index) => {
         const el = element as HTMLElement;
-        const computed = window.getComputedStyle(el);
-        const className = `captured-element-${index}`;
+        const computed = window.getComputedStyle(document.querySelectorAll('#relatorio-content *')[index] as HTMLElement);
         
-        // Adicionar classe única ao elemento clonado
-        const clonedElement = documentClone.querySelectorAll('*')[index] as HTMLElement;
-        if (clonedElement) {
-          clonedElement.classList.add(className);
-        }
-
-        // Capturar propriedades CSS essenciais
-        const importantProps = [
-          'display', 'position', 'top', 'left', 'right', 'bottom',
-          'width', 'height', 'min-width', 'min-height', 'max-width', 'max-height',
-          'margin', 'padding', 'border', 'background', 'background-color', 'background-image',
-          'color', 'font-family', 'font-size', 'font-weight', 'line-height', 'text-align',
-          'flex', 'flex-direction', 'flex-wrap', 'justify-content', 'align-items', 'gap',
-          'grid', 'grid-template-columns', 'grid-template-rows', 'grid-gap',
-          'transform', 'opacity', 'visibility', 'overflow', 'z-index',
-          'box-shadow', 'border-radius', 'text-decoration', 'white-space'
-        ];
-
-        const styles = importantProps
-          .map(prop => `${prop}: ${computed.getPropertyValue(prop)}`)
-          .filter(style => !style.endsWith(': ') && !style.endsWith(': initial') && !style.endsWith(': normal'))
-          .join('; ');
-
-        if (styles) {
-          computedStyles.push(`.${className} { ${styles}; }`);
+        // Aplicar estilos computados importantes
+        if (el) {
+          el.style.color = computed.color;
+          el.style.backgroundColor = computed.backgroundColor;
+          el.style.fontSize = computed.fontSize;
+          el.style.fontWeight = computed.fontWeight;
+          el.style.padding = computed.padding;
+          el.style.margin = computed.margin;
+          el.style.border = computed.border;
+          el.style.display = computed.display;
+          el.style.flexDirection = computed.flexDirection;
+          el.style.justifyContent = computed.justifyContent;
+          el.style.alignItems = computed.alignItems;
+          el.style.gap = computed.gap;
+          el.style.gridTemplateColumns = computed.gridTemplateColumns;
+          el.style.width = computed.width;
+          el.style.height = computed.height;
+          el.style.textAlign = computed.textAlign;
         }
       });
 
       // Converter imagens para base64
-      const images = documentClone.querySelectorAll('img');
-      const imagePromises = Array.from(images).map(async (img) => {
+      const images = clonedElement.querySelectorAll('img');
+      for (const img of Array.from(images)) {
         try {
           const canvas = document.createElement('canvas');
           const ctx = canvas.getContext('2d');
-          const originalImg = new Image();
+          const originalImg = document.querySelector(`img[src="${img.src}"]`) as HTMLImageElement;
           
-          return new Promise<void>((resolve) => {
-            originalImg.onload = () => {
-              canvas.width = originalImg.naturalWidth;
-              canvas.height = originalImg.naturalHeight;
-              ctx?.drawImage(originalImg, 0, 0);
-              
-              try {
-                const dataURL = canvas.toDataURL('image/png');
-                img.src = dataURL;
-              } catch (e) {
-                console.warn('Erro ao converter imagem:', e);
-              }
-              resolve();
-            };
+          if (originalImg && originalImg.complete) {
+            canvas.width = originalImg.naturalWidth || originalImg.width;
+            canvas.height = originalImg.naturalHeight || originalImg.height;
+            ctx?.drawImage(originalImg, 0, 0);
             
-            originalImg.onerror = () => resolve();
-            originalImg.crossOrigin = 'anonymous';
-            originalImg.src = img.src;
-          });
+            try {
+              const dataURL = canvas.toDataURL('image/png');
+              img.src = dataURL;
+            } catch (e) {
+              console.warn('Erro ao converter imagem para base64:', e);
+            }
+          }
         } catch (e) {
           console.warn('Erro ao processar imagem:', e);
-          return Promise.resolve();
+        }
+      }
+
+      // Tornar links funcionais no HTML exportado
+      const links = clonedElement.querySelectorAll('a[href^="#"], button');
+      links.forEach(link => {
+        const href = link.getAttribute('href');
+        if (href && href.startsWith('#')) {
+          link.setAttribute('onclick', `document.querySelector('${href}')?.scrollIntoView({behavior: 'smooth'}); return false;`);
+        } else if (link.tagName === 'BUTTON' && link.textContent?.includes('Voltar ao Overview')) {
+          link.setAttribute('onclick', `document.querySelector('[data-overview]')?.scrollIntoView({behavior: 'smooth'}); return false;`);
         }
       });
 
-      await Promise.all(imagePromises);
-
-      // Remover elementos de navegação e header do clone
-      const elementsToRemove = [
-        '.no-print',
-        'header',
-        '.sticky',
-        '[class*="header"]',
-        '[class*="navigation"]',
-        'nav'
-      ];
-
-      elementsToRemove.forEach(selector => {
-        const elements = documentClone.querySelectorAll(selector);
-        elements.forEach(el => el.remove());
-      });
-
-      // Ajustar o body do clone para remover padding/margin desnecessários
-      const bodyClone = documentClone.body;
-      if (bodyClone) {
-        bodyClone.style.margin = '0';
-        bodyClone.style.padding = '20px';
-        bodyClone.style.backgroundColor = '#F8FAFC';
-      }
-
-      // Criar o HTML final completo
-      const finalHTML = `<!DOCTYPE html>
+      // Criar HTML completo
+      const htmlContent = `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Relatório Visual - ${dados?.carteira || dados?.responsavel || 'Dashboard'}</title>
-    
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    
+    <title>Relatório Visual - ${dados.carteira || dados.responsavel || 'Dashboard'}</title>
     <style>
-        /* CSS capturado das folhas de estilo */
         ${allCSS}
         
-        /* Estilos computados específicos */
-        ${computedStyles.join('\n        ')}
-        
-        /* Ajustes para impressão e visualização */
-        * {
-            -webkit-print-color-adjust: exact !important;
-            color-adjust: exact !important;
-            print-color-adjust: exact !important;
-        }
-        
+        /* Estilos adicionais para garantir fidelidade */
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
             line-height: 1.6 !important;
@@ -310,19 +263,13 @@ export default function RelatorioVisualPagina() {
             padding: 20px !important;
         }
         
-        /* Garantir que links internos funcionem */
-        a[href^="#"] {
-            color: #A6926B !important;
-            text-decoration: none !important;
-            cursor: pointer !important;
+        * {
+            -webkit-print-color-adjust: exact !important;
+            color-adjust: exact !important;
+            print-color-adjust: exact !important;
         }
         
-        a[href^="#"]:hover {
-            color: #8B7355 !important;
-            text-decoration: underline !important;
-        }
-        
-        /* Forçar visibilidade de elementos importantes */
+        /* Garantir que elementos importantes sejam visíveis */
         .timeline-horizontal,
         .timeline-box,
         .timeline-connector,
@@ -334,32 +281,36 @@ export default function RelatorioVisualPagina() {
             opacity: 1 !important;
         }
         
-        /* Ajustes para impressão */
-        @media print {
-            body { 
-                background: white !important; 
-                padding: 10mm !important; 
-            }
-            @page { 
-                margin: 10mm; 
-                size: A4 landscape; 
-            }
-        }
-        
+        /* Suporte a navegação interna */
         html {
             scroll-behavior: smooth;
+        }
+        
+        a[href^="#"] {
+            color: #A6926B !important;
+            text-decoration: none !important;
+            cursor: pointer !important;
+        }
+        
+        a[href^="#"]:hover {
+            color: #8B7355 !important;
+            text-decoration: underline !important;
+        }
+        
+        button {
+            cursor: pointer !important;
         }
     </style>
 </head>
 <body>
-    ${bodyClone?.innerHTML || ''}
+    ${clonedElement.outerHTML}
     
     <script>
-        // Funcionalidade para links internos
+        // Implementar funcionalidade de navegação interna
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Relatório Visual HTML carregado!');
+            console.log('Relatório HTML carregado com sucesso!');
             
-            // Implementar navegação interna
+            // Implementar cliques em links internos
             const internalLinks = document.querySelectorAll('a[href^="#"]');
             internalLinks.forEach(link => {
                 link.addEventListener('click', function(e) {
@@ -372,7 +323,7 @@ export default function RelatorioVisualPagina() {
                 });
             });
             
-            // Implementar botão "Voltar ao Overview"
+            // Implementar botões "Voltar ao Overview"
             const backButtons = document.querySelectorAll('button');
             backButtons.forEach(button => {
                 if (button.textContent && button.textContent.includes('Voltar ao Overview')) {
@@ -389,22 +340,22 @@ export default function RelatorioVisualPagina() {
 </body>
 </html>`;
 
-      // Criar e baixar o arquivo
-      const blob = new Blob([finalHTML], { type: 'text/html;charset=utf-8' });
+      // Baixar o arquivo
+      const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `relatorio-visual-completo-${dados?.carteira || dados?.responsavel || 'dashboard'}-${new Date().toISOString().split('T')[0]}.html`;
+      a.download = `relatorio-visual-${dados.carteira || dados.responsavel || 'dashboard'}-${new Date().toISOString().split('T')[0]}.html`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      console.log('✅ HTML completo gerado e baixado com sucesso!');
+      console.log('✅ HTML gerado e baixado com sucesso!');
 
     } catch (error) {
-      console.error('❌ Erro ao gerar HTML completo:', error);
-      alert('Erro ao gerar HTML: ' + (error instanceof Error ? error.message : error));
+      console.error('❌ Erro ao gerar HTML:', error);
+      alert('Erro ao gerar HTML: ' + (error instanceof Error ? error.message : String(error)));
     } finally {
       setIsGeneratingHtml(false);
     }
