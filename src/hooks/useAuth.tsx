@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { verificarCriacaoNoLogin } from '@/utils/debugIncidentes';
@@ -8,7 +9,7 @@ export interface Usuario {
   uuid: string;
   nome: string;
   email: string;
-  tipo_usuario: 'Admin' | 'Gestor' | 'Usuario';
+  tipo_usuario: 'Admin' | 'Gestor' | 'Usuario' | 'Administrador';
   areas_atuacao: string[];
   areas_acesso: string[];
   ativo: boolean;
