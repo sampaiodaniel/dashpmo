@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -183,6 +182,47 @@ export default function RelatorioVisualPagina() {
         }
       });
 
+      // Remover elementos que não devem aparecer no HTML (botões de "Voltar ao Overview")
+      const backButtons = clonedElement.querySelectorAll('button');
+      backButtons.forEach(button => {
+        if (button.textContent?.includes('Voltar ao Overview')) {
+          button.style.display = 'none';
+        }
+      });
+
+      // Capturar todos os estilos computados aplicados aos elementos
+      const allElements = clonedElement.querySelectorAll('*');
+      const inlineStyles: string[] = [];
+      
+      allElements.forEach((el, index) => {
+        const element = el as HTMLElement;
+        const computedStyle = window.getComputedStyle(element);
+        const className = `element-${index}`;
+        element.classList.add(className);
+        
+        // Capturar estilos essenciais
+        const importantStyles = [
+          'display', 'position', 'top', 'left', 'right', 'bottom',
+          'width', 'height', 'min-width', 'min-height', 'max-width', 'max-height',
+          'margin', 'padding', 'border', 'background', 'color',
+          'font-family', 'font-size', 'font-weight', 'line-height',
+          'text-align', 'vertical-align', 'white-space',
+          'flex', 'flex-direction', 'justify-content', 'align-items',
+          'grid', 'grid-template-columns', 'grid-gap', 'gap',
+          'transform', 'opacity', 'visibility', 'overflow',
+          'box-shadow', 'border-radius', 'z-index'
+        ];
+        
+        const styles = importantStyles
+          .map(prop => `${prop}: ${computedStyle.getPropertyValue(prop)};`)
+          .filter(style => !style.includes(': ;'))
+          .join(' ');
+          
+        if (styles) {
+          inlineStyles.push(`.${className} { ${styles} }`);
+        }
+      });
+
       // Criar HTML completo e auto-contido
       const fullHTML = `<!DOCTYPE html>
 <html lang="pt-BR">
@@ -214,161 +254,81 @@ export default function RelatorioVisualPagina() {
       min-width: 1200px;
     }
 
-    /* Tailwind-like utilities */
-    .space-y-8 > * + * { margin-top: 2rem; }
-    .space-y-6 > * + * { margin-top: 1.5rem; }
-    .space-y-4 > * + * { margin-top: 1rem; }
-    .space-y-3 > * + * { margin-top: 0.75rem; }
-    .space-y-2 > * + * { margin-top: 0.5rem; }
-    .space-y-1 > * + * { margin-top: 0.25rem; }
+    /* Estilos computados capturados */
+    ${inlineStyles.join('\n    ')}
 
-    .grid { display: grid; }
-    .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
-    .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-    .grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-    .md\\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .md\\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-    .md\\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-    .lg\\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    /* Tailwind-like utilities essenciais */
+    .space-y-8 > * + * { margin-top: 2rem !important; }
+    .space-y-6 > * + * { margin-top: 1.5rem !important; }
+    .space-y-4 > * + * { margin-top: 1rem !important; }
+    .space-y-3 > * + * { margin-top: 0.75rem !important; }
+    .space-y-2 > * + * { margin-top: 0.5rem !important; }
+    .space-y-1 > * + * { margin-top: 0.25rem !important; }
 
-    .gap-8 { gap: 2rem; }
-    .gap-6 { gap: 1.5rem; }
-    .gap-4 { gap: 1rem; }
-    .gap-3 { gap: 0.75rem; }
-    .gap-2 { gap: 0.5rem; }
-    .gap-1 { gap: 0.25rem; }
+    .grid { display: grid !important; }
+    .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)) !important; }
+    .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+    .grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+    .grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+    .md\\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+    .md\\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+    .md\\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
 
-    .flex { display: flex; }
-    .flex-col { flex-direction: column; }
-    .flex-row { flex-direction: row; }
-    .items-center { align-items: center; }
-    .items-start { align-items: flex-start; }
-    .items-baseline { align-items: baseline; }
-    .justify-center { justify-content: center; }
-    .justify-between { justify-content: space-between; }
-    .justify-start { justify-content: flex-start; }
+    .gap-8 { gap: 2rem !important; }
+    .gap-6 { gap: 1.5rem !important; }
+    .gap-4 { gap: 1rem !important; }
+    .gap-3 { gap: 0.75rem !important; }
+    .gap-2 { gap: 0.5rem !important; }
 
-    .text-center { text-align: center; }
-    .text-left { text-align: left; }
-    .text-right { text-align: right; }
+    .flex { display: flex !important; }
+    .flex-col { flex-direction: column !important; }
+    .flex-row { flex-direction: row !important; }
+    .items-center { align-items: center !important; }
+    .items-start { align-items: flex-start !important; }
+    .justify-center { justify-content: center !important; }
+    .justify-between { justify-content: space-between !important; }
 
-    .font-bold { font-weight: 700; }
-    .font-semibold { font-weight: 600; }
-    .font-medium { font-weight: 500; }
-    .font-normal { font-weight: 400; }
+    .text-center { text-align: center !important; }
+    .text-left { text-align: left !important; }
+    .text-right { text-align: right !important; }
 
-    .text-4xl { font-size: 2.25rem; line-height: 2.5rem; }
-    .text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
-    .text-2xl { font-size: 1.5rem; line-height: 2rem; }
-    .text-xl { font-size: 1.25rem; line-height: 1.75rem; }
-    .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
-    .text-base { font-size: 1rem; line-height: 1.5rem; }
-    .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
-    .text-xs { font-size: 0.75rem; line-height: 1rem; }
+    .font-bold { font-weight: 700 !important; }
+    .font-semibold { font-weight: 600 !important; }
+    .font-medium { font-weight: 500 !important; }
 
-    .mb-12 { margin-bottom: 3rem; }
-    .mb-8 { margin-bottom: 2rem; }
-    .mb-6 { margin-bottom: 1.5rem; }
-    .mb-4 { margin-bottom: 1rem; }
-    .mb-3 { margin-bottom: 0.75rem; }
-    .mb-2 { margin-bottom: 0.5rem; }
-    .mb-1 { margin-bottom: 0.25rem; }
-    .mt-8 { margin-top: 2rem; }
-    .mt-6 { margin-top: 1.5rem; }
-    .mt-4 { margin-top: 1rem; }
-    .mt-0\\.5 { margin-top: 0.125rem; }
+    .text-4xl { font-size: 2.25rem !important; line-height: 2.5rem !important; }
+    .text-3xl { font-size: 1.875rem !important; line-height: 2.25rem !important; }
+    .text-2xl { font-size: 1.5rem !important; line-height: 2rem !important; }
+    .text-xl { font-size: 1.25rem !important; line-height: 1.75rem !important; }
+    .text-lg { font-size: 1.125rem !important; line-height: 1.75rem !important; }
+    .text-base { font-size: 1rem !important; line-height: 1.5rem !important; }
+    .text-sm { font-size: 0.875rem !important; line-height: 1.25rem !important; }
+    .text-xs { font-size: 0.75rem !important; line-height: 1rem !important; }
 
-    .p-8 { padding: 2rem; }
-    .p-6 { padding: 1.5rem; }
-    .p-4 { padding: 1rem; }
-    .p-3 { padding: 0.75rem; }
-    .p-2 { padding: 0.5rem; }
-    .px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
-    .py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
-    .pb-4 { padding-bottom: 1rem; }
-    .pb-8 { padding-bottom: 2rem; }
-    .pt-8 { padding-top: 2rem; }
+    .bg-white { background-color: white !important; }
+    .bg-gray-50 { background-color: #F9FAFB !important; }
+    .bg-gray-100 { background-color: #F3F4F6 !important; }
+    .bg-green-500 { background-color: #10B981 !important; }
+    .bg-yellow-500 { background-color: #F59E0B !important; }
+    .bg-red-500 { background-color: #EF4444 !important; }
+    .bg-gray-400 { background-color: #9CA3AF !important; }
 
-    .w-full { width: 100%; }
-    .w-8 { width: 2rem; }
-    .h-8 { height: 2rem; }
-    .min-h-\\[120px\\] { min-height: 120px; }
-    .max-width-none { max-width: none; }
-    .min-width-1200px { min-width: 1200px; }
+    .rounded-lg { border-radius: 0.5rem !important; }
+    .rounded-full { border-radius: 9999px !important; }
 
-    .bg-white { background-color: white; }
-    .bg-gray-50 { background-color: #F9FAFB; }
-    .bg-gray-100 { background-color: #F3F4F6; }
-    .bg-green-500 { background-color: #10B981; }
-    .bg-yellow-500 { background-color: #F59E0B; }
-    .bg-red-500 { background-color: #EF4444; }
-    .bg-gray-400 { background-color: #9CA3AF; }
+    .border { border: 1px solid #E5E7EB !important; }
+    .border-b { border-bottom: 1px solid #E5E7EB !important; }
+    .border-l-4 { border-left: 4px solid !important; }
+    .border-2 { border-width: 2px !important; }
 
-    .text-\\[\\#1B365D\\] { color: #1B365D; }
-    .text-\\[\\#6B7280\\] { color: #6B7280; }
-    .text-\\[\\#A6926B\\] { color: #A6926B; }
-    .text-\\[\\#F59E0B\\] { color: #F59E0B; }
-    .text-\\[\\#2E5984\\] { color: #2E5984; }
-    .text-white { color: white; }
+    .shadow-md { box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1) !important; }
+    .shadow-lg { box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1) !important; }
 
-    .rounded-lg { border-radius: 0.5rem; }
-    .rounded-t-lg { border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem; }
-    .rounded-b-lg { border-bottom-left-radius: 0.5rem; border-bottom-right-radius: 0.5rem; }
-    .rounded-full { border-radius: 9999px; }
-
-    .border { border: 1px solid #E5E7EB; }
-    .border-b { border-bottom: 1px solid #E5E7EB; }
-    .border-gray-200 { border-color: #E5E7EB; }
-    .border-l-4 { border-left: 4px solid; }
-    .border-\\[\\#A6926B\\] { border-color: #A6926B; }
-    .border-\\[\\#2E5984\\] { border-color: #2E5984; }
-    .border-\\[\\#F59E0B\\] { border-color: #F59E0B; }
-    .border-\\[\\#6B7280\\] { border-color: #6B7280; }
-    .border-2 { border-width: 2px; }
-    .border-white { border-color: white; }
-    .border-opacity-30 { border-opacity: 0.3; }
-
-    .shadow-md { box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); }
-    .shadow-lg { box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); }
-
-    .italic { font-style: italic; }
-    .leading-relaxed { line-height: 1.625; }
-    .leading-snug { line-height: 1.375; }
-    .whitespace-nowrap { white-space: nowrap; }
-    .opacity-75 { opacity: 0.75; }
-    .flex-1 { flex: 1 1 0%; }
-    .flex-shrink-0 { flex-shrink: 0; }
-
-    .last\\:mb-0:last-child { margin-bottom: 0; }
-    .last\\:border-b-0:last-child { border-bottom: 0; }
-    .last\\:pb-0:last-child { padding-bottom: 0; }
-
-    /* Timeline específico */
-    .timeline-horizontal {
-      display: block !important;
-      visibility: visible !important;
-      opacity: 1 !important;
-    }
-
-    .timeline-box {
-      display: block !important;
-      visibility: visible !important;
-      opacity: 1 !important;
-    }
-
-    .timeline-connector {
-      display: block !important;
-      visibility: visible !important;
-      opacity: 1 !important;
-    }
-
-    .timeline-marker {
-      display: block !important;
-      visibility: visible !important;
-      opacity: 1 !important;
-    }
-
+    /* Timeline específico - forçar visibilidade */
+    .timeline-horizontal,
+    .timeline-box,
+    .timeline-connector,
+    .timeline-marker,
     .timeline-week-marker {
       display: block !important;
       visibility: visible !important;
@@ -377,45 +337,37 @@ export default function RelatorioVisualPagina() {
 
     /* Tabelas */
     table {
-      border-collapse: collapse;
-      width: 100%;
-      margin: 1rem 0;
+      border-collapse: collapse !important;
+      width: 100% !important;
     }
 
     th, td {
-      border: 1px solid #E5E7EB;
-      padding: 12px 8px;
-      text-align: left;
+      border: 1px solid #E5E7EB !important;
+      padding: 12px 8px !important;
+      text-align: left !important;
     }
 
     th {
-      background-color: #F9FAFB;
-      font-weight: 600;
+      background-color: #F9FAFB !important;
+      font-weight: 600 !important;
     }
 
     /* Imagens */
     img {
-      max-width: 100%;
-      height: auto;
+      max-width: 100% !important;
+      height: auto !important;
     }
 
-    /* Links */
-    a {
-      color: #A6926B;
-      text-decoration: none;
+    /* Links internos funcionais */
+    a[href^="#"] {
+      color: #A6926B !important;
+      text-decoration: none !important;
+      cursor: pointer !important;
     }
 
-    a:hover {
-      color: #8B7355;
-      text-decoration: underline;
-    }
-
-    /* Botões */
-    button {
-      cursor: pointer;
-      background: transparent;
-      border: none;
-      font: inherit;
+    a[href^="#"]:hover {
+      color: #8B7355 !important;
+      text-decoration: underline !important;
     }
 
     /* Print styles */
@@ -429,9 +381,6 @@ export default function RelatorioVisualPagina() {
         margin: 10mm;
         size: A4 landscape;
       }
-
-      .space-y-8 > * + * { margin-top: 1rem !important; }
-      .space-y-6 > * + * { margin-top: 0.75rem !important; }
     }
 
     /* Smooth scroll para links internos */
@@ -448,18 +397,7 @@ export default function RelatorioVisualPagina() {
   <script>
     // Script para navegação interna funcionar
     document.addEventListener('DOMContentLoaded', function() {
-      // Implementar funcionalidade de "Voltar ao Overview"
-      const voltarButtons = document.querySelectorAll('button');
-      voltarButtons.forEach(button => {
-        if (button.textContent.includes('Voltar ao Overview')) {
-          button.addEventListener('click', function() {
-            const element = document.querySelector('[data-overview]');
-            if (element) {
-              element.scrollIntoView({ behavior: 'smooth' });
-            }
-          });
-        }
-      });
+      console.log('Relatório Visual HTML carregado com funcionalidade completa!');
 
       // Implementar links de navegação para projetos
       const projetoLinks = document.querySelectorAll('a[href^="#projeto-"]');
@@ -474,7 +412,18 @@ export default function RelatorioVisualPagina() {
         });
       });
 
-      console.log('Relatório Visual HTML gerado com sucesso!');
+      // Implementar outros links internos
+      const internalLinks = document.querySelectorAll('a[href^="#"]');
+      internalLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+          e.preventDefault();
+          const targetId = this.getAttribute('href').substring(1);
+          const targetElement = document.getElementById(targetId);
+          if (targetElement) {
+            targetElement.scrollIntoView({ behavior: 'smooth' });
+          }
+        });
+      });
     });
   </script>
 </body>
