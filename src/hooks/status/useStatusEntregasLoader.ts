@@ -10,8 +10,8 @@ export function useStatusEntregasLoader(status: StatusProjeto) {
   const { statusEntrega } = useStatusEntrega();
   const [entregasCarregadas, setEntregasCarregadas] = useState(false);
 
-  // Buscar entregas da tabela entregas_status SEM migração automática
-  const { data: entregasExistentes = [] } = useQuery({
+  // Buscar entregas da tabela entregas_status
+  const { data: entregasExistentes = [], isLoading, refetch } = useQuery({
     queryKey: ['entregas-status-edit', status.id],
     queryFn: async () => {
       console.log('🔍 Buscando entregas para edição do status:', status.id);
@@ -45,7 +45,14 @@ export function useStatusEntregasLoader(status: StatusProjeto) {
 
   // Carregar entregas quando os dados estiverem prontos
   useEffect(() => {
-    if (entregasCarregadas || !statusEntrega.length) return;
+    // Reset do carregamento quando o status_id muda
+    if (entregasCarregadas) {
+      setEntregasCarregadas(false);
+    }
+  }, [status.id]);
+
+  useEffect(() => {
+    if (entregasCarregadas || isLoading || !statusEntrega.length) return;
     
     console.log('🔄 Carregando entregas para edição do status:', status.id);
     console.log('📦 Entregas encontradas:', entregasExistentes);
@@ -62,21 +69,69 @@ export function useStatusEntregasLoader(status: StatusProjeto) {
       console.log('✅ Carregando entregas existentes:', entregasCompletas.length);
       setEntregas(entregasCompletas);
     } else {
-      // Se não há entregas, criar uma entrega vazia
-      const entregaVazia: Entrega = { 
-        id: 'nova-1', 
-        nome: '', 
-        data: '', 
-        entregaveis: '', 
-        statusEntregaId: statusEntrega.length > 0 ? statusEntrega[0].id : null 
-      };
+      // Verificar se há dados legados para migrar
+      console.log('🔍 Verificando dados legados para status:', status.id);
       
-      console.log('📝 Criando entrega vazia para novo status');
-      setEntregas([entregaVazia]);
+      // Se não há entregas na nova tabela, verificar campos legados
+      const entregasLegadas = [];
+      
+      if (status.entrega1) {
+        entregasLegadas.push({
+          id: 'legado-1',
+          nome: status.entrega1,
+          data: status.data_marco1 ? new Date(status.data_marco1).toISOString().split('T')[0] : '',
+          entregaveis: status.entregaveis1 || '',
+          statusEntregaId: status.status_entrega1_id || (statusEntrega.length > 0 ? statusEntrega[0].id : null)
+        });
+      }
+
+      if (status.entrega2) {
+        entregasLegadas.push({
+          id: 'legado-2',
+          nome: status.entrega2,
+          data: status.data_marco2 ? new Date(status.data_marco2).toISOString().split('T')[0] : '',
+          entregaveis: status.entregaveis2 || '',
+          statusEntregaId: status.status_entrega2_id || (statusEntrega.length > 0 ? statusEntrega[0].id : null)
+        });
+      }
+
+      if (status.entrega3) {
+        entregasLegadas.push({
+          id: 'legado-3',
+          nome: status.entrega3,
+          data: status.data_marco3 ? new Date(status.data_marco3).toISOString().split('T')[0] : '',
+          entregaveis: status.entregaveis3 || '',
+          statusEntregaId: status.status_entrega3_id || (statusEntrega.length > 0 ? statusEntrega[0].id : null)
+        });
+      }
+
+      if (entregasLegadas.length > 0) {
+        console.log('📋 Carregando entregas legadas:', entregasLegadas.length);
+        setEntregas(entregasLegadas);
+      } else {
+        // Se não há entregas, criar uma entrega vazia
+        const entregaVazia: Entrega = { 
+          id: 'nova-1', 
+          nome: '', 
+          data: '', 
+          entregaveis: '', 
+          statusEntregaId: statusEntrega.length > 0 ? statusEntrega[0].id : null 
+        };
+        
+        console.log('📝 Criando entrega vazia para status sem entregas');
+        setEntregas([entregaVazia]);
+      }
     }
     
     setEntregasCarregadas(true);
-  }, [entregasExistentes, statusEntrega, status.id, setEntregas, entregasCarregadas]);
+  }, [entregasExistentes, statusEntrega, status.id, setEntregas, entregasCarregadas, isLoading, status.entrega1, status.entrega2, status.entrega3, status.entregaveis1, status.entregaveis2, status.entregaveis3, status.data_marco1, status.data_marco2, status.data_marco3, status.status_entrega1_id, status.status_entrega2_id, status.status_entrega3_id]);
+
+  // Função para recarregar entregas
+  const recarregarEntregas = () => {
+    console.log('🔄 Recarregando entregas para status:', status.id);
+    setEntregasCarregadas(false);
+    refetch();
+  };
 
   return {
     entregas,
@@ -85,6 +140,7 @@ export function useStatusEntregasLoader(status: StatusProjeto) {
     removerEntrega,
     atualizarEntrega,
     validarEntregas,
-    obterEntregasParaSalvar
+    obterEntregasParaSalvar,
+    recarregarEntregas
   };
 }

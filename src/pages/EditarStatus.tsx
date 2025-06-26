@@ -7,10 +7,13 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { EditarStatusForm } from '@/components/forms/EditarStatusForm';
 import { useAuth } from '@/hooks/useAuth';
+import { useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function EditarStatus() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { data: statusList, isLoading, error } = useStatusList();
   const { isAdmin } = useAuth();
   
@@ -20,6 +23,14 @@ export default function EditarStatus() {
   console.log('EditarStatus - StatusList:', statusList);
   console.log('EditarStatus - Loading:', isLoading);
   console.log('EditarStatus - Error:', error);
+
+  // Invalidar cache das entregas quando a página carrega
+  useEffect(() => {
+    if (id) {
+      console.log('🔄 Invalidando cache de entregas para status:', id);
+      queryClient.invalidateQueries({ queryKey: ['entregas-status-edit', Number(id)] });
+    }
+  }, [id, queryClient]);
 
   // Validar se o ID existe e é um número válido
   if (!id || isNaN(Number(id))) {

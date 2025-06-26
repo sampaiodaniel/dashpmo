@@ -14,7 +14,8 @@ export function useEditarStatusForm(status: StatusProjeto) {
     removerEntrega,
     atualizarEntrega,
     validarEntregas,
-    obterEntregasParaSalvar
+    obterEntregasParaSalvar,
+    recarregarEntregas
   } = useStatusEntregasLoader(status);
 
   const { carregando, handleSubmit } = useStatusFormSubmit({
@@ -36,6 +37,7 @@ export function useEditarStatusForm(status: StatusProjeto) {
     removerEntrega,
     atualizarEntrega,
     validarEntregas,
-    obterEntregasParaSalvar
+    obterEntregasParaSalvar,
+    recarregarEntregas
   };
 }
