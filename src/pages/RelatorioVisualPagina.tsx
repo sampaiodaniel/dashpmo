@@ -1,8 +1,10 @@
+
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Printer } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { RelatorioVisualContent } from '@/components/relatorios/visual/RelatorioVisualContent';
+import { prepareImageForReport } from '@/utils/imageUtils';
 
 interface DadosRelatorioVisual {
   carteira?: string;
@@ -18,6 +20,7 @@ export default function RelatorioVisualPagina() {
   const navigate = useNavigate();
   const [dados, setDados] = useState<DadosRelatorioVisual | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isGeneratingHtml, setIsGeneratingHtml] = useState(false);
 
   useEffect(() => {
     console.log('🔄 RelatorioVisualPagina: useEffect executado');
@@ -141,179 +144,361 @@ export default function RelatorioVisualPagina() {
     };
   }, [searchParams, navigate]);
 
-  const handlePrint = () => {
-    const printStyles = `
+  const handleGenerateHtml = async () => {
+    if (isGeneratingHtml) return;
+    setIsGeneratingHtml(true);
+
+    try {
+      const element = document.getElementById('relatorio-content');
+      if (!element) {
+        throw new Error('Elemento do relatório não encontrado');
+      }
+
+      // Aguardar renderização completa
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Buscar todas as imagens no elemento
+      const images = Array.from(element.querySelectorAll('img'));
+      const imagePromises = images.map(async (img) => {
+        try {
+          // Tentar converter imagem para base64
+          const dataURL = await prepareImageForReport(img.src);
+          return { originalSrc: img.src, dataURL };
+        } catch (error) {
+          console.warn(`Erro ao processar imagem ${img.src}:`, error);
+          return { originalSrc: img.src, dataURL: img.src };
+        }
+      });
+
+      const imageData = await Promise.all(imagePromises);
+
+      // Clonar o elemento para não modificar o original
+      const clonedElement = element.cloneNode(true) as HTMLElement;
+
+      // Substituir imagens por suas versões em base64
+      const clonedImages = Array.from(clonedElement.querySelectorAll('img'));
+      clonedImages.forEach((img, index) => {
+        if (imageData[index]) {
+          img.src = imageData[index].dataURL;
+        }
+      });
+
+      // Criar HTML completo e auto-contido
+      const fullHTML = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Relatório Visual - ${dados?.carteira || dados?.responsavel || 'Dashboard'}</title>
+  
+  <!-- Google Fonts incorporada -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <style>
+    /* Reset CSS */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact !important;
+      color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.6;
+      color: #1B365D;
+      background: #F8FAFC;
+      padding: 20px;
+      min-width: 1200px;
+    }
+
+    /* Tailwind-like utilities */
+    .space-y-8 > * + * { margin-top: 2rem; }
+    .space-y-6 > * + * { margin-top: 1.5rem; }
+    .space-y-4 > * + * { margin-top: 1rem; }
+    .space-y-3 > * + * { margin-top: 0.75rem; }
+    .space-y-2 > * + * { margin-top: 0.5rem; }
+    .space-y-1 > * + * { margin-top: 0.25rem; }
+
+    .grid { display: grid; }
+    .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+    .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .md\\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .md\\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .md\\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .lg\\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+    .gap-8 { gap: 2rem; }
+    .gap-6 { gap: 1.5rem; }
+    .gap-4 { gap: 1rem; }
+    .gap-3 { gap: 0.75rem; }
+    .gap-2 { gap: 0.5rem; }
+    .gap-1 { gap: 0.25rem; }
+
+    .flex { display: flex; }
+    .flex-col { flex-direction: column; }
+    .flex-row { flex-direction: row; }
+    .items-center { align-items: center; }
+    .items-start { align-items: flex-start; }
+    .items-baseline { align-items: baseline; }
+    .justify-center { justify-content: center; }
+    .justify-between { justify-content: space-between; }
+    .justify-start { justify-content: flex-start; }
+
+    .text-center { text-align: center; }
+    .text-left { text-align: left; }
+    .text-right { text-align: right; }
+
+    .font-bold { font-weight: 700; }
+    .font-semibold { font-weight: 600; }
+    .font-medium { font-weight: 500; }
+    .font-normal { font-weight: 400; }
+
+    .text-4xl { font-size: 2.25rem; line-height: 2.5rem; }
+    .text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
+    .text-2xl { font-size: 1.5rem; line-height: 2rem; }
+    .text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+    .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+    .text-base { font-size: 1rem; line-height: 1.5rem; }
+    .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+    .text-xs { font-size: 0.75rem; line-height: 1rem; }
+
+    .mb-12 { margin-bottom: 3rem; }
+    .mb-8 { margin-bottom: 2rem; }
+    .mb-6 { margin-bottom: 1.5rem; }
+    .mb-4 { margin-bottom: 1rem; }
+    .mb-3 { margin-bottom: 0.75rem; }
+    .mb-2 { margin-bottom: 0.5rem; }
+    .mb-1 { margin-bottom: 0.25rem; }
+    .mt-8 { margin-top: 2rem; }
+    .mt-6 { margin-top: 1.5rem; }
+    .mt-4 { margin-top: 1rem; }
+    .mt-0\\.5 { margin-top: 0.125rem; }
+
+    .p-8 { padding: 2rem; }
+    .p-6 { padding: 1.5rem; }
+    .p-4 { padding: 1rem; }
+    .p-3 { padding: 0.75rem; }
+    .p-2 { padding: 0.5rem; }
+    .px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
+    .py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+    .pb-4 { padding-bottom: 1rem; }
+    .pb-8 { padding-bottom: 2rem; }
+    .pt-8 { padding-top: 2rem; }
+
+    .w-full { width: 100%; }
+    .w-8 { width: 2rem; }
+    .h-8 { height: 2rem; }
+    .min-h-\\[120px\\] { min-height: 120px; }
+    .max-width-none { max-width: none; }
+    .min-width-1200px { min-width: 1200px; }
+
+    .bg-white { background-color: white; }
+    .bg-gray-50 { background-color: #F9FAFB; }
+    .bg-gray-100 { background-color: #F3F4F6; }
+    .bg-green-500 { background-color: #10B981; }
+    .bg-yellow-500 { background-color: #F59E0B; }
+    .bg-red-500 { background-color: #EF4444; }
+    .bg-gray-400 { background-color: #9CA3AF; }
+
+    .text-\\[\\#1B365D\\] { color: #1B365D; }
+    .text-\\[\\#6B7280\\] { color: #6B7280; }
+    .text-\\[\\#A6926B\\] { color: #A6926B; }
+    .text-\\[\\#F59E0B\\] { color: #F59E0B; }
+    .text-\\[\\#2E5984\\] { color: #2E5984; }
+    .text-white { color: white; }
+
+    .rounded-lg { border-radius: 0.5rem; }
+    .rounded-t-lg { border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem; }
+    .rounded-b-lg { border-bottom-left-radius: 0.5rem; border-bottom-right-radius: 0.5rem; }
+    .rounded-full { border-radius: 9999px; }
+
+    .border { border: 1px solid #E5E7EB; }
+    .border-b { border-bottom: 1px solid #E5E7EB; }
+    .border-gray-200 { border-color: #E5E7EB; }
+    .border-l-4 { border-left: 4px solid; }
+    .border-\\[\\#A6926B\\] { border-color: #A6926B; }
+    .border-\\[\\#2E5984\\] { border-color: #2E5984; }
+    .border-\\[\\#F59E0B\\] { border-color: #F59E0B; }
+    .border-\\[\\#6B7280\\] { border-color: #6B7280; }
+    .border-2 { border-width: 2px; }
+    .border-white { border-color: white; }
+    .border-opacity-30 { border-opacity: 0.3; }
+
+    .shadow-md { box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); }
+    .shadow-lg { box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); }
+
+    .italic { font-style: italic; }
+    .leading-relaxed { line-height: 1.625; }
+    .leading-snug { line-height: 1.375; }
+    .whitespace-nowrap { white-space: nowrap; }
+    .opacity-75 { opacity: 0.75; }
+    .flex-1 { flex: 1 1 0%; }
+    .flex-shrink-0 { flex-shrink: 0; }
+
+    .last\\:mb-0:last-child { margin-bottom: 0; }
+    .last\\:border-b-0:last-child { border-bottom: 0; }
+    .last\\:pb-0:last-child { padding-bottom: 0; }
+
+    /* Timeline específico */
+    .timeline-horizontal {
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+    }
+
+    .timeline-box {
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+    }
+
+    .timeline-connector {
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+    }
+
+    .timeline-marker {
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+    }
+
+    .timeline-week-marker {
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+    }
+
+    /* Tabelas */
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1rem 0;
+    }
+
+    th, td {
+      border: 1px solid #E5E7EB;
+      padding: 12px 8px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #F9FAFB;
+      font-weight: 600;
+    }
+
+    /* Imagens */
+    img {
+      max-width: 100%;
+      height: auto;
+    }
+
+    /* Links */
+    a {
+      color: #A6926B;
+      text-decoration: none;
+    }
+
+    a:hover {
+      color: #8B7355;
+      text-decoration: underline;
+    }
+
+    /* Botões */
+    button {
+      cursor: pointer;
+      background: transparent;
+      border: none;
+      font: inherit;
+    }
+
+    /* Print styles */
+    @media print {
+      body {
+        background: white !important;
+        padding: 10mm !important;
+      }
+
       @page {
-        margin: 0.5in;
+        margin: 10mm;
         size: A4 landscape;
-        /* Remover headers e footers */
-        @top-left { content: ""; }
-        @top-center { content: ""; }
-        @top-right { content: ""; }
-        @bottom-left { content: ""; }
-        @bottom-center { content: ""; }
-        @bottom-right { content: ""; }
       }
-      
-      @media print {
-        body * { 
-          visibility: hidden; 
+
+      .space-y-8 > * + * { margin-top: 1rem !important; }
+      .space-y-6 > * + * { margin-top: 0.75rem !important; }
+    }
+
+    /* Smooth scroll para links internos */
+    html {
+      scroll-behavior: smooth;
+    }
+  </style>
+</head>
+<body>
+  <div style="max-width: 1200px; margin: 0 auto;">
+    ${clonedElement.outerHTML}
+  </div>
+
+  <script>
+    // Script para navegação interna funcionar
+    document.addEventListener('DOMContentLoaded', function() {
+      // Implementar funcionalidade de "Voltar ao Overview"
+      const voltarButtons = document.querySelectorAll('button');
+      voltarButtons.forEach(button => {
+        if (button.textContent.includes('Voltar ao Overview')) {
+          button.addEventListener('click', function() {
+            const element = document.querySelector('[data-overview]');
+            if (element) {
+              element.scrollIntoView({ behavior: 'smooth' });
+            }
+          });
         }
-        
-        #relatorio-content, #relatorio-content * { 
-          visibility: visible; 
-        }
-        
-        #relatorio-content { 
-          position: absolute; 
-          left: 0; 
-          top: 0; 
-          width: 100% !important;
-          max-width: none !important;
-          min-width: 1200px !important;
-          font-size: 12px !important;
-          background: white !important;
-          padding: 0 !important;
-          margin: 0 !important;
-        }
-        
-        /* Layout em grid forçado */
-        .grid {
-          display: grid !important;
-          width: 100% !important;
-        }
-        
-        .lg\\:grid-cols-2 {
-          grid-template-columns: repeat(2, 1fr) !important;
-          gap: 1.5rem !important;
-        }
-        
-        .md\\:grid-cols-3 {
-          grid-template-columns: repeat(3, 1fr) !important;
-        }
-        
-        .md\\:grid-cols-4 {
-          grid-template-columns: repeat(4, 1fr) !important;
-        }
-        
-        /* Seção específica dos gráficos */
-        .space-y-6 > div:first-child {
-          width: 100% !important;
-        }
-        
-        .space-y-6 > div:first-child .grid {
-          display: grid !important;
-          grid-template-columns: repeat(2, 1fr) !important;
-          gap: 1.5rem !important;
-          width: 100% !important;
-        }
-        
-        /* Cards dos gráficos com tamanho fixo */
-        .space-y-6 > div:first-child .grid > div {
-          width: 100% !important;
-          min-width: 350px !important;
-          max-width: none !important;
-        }
-        
-        /* Gráficos com altura fixa */
-        .space-y-6 > div:first-child .grid > div .h-\\[300px\\],
-        .space-y-6 > div:first-child .grid > div .h-\\[350px\\] {
-          height: 280px !important;
-        }
-        
-        /* ResponsiveContainer forçado */
-        .recharts-responsive-container {
-          width: 100% !important;
-          height: 280px !important;
-        }
-        
-        .no-print { 
-          display: none !important; 
-        }
-        
-        .space-y-8 > * + * {
-          margin-top: 1.5rem !important;
-        }
-        
-        /* Garantir que cores inline apareçam */
-        * {
-          color-adjust: exact !important;
-          -webkit-print-color-adjust: exact !important;
-          print-color-adjust: exact !important;
-        }
-        
-        /* Timeline preservada - não alterar cores */
-        .timeline-horizontal {
-          display: block !important;
-          visibility: visible !important;
-          opacity: 1 !important;
-        }
-        
-        .timeline-box {
-          display: block !important;
-          visibility: visible !important;
-          opacity: 1 !important;
-        }
-        
-        .timeline-connector {
-          display: block !important;
-          visibility: visible !important;
-          opacity: 1 !important;
-        }
-        
-        .timeline-marker {
-          display: block !important;
-          visibility: visible !important;
-          opacity: 1 !important;
-        }
-        
-        .timeline-week-marker {
-          display: block !important;
-          visibility: visible !important;
-          opacity: 1 !important;
-        }
-        
-        /* Tabelas responsivas */
-        table {
-          width: 100% !important;
-          font-size: 10px !important;
-        }
-        
-        /* Texto menor para caber melhor */
-        h1 { font-size: 24px !important; }
-        h2 { font-size: 20px !important; }
-        h3 { font-size: 18px !important; }
-        h4 { font-size: 16px !important; }
-        p, div, span { font-size: 12px !important; }
-        
-        /* Cards com largura fixa */
-        .bg-white {
-          width: 100% !important;
-          max-width: none !important;
-        }
-      }
-      
-      /* Estilos gerais para garantir renderização correta */
-      * {
-        color-adjust: exact !important;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-      }
-    `;
-    
-    const styleElement = document.createElement('style');
-    styleElement.innerHTML = printStyles;
-    document.head.appendChild(styleElement);
-    
-    // Não aguardar - imprimir imediatamente
-    window.print();
-    
-    // Remover estilos após impressão
-    setTimeout(() => {
-      if (document.head.contains(styleElement)) {
-        document.head.removeChild(styleElement);
-      }
-    }, 1000);
+      });
+
+      // Implementar links de navegação para projetos
+      const projetoLinks = document.querySelectorAll('a[href^="#projeto-"]');
+      projetoLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+          e.preventDefault();
+          const targetId = this.getAttribute('href').substring(1);
+          const targetElement = document.getElementById(targetId);
+          if (targetElement) {
+            targetElement.scrollIntoView({ behavior: 'smooth' });
+          }
+        });
+      });
+
+      console.log('Relatório Visual HTML gerado com sucesso!');
+    });
+  </script>
+</body>
+</html>`;
+
+      // Criar e baixar o arquivo HTML
+      const blob = new Blob([fullHTML], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `relatorio-visual-${dados?.carteira || dados?.responsavel || 'dashboard'}-${new Date().toISOString().split('T')[0]}.html`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      console.log('✅ HTML gerado e baixado com sucesso!');
+
+    } catch (error) {
+      console.error('❌ Erro ao gerar HTML:', error);
+      alert('Erro ao gerar HTML: ' + (error instanceof Error ? error.message : error));
+    } finally {
+      setIsGeneratingHtml(false);
+    }
   };
 
   const handleVoltar = () => {
@@ -338,7 +523,7 @@ export default function RelatorioVisualPagina() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 bg-red-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-            <Printer className="h-8 w-8 text-red-600" />
+            <Download className="h-8 w-8 text-red-600" />
           </div>
           <div className="text-red-600 mb-4">Erro ao carregar dados do relatório</div>
           <Button onClick={handleVoltar} variant="outline">
@@ -365,11 +550,12 @@ export default function RelatorioVisualPagina() {
               <Button 
                 variant="outline" 
                 size="sm" 
-                onClick={handlePrint}
+                onClick={handleGenerateHtml}
+                disabled={isGeneratingHtml}
                 className="flex items-center gap-2"
               >
-                <Printer className="h-4 w-4" />
-                Imprimir
+                <Download className="h-4 w-4" />
+                {isGeneratingHtml ? 'Gerando HTML...' : 'Gerar HTML'}
               </Button>
             </div>
           </div>
@@ -382,4 +568,4 @@ export default function RelatorioVisualPagina() {
       </div>
     </div>
   );
-} 
+}
