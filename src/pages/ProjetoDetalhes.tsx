@@ -1,3 +1,4 @@
+
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
@@ -175,8 +176,9 @@ export default function ProjetoDetalhes() {
 
       <HistoricoProjetoModal 
         projetoId={projeto.id}
-        isOpen={isHistoricoOpen}
-        onClose={() => setIsHistoricoOpen(false)}
+        nomeProjeto={projeto.nome_projeto}
+        aberto={isHistoricoOpen}
+        onFechar={() => setIsHistoricoOpen(false)}
       />
     </Layout>
   );
