@@ -211,58 +211,82 @@ export class HtmlGenerator {
       }
     });
 
-    // Processar setas de navegação da timeline - CORRIGIDO
-    const timelineButtons = clonedElement.querySelectorAll('button');
-    timelineButtons.forEach(button => {
-      const buttonHTML = button.innerHTML;
-      const isLeftArrow = buttonHTML.includes('ChevronLeft') || button.textContent?.includes('←');
-      const isRightArrow = buttonHTML.includes('ChevronRight') || button.textContent?.includes('→');
+    // Processar setas de navegação da timeline - IMPLEMENTAÇÃO CORRIGIDA
+    const timelineCards = clonedElement.querySelectorAll('.timeline-card');
+    timelineCards.forEach((timelineCard, cardIndex) => {
+      // Encontrar todos os botões dentro deste card
+      const buttons = timelineCard.querySelectorAll('button');
       
-      if (isLeftArrow || isRightArrow) {
-        const direction = isLeftArrow ? -1 : 1;
-        button.setAttribute('onclick', `
-          event.preventDefault();
-          event.stopPropagation();
+      buttons.forEach(button => {
+        const buttonHTML = button.innerHTML;
+        const isLeftArrow = buttonHTML.includes('ChevronLeft') || button.textContent?.includes('←');
+        const isRightArrow = buttonHTML.includes('ChevronRight') || button.textContent?.includes('→');
+        
+        if (isLeftArrow || isRightArrow) {
+          const direction = isLeftArrow ? -1 : 1;
           
-          // Encontrar o container da timeline mais próximo
-          let timelineCard = this.closest('.timeline-card');
-          if (!timelineCard) {
-            timelineCard = this.closest('[class*="timeline"]');
-          }
+          // Criar um ID único para este card de timeline
+          const timelineId = `timeline-card-${cardIndex}`;
+          timelineCard.setAttribute('id', timelineId);
           
-          if (timelineCard) {
-            // Procurar por container com scroll horizontal
-            const scrollContainer = timelineCard.querySelector('.overflow-x-auto') || 
-                                  timelineCard.querySelector('[style*="overflow-x"]') ||
-                                  timelineCard;
+          button.setAttribute('onclick', `
+            event.preventDefault();
+            event.stopPropagation();
             
-            if (scrollContainer && scrollContainer.scrollLeft !== undefined) {
-              scrollContainer.scrollLeft += ${direction} * 300;
-            } else {
-              // Fallback: tentar encontrar elementos de timeline para simular paginação
-              const timelineBoxes = timelineCard.querySelectorAll('.timeline-box');
+            const timelineCard = document.getElementById('${timelineId}');
+            if (!timelineCard) return false;
+            
+            // Encontrar todas as páginas de timeline dentro deste card
+            const timelineDesktop = timelineCard.querySelector('.timeline-desktop');
+            const timelineMobile = timelineCard.querySelector('.timeline-mobile');
+            
+            if (timelineDesktop && !timelineDesktop.style.display === 'none') {
+              // Navegação para desktop - simular paginação
+              const timelineBoxes = timelineDesktop.querySelectorAll('.timeline-box');
               if (timelineBoxes.length > 0) {
-                const currentVisible = Array.from(timelineBoxes).find(box => {
-                  const rect = box.getBoundingClientRect();
-                  const containerRect = timelineCard.getBoundingClientRect();
-                  return rect.left >= containerRect.left && rect.right <= containerRect.right;
-                });
+                // Encontrar qual box está atualmente visível
+                let currentVisibleIndex = 0;
                 
-                if (currentVisible) {
-                  const currentIndex = Array.from(timelineBoxes).indexOf(currentVisible);
-                  const targetIndex = Math.max(0, Math.min(timelineBoxes.length - 1, currentIndex + ${direction}));
-                  const targetBox = timelineBoxes[targetIndex];
+                // Procurar por um indicador de página atual ou usar o primeiro como padrão
+                const pageIndicator = timelineCard.querySelector('[data-current-page]');
+                if (pageIndicator) {
+                  currentVisibleIndex = parseInt(pageIndicator.getAttribute('data-current-page') || '0');
+                }
+                
+                // Calcular nova página (assumindo 3 boxes por página)
+                const boxesPerPage = 3;
+                const currentPage = Math.floor(currentVisibleIndex / boxesPerPage);
+                const newPage = Math.max(0, currentPage + ${direction});
+                const newIndex = newPage * boxesPerPage;
+                
+                // Scroll para o primeiro box da nova página
+                if (newIndex < timelineBoxes.length) {
+                  const targetBox = timelineBoxes[newIndex];
                   if (targetBox) {
-                    targetBox.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                    targetBox.scrollIntoView({ 
+                      behavior: 'smooth', 
+                      block: 'nearest', 
+                      inline: 'center' 
+                    });
                   }
                 }
               }
+            } else if (timelineMobile) {
+              // Navegação para mobile - scroll vertical
+              const timelineContainer = timelineMobile.querySelector('[style*="flex-direction: column"]');
+              if (timelineContainer) {
+                timelineContainer.scrollTop += ${direction} * 200;
+              }
             }
-          }
+            
+            return false;
+          `);
           
-          return false;
-        `);
-      }
+          // Garantir que o botão tenha cursor pointer
+          const buttonEl = button as HTMLElement;
+          buttonEl.style.cursor = 'pointer';
+        }
+      });
     });
   }
 
