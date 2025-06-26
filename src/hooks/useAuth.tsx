@@ -1,23 +1,32 @@
+
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { verificarCriacaoNoLogin } from '@/utils/debugIncidentes';
+import { toast } from '@/hooks/use-toast';
 
-interface Usuario {
+export interface Usuario {
   id: number;
+  uuid: string;
   nome: string;
   email: string;
-  tipo_usuario: 'admin' | 'usuario' | 'visualizador';
+  tipo_usuario: 'Admin' | 'Gestor' | 'Usuario';
+  areas_atuacao: string[];
   areas_acesso: string[];
+  ativo: boolean;
+  senha_padrao: boolean;
 }
 
 interface AuthContextType {
   usuario: Usuario | null;
   userUuid: string | null;
   isLoading: boolean;
+  carregando: boolean;
   login: (email: string, senha: string) => Promise<boolean>;
   logout: () => void;
   isAdmin: () => boolean;
+  isGestor: () => boolean;
   canAccess: (area: string) => boolean;
+  atualizarSenha: (senhaAtual: string, novaSenha: string) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -50,11 +59,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // Mapear tipos de usuário do banco para a interface
           const usuarioMapeado: Usuario = {
             id: data.id,
+            uuid: `user-${data.id}`,
             nome: data.nome,
             email: data.email,
-            tipo_usuario: data.tipo_usuario === 'Admin' ? 'admin' : 
-                         data.tipo_usuario === 'GP' ? 'usuario' : 'visualizador',
-            areas_acesso: data.areas_acesso || []
+            tipo_usuario: data.tipo_usuario as 'Admin' | 'Gestor' | 'Usuario',
+            areas_atuacao: data.areas_atuacao || [],
+            areas_acesso: data.areas_acesso || [],
+            ativo: data.ativo,
+            senha_padrao: data.senha_padrao
           };
           setUsuario(usuarioMapeado);
           // Buscar UUID do usuário autenticado no Supabase Auth
@@ -84,10 +96,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!usuario) {
           setUsuario({
             id: -1,
+            uuid: `user-${authUser.user.id}`,
             nome: authUser.user.email || 'Usuário Supabase',
             email: authUser.user.email || '',
-            tipo_usuario: 'visualizador',
-            areas_acesso: []
+            tipo_usuario: 'Usuario',
+            areas_atuacao: [],
+            areas_acesso: [],
+            ativo: true,
+            senha_padrao: false
           });
           console.log('👤 Usuário local mínimo criado via Supabase Auth:', authUser.user.email);
         }
@@ -103,10 +119,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!usuario) {
           setUsuario({
             id: -1,
+            uuid: `user-${session.user.id}`,
             nome: session.user.email || 'Usuário Supabase',
             email: session.user.email || '',
-            tipo_usuario: 'visualizador',
-            areas_acesso: []
+            tipo_usuario: 'Usuario',
+            areas_atuacao: [],
+            areas_acesso: [],
+            ativo: true,
+            senha_padrao: false
           });
           console.log('👤 Usuário local mínimo criado via onAuthStateChange:', session.user.email);
         }
@@ -131,14 +151,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .single();
 
       if (error || !data) {
-        console.error('Usuário não encontrado ou inativo');
+        toast({
+          title: "Erro no login",
+          description: "Email ou senha incorretos",
+          variant: "destructive",
+        });
         return false;
       }
 
       // Verificar senha - comparar com hash armazenado
       const senhaHash = btoa(senha); // Base64 encoding simples
       if (data.senha_hash !== senhaHash) {
-        console.error('Senha incorreta');
+        toast({
+          title: "Erro no login",
+          description: "Email ou senha incorretos",
+          variant: "destructive",
+        });
         return false;
       }
 
@@ -151,11 +179,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Mapear tipos de usuário do banco para a interface
       const usuarioMapeado: Usuario = {
         id: data.id,
+        uuid: `user-${data.id}`,
         nome: data.nome,
         email: data.email,
-        tipo_usuario: data.tipo_usuario === 'Admin' ? 'admin' : 
-                     data.tipo_usuario === 'GP' ? 'usuario' : 'visualizador',
-        areas_acesso: data.areas_acesso || []
+        tipo_usuario: data.tipo_usuario as 'Admin' | 'Gestor' | 'Usuario',
+        areas_atuacao: data.areas_atuacao || [],
+        areas_acesso: data.areas_acesso || [],
+        ativo: data.ativo,
+        senha_padrao: data.senha_padrao
       };
 
       // Salvar no localStorage
@@ -167,7 +198,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Buscar UUID do usuário autenticado no Supabase Auth
       const { data: authUser } = await supabase.auth.getUser();
       setUserUuid(authUser?.user?.id || null);
-      console.log('✅ Login realizado com sucesso:', usuarioMapeado.nome);
+
+      toast({
+        title: "Login realizado com sucesso",
+        description: `Bem-vindo, ${data.nome}!`,
+      });
       
       // INVESTIGAÇÃO: Verificar criação de incidentes após login
       verificarCriacaoNoLogin();
@@ -175,6 +210,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return true;
     } catch (error) {
       console.error('Erro no login:', error);
+      toast({
+        title: "Erro no login",
+        description: "Erro interno do sistema",
+        variant: "destructive",
+      });
       return false;
     } finally {
       setIsLoading(false);
@@ -186,11 +226,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('pmo_user');
     setUsuario(null);
     setUserUuid(null);
+    toast({
+      title: "Logout realizado",
+      description: "Você foi desconectado com sucesso",
+    });
     console.log('👋 Logout realizado');
   };
 
   const isAdmin = () => {
-    return usuario?.tipo_usuario === 'admin';
+    return usuario?.tipo_usuario === 'Admin';
+  };
+
+  const isGestor = () => {
+    return usuario?.tipo_usuario === 'Gestor' || usuario?.tipo_usuario === 'Admin';
   };
 
   const canAccess = (area: string) => {
@@ -199,15 +247,70 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return usuario.areas_acesso?.includes(area) || false;
   };
 
+  const atualizarSenha = async (senhaAtual: string, novaSenha: string): Promise<boolean> => {
+    if (!usuario) return false;
+
+    try {
+      // Verificar senha atual
+      const senhaAtualHash = btoa(senhaAtual);
+      const { data: userData, error: userError } = await supabase
+        .from('usuarios')
+        .select('senha_hash')
+        .eq('id', usuario.id)
+        .single();
+
+      if (userError || !userData || userData.senha_hash !== senhaAtualHash) {
+        toast({
+          title: "Erro",
+          description: "Senha atual incorreta",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      // Atualizar senha
+      const novaSenhaHash = btoa(novaSenha);
+      const { error } = await supabase
+        .from('usuarios')
+        .update({ 
+          senha_hash: novaSenhaHash,
+          senha_padrao: false 
+        })
+        .eq('id', usuario.id);
+
+      if (error) {
+        throw error;
+      }
+
+      setUsuario(prev => prev ? { ...prev, senha_padrao: false } : null);
+      toast({
+        title: "Sucesso",
+        description: "Senha atualizada com sucesso",
+      });
+      return true;
+    } catch (error) {
+      console.error('Erro ao atualizar senha:', error);
+      toast({
+        title: "Erro",
+        description: "Erro interno do sistema",
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
+
   return (
     <AuthContext.Provider value={{
       usuario,
       userUuid,
       isLoading,
+      carregando: isLoading, // Alias para compatibilidade
       login,
       logout,
       isAdmin,
-      canAccess
+      isGestor,
+      canAccess,
+      atualizarSenha
     }}>
       {children}
     </AuthContext.Provider>
