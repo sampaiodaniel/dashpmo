@@ -29,7 +29,14 @@ export function useEditarProjetoForm({ projeto, onSuccess }: UseEditarProjetoFor
     carteira_terciaria: projeto.carteira_terciaria || '',
     equipe: projeto.equipe || '',
     finalizacao_prevista: projeto.finalizacao_prevista && projeto.finalizacao_prevista !== 'TBD' 
-      ? new Date(projeto.finalizacao_prevista) 
+      ? (() => {
+          // Converter data do banco evitando problemas de timezone
+          if (typeof projeto.finalizacao_prevista === 'string') {
+            const [year, month, day] = projeto.finalizacao_prevista.split('-').map(Number);
+            return new Date(year, month - 1, day);
+          }
+          return new Date(projeto.finalizacao_prevista);
+        })()
       : null,
   });
 

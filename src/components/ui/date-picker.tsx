@@ -1,3 +1,4 @@
+
 import * as React from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -13,8 +14,8 @@ import {
 } from "@/components/ui/popover";
 
 interface DatePickerProps {
-  date?: Date;
-  onDateChange: (date: Date | undefined) => void;
+  date?: Date | null;
+  onDateChange: (date: Date | null) => void;
   placeholder?: string;
   disabled?: boolean;
 }
@@ -28,13 +29,24 @@ export function DatePicker({
   const [open, setOpen] = React.useState(false);
 
   const handleDateSelect = (selectedDate: Date | undefined) => {
-    onDateChange(selectedDate);
-    setOpen(false); // Fechar o popover após selecionar a data
+    // Garantir que a data selecionada seja tratada corretamente
+    if (selectedDate) {
+      // Criar uma nova data usando os valores locais para evitar problemas de timezone
+      const localDate = new Date(
+        selectedDate.getFullYear(),
+        selectedDate.getMonth(),
+        selectedDate.getDate()
+      );
+      onDateChange(localDate);
+    } else {
+      onDateChange(null);
+    }
+    setOpen(false);
   };
 
   const handleClearDate = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Evitar que o popover abra
-    onDateChange(undefined);
+    e.stopPropagation();
+    onDateChange(null);
   };
 
   return (
@@ -64,11 +76,12 @@ export function DatePicker({
       <PopoverContent className="w-auto p-0" align="start">
         <Calendar
           mode="single"
-          selected={date}
+          selected={date || undefined}
           onSelect={handleDateSelect}
           disabled={(date) => date < new Date("2020-01-01")}
           initialFocus
           locale={ptBR}
+          className="pointer-events-auto"
         />
         {date && (
           <div className="p-3 border-t">
@@ -77,7 +90,7 @@ export function DatePicker({
               size="sm"
               className="w-full"
               onClick={() => {
-                onDateChange(undefined);
+                onDateChange(null);
                 setOpen(false);
               }}
             >
@@ -88,4 +101,4 @@ export function DatePicker({
       </PopoverContent>
     </Popover>
   );
-} 
+}
