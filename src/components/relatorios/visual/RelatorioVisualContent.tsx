@@ -1,3 +1,4 @@
+
 import { MetricasVisuais } from './MetricasVisuais';
 import { GraficosIndicadores } from './GraficosIndicadores';
 import { TimelineEntregas } from './TimelineEntregas';
@@ -263,7 +264,7 @@ export function RelatorioVisualContent({ dados }: RelatorioVisualContentProps) {
                 </div>
 
                 {/* Timeline de entregas do projeto específico */}
-                <div className="mb-8" id={`timeline-${projeto.id}`}>
+                <div className="mb-8" id={`timeline-${projeto.id}`} data-projeto-id={projeto.id}>
                   <TimelineEntregas 
                     projetos={[projeto]} 
                     forceMobile={

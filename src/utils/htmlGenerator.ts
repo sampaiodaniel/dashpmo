@@ -155,18 +155,10 @@ export class HtmlGenerator {
       }
     });
 
-    // Processar cliques em linhas de tabela (overview)
+    // Processar cliques em linhas de tabela (overview) - corrigido para capturar corretamente
     const tableRows = clonedElement.querySelectorAll('tr[class*="cursor-pointer"]');
-    tableRows.forEach((row, index) => {
-      row.setAttribute('onclick', `
-        const projetoId = this.getAttribute('data-projeto-id') || '${index + 1}';
-        const target = document.getElementById('projeto-' + projetoId);
-        if (target) {
-          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      `);
-      
-      // Extrair ID do projeto se possível
+    tableRows.forEach((row) => {
+      // Tentar encontrar o ID do projeto a partir do conteúdo da linha
       const cells = row.querySelectorAll('td');
       if (cells.length > 0) {
         const projetoNome = cells[0].textContent?.trim();
@@ -176,7 +168,16 @@ export class HtmlGenerator {
             p.nome_projeto === projetoNome || p.nome === projetoNome
           );
           if (projeto) {
+            row.setAttribute('onclick', `
+              const target = document.getElementById('projeto-${projeto.id}');
+              if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }
+            `);
             row.setAttribute('data-projeto-id', projeto.id.toString());
+            // Garantir que o cursor pointer seja mantido
+            const rowEl = row as HTMLElement;
+            rowEl.style.cursor = 'pointer';
           }
         }
       }
@@ -195,8 +196,8 @@ export class HtmlGenerator {
       }
     });
 
-    // Processar elementos clicáveis da timeline
-    const timelineElements = clonedElement.querySelectorAll('.timeline-box, .timeline-marker');
+    // Processar elementos clicáveis da timeline - melhorado
+    const timelineElements = clonedElement.querySelectorAll('[data-projeto-id]');
     timelineElements.forEach(element => {
       const projetoId = element.getAttribute('data-projeto-id');
       if (projetoId) {
@@ -206,7 +207,27 @@ export class HtmlGenerator {
             target.scrollIntoView({ behavior: 'smooth', block: 'start' });
           }
         `);
-        element.style.cursor = 'pointer';
+        const elementEl = element as HTMLElement;
+        elementEl.style.cursor = 'pointer';
+      }
+    });
+
+    // Processar setas de navegação da timeline
+    const navigationButtons = clonedElement.querySelectorAll('button[class*="timeline"]');
+    navigationButtons.forEach(button => {
+      const buttonText = button.textContent?.trim();
+      if (buttonText === '←' || buttonText === '→') {
+        // Implementar navegação horizontal da timeline
+        button.setAttribute('onclick', `
+          const direction = '${buttonText}' === '←' ? -1 : 1;
+          const timeline = this.closest('.timeline-horizontal') || this.closest('.timeline-container');
+          if (timeline) {
+            const scrollContainer = timeline.querySelector('.overflow-x-auto') || timeline;
+            if (scrollContainer) {
+              scrollContainer.scrollLeft += direction * 200;
+            }
+          }
+        `);
       }
     });
   }
@@ -284,7 +305,7 @@ export class HtmlGenerator {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Relatório Visual - ${this.dados.carteira || this.dados.responsavel || 'Dashboard'}</title>
+    <title>DashPMO - ${this.dados.carteira || 'Dashboard'} - ${this.dados.dataGeracao.toLocaleDateString('pt-BR')}</title>
     <style>
         /* Reset básico e configurações importantes */
         * {
@@ -323,8 +344,7 @@ export class HtmlGenerator {
         a[href^="#"], 
         button[onclick],
         tr[onclick],
-        .timeline-box[onclick],
-        .timeline-marker[onclick] {
+        [data-projeto-id][onclick] {
             cursor: pointer !important;
             transition: all 0.2s ease !important;
         }
@@ -343,8 +363,7 @@ export class HtmlGenerator {
             background-color: #F8FAFC !important;
         }
         
-        .timeline-box[onclick]:hover,
-        .timeline-marker[onclick]:hover {
+        [data-projeto-id][onclick]:hover {
             opacity: 0.8 !important;
             transform: scale(1.02) !important;
         }
@@ -396,7 +415,7 @@ export class HtmlGenerator {
     ${clonedElement.outerHTML}
     
     <script>
-        console.log('Relatório HTML carregado com sucesso!');
+        console.log('DashPMO HTML carregado com sucesso!');
         
         // Implementar navegação interna robusta
         document.addEventListener('DOMContentLoaded', function() {
@@ -422,6 +441,7 @@ export class HtmlGenerator {
             console.log('Links configurados:', document.querySelectorAll('a[href^="#"]').length);
             console.log('Botões configurados:', document.querySelectorAll('button[onclick]').length);
             console.log('Linhas clicáveis:', document.querySelectorAll('tr[onclick]').length);
+            console.log('Elementos timeline clicáveis:', document.querySelectorAll('[data-projeto-id][onclick]').length);
         });
         
         // Função auxiliar para scroll suave
@@ -447,7 +467,12 @@ export class HtmlGenerator {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `relatorio-visual-${this.dados.carteira || this.dados.responsavel || 'dashboard'}-${new Date().toISOString().split('T')[0]}.html`;
+    
+    // Formato de nome: DashPMO - [Carteira] - [DATA_GERAÇÃO].html
+    const dataFormatada = this.dados.dataGeracao.toLocaleDateString('pt-BR').replace(/\//g, '-');
+    const carteira = this.dados.carteira || this.dados.responsavel || 'Dashboard';
+    a.download = `DashPMO - ${carteira} - ${dataFormatada}.html`;
+    
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
