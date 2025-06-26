@@ -15,7 +15,7 @@ export class HtmlGenerator {
     this.dados = dados;
   }
 
-  // Função para capturar todos os estilos CSS ativos
+  // Função para capturar TODOS os estilos CSS de forma mais robusta
   private captureAllStyles(): string {
     let allCSS = '';
     
@@ -42,10 +42,16 @@ export class HtmlGenerator {
     return allCSS;
   }
 
-  // Função para converter imagem para base64
+  // Função melhorada para converter imagem para base64
   private imageToBase64(img: HTMLImageElement): Promise<string> {
     return new Promise((resolve) => {
       try {
+        // Se a imagem já é base64, retorna como está
+        if (img.src.startsWith('data:')) {
+          resolve(img.src);
+          return;
+        }
+
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         
@@ -54,17 +60,12 @@ export class HtmlGenerator {
           return;
         }
 
-        canvas.width = img.naturalWidth || img.width || 100;
-        canvas.height = img.naturalHeight || img.height || 100;
-        
-        ctx.drawImage(img, 0, 0);
-        
-        try {
-          const dataURL = canvas.toDataURL('image/png', 1.0);
-          resolve(dataURL);
-        } catch (e) {
-          console.warn('Erro ao converter imagem:', e);
-          resolve(img.src);
+        // Aguardar o carregamento da imagem se necessário
+        if (!img.complete) {
+          img.onload = () => this.processImage(img, canvas, ctx, resolve);
+          img.onerror = () => resolve(img.src);
+        } else {
+          this.processImage(img, canvas, ctx, resolve);
         }
       } catch (e) {
         console.warn('Erro no processamento da imagem:', e);
@@ -73,7 +74,21 @@ export class HtmlGenerator {
     });
   }
 
-  // Aplicar estilos computados aos elementos clonados
+  private processImage(img: HTMLImageElement, canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, resolve: (value: string) => void) {
+    canvas.width = img.naturalWidth || img.width || 100;
+    canvas.height = img.naturalHeight || img.height || 100;
+    
+    try {
+      ctx.drawImage(img, 0, 0);
+      const dataURL = canvas.toDataURL('image/png', 1.0);
+      resolve(dataURL);
+    } catch (e) {
+      console.warn('Erro ao converter imagem:', e);
+      resolve(img.src);
+    }
+  }
+
+  // Aplicar estilos computados de forma mais completa
   private applyComputedStyles(originalElement: Element, clonedElement: Element) {
     if (originalElement.nodeType === Node.ELEMENT_NODE && clonedElement.nodeType === Node.ELEMENT_NODE) {
       const originalEl = originalElement as HTMLElement;
@@ -82,25 +97,34 @@ export class HtmlGenerator {
       try {
         const computedStyle = window.getComputedStyle(originalEl);
         
-        // Aplicar estilos importantes
+        // Lista mais abrangente de estilos importantes
         const importantStyles = [
           'display', 'position', 'top', 'left', 'right', 'bottom',
-          'width', 'height', 'margin', 'padding', 'border',
-          'background', 'background-color', 'background-image',
-          'color', 'font-family', 'font-size', 'font-weight',
-          'line-height', 'text-align', 'text-decoration',
-          'flex-direction', 'justify-content', 'align-items',
-          'grid-template-columns', 'grid-template-rows', 'gap',
-          'transform', 'opacity', 'z-index', 'overflow',
-          'border-radius', 'box-shadow', 'visibility'
+          'width', 'height', 'min-width', 'min-height', 'max-width', 'max-height',
+          'margin', 'margin-top', 'margin-right', 'margin-bottom', 'margin-left',
+          'padding', 'padding-top', 'padding-right', 'padding-bottom', 'padding-left',
+          'border', 'border-width', 'border-style', 'border-color', 'border-radius',
+          'background', 'background-color', 'background-image', 'background-size', 'background-position',
+          'color', 'font-family', 'font-size', 'font-weight', 'font-style',
+          'line-height', 'text-align', 'text-decoration', 'text-transform',
+          'flex', 'flex-direction', 'flex-wrap', 'justify-content', 'align-items', 'align-content',
+          'grid', 'grid-template-columns', 'grid-template-rows', 'grid-gap', 'gap',
+          'transform', 'opacity', 'z-index', 'overflow', 'overflow-x', 'overflow-y',
+          'box-shadow', 'visibility', 'white-space', 'word-wrap', 'word-break',
+          'vertical-align', 'list-style', 'cursor', 'transition', 'animation'
         ];
 
         importantStyles.forEach(prop => {
           const value = computedStyle.getPropertyValue(prop);
-          if (value && value !== 'initial' && value !== 'inherit') {
+          if (value && value !== 'initial' && value !== 'inherit' && value !== 'auto') {
             clonedEl.style.setProperty(prop, value, 'important');
           }
         });
+
+        // Preservar classes CSS importantes
+        if (originalEl.className) {
+          clonedEl.className = originalEl.className;
+        }
 
       } catch (e) {
         console.warn('Erro ao aplicar estilos:', e);
@@ -113,12 +137,86 @@ export class HtmlGenerator {
     }
   }
 
+  // Função melhorada para processar links e navegação
+  private processLinksAndNavigation(clonedElement: HTMLElement) {
+    // Processar links de navegação interna (âncoras)
+    const anchorLinks = clonedElement.querySelectorAll('a[href^="#"]');
+    anchorLinks.forEach(link => {
+      const href = link.getAttribute('href');
+      if (href) {
+        link.setAttribute('onclick', `
+          event.preventDefault();
+          const target = document.querySelector('${href}');
+          if (target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+          return false;
+        `);
+      }
+    });
+
+    // Processar cliques em linhas de tabela (overview)
+    const tableRows = clonedElement.querySelectorAll('tr[class*="cursor-pointer"]');
+    tableRows.forEach((row, index) => {
+      row.setAttribute('onclick', `
+        const projetoId = this.getAttribute('data-projeto-id') || '${index + 1}';
+        const target = document.getElementById('projeto-' + projetoId);
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      `);
+      
+      // Extrair ID do projeto se possível
+      const cells = row.querySelectorAll('td');
+      if (cells.length > 0) {
+        const projetoNome = cells[0].textContent?.trim();
+        if (projetoNome) {
+          // Tentar encontrar o ID correspondente nos dados
+          const projeto = this.dados.projetos.find(p => 
+            p.nome_projeto === projetoNome || p.nome === projetoNome
+          );
+          if (projeto) {
+            row.setAttribute('data-projeto-id', projeto.id.toString());
+          }
+        }
+      }
+    });
+
+    // Processar botões "Voltar ao Overview"
+    const backButtons = clonedElement.querySelectorAll('button');
+    backButtons.forEach(button => {
+      if (button.textContent && button.textContent.includes('Voltar ao Overview')) {
+        button.setAttribute('onclick', `
+          const overview = document.querySelector('[data-overview]');
+          if (overview) {
+            overview.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        `);
+      }
+    });
+
+    // Processar elementos clicáveis da timeline
+    const timelineElements = clonedElement.querySelectorAll('.timeline-box, .timeline-marker');
+    timelineElements.forEach(element => {
+      const projetoId = element.getAttribute('data-projeto-id');
+      if (projetoId) {
+        element.setAttribute('onclick', `
+          const target = document.getElementById('projeto-${projetoId}');
+          if (target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        `);
+        element.style.cursor = 'pointer';
+      }
+    });
+  }
+
   async generate(): Promise<void> {
     try {
       console.log('🔄 Iniciando geração de HTML...');
 
       // Aguardar renderização completa
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 3000));
 
       // Capturar o elemento principal do relatório
       const relatorioElement = document.getElementById('relatorio-content');
@@ -128,7 +226,7 @@ export class HtmlGenerator {
 
       console.log('📄 Elemento encontrado, iniciando clonagem...');
 
-      // Clonar o elemento principal
+      // Clonar o elemento principal com mais profundidade
       const clonedElement = relatorioElement.cloneNode(true) as HTMLElement;
       
       console.log('🎨 Aplicando estilos computados...');
@@ -147,35 +245,17 @@ export class HtmlGenerator {
           const originalImg = originalImages[i] as HTMLImageElement;
           const clonedImg = images[i] as HTMLImageElement;
           
-          if (originalImg.complete && originalImg.naturalWidth > 0) {
-            const base64 = await this.imageToBase64(originalImg);
-            clonedImg.src = base64;
-          }
+          const base64 = await this.imageToBase64(originalImg);
+          clonedImg.src = base64;
         } catch (e) {
           console.warn('Erro ao processar imagem:', e);
         }
       }
 
-      console.log('🔗 Processando links...');
+      console.log('🔗 Processando links e navegação...');
 
-      // Tornar links funcionais
-      const links = clonedElement.querySelectorAll('a[href^="#"], button');
-      links.forEach(link => {
-        const href = link.getAttribute('href');
-        if (href && href.startsWith('#')) {
-          link.setAttribute('onclick', `
-            const target = document.querySelector('${href}');
-            if (target) target.scrollIntoView({behavior: 'smooth'});
-            return false;
-          `);
-        } else if (link.tagName === 'BUTTON' && link.textContent?.includes('Voltar ao Overview')) {
-          link.setAttribute('onclick', `
-            const overview = document.querySelector('[data-overview]');
-            if (overview) overview.scrollIntoView({behavior: 'smooth'});
-            return false;
-          `);
-        }
-      });
+      // Processar todos os links e elementos de navegação
+      this.processLinksAndNavigation(clonedElement);
 
       // Capturar todos os estilos CSS
       const allCSS = this.captureAllStyles();
@@ -206,9 +286,9 @@ export class HtmlGenerator {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Relatório Visual - ${this.dados.carteira || this.dados.responsavel || 'Dashboard'}</title>
     <style>
-        /* Reset básico */
+        /* Reset básico e configurações importantes */
         * {
-            box-sizing: border-box;
+            box-sizing: border-box !important;
             -webkit-print-color-adjust: exact !important;
             color-adjust: exact !important;
             print-color-adjust: exact !important;
@@ -221,21 +301,37 @@ export class HtmlGenerator {
             line-height: 1.6;
             color: #1B365D;
             background: #F8FAFC;
+            overflow-x: auto;
         }
         
-        /* Estilos capturados */
+        /* Garantir que containers principais tenham largura adequada */
+        #relatorio-content {
+            min-width: 1200px !important;
+            max-width: none !important;
+            width: 100% !important;
+        }
+        
+        /* Estilos capturados do aplicativo */
         ${allCSS}
         
         /* Garantir navegação suave */
         html {
-            scroll-behavior: smooth;
+            scroll-behavior: smooth !important;
         }
         
-        /* Links funcionais */
+        /* Melhorar aparência dos links funcionais */
+        a[href^="#"], 
+        button[onclick],
+        tr[onclick],
+        .timeline-box[onclick],
+        .timeline-marker[onclick] {
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+        }
+        
         a[href^="#"] {
             color: #A6926B !important;
             text-decoration: none !important;
-            cursor: pointer !important;
         }
         
         a[href^="#"]:hover {
@@ -243,8 +339,14 @@ export class HtmlGenerator {
             text-decoration: underline !important;
         }
         
-        button {
-            cursor: pointer !important;
+        tr[onclick]:hover {
+            background-color: #F8FAFC !important;
+        }
+        
+        .timeline-box[onclick]:hover,
+        .timeline-marker[onclick]:hover {
+            opacity: 0.8 !important;
+            transform: scale(1.02) !important;
         }
         
         /* Força exibição de elementos importantes */
@@ -259,11 +361,33 @@ export class HtmlGenerator {
             opacity: 1 !important;
         }
         
+        /* Melhorar layout de tabelas */
+        table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+        }
+        
+        /* Garantir que elementos flex funcionem */
+        .flex {
+            display: flex !important;
+        }
+        
+        .grid {
+            display: grid !important;
+        }
+        
+        /* Melhorar responsividade */
         @media print {
-            body { margin: 0.5in; }
+            body { 
+                margin: 0.5in; 
+                min-width: 1200px;
+            }
             @page { 
                 margin: 0.5in;
                 size: A4 landscape;
+            }
+            .no-print {
+                display: none !important;
             }
         }
     </style>
@@ -274,32 +398,45 @@ export class HtmlGenerator {
     <script>
         console.log('Relatório HTML carregado com sucesso!');
         
-        // Implementar navegação interna
+        // Implementar navegação interna robusta
         document.addEventListener('DOMContentLoaded', function() {
-            // Links internos
+            console.log('DOM carregado, configurando navegação...');
+            
+            // Configurar smooth scroll para todos os links internos
             document.querySelectorAll('a[href^="#"]').forEach(link => {
                 link.addEventListener('click', function(e) {
                     e.preventDefault();
                     const targetId = this.getAttribute('href').substring(1);
                     const target = document.getElementById(targetId);
                     if (target) {
-                        target.scrollIntoView({ behavior: 'smooth' });
+                        target.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'start',
+                            inline: 'nearest' 
+                        });
                     }
                 });
             });
             
-            // Botões "Voltar ao Overview"
-            document.querySelectorAll('button').forEach(button => {
-                if (button.textContent && button.textContent.includes('Voltar ao Overview')) {
-                    button.addEventListener('click', function() {
-                        const overview = document.querySelector('[data-overview]');
-                        if (overview) {
-                            overview.scrollIntoView({ behavior: 'smooth' });
-                        }
-                    });
-                }
-            });
+            // Log para debug
+            console.log('Links configurados:', document.querySelectorAll('a[href^="#"]').length);
+            console.log('Botões configurados:', document.querySelectorAll('button[onclick]').length);
+            console.log('Linhas clicáveis:', document.querySelectorAll('tr[onclick]').length);
         });
+        
+        // Função auxiliar para scroll suave
+        function scrollToElement(elementId) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start',
+                    inline: 'nearest' 
+                });
+                return true;
+            }
+            return false;
+        }
     </script>
 </body>
 </html>`;

@@ -54,12 +54,12 @@ export function RelatorioVisualContent({ dados }: RelatorioVisualContentProps) {
   return (
     <div className="space-y-8 bg-white w-full" id="relatorio-content" style={{ fontFamily: 'Inter, system-ui, -apple-system, sans-serif' }}>
       {/* Header do Relatório ASA */}
-      <div className="bg-white p-6 rounded-lg shadow-md border-none">
+      <div className="bg-white p-6 rounded-lg shadow-md border-none" id="relatorio-header">
         <RelatorioHeader dados={dadosASAFormat} />
       </div>
 
       {/* Gráficos de Indicadores */}
-      <div className="bg-white p-8 rounded-lg w-full shadow-md">
+      <div className="bg-white p-8 rounded-lg w-full shadow-md" id="indicadores-graficos">
         <div className="pb-4 mb-6">
           <h2 className="text-2xl font-bold text-[#1B365D]">Indicadores e Gráficos</h2>
         </div>
@@ -67,7 +67,7 @@ export function RelatorioVisualContent({ dados }: RelatorioVisualContentProps) {
       </div>
 
       {/* Overview de Projetos por Responsável */}
-      <div className="bg-white p-8 rounded-lg w-full shadow-md" data-overview>
+      <div className="bg-white p-8 rounded-lg w-full shadow-md" data-overview id="overview-projetos">
         <div className="pb-4 mb-6">
           <h2 className="text-2xl font-bold text-[#1B365D]">Overview de Projetos</h2>
         </div>
@@ -75,7 +75,7 @@ export function RelatorioVisualContent({ dados }: RelatorioVisualContentProps) {
       </div>
 
       {/* Detalhamento por Projeto */}
-      <div className="space-y-6 w-full">
+      <div className="space-y-6 w-full" id="detalhamento-projetos">
         <div className="bg-white p-8 rounded-lg w-full shadow-md">
           <div className="pb-4 mb-6">
             <h2 className="text-2xl font-bold text-[#1B365D]">Detalhamento por Projeto</h2>
@@ -263,7 +263,7 @@ export function RelatorioVisualContent({ dados }: RelatorioVisualContentProps) {
                 </div>
 
                 {/* Timeline de entregas do projeto específico */}
-                <div className="mb-8">
+                <div className="mb-8" id={`timeline-${projeto.id}`}>
                   <TimelineEntregas 
                     projetos={[projeto]} 
                     forceMobile={
@@ -282,7 +282,7 @@ export function RelatorioVisualContent({ dados }: RelatorioVisualContentProps) {
 
       {/* Tabela de Incidentes */}
       {dados.incidentes.length > 0 && (
-        <div className="bg-white p-8 rounded-lg w-full shadow-md">
+        <div className="bg-white p-8 rounded-lg w-full shadow-md" id="controle-incidentes">
           <div className="pb-4 mb-6">
             <h2 className="text-2xl font-bold text-[#1B365D]">Controle de Incidentes</h2>
           </div>
@@ -291,7 +291,7 @@ export function RelatorioVisualContent({ dados }: RelatorioVisualContentProps) {
       )}
 
       {/* Footer */}
-      <div className="w-full">
+      <div className="w-full" id="relatorio-footer">
         <RelatorioFooter dados={{
           dataGeracao: dataGeracao,
           carteira: dados.carteira,
