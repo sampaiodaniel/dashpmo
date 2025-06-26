@@ -86,7 +86,7 @@ export function useRelatorioVisual() {
 
       if (statusError) throw statusError;
 
-      // Buscar entregas para cada status apenas da tabela entregas_status
+      // Buscar entregas da nova tabela para cada status
       if (statusProjetos && statusProjetos.length > 0) {
         const statusIds = statusProjetos.map(s => s.id);
         
@@ -99,14 +99,53 @@ export function useRelatorioVisual() {
         if (entregasError) {
           console.error('Erro ao buscar entregas:', entregasError);
         } else {
-          // Anexar entregas a cada status
+          // Anexar entregas a cada status, priorizando EXCLUSIVAMENTE entregas_status
           statusProjetos.forEach((status: any) => {
             const entregasDoStatus = todasEntregas?.filter(e => e.status_id === status.id) || [];
             
-            console.log(`Status ${status.id}: ${entregasDoStatus.length} entregas da tabela nova`);
+            console.log(`Status ${status.id}: ${entregasDoStatus.length} entregas da tabela entregas_status`);
             
-            // SEMPRE usar apenas entregas da tabela nova - nunca misturar com campos legados
-            status.entregasExtras = entregasDoStatus;
+            // Se existem entregas na nova tabela, usar APENAS elas
+            if (entregasDoStatus.length > 0) {
+              status.entregasExtras = entregasDoStatus;
+              console.log(`✅ Status ${status.id}: Usando APENAS dados da tabela entregas_status`);
+            } else {
+              // Se não há entregas na nova tabela, usar campos legados
+              const entregasLegadas = [];
+              
+              if (status.entrega1 && status.entrega1.trim()) {
+                entregasLegadas.push({
+                  nome_entrega: status.entrega1,
+                  entregaveis: status.entregaveis1 || '',
+                  data_entrega: status.data_marco1,
+                  status_da_entrega: 'Em andamento',
+                  ordem: 1
+                });
+              }
+              
+              if (status.entrega2 && status.entrega2.trim()) {
+                entregasLegadas.push({
+                  nome_entrega: status.entrega2,
+                  entregaveis: status.entregaveis2 || '',
+                  data_entrega: status.data_marco2,
+                  status_da_entrega: 'Em andamento',
+                  ordem: 2
+                });
+              }
+              
+              if (status.entrega3 && status.entrega3.trim()) {
+                entregasLegadas.push({
+                  nome_entrega: status.entrega3,
+                  entregaveis: status.entregaveis3 || '',
+                  data_entrega: status.data_marco3,
+                  status_da_entrega: 'Em andamento',
+                  ordem: 3
+                });
+              }
+              
+              status.entregasExtras = entregasLegadas;
+              console.log(`⚠️ Status ${status.id}: Usando campos legados (${entregasLegadas.length} entregas)`);
+            }
           });
         }
       }
@@ -183,7 +222,7 @@ export function useRelatorioVisual() {
 
       if (statusError) throw statusError;
 
-      // Buscar entregas para cada status apenas da tabela entregas_status
+      // Buscar entregas da nova tabela para cada status
       if (statusProjetos && statusProjetos.length > 0) {
         const statusIds = statusProjetos.map(s => s.id);
         
@@ -196,14 +235,53 @@ export function useRelatorioVisual() {
         if (entregasError) {
           console.error('Erro ao buscar entregas:', entregasError);
         } else {
-          // Anexar entregas a cada status
+          // Anexar entregas a cada status, priorizando EXCLUSIVAMENTE entregas_status
           statusProjetos.forEach((status: any) => {
             const entregasDoStatus = todasEntregas?.filter(e => e.status_id === status.id) || [];
             
-            console.log(`Status ${status.id}: ${entregasDoStatus.length} entregas da tabela nova`);
+            console.log(`Status ${status.id}: ${entregasDoStatus.length} entregas da tabela entregas_status`);
             
-            // SEMPRE usar apenas entregas da tabela nova - nunca misturar com campos legados
-            status.entregasExtras = entregasDoStatus;
+            // Se existem entregas na nova tabela, usar APENAS elas
+            if (entregasDoStatus.length > 0) {
+              status.entregasExtras = entregasDoStatus;
+              console.log(`✅ Status ${status.id}: Usando APENAS dados da tabela entregas_status`);
+            } else {
+              // Se não há entregas na nova tabela, usar campos legados
+              const entregasLegadas = [];
+              
+              if (status.entrega1 && status.entrega1.trim()) {
+                entregasLegadas.push({
+                  nome_entrega: status.entrega1,
+                  entregaveis: status.entregaveis1 || '',
+                  data_entrega: status.data_marco1,
+                  status_da_entrega: 'Em andamento',
+                  ordem: 1
+                });
+              }
+              
+              if (status.entrega2 && status.entrega2.trim()) {
+                entregasLegadas.push({
+                  nome_entrega: status.entrega2,
+                  entregaveis: status.entregaveis2 || '',
+                  data_entrega: status.data_marco2,
+                  status_da_entrega: 'Em andamento',
+                  ordem: 2
+                });
+              }
+              
+              if (status.entrega3 && status.entrega3.trim()) {
+                entregasLegadas.push({
+                  nome_entrega: status.entrega3,
+                  entregaveis: status.entregaveis3 || '',
+                  data_entrega: status.data_marco3,
+                  status_da_entrega: 'Em andamento',
+                  ordem: 3
+                });
+              }
+              
+              status.entregasExtras = entregasLegadas;
+              console.log(`⚠️ Status ${status.id}: Usando campos legados (${entregasLegadas.length} entregas)`);
+            }
           });
         }
       }
