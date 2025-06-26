@@ -3,7 +3,6 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
 import { RelatorioVisualContent } from '@/components/relatorios/visual/RelatorioVisualContent';
-import { prepareImageForReport } from '@/utils/imageUtils';
 
 interface DadosRelatorioVisual {
   carteira?: string;
@@ -148,302 +147,263 @@ export default function RelatorioVisualPagina() {
     setIsGeneratingHtml(true);
 
     try {
-      const element = document.getElementById('relatorio-content');
-      if (!element) {
-        throw new Error('Elemento do relatório não encontrado');
-      }
+      console.log('🔄 Iniciando captura completa da página...');
 
       // Aguardar renderização completa
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
-      // Buscar todas as imagens no elemento
-      const images = Array.from(element.querySelectorAll('img'));
-      const imagePromises = images.map(async (img) => {
-        try {
-          // Tentar converter imagem para base64
-          const dataURL = await prepareImageForReport(img.src);
-          return { originalSrc: img.src, dataURL };
-        } catch (error) {
-          console.warn(`Erro ao processar imagem ${img.src}:`, error);
-          return { originalSrc: img.src, dataURL: img.src };
-        }
-      });
-
-      const imageData = await Promise.all(imagePromises);
-
-      // Clonar o elemento para não modificar o original
-      const clonedElement = element.cloneNode(true) as HTMLElement;
-
-      // Substituir imagens por suas versões em base64
-      const clonedImages = Array.from(clonedElement.querySelectorAll('img'));
-      clonedImages.forEach((img, index) => {
-        if (imageData[index]) {
-          img.src = imageData[index].dataURL;
-        }
-      });
-
-      // Remover elementos que não devem aparecer no HTML (botões de "Voltar ao Overview")
-      const backButtons = clonedElement.querySelectorAll('button');
-      backButtons.forEach(button => {
-        if (button.textContent?.includes('Voltar ao Overview')) {
-          button.style.display = 'none';
-        }
-      });
-
-      // Capturar todos os estilos computados aplicados aos elementos
-      const allElements = clonedElement.querySelectorAll('*');
-      const inlineStyles: string[] = [];
+      // Capturar o HTML completo da página
+      const documentClone = document.cloneNode(true) as Document;
       
-      allElements.forEach((el, index) => {
-        const element = el as HTMLElement;
-        const computedStyle = window.getComputedStyle(element);
-        const className = `element-${index}`;
-        element.classList.add(className);
+      // Remover scripts desnecessários do clone
+      const scripts = documentClone.querySelectorAll('script');
+      scripts.forEach(script => {
+        if (!script.src.includes('fonts.googleapis.com') && !script.innerHTML.includes('scroll')) {
+          script.remove();
+        }
+      });
+
+      // Capturar todos os estilos CSS aplicados
+      const styleSheets = Array.from(document.styleSheets);
+      let allCSS = '';
+
+      for (const styleSheet of styleSheets) {
+        try {
+          if (styleSheet.cssRules) {
+            const rules = Array.from(styleSheet.cssRules);
+            for (const rule of rules) {
+              allCSS += rule.cssText + '\n';
+            }
+          }
+        } catch (e) {
+          // Ignorar erros de CORS
+          console.warn('Não foi possível acessar stylesheet:', e);
+        }
+      }
+
+      // Capturar estilos inline e computados dos elementos principais
+      const allElements = document.querySelectorAll('*');
+      const computedStyles: string[] = [];
+
+      allElements.forEach((element, index) => {
+        const el = element as HTMLElement;
+        const computed = window.getComputedStyle(el);
+        const className = `captured-element-${index}`;
         
-        // Capturar estilos essenciais
-        const importantStyles = [
+        // Adicionar classe única ao elemento clonado
+        const clonedElement = documentClone.querySelectorAll('*')[index] as HTMLElement;
+        if (clonedElement) {
+          clonedElement.classList.add(className);
+        }
+
+        // Capturar propriedades CSS essenciais
+        const importantProps = [
           'display', 'position', 'top', 'left', 'right', 'bottom',
           'width', 'height', 'min-width', 'min-height', 'max-width', 'max-height',
-          'margin', 'padding', 'border', 'background', 'color',
-          'font-family', 'font-size', 'font-weight', 'line-height',
-          'text-align', 'vertical-align', 'white-space',
-          'flex', 'flex-direction', 'justify-content', 'align-items',
-          'grid', 'grid-template-columns', 'grid-gap', 'gap',
-          'transform', 'opacity', 'visibility', 'overflow',
-          'box-shadow', 'border-radius', 'z-index'
+          'margin', 'padding', 'border', 'background', 'background-color', 'background-image',
+          'color', 'font-family', 'font-size', 'font-weight', 'line-height', 'text-align',
+          'flex', 'flex-direction', 'flex-wrap', 'justify-content', 'align-items', 'gap',
+          'grid', 'grid-template-columns', 'grid-template-rows', 'grid-gap',
+          'transform', 'opacity', 'visibility', 'overflow', 'z-index',
+          'box-shadow', 'border-radius', 'text-decoration', 'white-space'
         ];
-        
-        const styles = importantStyles
-          .map(prop => `${prop}: ${computedStyle.getPropertyValue(prop)};`)
-          .filter(style => !style.includes(': ;'))
-          .join(' ');
-          
+
+        const styles = importantProps
+          .map(prop => `${prop}: ${computed.getPropertyValue(prop)}`)
+          .filter(style => !style.endsWith(': ') && !style.endsWith(': initial') && !style.endsWith(': normal'))
+          .join('; ');
+
         if (styles) {
-          inlineStyles.push(`.${className} { ${styles} }`);
+          computedStyles.push(`.${className} { ${styles}; }`);
         }
       });
 
-      // Criar HTML completo e auto-contido
-      const fullHTML = `<!DOCTYPE html>
+      // Converter imagens para base64
+      const images = documentClone.querySelectorAll('img');
+      const imagePromises = Array.from(images).map(async (img) => {
+        try {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          const originalImg = new Image();
+          
+          return new Promise<void>((resolve) => {
+            originalImg.onload = () => {
+              canvas.width = originalImg.naturalWidth;
+              canvas.height = originalImg.naturalHeight;
+              ctx?.drawImage(originalImg, 0, 0);
+              
+              try {
+                const dataURL = canvas.toDataURL('image/png');
+                img.src = dataURL;
+              } catch (e) {
+                console.warn('Erro ao converter imagem:', e);
+              }
+              resolve();
+            };
+            
+            originalImg.onerror = () => resolve();
+            originalImg.crossOrigin = 'anonymous';
+            originalImg.src = img.src;
+          });
+        } catch (e) {
+          console.warn('Erro ao processar imagem:', e);
+          return Promise.resolve();
+        }
+      });
+
+      await Promise.all(imagePromises);
+
+      // Remover elementos de navegação e header do clone
+      const elementsToRemove = [
+        '.no-print',
+        'header',
+        '.sticky',
+        '[class*="header"]',
+        '[class*="navigation"]',
+        'nav'
+      ];
+
+      elementsToRemove.forEach(selector => {
+        const elements = documentClone.querySelectorAll(selector);
+        elements.forEach(el => el.remove());
+      });
+
+      // Ajustar o body do clone para remover padding/margin desnecessários
+      const bodyClone = documentClone.body;
+      if (bodyClone) {
+        bodyClone.style.margin = '0';
+        bodyClone.style.padding = '20px';
+        bodyClone.style.backgroundColor = '#F8FAFC';
+      }
+
+      // Criar o HTML final completo
+      const finalHTML = `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Relatório Visual - ${dados?.carteira || dados?.responsavel || 'Dashboard'}</title>
-  
-  <!-- Google Fonts incorporada -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  
-  <style>
-    /* Reset CSS */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      -webkit-print-color-adjust: exact !important;
-      color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      line-height: 1.6;
-      color: #1B365D;
-      background: #F8FAFC;
-      padding: 20px;
-      min-width: 1200px;
-    }
-
-    /* Estilos computados capturados */
-    ${inlineStyles.join('\n    ')}
-
-    /* Tailwind-like utilities essenciais */
-    .space-y-8 > * + * { margin-top: 2rem !important; }
-    .space-y-6 > * + * { margin-top: 1.5rem !important; }
-    .space-y-4 > * + * { margin-top: 1rem !important; }
-    .space-y-3 > * + * { margin-top: 0.75rem !important; }
-    .space-y-2 > * + * { margin-top: 0.5rem !important; }
-    .space-y-1 > * + * { margin-top: 0.25rem !important; }
-
-    .grid { display: grid !important; }
-    .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)) !important; }
-    .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
-    .grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
-    .grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
-    .md\\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
-    .md\\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
-    .md\\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
-
-    .gap-8 { gap: 2rem !important; }
-    .gap-6 { gap: 1.5rem !important; }
-    .gap-4 { gap: 1rem !important; }
-    .gap-3 { gap: 0.75rem !important; }
-    .gap-2 { gap: 0.5rem !important; }
-
-    .flex { display: flex !important; }
-    .flex-col { flex-direction: column !important; }
-    .flex-row { flex-direction: row !important; }
-    .items-center { align-items: center !important; }
-    .items-start { align-items: flex-start !important; }
-    .justify-center { justify-content: center !important; }
-    .justify-between { justify-content: space-between !important; }
-
-    .text-center { text-align: center !important; }
-    .text-left { text-align: left !important; }
-    .text-right { text-align: right !important; }
-
-    .font-bold { font-weight: 700 !important; }
-    .font-semibold { font-weight: 600 !important; }
-    .font-medium { font-weight: 500 !important; }
-
-    .text-4xl { font-size: 2.25rem !important; line-height: 2.5rem !important; }
-    .text-3xl { font-size: 1.875rem !important; line-height: 2.25rem !important; }
-    .text-2xl { font-size: 1.5rem !important; line-height: 2rem !important; }
-    .text-xl { font-size: 1.25rem !important; line-height: 1.75rem !important; }
-    .text-lg { font-size: 1.125rem !important; line-height: 1.75rem !important; }
-    .text-base { font-size: 1rem !important; line-height: 1.5rem !important; }
-    .text-sm { font-size: 0.875rem !important; line-height: 1.25rem !important; }
-    .text-xs { font-size: 0.75rem !important; line-height: 1rem !important; }
-
-    .bg-white { background-color: white !important; }
-    .bg-gray-50 { background-color: #F9FAFB !important; }
-    .bg-gray-100 { background-color: #F3F4F6 !important; }
-    .bg-green-500 { background-color: #10B981 !important; }
-    .bg-yellow-500 { background-color: #F59E0B !important; }
-    .bg-red-500 { background-color: #EF4444 !important; }
-    .bg-gray-400 { background-color: #9CA3AF !important; }
-
-    .rounded-lg { border-radius: 0.5rem !important; }
-    .rounded-full { border-radius: 9999px !important; }
-
-    .border { border: 1px solid #E5E7EB !important; }
-    .border-b { border-bottom: 1px solid #E5E7EB !important; }
-    .border-l-4 { border-left: 4px solid !important; }
-    .border-2 { border-width: 2px !important; }
-
-    .shadow-md { box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1) !important; }
-    .shadow-lg { box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1) !important; }
-
-    /* Timeline específico - forçar visibilidade */
-    .timeline-horizontal,
-    .timeline-box,
-    .timeline-connector,
-    .timeline-marker,
-    .timeline-week-marker {
-      display: block !important;
-      visibility: visible !important;
-      opacity: 1 !important;
-    }
-
-    /* Tabelas */
-    table {
-      border-collapse: collapse !important;
-      width: 100% !important;
-    }
-
-    th, td {
-      border: 1px solid #E5E7EB !important;
-      padding: 12px 8px !important;
-      text-align: left !important;
-    }
-
-    th {
-      background-color: #F9FAFB !important;
-      font-weight: 600 !important;
-    }
-
-    /* Imagens */
-    img {
-      max-width: 100% !important;
-      height: auto !important;
-    }
-
-    /* Links internos funcionais */
-    a[href^="#"] {
-      color: #A6926B !important;
-      text-decoration: none !important;
-      cursor: pointer !important;
-    }
-
-    a[href^="#"]:hover {
-      color: #8B7355 !important;
-      text-decoration: underline !important;
-    }
-
-    /* Print styles */
-    @media print {
-      body {
-        background: white !important;
-        padding: 10mm !important;
-      }
-
-      @page {
-        margin: 10mm;
-        size: A4 landscape;
-      }
-    }
-
-    /* Smooth scroll para links internos */
-    html {
-      scroll-behavior: smooth;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório Visual - ${dados?.carteira || dados?.responsavel || 'Dashboard'}</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        /* CSS capturado das folhas de estilo */
+        ${allCSS}
+        
+        /* Estilos computados específicos */
+        ${computedStyles.join('\n        ')}
+        
+        /* Ajustes para impressão e visualização */
+        * {
+            -webkit-print-color-adjust: exact !important;
+            color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+            line-height: 1.6 !important;
+            color: #1B365D !important;
+            background: #F8FAFC !important;
+            margin: 0 !important;
+            padding: 20px !important;
+        }
+        
+        /* Garantir que links internos funcionem */
+        a[href^="#"] {
+            color: #A6926B !important;
+            text-decoration: none !important;
+            cursor: pointer !important;
+        }
+        
+        a[href^="#"]:hover {
+            color: #8B7355 !important;
+            text-decoration: underline !important;
+        }
+        
+        /* Forçar visibilidade de elementos importantes */
+        .timeline-horizontal,
+        .timeline-box,
+        .timeline-connector,
+        .timeline-marker,
+        .timeline-week-marker,
+        [data-overview] {
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+        
+        /* Ajustes para impressão */
+        @media print {
+            body { 
+                background: white !important; 
+                padding: 10mm !important; 
+            }
+            @page { 
+                margin: 10mm; 
+                size: A4 landscape; 
+            }
+        }
+        
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
 </head>
 <body>
-  <div style="max-width: 1200px; margin: 0 auto;">
-    ${clonedElement.outerHTML}
-  </div>
-
-  <script>
-    // Script para navegação interna funcionar
-    document.addEventListener('DOMContentLoaded', function() {
-      console.log('Relatório Visual HTML carregado com funcionalidade completa!');
-
-      // Implementar links de navegação para projetos
-      const projetoLinks = document.querySelectorAll('a[href^="#projeto-"]');
-      projetoLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-          e.preventDefault();
-          const targetId = this.getAttribute('href').substring(1);
-          const targetElement = document.getElementById(targetId);
-          if (targetElement) {
-            targetElement.scrollIntoView({ behavior: 'smooth' });
-          }
+    ${bodyClone?.innerHTML || ''}
+    
+    <script>
+        // Funcionalidade para links internos
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Relatório Visual HTML carregado!');
+            
+            // Implementar navegação interna
+            const internalLinks = document.querySelectorAll('a[href^="#"]');
+            internalLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href').substring(1);
+                    const targetElement = document.getElementById(targetId);
+                    if (targetElement) {
+                        targetElement.scrollIntoView({ behavior: 'smooth' });
+                    }
+                });
+            });
+            
+            // Implementar botão "Voltar ao Overview"
+            const backButtons = document.querySelectorAll('button');
+            backButtons.forEach(button => {
+                if (button.textContent && button.textContent.includes('Voltar ao Overview')) {
+                    button.addEventListener('click', function() {
+                        const overviewElement = document.querySelector('[data-overview]');
+                        if (overviewElement) {
+                            overviewElement.scrollIntoView({ behavior: 'smooth' });
+                        }
+                    });
+                }
+            });
         });
-      });
-
-      // Implementar outros links internos
-      const internalLinks = document.querySelectorAll('a[href^="#"]');
-      internalLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-          e.preventDefault();
-          const targetId = this.getAttribute('href').substring(1);
-          const targetElement = document.getElementById(targetId);
-          if (targetElement) {
-            targetElement.scrollIntoView({ behavior: 'smooth' });
-          }
-        });
-      });
-    });
-  </script>
+    </script>
 </body>
 </html>`;
 
-      // Criar e baixar o arquivo HTML
-      const blob = new Blob([fullHTML], { type: 'text/html;charset=utf-8' });
+      // Criar e baixar o arquivo
+      const blob = new Blob([finalHTML], { type: 'text/html;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `relatorio-visual-${dados?.carteira || dados?.responsavel || 'dashboard'}-${new Date().toISOString().split('T')[0]}.html`;
+      a.download = `relatorio-visual-completo-${dados?.carteira || dados?.responsavel || 'dashboard'}-${new Date().toISOString().split('T')[0]}.html`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      console.log('✅ HTML gerado e baixado com sucesso!');
+      console.log('✅ HTML completo gerado e baixado com sucesso!');
 
     } catch (error) {
-      console.error('❌ Erro ao gerar HTML:', error);
+      console.error('❌ Erro ao gerar HTML completo:', error);
       alert('Erro ao gerar HTML: ' + (error instanceof Error ? error.message : error));
     } finally {
       setIsGeneratingHtml(false);
