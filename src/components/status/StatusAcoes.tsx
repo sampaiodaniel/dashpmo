@@ -13,9 +13,12 @@ interface StatusAcoesProps {
 export function StatusAcoes({ status }: StatusAcoesProps) {
   const { revisar, isLoading } = useStatusOperations();
   const navigate = useNavigate();
-  const { isAdmin } = useAuth();
+  const { isAdmin, usuario } = useAuth();
 
-  console.log('StatusAcoes - Status:', status?.id, 'Aprovado:', status?.aprovado, 'isAdmin:', isAdmin());
+  console.log('StatusAcoes - Status:', status?.id, 'Aprovado:', status?.aprovado);
+  console.log('StatusAcoes - Usuario completo:', usuario);
+  console.log('StatusAcoes - isAdmin():', isAdmin());
+  console.log('StatusAcoes - tipo_usuario:', usuario?.tipo_usuario);
 
   const handleEditarStatus = () => {
     navigate(`/status/editar/${status.id}`);
