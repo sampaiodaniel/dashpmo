@@ -68,6 +68,9 @@ export interface StatusProjeto {
   entregaveis3?: string;
   entrega3?: string;
   data_marco3?: Date;
+  status_entrega1_id?: number | null;
+  status_entrega2_id?: number | null;
+  status_entrega3_id?: number | null;
   finalizacao_prevista?: Date;
   backlog?: string;
   bloqueios_atuais?: string;
