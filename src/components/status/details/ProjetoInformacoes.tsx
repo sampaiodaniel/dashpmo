@@ -1,9 +1,9 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Building, Calendar, User, Users, FileType, FileText } from 'lucide-react';
 import { StatusProjeto } from '@/types/pmo';
 import { useTiposProjeto } from '@/hooks/useTiposProjeto';
+import { formatarData } from '@/utils/dateFormatting';
 
 interface ProjetoInformacoesProps {
   status: StatusProjeto;
@@ -12,22 +12,9 @@ interface ProjetoInformacoesProps {
 export function ProjetoInformacoes({ status }: ProjetoInformacoesProps) {
   const { data: tiposProjeto } = useTiposProjeto();
 
-  // Função para formatar a data de finalização ou mostrar TBD
+  // Função para formatar a data de finalização usando a função utilitária
   const formatarFinalizacaoPrevista = (finalizacaoPrevista: string | null) => {
-    if (!finalizacaoPrevista) {
-      return 'TBD';
-    }
-    
-    if (finalizacaoPrevista === 'TBD') {
-      return 'TBD';
-    }
-    
-    try {
-      const date = new Date(finalizacaoPrevista);
-      return date.toLocaleDateString('pt-BR');
-    } catch {
-      return 'TBD';
-    }
+    return formatarData(finalizacaoPrevista);
   };
 
   // Buscar o nome do tipo de projeto

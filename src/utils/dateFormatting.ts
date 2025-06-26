@@ -34,7 +34,7 @@ export function formatarData(data: any): string {
   if (data === 'TBD') return 'TBD (A definir)';
   
   // Se for string no formato YYYY-MM-DD, criar Date usando partes separadas
-  if (typeof data === 'string' && data.includes('-')) {
+  if (typeof data === 'string' && data.includes('-') && !data.includes('T')) {
     const [year, month, day] = data.split('-').map(Number);
     const date = new Date(year, month - 1, day); // month - 1 porque Date usa 0-11 para meses
     return format(date, 'dd/MM/yyyy', { locale: ptBR });
