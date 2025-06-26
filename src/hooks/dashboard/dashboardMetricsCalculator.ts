@@ -1,3 +1,5 @@
+import { supabase } from '@/integrations/supabase/client';
+import { Projeto, FiltrosDashboard, DashboardMetrics } from '@/types/pmo';
 
 interface Marco {
   projeto: string;
@@ -6,68 +8,137 @@ interface Marco {
   diasRestantes: number;
 }
 
-export function calculateProjectMetrics(projetos: any[], statusData: any[]) {
-  const totalProjetos = projetos?.length || 0;
-  
-  const projetosPorArea = projetos?.reduce((acc: Record<string, number>, projeto: any) => {
-    acc[projeto.area_responsavel] = (acc[projeto.area_responsavel] || 0) + 1;
-    return acc;
-  }, {}) || {};
+export async function calcularMetricas(projetos: any[], filtros: FiltrosDashboard): Promise<DashboardMetrics> {
+  console.log('📊 Calculando métricas do dashboard para', projetos.length, 'projetos');
 
-  // Mapear status por projeto (pegar o mais recente)
+  // Buscar status mais recentes
+  const { data: statusData } = await supabase
+    .from('status_projeto')
+    .select('*')
+    .order('data_atualizacao', { ascending: false });
+
+  // Buscar TODAS as entregas da tabela entregas_status
+  const { data: todasEntregas } = await supabase
+    .from('entregas_status')
+    .select('*')
+    .order('ordem', { ascending: true });
+
+  // Mapear status mais recente por projeto
   const statusPorProjeto = new Map();
-  statusData.forEach(status => {
+  statusData?.forEach(status => {
     if (!statusPorProjeto.has(status.projeto_id) || 
         new Date(status.data_atualizacao) > new Date(statusPorProjeto.get(status.projeto_id).data_atualizacao)) {
       statusPorProjeto.set(status.projeto_id, status);
     }
   });
 
-  const projetosPorStatus = projetos?.reduce((acc: any, projeto: any) => {
-    const status = statusPorProjeto.get(projeto.id);
-    const statusGeral = status?.status_geral || 'Em Planejamento';
-    acc[statusGeral] = (acc[statusGeral] || 0) + 1;
-    return acc;
-  }, {}) || {};
+  let totalProjetos = 0;
+  let projetosVerde = 0;
+  let projetosAmarelo = 0;
+  let projetosVermelho = 0;
+  let entregasProximos15Dias = 0;
+  let projetosComAtraso = 0;
+  let projetosConcluidos = 0;
+  let projetosEmAndamento = 0;
 
-  const projetosPorSaude = projetos?.reduce((acc: any, projeto: any) => {
-    const status = statusPorProjeto.get(projeto.id);
-    const saude = status?.status_visao_gp || 'Verde';
-    acc[saude] = (acc[saude] || 0) + 1;
-    return acc;
-  }, {}) || {};
+  const hoje = new Date();
+  const em15Dias = new Date();
+  em15Dias.setDate(hoje.getDate() + 15);
 
-  return {
+  projetos.forEach(projeto => {
+    totalProjetos++;
+    
+    const ultimoStatus = statusPorProjeto.get(projeto.id);
+    
+    if (ultimoStatus) {
+      // Contabilizar por cor/saúde
+      const cor = ultimoStatus.status_visao_gp;
+      if (cor === 'Verde') projetosVerde++;
+      else if (cor === 'Amarelo') projetosAmarelo++;
+      else if (cor === 'Vermelho') projetosVermelho++;
+
+      // Contabilizar por status
+      const statusGeral = ultimoStatus.status_geral;
+      if (statusGeral === 'Concluído') {
+        projetosConcluidos++;
+      } else if (statusGeral === 'Em Andamento') {
+        projetosEmAndamento++;
+        // Consideramos com atraso se estiver vermelho
+        if (cor === 'Vermelho') {
+          projetosComAtraso++;
+        }
+      }
+
+      // Contar entregas nos próximos 15 dias usando a tabela entregas_status
+      const entregasDoStatus = todasEntregas?.filter(e => e.status_id === ultimoStatus.id) || [];
+      entregasDoStatus.forEach(entrega => {
+        if (entrega.data_entrega) {
+          const dataEntrega = new Date(entrega.data_entrega);
+          if (dataEntrega >= hoje && dataEntrega <= em15Dias) {
+            entregasProximos15Dias++;
+          }
+        }
+      });
+    }
+  });
+
+  const metricas = {
     totalProjetos,
-    projetosPorArea,
-    projetosPorStatus,
-    projetosPorSaude,
-    statusPorProjeto
+    projetosPorArea: {} as Record<string, number>, // Será preenchido se necessário
+    projetosPorStatus: {
+      'Concluído': projetosConcluidos,
+      'Em Andamento': projetosEmAndamento,
+      'Outros': totalProjetos - projetosConcluidos - projetosEmAndamento
+    },
+    projetosPorSaude: {
+      'Verde': projetosVerde,
+      'Amarelo': projetosAmarelo,
+      'Vermelho': projetosVermelho
+    },
+    proximosMarcos: [] as Array<{
+      projeto: string;
+      marco: string;
+      data: Date;
+      diasRestantes: number;
+    }>, // Será preenchido separadamente
+    projetosCriticos: projetos?.filter((projeto: any) => {
+      const status = statusPorProjeto.get(projeto.id);
+      return status?.prob_x_impact === 'Alto';
+    }).length || 0,
+    mudancasAtivas: 0 // Removido para simplificar
   };
+
+  console.log('📈 Métricas calculadas:', metricas);
+  return metricas;
 }
 
-export function calculateProximosMarcos(projetos: any[], statusPorProjeto: Map<any, any>): Marco[] {
+export async function calculateProximosMarcos(projetos: any[], statusPorProjeto: Map<any, any>): Promise<Marco[]> {
   const proximosMarcos: Marco[] = [];
   const hoje = new Date();
   const em15Dias = new Date();
   em15Dias.setDate(hoje.getDate() + 15);
 
+  // Buscar TODAS as entregas da tabela entregas_status
+  const { data: todasEntregas } = await supabase
+    .from('entregas_status')
+    .select('*')
+    .order('ordem', { ascending: true });
+
   projetos?.forEach((projeto: any) => {
     const status = statusPorProjeto.get(projeto.id);
     if (status) {
-      [
-        { data: status.data_marco1, entrega: status.entrega1 },
-        { data: status.data_marco2, entrega: status.entrega2 },
-        { data: status.data_marco3, entrega: status.entrega3 }
-      ].forEach(marco => {
-        if (marco.data && marco.entrega && marco.data !== 'TBD') {
-          const dataMarco = new Date(marco.data);
-          if (dataMarco >= hoje && dataMarco <= em15Dias) {
-            const diasRestantes = Math.ceil((dataMarco.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));
+      // Buscar entregas deste status na tabela entregas_status
+      const entregasDoStatus = todasEntregas?.filter(e => e.status_id === status.id) || [];
+      
+      entregasDoStatus.forEach(entrega => {
+        if (entrega.data_entrega && entrega.nome_entrega && entrega.data_entrega !== 'TBD') {
+          const dataEntrega = new Date(entrega.data_entrega);
+          if (dataEntrega >= hoje && dataEntrega <= em15Dias) {
+            const diasRestantes = Math.ceil((dataEntrega.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));
             proximosMarcos.push({
               projeto: projeto.nome_projeto,
-              marco: marco.entrega,
-              data: dataMarco,
+              marco: entrega.nome_entrega,
+              data: dataEntrega,
               diasRestantes
             });
           }

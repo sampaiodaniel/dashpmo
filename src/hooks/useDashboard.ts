@@ -4,9 +4,9 @@ import { getResponsavelHierarchy } from './dashboard/useDashboardHierarchy';
 import { fetchDashboardProjects } from './dashboard/useDashboardProjects';
 import { fetchProjectStatus } from './dashboard/useDashboardStatus';
 import { 
-  calculateProjectMetrics, 
-  calculateProximosMarcos, 
-  calculateProjetosCriticos 
+  calcularMetricas, 
+  calculateProximosMarcos,
+  calculateProjetosCriticos
 } from './dashboard/dashboardMetricsCalculator';
 import { useCarteirasPermitidas } from './useCarteirasPermitidas';
 
@@ -28,13 +28,21 @@ export function useDashboardMetricas(filtros?: FiltrosDashboard) {
       const projetos = await fetchDashboardProjects(filtros || {}, hierarchy, carteirasUser);
       console.log('Projetos para dashboard:', projetos);
 
-      // Buscar status dos projetos
+      // Calcular métricas usando a nova função
+      const metricas = await calcularMetricas(projetos, filtros || {});
+      
+      // Para compatibilidade, criar o mapa de status por projeto manualmente
       const statusData = await fetchProjectStatus(projetos);
+      const statusPorProjeto = new Map();
+      statusData?.forEach(status => {
+        if (!statusPorProjeto.has(status.projeto_id) || 
+            new Date(status.data_atualizacao) > new Date(statusPorProjeto.get(status.projeto_id).data_atualizacao)) {
+          statusPorProjeto.set(status.projeto_id, status);
+        }
+      });
 
-      // Calcular métricas
-      const metricas = calculateProjectMetrics(projetos, statusData);
-      const proximosMarcos = calculateProximosMarcos(projetos, metricas.statusPorProjeto);
-      const projetosCriticos = calculateProjetosCriticos(projetos, metricas.statusPorProjeto);
+      const proximosMarcos = await calculateProximosMarcos(projetos, statusPorProjeto);
+      const projetosCriticos = calculateProjetosCriticos(projetos, statusPorProjeto);
 
       console.log('📈 Métricas calculadas:', {
         totalProjetos: metricas.totalProjetos,

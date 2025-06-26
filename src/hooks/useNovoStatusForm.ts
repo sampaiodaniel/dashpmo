@@ -432,58 +432,25 @@ export function useNovoStatusForm() {
         return valor;
       };
 
-      const statusData = {
-        projeto_id: projetoSelecionado,
+      // Criar novo status sem campos de entrega antigos
+      const novoStatus = {
+        projeto_id: projetoSelecionado!,
         data_atualizacao: data.data_status,
-        status_geral: mapearValorInteligente(data.status_geral, enumsValidos.status_geral) as Database['public']['Enums']['status_geral'],
-        status_visao_gp: mapearValorInteligente(data.status_visao_gp, enumsValidos.status_visao_gp) as Database['public']['Enums']['status_visao_gp'],
-        progresso_estimado: progressoEstimado,
-        probabilidade_riscos: mapearValorInteligente(data.probabilidade_riscos, enumsValidos.nivel_risco) as Database['public']['Enums']['nivel_risco'],
-        impacto_riscos: mapearValorInteligente(data.impacto_riscos, enumsValidos.nivel_risco) as Database['public']['Enums']['nivel_risco'],
+        status_geral: data.status_geral,
+        status_visao_gp: data.status_visao_gp,
+        impacto_riscos: data.impacto_riscos,
+        probabilidade_riscos: data.probabilidade_riscos,
         realizado_semana_atual: data.entregas_realizadas || 'Atualização de status regular - sem itens específicos',
-        backlog: data.backlog || null,
-        bloqueios_atuais: data.bloqueios_atuais || null,
+        backlog: data.backlog,
+        bloqueios_atuais: data.bloqueios_atuais,
         observacoes_pontos_atencao: data.observacoes_gerais || null,
-        entrega1: entregas[0]?.nome || null,
-        data_marco1: entregas[0]?.data ? (() => {
-          const date = entregas[0].data;
-          const year = date.getFullYear();
-          const month = String(date.getMonth() + 1).padStart(2, '0');
-          const day = String(date.getDate()).padStart(2, '0');
-          return `${year}-${month}-${day}`;
-        })() : null,
-        entregaveis1: entregas[0]?.entregaveis || null,
-        ...(camposStatusEntregaExistem && { status_entrega1_id: entregas[0]?.statusEntregaId || null }),
-        entrega2: entregas[1]?.nome || null,
-        data_marco2: entregas[1]?.data ? (() => {
-          const date = entregas[1].data;
-          const year = date.getFullYear();
-          const month = String(date.getMonth() + 1).padStart(2, '0');
-          const day = String(date.getDate()).padStart(2, '0');
-          return `${year}-${month}-${day}`;
-        })() : null,
-        entregaveis2: entregas[1]?.entregaveis || null,
-        ...(camposStatusEntregaExistem && { status_entrega2_id: entregas[1]?.statusEntregaId || null }),
-        entrega3: entregas[2]?.nome || null,
-        data_marco3: entregas[2]?.data ? (() => {
-          const date = entregas[2].data;
-          const year = date.getFullYear();
-          const month = String(date.getMonth() + 1).padStart(2, '0');
-          const day = String(date.getDate()).padStart(2, '0');
-          return `${year}-${month}-${day}`;
-        })() : null,
-        entregaveis3: entregas[2]?.entregaveis || null,
-        ...(camposStatusEntregaExistem && { status_entrega3_id: entregas[2]?.statusEntregaId || null }),
-        criado_por: usuario.nome,
-        responsavel_asa: projeto.responsavel_asa,
-        responsavel_cwi: projeto.responsavel_cwi,
-        gp_responsavel_cwi: projeto.gp_responsavel_cwi,
-        carteira_primaria: projeto.carteira_primaria,
-        carteira_secundaria: projeto.carteira_secundaria,
-        carteira_terciaria: projeto.carteira_terciaria,
+        progresso_estimado: progressoEstimado,
+        criado_por: usuario!.id,
+        // REMOÇÃO: Não salvamos mais entrega1, entrega2, entrega3, data_marco1, data_marco2, data_marco3, entregaveis1, entregaveis2, entregaveis3
+        // Todas as entregas são gerenciadas via tabela entregas_status
       };
 
-      console.log('📋 Dados que serão enviados para o Supabase:', statusData);
+      console.log('📋 Dados que serão enviados para o Supabase:', novoStatus);
       console.log('🎯 Projeto completo:', projeto);
       console.log('🔧 Campos de status entrega existem:', camposStatusEntregaExistem);
       
@@ -495,23 +462,23 @@ export function useNovoStatusForm() {
       
       // Validar dados críticos antes de enviar
       const camposObrigatorios = {
-        projeto_id: statusData.projeto_id,
-        data_atualizacao: statusData.data_atualizacao,
-        status_geral: statusData.status_geral,
-        status_visao_gp: statusData.status_visao_gp,
-        probabilidade_riscos: statusData.probabilidade_riscos,
-        impacto_riscos: statusData.impacto_riscos,
-        criado_por: statusData.criado_por
+        projeto_id: novoStatus.projeto_id,
+        data_atualizacao: novoStatus.data_atualizacao,
+        status_geral: novoStatus.status_geral,
+        status_visao_gp: novoStatus.status_visao_gp,
+        probabilidade_riscos: novoStatus.probabilidade_riscos,
+        impacto_riscos: novoStatus.impacto_riscos,
+        criado_por: novoStatus.criado_por
       };
       
       console.log('🔍 Validando campos obrigatórios:', camposObrigatorios);
       
       // Log detalhado dos valores ENUM para debug
       console.log('🔍 Debug ENUM Values:');
-      console.log('  - status_geral original:', data.status_geral, '→ mapeado:', statusData.status_geral);
-      console.log('  - status_visao_gp original:', data.status_visao_gp, '→ mapeado:', statusData.status_visao_gp);
-      console.log('  - probabilidade_riscos original:', data.probabilidade_riscos, '→ mapeado:', statusData.probabilidade_riscos);
-      console.log('  - impacto_riscos original:', data.impacto_riscos, '→ mapeado:', statusData.impacto_riscos);
+      console.log('  - status_geral original:', data.status_geral, '→ mapeado:', novoStatus.status_geral);
+      console.log('  - status_visao_gp original:', data.status_visao_gp, '→ mapeado:', novoStatus.status_visao_gp);
+      console.log('  - probabilidade_riscos original:', data.probabilidade_riscos, '→ mapeado:', novoStatus.probabilidade_riscos);
+      console.log('  - impacto_riscos original:', data.impacto_riscos, '→ mapeado:', novoStatus.impacto_riscos);
       
       // ⚠️ IMPORTANTE: Se você alterar nomes na administração que não correspondem aos ENUMs do banco,
       // adicione-os na seção 'mapeamentosEspeciais' acima para garantir compatibilidade.
@@ -523,23 +490,23 @@ export function useNovoStatusForm() {
       
       // Verificar se os valores correspondem aos ENUMs esperados
       console.log('🎯 Validação ENUM:');
-      console.log('  - status_geral válido:', enumsValidos.status_geral.includes(statusData.status_geral));
-      console.log('  - status_visao_gp válido:', enumsValidos.status_visao_gp.includes(statusData.status_visao_gp));
-      console.log('  - probabilidade_riscos válido:', enumsValidos.nivel_risco.includes(statusData.probabilidade_riscos));
-      console.log('  - impacto_riscos válido:', enumsValidos.nivel_risco.includes(statusData.impacto_riscos));
+      console.log('  - status_geral válido:', enumsValidos.status_geral.includes(novoStatus.status_geral));
+      console.log('  - status_visao_gp válido:', enumsValidos.status_visao_gp.includes(novoStatus.status_visao_gp));
+      console.log('  - probabilidade_riscos válido:', enumsValidos.nivel_risco.includes(novoStatus.probabilidade_riscos));
+      console.log('  - impacto_riscos válido:', enumsValidos.nivel_risco.includes(novoStatus.impacto_riscos));
       
       // Validar ENUMs antes de enviar
-      if (!enumsValidos.status_geral.includes(statusData.status_geral)) {
-        throw new Error(`Status geral inválido: "${statusData.status_geral}". Valores aceitos: ${enumsValidos.status_geral.join(', ')}`);
+      if (!enumsValidos.status_geral.includes(novoStatus.status_geral)) {
+        throw new Error(`Status geral inválido: "${novoStatus.status_geral}". Valores aceitos: ${enumsValidos.status_geral.join(', ')}`);
       }
-      if (!enumsValidos.status_visao_gp.includes(statusData.status_visao_gp)) {
-        throw new Error(`Status visão GP inválido: "${statusData.status_visao_gp}". Valores aceitos: ${enumsValidos.status_visao_gp.join(', ')}`);
+      if (!enumsValidos.status_visao_gp.includes(novoStatus.status_visao_gp)) {
+        throw new Error(`Status visão GP inválido: "${novoStatus.status_visao_gp}". Valores aceitos: ${enumsValidos.status_visao_gp.join(', ')}`);
       }
-      if (!enumsValidos.nivel_risco.includes(statusData.probabilidade_riscos)) {
-        throw new Error(`Probabilidade de risco inválida: "${statusData.probabilidade_riscos}". Valores aceitos: ${enumsValidos.nivel_risco.join(', ')}`);
+      if (!enumsValidos.nivel_risco.includes(novoStatus.probabilidade_riscos)) {
+        throw new Error(`Probabilidade de risco inválida: "${novoStatus.probabilidade_riscos}". Valores aceitos: ${enumsValidos.nivel_risco.join(', ')}`);
       }
-      if (!enumsValidos.nivel_risco.includes(statusData.impacto_riscos)) {
-        throw new Error(`Impacto de risco inválido: "${statusData.impacto_riscos}". Valores aceitos: ${enumsValidos.nivel_risco.join(', ')}`);
+      if (!enumsValidos.nivel_risco.includes(novoStatus.impacto_riscos)) {
+        throw new Error(`Impacto de risco inválido: "${novoStatus.impacto_riscos}". Valores aceitos: ${enumsValidos.nivel_risco.join(', ')}`);
       }
       
       console.log('✅ Todas as validações ENUM passaram');
@@ -551,9 +518,9 @@ export function useNovoStatusForm() {
         }
       }
 
-      const { data: novoStatus, error } = await supabase
+      const { data: novoStatusDB, error } = await supabase
         .from('status_projeto')
-        .insert(statusData)
+        .insert(novoStatus)
         .select('*, projeto:projetos(*)')
         .single();
 
@@ -564,7 +531,7 @@ export function useNovoStatusForm() {
         console.error('❌ Error hint:', error.hint);
         console.error('❌ Error code:', error.code);
         console.error('❌ Full error object:', JSON.stringify(error, null, 2));
-        console.error('❌ Status data que causou erro:', JSON.stringify(statusData, null, 2));
+        console.error('❌ Status data que causou erro:', JSON.stringify(novoStatus, null, 2));
         
         if (error.message?.includes('duplicate key')) {
           throw new Error('Já existe um status para este projeto nesta data. Escolha uma data diferente.');
@@ -579,46 +546,24 @@ export function useNovoStatusForm() {
         }
       }
 
-      console.log('✅ Status criado com sucesso:', novoStatus);
-
-      // Salvar TODAS as entregas na tabela entregas_status (ordem inicia em 1)
-      for (const [idx, entrega] of entregas.entries()) {
-        if (entrega.nome) {
-          await supabase
-            .from('entregas_status')
-            .insert({
-              status_id: novoStatus.id,
-              nome_entrega: entrega.nome,
-              data_entrega: entrega.data ? (() => {
-                const date = entrega.data;
-                const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const day = String(date.getDate()).padStart(2, '0');
-                return `${year}-${month}-${day}`;
-              })() : null,
-              entregaveis: entrega.entregaveis,
-              ...(camposStatusEntregaExistem && { status_entrega_id: entrega.statusEntregaId || null }),
-              ordem: idx + 1
-            });
-        }
-      }
+      console.log('✅ Status criado com sucesso:', novoStatusDB);
 
       // Registrar log da criação
       log(
         'status',
         'criacao',
         'status_projeto',
-        novoStatus.id,
+        novoStatusDB.id,
         `Status do projeto ${projeto.nome_projeto}`,
         {
-          status_geral: novoStatus.status_geral,
-          status_visao_gp: novoStatus.status_visao_gp,
-          progresso_estimado: novoStatus.progresso_estimado,
+          status_geral: novoStatusDB.status_geral,
+          status_visao_gp: novoStatusDB.status_visao_gp,
+          progresso_estimado: novoStatusDB.progresso_estimado,
           total_entregas: entregas.length
         }
       );
 
-      return novoStatus;
+      return novoStatusDB;
     },
     onSuccess: async () => {
       // Invalidação robusta - múltiplas estratégias para garantir que dados sejam atualizados

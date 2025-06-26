@@ -1,115 +1,82 @@
+import { formatarData } from '@/utils/dateFormatting';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { StatusProjeto } from '@/types/pmo';
 
 interface ProjetoTimelineProps {
-  ultimoStatus: any;
+  ultimoStatus: StatusProjeto;
 }
 
 export function ProjetoTimeline({ ultimoStatus }: ProjetoTimelineProps) {
-  const entregas = [];
-  
-  if (ultimoStatus?.data_marco1) {
-    entregas.push({
-      data: ultimoStatus.data_marco1,
-      titulo: ultimoStatus.entrega1 || 'Entrega 1',
-      entregaveis: ultimoStatus.entregaveis1,
-      cor: 'beige'
-    });
-  }
-  
-  if (ultimoStatus?.data_marco2) {
-    entregas.push({
-      data: ultimoStatus.data_marco2,
-      titulo: ultimoStatus.entrega2 || 'Entrega 2',
-      entregaveis: ultimoStatus.entregaveis2,
-      cor: 'primary'
-    });
-  }
-  
-  if (ultimoStatus?.data_marco3) {
-    entregas.push({
-      data: ultimoStatus.data_marco3,
-      titulo: ultimoStatus.entrega3 || 'Entrega 3',
-      entregaveis: ultimoStatus.entregaveis3,
-      cor: 'beige'
-    });
-  }
+  // Buscar TODAS as entregas da tabela entregas_status
+  const { data: entregas = [] } = useQuery({
+    queryKey: ['projeto-timeline-entregas', ultimoStatus.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('entregas_status')
+        .select('*')
+        .eq('status_id', ultimoStatus.id)
+        .order('ordem', { ascending: true });
 
-  // Ordenar por data
-  entregas.sort((a, b) => new Date(a.data).getTime() - new Date(b.data).getTime());
+      if (error) {
+        console.error('Erro ao buscar entregas para timeline do projeto:', error);
+        return [];
+      }
 
-  if (entregas.length === 0) {
-    return null;
+      return data || [];
+    },
+  });
+
+  // Mapear entregas para o formato do timeline (pegar até 3 principais)
+  const entregasTimeline = entregas.slice(0, 3).map((entrega, index) => ({
+    id: entrega.id,
+    titulo: entrega.nome_entrega || `Entrega ${index + 1}`,
+    data: entrega.data_entrega || 'TBD',
+    entregaveis: entrega.entregaveis || '',
+    ordem: entrega.ordem
+  }));
+
+  // Se não há entregas, não renderizar o timeline
+  if (entregasTimeline.length === 0) {
+    return (
+      <div className="text-center py-4 text-gray-500">
+        Nenhuma entrega definida para este projeto.
+      </div>
+    );
   }
-
-  const getCorClasses = (cor: string) => {
-    switch (cor) {
-      case 'beige':
-        return {
-          bg: 'bg-orange-50',
-          border: 'border-[#A6926B]',
-          text: 'text-[#A6926B]',
-          dot: 'bg-[#A6926B]'
-        };
-      case 'primary':
-        return {
-          bg: 'bg-blue-50',
-          border: 'border-[#1B365D]',
-          text: 'text-[#1B365D]',
-          dot: 'bg-[#1B365D]'
-        };
-      default:
-        return {
-          bg: 'bg-gray-50',
-          border: 'border-[#6B7280]',
-          text: 'text-[#6B7280]',
-          dot: 'bg-[#6B7280]'
-        };
-    }
-  };
 
   return (
-    <div>
-      <h4 className="font-semibold text-[#1B365D] mb-4">Timeline - Próximas Entregas</h4>
-      <div className="relative">
-        {/* Linha vertical */}
-        <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-[#6B7280]"></div>
-        
-        <div className="space-y-6">
-          {entregas.map((entrega, index) => {
-            const cores = getCorClasses(entrega.cor);
-            return (
-              <div key={index} className="relative flex items-start">
-                {/* Dot na timeline */}
-                <div className={`relative z-10 w-3 h-3 ${cores.dot} rounded-full mt-2`}></div>
-                
-                {/* Conteúdo */}
-                <div className={`ml-6 p-3 rounded-lg border-2 ${cores.bg} ${cores.border} flex-1 min-h-[100px]`}>
-                  <div className="flex justify-between items-start mb-2">
-                    <h5 className={`font-medium ${cores.text} text-base`}>
-                      {entrega.titulo}
-                    </h5>
-                    <span className="text-sm font-bold text-[#1B365D] bg-white px-2 py-1 rounded">
-                      {new Date(entrega.data).toLocaleDateString('pt-BR')}
-                    </span>
-                  </div>
-                  
-                  {entrega.entregaveis && (
-                    <div className={`text-xs ${cores.text} space-y-1`}>
-                      <strong className="text-[#1B365D] text-sm">Entregáveis:</strong>
-                      <div className="ml-2 space-y-0.5">
-                        {entrega.entregaveis.split('\n').map((item: string, i: number) => (
-                          <div key={i} className="flex leading-snug">
-                            <span className="mr-1 font-bold">•</span>
-                            <span className="flex-1">{item.trim()}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
+    <div className="space-y-4">
+      <h4 className="font-medium text-gray-900">Timeline de Entregas</h4>
+      
+      <div className="space-y-3">
+        {entregasTimeline.map((entrega, index) => (
+          <div key={entrega.id} className="flex items-start space-x-3">
+            {/* Indicador visual */}
+            <div className="flex flex-col items-center">
+              <div className="w-3 h-3 bg-pmo-primary rounded-full"></div>
+              {index < entregasTimeline.length - 1 && (
+                <div className="w-0.5 h-8 bg-gray-300 mt-1"></div>
+              )}
+            </div>
+            
+            {/* Conteúdo da entrega */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between">
+                <h5 className="text-sm font-medium text-gray-900">{entrega.titulo}</h5>
+                <span className="text-xs text-gray-500">
+                  {formatarData(entrega.data)}
+                </span>
               </div>
-            );
-          })}
-        </div>
+              
+              {entrega.entregaveis && (
+                <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+                  {entrega.entregaveis}
+                </p>
+              )}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

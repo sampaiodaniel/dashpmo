@@ -159,4 +159,5 @@ BEGIN
         RAISE NOTICE 'Migração concluída com sucesso! Todas as validações passaram.';
     END IF;
 END
-$$; 
+$$;
+

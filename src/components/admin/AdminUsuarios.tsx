@@ -192,10 +192,10 @@ export function AdminUsuarios() {
             {usuarios?.length || 0} usuários
           </Badge>
           <Button onClick={() => setModalNovoAberto(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Novo Usuário
-          </Button>
-        </div>
+          <Plus className="h-4 w-4 mr-2" />
+          Novo Usuário
+        </Button>
+      </div>
       </div>
 
       {/* Seção de Estatísticas */}

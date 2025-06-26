@@ -282,57 +282,24 @@ export function useEditarStatusForm(status: StatusProjeto) {
         return;
       }
 
-      // Backup dos dados atuais antes de salvar
-      const dadosOriginais = {
-        entrega1: status.entrega1,
-        entrega2: status.entrega2,
-        entrega3: status.entrega3,
-        entregaveis1: status.entregaveis1,
-        entregaveis2: status.entregaveis2,
-        entregaveis3: status.entregaveis3,
-        data_marco1: status.data_marco1,
-        data_marco2: status.data_marco2,
-        data_marco3: status.data_marco3
+      // Preparar dados para atualização - removemos as entregas antigas que agora são gerenciadas via entregas_status
+      const dadosAtualizacao = {
+        ...formData,
+        data_marco1: marco1TBD ? 'TBD' : (dataMarco1 ? dataMarco1.toISOString().split('T')[0] : null),
+        data_marco2: marco2TBD ? 'TBD' : (dataMarco2 ? dataMarco2.toISOString().split('T')[0] : null),
+        data_marco3: marco3TBD ? 'TBD' : (dataMarco3 ? dataMarco3.toISOString().split('T')[0] : null),
+        aprovado: false
       };
 
-      const dataToUpdate = {
-        data_atualizacao: formData.data_atualizacao,
-        status_geral: formData.status_geral,
-        status_visao_gp: formData.status_visao_gp,
-        impacto_riscos: formData.impacto_riscos,
-        probabilidade_riscos: formData.probabilidade_riscos,
-        realizado_semana_atual: formData.realizado_semana_atual,
-        backlog: formData.backlog,
-        bloqueios_atuais: formData.bloqueios_atuais,
-        observacoes_pontos_atencao: formData.observacoes_pontos_atencao,
-        progresso_estimado: formData.progresso_estimado,
-        // Limpar campos de entrega existentes
-        entrega1: entregasParaSalvar[0]?.nome || null,
-        data_marco1: entregasParaSalvar[0]?.data || null,
-        entregaveis1: entregasParaSalvar[0]?.entregaveis || null,
-        ...(camposExistem && { status_entrega1_id: entregasParaSalvar[0]?.statusEntregaId || null }),
-        entrega2: entregasParaSalvar[1]?.nome || null,
-        data_marco2: entregasParaSalvar[1]?.data || null,
-        entregaveis2: entregasParaSalvar[1]?.entregaveis || null,
-        ...(camposExistem && { status_entrega2_id: entregasParaSalvar[1]?.statusEntregaId || null }),
-        entrega3: entregasParaSalvar[2]?.nome || null,
-        data_marco3: entregasParaSalvar[2]?.data || null,
-        entregaveis3: entregasParaSalvar[2]?.entregaveis || null,
-        ...(camposExistem && { status_entrega3_id: entregasParaSalvar[2]?.statusEntregaId || null }),
-        // Se for admin editando status aprovado, voltar para revisão
-        ...(status.aprovado && isAdmin() && {
-          aprovado: false,
-          aprovado_por: null,
-          data_aprovacao: null
-        })
-      };
+      // Não salvamos mais as entregas nos campos antigos da tabela status_projeto
+      // Todas as entregas são gerenciadas via tabela entregas_status
 
-      console.log('💾 Dados finais a serem salvos:', dataToUpdate);
+      console.log('📝 Dados de atualização:', dadosAtualizacao);
 
       // Salvar no banco de dados
       const { error, data: savedData } = await supabase
         .from('status_projeto')
-        .update(dataToUpdate)
+        .update(dadosAtualizacao)
         .eq('id', status.id)
         .select()
         .single();
