@@ -1,4 +1,3 @@
-
 interface DadosRelatorioVisual {
   carteira?: string;
   responsavel?: string;
@@ -212,21 +211,56 @@ export class HtmlGenerator {
       }
     });
 
-    // Processar setas de navegação da timeline
-    const navigationButtons = clonedElement.querySelectorAll('button[class*="timeline"]');
-    navigationButtons.forEach(button => {
-      const buttonText = button.textContent?.trim();
-      if (buttonText === '←' || buttonText === '→') {
-        // Implementar navegação horizontal da timeline
+    // Processar setas de navegação da timeline - CORRIGIDO
+    const timelineButtons = clonedElement.querySelectorAll('button');
+    timelineButtons.forEach(button => {
+      const buttonHTML = button.innerHTML;
+      const isLeftArrow = buttonHTML.includes('ChevronLeft') || button.textContent?.includes('←');
+      const isRightArrow = buttonHTML.includes('ChevronRight') || button.textContent?.includes('→');
+      
+      if (isLeftArrow || isRightArrow) {
+        const direction = isLeftArrow ? -1 : 1;
         button.setAttribute('onclick', `
-          const direction = '${buttonText}' === '←' ? -1 : 1;
-          const timeline = this.closest('.timeline-horizontal') || this.closest('.timeline-container');
-          if (timeline) {
-            const scrollContainer = timeline.querySelector('.overflow-x-auto') || timeline;
-            if (scrollContainer) {
-              scrollContainer.scrollLeft += direction * 200;
+          event.preventDefault();
+          event.stopPropagation();
+          
+          // Encontrar o container da timeline mais próximo
+          let timelineCard = this.closest('.timeline-card');
+          if (!timelineCard) {
+            timelineCard = this.closest('[class*="timeline"]');
+          }
+          
+          if (timelineCard) {
+            // Procurar por container com scroll horizontal
+            const scrollContainer = timelineCard.querySelector('.overflow-x-auto') || 
+                                  timelineCard.querySelector('[style*="overflow-x"]') ||
+                                  timelineCard;
+            
+            if (scrollContainer && scrollContainer.scrollLeft !== undefined) {
+              scrollContainer.scrollLeft += ${direction} * 300;
+            } else {
+              // Fallback: tentar encontrar elementos de timeline para simular paginação
+              const timelineBoxes = timelineCard.querySelectorAll('.timeline-box');
+              if (timelineBoxes.length > 0) {
+                const currentVisible = Array.from(timelineBoxes).find(box => {
+                  const rect = box.getBoundingClientRect();
+                  const containerRect = timelineCard.getBoundingClientRect();
+                  return rect.left >= containerRect.left && rect.right <= containerRect.right;
+                });
+                
+                if (currentVisible) {
+                  const currentIndex = Array.from(timelineBoxes).indexOf(currentVisible);
+                  const targetIndex = Math.max(0, Math.min(timelineBoxes.length - 1, currentIndex + ${direction}));
+                  const targetBox = timelineBoxes[targetIndex];
+                  if (targetBox) {
+                    targetBox.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                  }
+                }
+              }
             }
           }
+          
+          return false;
         `);
       }
     });
