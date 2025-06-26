@@ -86,7 +86,7 @@ export function useRelatorioVisual() {
 
       if (statusError) throw statusError;
 
-      // Buscar entregas para cada status apenas da tabela entregas_status (não duplicar com campos legados)
+      // Buscar entregas para cada status apenas da tabela entregas_status
       if (statusProjetos && statusProjetos.length > 0) {
         const statusIds = statusProjetos.map(s => s.id);
         
@@ -103,51 +103,10 @@ export function useRelatorioVisual() {
           statusProjetos.forEach((status: any) => {
             const entregasDoStatus = todasEntregas?.filter(e => e.status_id === status.id) || [];
             
-            // Só usar entregas da tabela nova se existirem, senão usar campos legados
-            if (entregasDoStatus.length > 0) {
-              status.entregasExtras = entregasDoStatus;
-            } else {
-              // Migrar campos legados apenas se não há entregas na tabela nova
-              const entregasLegadas = [];
-              
-              if (status.entrega1) {
-                entregasLegadas.push({
-                  id: `legado-${status.id}-1`,
-                  status_id: status.id,
-                  ordem: 1,
-                  nome_entrega: status.entrega1,
-                  data_entrega: status.data_marco1,
-                  entregaveis: status.entregaveis1,
-                  status_entrega_id: status.status_entrega1_id
-                });
-              }
-
-              if (status.entrega2) {
-                entregasLegadas.push({
-                  id: `legado-${status.id}-2`,
-                  status_id: status.id,
-                  ordem: 2,
-                  nome_entrega: status.entrega2,
-                  data_entrega: status.data_marco2,
-                  entregaveis: status.entregaveis2,
-                  status_entrega_id: status.status_entrega2_id
-                });
-              }
-
-              if (status.entrega3) {
-                entregasLegadas.push({
-                  id: `legado-${status.id}-3`,
-                  status_id: status.id,
-                  ordem: 3,
-                  nome_entrega: status.entrega3,
-                  data_entrega: status.data_marco3,
-                  entregaveis: status.entregaveis3,
-                  status_entrega_id: status.status_entrega3_id
-                });
-              }
-
-              status.entregasExtras = entregasLegadas;
-            }
+            console.log(`Status ${status.id}: ${entregasDoStatus.length} entregas da tabela nova`);
+            
+            // SEMPRE usar apenas entregas da tabela nova - nunca misturar com campos legados
+            status.entregasExtras = entregasDoStatus;
           });
         }
       }
@@ -224,7 +183,7 @@ export function useRelatorioVisual() {
 
       if (statusError) throw statusError;
 
-      // Buscar entregas para cada status apenas da tabela entregas_status (não duplicar com campos legados)
+      // Buscar entregas para cada status apenas da tabela entregas_status
       if (statusProjetos && statusProjetos.length > 0) {
         const statusIds = statusProjetos.map(s => s.id);
         
@@ -241,51 +200,10 @@ export function useRelatorioVisual() {
           statusProjetos.forEach((status: any) => {
             const entregasDoStatus = todasEntregas?.filter(e => e.status_id === status.id) || [];
             
-            // Só usar entregas da tabela nova se existirem, senão usar campos legados
-            if (entregasDoStatus.length > 0) {
-              status.entregasExtras = entregasDoStatus;
-            } else {
-              // Migrar campos legados apenas se não há entregas na tabela nova
-              const entregasLegadas = [];
-              
-              if (status.entrega1) {
-                entregasLegadas.push({
-                  id: `legado-${status.id}-1`,
-                  status_id: status.id,
-                  ordem: 1,
-                  nome_entrega: status.entrega1,
-                  data_entrega: status.data_marco1,
-                  entregaveis: status.entregaveis1,
-                  status_entrega_id: status.status_entrega1_id
-                });
-              }
-
-              if (status.entrega2) {
-                entregasLegadas.push({
-                  id: `legado-${status.id}-2`,
-                  status_id: status.id,
-                  ordem: 2,
-                  nome_entrega: status.entrega2,
-                  data_entrega: status.data_marco2,
-                  entregaveis: status.entregaveis2,
-                  status_entrega_id: status.status_entrega2_id
-                });
-              }
-
-              if (status.entrega3) {
-                entregasLegadas.push({
-                  id: `legado-${status.id}-3`,
-                  status_id: status.id,
-                  ordem: 3,
-                  nome_entrega: status.entrega3,
-                  data_entrega: status.data_marco3,
-                  entregaveis: status.entregaveis3,
-                  status_entrega_id: status.status_entrega3_id
-                });
-              }
-
-              status.entregasExtras = entregasLegadas;
-            }
+            console.log(`Status ${status.id}: ${entregasDoStatus.length} entregas da tabela nova`);
+            
+            // SEMPRE usar apenas entregas da tabela nova - nunca misturar com campos legados
+            status.entregasExtras = entregasDoStatus;
           });
         }
       }
