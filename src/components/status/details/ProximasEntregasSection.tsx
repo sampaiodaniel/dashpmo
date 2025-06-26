@@ -57,6 +57,24 @@ export function ProximasEntregasSection({ status }: ProximasEntregasSectionProps
           entregaveis3: statusData?.entregaveis3
         });
 
+        // Buscar TODAS as entregas onde o nome seja similar ao que procuramos
+        console.log('🔍 Procurando por entrega "Pacote Anti Fraude Tático" em toda a tabela entregas_status...');
+        const { data: todasEntregas } = await supabase
+          .from('entregas_status')
+          .select('*')
+          .ilike('nome_entrega', '%Pacote Anti Fraude Tático%');
+        
+        console.log('🔍 Entregas encontradas com nome similar:', todasEntregas);
+
+        // Buscar também na tabela status_projeto por campos legados que contenham esse nome
+        console.log('🔍 Procurando por entrega "Pacote Anti Fraude Tático" nos campos legados...');
+        const { data: statusComEntrega } = await supabase
+          .from('status_projeto')
+          .select('*')
+          .or('entrega1.ilike.%Pacote Anti Fraude Tático%,entrega2.ilike.%Pacote Anti Fraude Tático%,entrega3.ilike.%Pacote Anti Fraude Tático%');
+        
+        console.log('🔍 Status com entrega nos campos legados:', statusComEntrega);
+
         // Migrar entregas legadas para a nova tabela se existirem
         const entregasParaMigrar = [];
         
