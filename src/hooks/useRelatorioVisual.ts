@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -73,27 +74,36 @@ export function useRelatorioVisual() {
 
       const projetoIds = projetos.map(p => p.id);
 
-      // Buscar status mais recentes dos projetos com entregas extras
+      // Buscar status mais recentes dos projetos com entregas da tabela entregas_status
       const { data: statusProjetos, error: statusError } = await supabase
         .from('status_projeto')
         .select(`
           *,
-          projeto:projetos(id, nome_projeto),
-          entregas_extras:entregas_status(*)
+          projeto:projetos(id, nome_projeto)
         `)
         .in('projeto_id', projetoIds)
         .order('data_criacao', { ascending: false });
 
       if (statusError) throw statusError;
 
-      // Processar e anexar entregas extras a cada status
-      if (statusProjetos) {
-        statusProjetos.forEach((status: any) => {
-          if (status.entregas_extras && status.entregas_extras.length > 0) {
-            // console.log('📦 Entregas extras encontradas no status (carteira):', status.id, status.entregas_extras);
-            status.entregasExtras = status.entregas_extras;
-          }
-        });
+      // Buscar entregas para cada status da tabela entregas_status
+      if (statusProjetos && statusProjetos.length > 0) {
+        const statusIds = statusProjetos.map(s => s.id);
+        
+        const { data: todasEntregas, error: entregasError } = await supabase
+          .from('entregas_status')
+          .select('*')
+          .in('status_id', statusIds)
+          .order('ordem', { ascending: true });
+
+        if (entregasError) {
+          console.error('Erro ao buscar entregas:', entregasError);
+        } else {
+          // Anexar entregas a cada status
+          statusProjetos.forEach((status: any) => {
+            status.entregasExtras = todasEntregas?.filter(e => e.status_id === status.id) || [];
+          });
+        }
       }
 
       // Buscar incidentes da carteira
@@ -110,7 +120,7 @@ export function useRelatorioVisual() {
         projetos,
         statusProjetos: statusProjetos || [],
         incidentes: incidentes || [],
-        dataGeracao: new Date() // Garantir que seja sempre um objeto Date
+        dataGeracao: new Date()
       };
 
       console.log('✅ Relatório visual gerado:', dados);
@@ -156,27 +166,36 @@ export function useRelatorioVisual() {
       const projetoIds = projetos.map(p => p.id);
       const carteiras = [...new Set(projetos.map(p => p.carteira_primaria).filter(Boolean))];
 
-      // Buscar status mais recentes dos projetos com entregas extras
+      // Buscar status mais recentes dos projetos com entregas da tabela entregas_status
       const { data: statusProjetos, error: statusError } = await supabase
         .from('status_projeto')
         .select(`
           *,
-          projeto:projetos(id, nome_projeto),
-          entregas_extras:entregas_status(*)
+          projeto:projetos(id, nome_projeto)
         `)
         .in('projeto_id', projetoIds)
         .order('data_criacao', { ascending: false });
 
       if (statusError) throw statusError;
 
-      // Processar e anexar entregas extras a cada status
-      if (statusProjetos) {
-        statusProjetos.forEach((status: any) => {
-          if (status.entregas_extras && status.entregas_extras.length > 0) {
-            // console.log('📦 Entregas extras encontradas no status (responsável):', status.id, status.entregas_extras);
-            status.entregasExtras = status.entregas_extras;
-          }
-        });
+      // Buscar entregas para cada status da tabela entregas_status
+      if (statusProjetos && statusProjetos.length > 0) {
+        const statusIds = statusProjetos.map(s => s.id);
+        
+        const { data: todasEntregas, error: entregasError } = await supabase
+          .from('entregas_status')
+          .select('*')
+          .in('status_id', statusIds)
+          .order('ordem', { ascending: true });
+
+        if (entregasError) {
+          console.error('Erro ao buscar entregas:', entregasError);
+        } else {
+          // Anexar entregas a cada status
+          statusProjetos.forEach((status: any) => {
+            status.entregasExtras = todasEntregas?.filter(e => e.status_id === status.id) || [];
+          });
+        }
       }
 
       // Buscar incidentes das carteiras relacionadas
@@ -193,7 +212,7 @@ export function useRelatorioVisual() {
         projetos,
         statusProjetos: statusProjetos || [],
         incidentes: incidentes || [],
-        dataGeracao: new Date() // Garantir que seja sempre um objeto Date
+        dataGeracao: new Date()
       };
 
       console.log('✅ Relatório visual gerado:', dados);

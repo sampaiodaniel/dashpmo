@@ -88,6 +88,8 @@ export type Database = {
           id: number
           nome_entrega: string
           ordem: number
+          status_da_entrega: string
+          status_entrega_id: number | null
           status_id: number
         }
         Insert: {
@@ -97,6 +99,8 @@ export type Database = {
           id?: number
           nome_entrega: string
           ordem?: number
+          status_da_entrega: string
+          status_entrega_id?: number | null
           status_id: number
         }
         Update: {
@@ -106,9 +110,18 @@ export type Database = {
           id?: number
           nome_entrega?: string
           ordem?: number
+          status_da_entrega?: string
+          status_entrega_id?: number | null
           status_id?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "entregas_status_status_entrega_id_fkey"
+            columns: ["status_entrega_id"]
+            isOneToOne: false
+            referencedRelation: "tipos_status_entrega"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "entregas_status_status_id_fkey"
             columns: ["status_id"]
@@ -483,6 +496,57 @@ export type Database = {
           },
         ]
       }
+      relatorios_usuario: {
+        Row: {
+          acessos: number | null
+          compartilhado: boolean | null
+          compartilhado_com: string[] | null
+          criado_em: string
+          dados: Json
+          descricao: string | null
+          expira_em: string | null
+          id: string
+          protegido_por_senha: boolean | null
+          senha_hash: string | null
+          tipo: string
+          titulo: string
+          ultimo_acesso: string | null
+          usuario_id: string
+        }
+        Insert: {
+          acessos?: number | null
+          compartilhado?: boolean | null
+          compartilhado_com?: string[] | null
+          criado_em?: string
+          dados: Json
+          descricao?: string | null
+          expira_em?: string | null
+          id?: string
+          protegido_por_senha?: boolean | null
+          senha_hash?: string | null
+          tipo: string
+          titulo: string
+          ultimo_acesso?: string | null
+          usuario_id: string
+        }
+        Update: {
+          acessos?: number | null
+          compartilhado?: boolean | null
+          compartilhado_com?: string[] | null
+          criado_em?: string
+          dados?: Json
+          descricao?: string | null
+          expira_em?: string | null
+          id?: string
+          protegido_por_senha?: boolean | null
+          senha_hash?: string | null
+          tipo?: string
+          titulo?: string
+          ultimo_acesso?: string | null
+          usuario_id?: string
+        }
+        Relationships: []
+      }
       responsaveis_asa: {
         Row: {
           ativo: boolean | null
@@ -557,6 +621,9 @@ export type Database = {
           realizado_semana_atual: string | null
           responsavel_asa: string | null
           responsavel_cwi: string | null
+          status_entrega1_id: number | null
+          status_entrega2_id: number | null
+          status_entrega3_id: number | null
           status_geral: Database["public"]["Enums"]["status_geral"]
           status_visao_gp: Database["public"]["Enums"]["status_visao_gp"]
         }
@@ -592,6 +659,9 @@ export type Database = {
           realizado_semana_atual?: string | null
           responsavel_asa?: string | null
           responsavel_cwi?: string | null
+          status_entrega1_id?: number | null
+          status_entrega2_id?: number | null
+          status_entrega3_id?: number | null
           status_geral: Database["public"]["Enums"]["status_geral"]
           status_visao_gp: Database["public"]["Enums"]["status_visao_gp"]
         }
@@ -627,6 +697,9 @@ export type Database = {
           realizado_semana_atual?: string | null
           responsavel_asa?: string | null
           responsavel_cwi?: string | null
+          status_entrega1_id?: number | null
+          status_entrega2_id?: number | null
+          status_entrega3_id?: number | null
           status_geral?: Database["public"]["Enums"]["status_geral"]
           status_visao_gp?: Database["public"]["Enums"]["status_visao_gp"]
         }
@@ -636,6 +709,27 @@ export type Database = {
             columns: ["projeto_id"]
             isOneToOne: false
             referencedRelation: "projetos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "status_projeto_status_entrega1_id_fkey"
+            columns: ["status_entrega1_id"]
+            isOneToOne: false
+            referencedRelation: "tipos_status_entrega"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "status_projeto_status_entrega2_id_fkey"
+            columns: ["status_entrega2_id"]
+            isOneToOne: false
+            referencedRelation: "tipos_status_entrega"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "status_projeto_status_entrega3_id_fkey"
+            columns: ["status_entrega3_id"]
+            isOneToOne: false
+            referencedRelation: "tipos_status_entrega"
             referencedColumns: ["id"]
           },
         ]
@@ -670,101 +764,81 @@ export type Database = {
         }
         Relationships: []
       }
+      tipos_status_entrega: {
+        Row: {
+          cor: string
+          criado_em: string
+          criado_por: string | null
+          descricao: string | null
+          id: number
+          nome: string
+          ordem: number
+        }
+        Insert: {
+          cor?: string
+          criado_em?: string
+          criado_por?: string | null
+          descricao?: string | null
+          id?: number
+          nome: string
+          ordem: number
+        }
+        Update: {
+          cor?: string
+          criado_em?: string
+          criado_por?: string | null
+          descricao?: string | null
+          id?: number
+          nome?: string
+          ordem?: number
+        }
+        Relationships: []
+      }
       usuarios: {
         Row: {
           areas_acesso: string[] | null
+          areas_atuacao: string[] | null
           ativo: boolean | null
           data_criacao: string | null
           email: string
           id: number
           nome: string
           senha_hash: string
+          senha_padrao: boolean | null
+          sobrenome: string | null
           tipo_usuario: Database["public"]["Enums"]["tipo_usuario"]
           ultimo_login: string | null
         }
         Insert: {
           areas_acesso?: string[] | null
+          areas_atuacao?: string[] | null
           ativo?: boolean | null
           data_criacao?: string | null
           email: string
           id?: number
           nome: string
           senha_hash: string
+          senha_padrao?: boolean | null
+          sobrenome?: string | null
           tipo_usuario: Database["public"]["Enums"]["tipo_usuario"]
           ultimo_login?: string | null
         }
         Update: {
           areas_acesso?: string[] | null
+          areas_atuacao?: string[] | null
           ativo?: boolean | null
           data_criacao?: string | null
           email?: string
           id?: number
           nome?: string
           senha_hash?: string
+          senha_padrao?: boolean | null
+          sobrenome?: string | null
           tipo_usuario?: Database["public"]["Enums"]["tipo_usuario"]
           ultimo_login?: string | null
         }
         Relationships: []
       }
-      relatorios_usuario: {
-        Row: {
-          id: string;
-          usuario_id: string;
-          tipo: string;
-          titulo: string;
-          dados: Json;
-          criado_em: string;
-          expira_em: string | null;
-          protegido_por_senha: boolean | null;
-          senha_hash: string | null;
-          acessos: number | null;
-          ultimo_acesso: string | null;
-          compartilhado: boolean | null;
-          compartilhado_com: string[] | null;
-          descricao: string | null;
-        };
-        Insert: {
-          id?: string;
-          usuario_id: string;
-          tipo: string;
-          titulo: string;
-          dados: Json;
-          criado_em?: string;
-          expira_em?: string | null;
-          protegido_por_senha?: boolean | null;
-          senha_hash?: string | null;
-          acessos?: number | null;
-          ultimo_acesso?: string | null;
-          compartilhado?: boolean | null;
-          compartilhado_com?: string[] | null;
-          descricao?: string | null;
-        };
-        Update: {
-          id?: string;
-          usuario_id?: string;
-          tipo?: string;
-          titulo?: string;
-          dados?: Json;
-          criado_em?: string;
-          expira_em?: string | null;
-          protegido_por_senha?: boolean | null;
-          senha_hash?: string | null;
-          acessos?: number | null;
-          ultimo_acesso?: string | null;
-          compartilhado?: boolean | null;
-          compartilhado_com?: string[] | null;
-          descricao?: string | null;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "relatorios_usuario_usuario_id_fkey";
-            columns: ["usuario_id"];
-            isOneToOne: false;
-            referencedRelation: "users";
-            referencedColumns: ["id"];
-          }
-        ];
-      };
     }
     Views: {
       [_ in never]: never
@@ -776,6 +850,10 @@ export type Database = {
           impacto: Database["public"]["Enums"]["nivel_risco"]
         }
         Returns: string
+      }
+      is_admin: {
+        Args: { user_email: string }
+        Returns: boolean
       }
       registrar_log_alteracao: {
         Args: {
@@ -836,7 +914,14 @@ export type Database = {
         | "Mudança Escopo"
         | "Novo Requisito"
         | "Replanejamento Cronograma"
-      tipo_usuario: "GP" | "Responsavel" | "Admin"
+      tipo_usuario:
+        | "GP"
+        | "Responsavel"
+        | "Admin"
+        | "Administrador"
+        | "Aprovador"
+        | "Editor"
+        | "Leitor"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -998,7 +1083,15 @@ export const Constants = {
         "Novo Requisito",
         "Replanejamento Cronograma",
       ],
-      tipo_usuario: ["GP", "Responsavel", "Admin"],
+      tipo_usuario: [
+        "GP",
+        "Responsavel",
+        "Admin",
+        "Administrador",
+        "Aprovador",
+        "Editor",
+        "Leitor",
+      ],
     },
   },
 } as const

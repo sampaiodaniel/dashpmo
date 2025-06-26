@@ -30,6 +30,14 @@ export function useStatusList() {
             carteira_primaria,
             carteira_secundaria,
             carteira_terciaria
+          ),
+          entregas_status!inner (
+            id,
+            ordem,
+            nome_entrega,
+            data_entrega,
+            entregaveis,
+            status_entrega_id
           )
         `)
         .order('data_atualizacao', { ascending: false });
@@ -46,14 +54,23 @@ export function useStatusList() {
         ...status,
         data_atualizacao: criarDataSemTimezone(status.data_atualizacao),
         data_criacao: criarDataSemTimezone(status.data_criacao),
-        data_marco1: status.data_marco1 ? criarDataSemTimezone(status.data_marco1) : undefined,
-        data_marco2: status.data_marco2 ? criarDataSemTimezone(status.data_marco2) : undefined,
-        data_marco3: status.data_marco3 ? criarDataSemTimezone(status.data_marco3) : undefined,
+        // Remover campos de entrega legados - usar apenas entregas_status
+        entrega1: null,
+        entrega2: null,
+        entrega3: null,
+        entregaveis1: null,
+        entregaveis2: null,
+        entregaveis3: null,
+        data_marco1: null,
+        data_marco2: null,
+        data_marco3: null,
         data_aprovacao: status.data_aprovacao ? criarDataSemTimezone(status.data_aprovacao) : undefined,
         projeto: status.projeto ? {
           ...status.projeto,
           data_criacao: criarDataSemTimezone(status.projeto.data_criacao)
-        } : undefined
+        } : undefined,
+        // Garantir que entregas_status esteja sempre presente
+        entregas_status: status.entregas_status || []
       })) || [];
 
       return statusList;
