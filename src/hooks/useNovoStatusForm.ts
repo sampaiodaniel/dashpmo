@@ -581,27 +581,29 @@ export function useNovoStatusForm() {
 
       console.log('✅ Status criado com sucesso:', novoStatus);
 
-      // Salvar entregas extras se houver
-      if (entregas.length > 3) {
-        const entregasExtras = entregas.slice(3);
-        for (const entrega of entregasExtras) {
+      // Salvar entregas na tabela entregas_status
+      if (entregas.length > 0) {
+        for (const [index, entrega] of entregas.entries()) {
           if (entrega.nome) {
+            const entregaData = {
+              status_id: novoStatus.id,
+              ordem: index + 1,
+              nome_entrega: entrega.nome,
+              data_entrega: entrega.data ? (() => {
+                const date = entrega.data;
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+              })() : null,
+              entregaveis: entrega.entregaveis,
+              status_entrega_id: entrega.statusEntregaId || null,
+              status_da_entrega: 'Em andamento' // Valor padrão obrigatório
+            };
+
             await supabase
               .from('entregas_status')
-              .insert({
-                status_id: novoStatus.id,
-                nome_entrega: entrega.nome,
-                data_entrega: entrega.data ? (() => {
-                  const date = entrega.data;
-                  const year = date.getFullYear();
-                  const month = String(date.getMonth() + 1).padStart(2, '0');
-                  const day = String(date.getDate()).padStart(2, '0');
-                  return `${year}-${month}-${day}`;
-                })() : null,
-                entregaveis: entrega.entregaveis,
-                ...(camposStatusEntregaExistem && { status_entrega_id: entrega.statusEntregaId || null }),
-                ordem: entregas.indexOf(entrega) + 1
-              });
+              .insert(entregaData);
           }
         }
       }
@@ -644,17 +646,17 @@ export function useNovoStatusForm() {
       }, 500);
 
       toast({
-        title: "Status criado com sucesso!",
-        description: "O status do projeto foi atualizado.",
+        title: "Sucesso",
+        description: "Status criado com sucesso!",
       });
       
       navigate('/status');
     },
     onError: (error) => {
-      console.error('Erro ao criar status:', error);
+      console.error('Erro na mutation:', error);
       toast({
-        title: "Erro ao salvar status",
-        description: error.message || "Ocorreu um erro inesperado. Verifique os dados preenchidos e tente novamente.",
+        title: "Erro",
+        description: error.message || "Erro ao criar status",
         variant: "destructive",
       });
     },
@@ -715,18 +717,19 @@ export function useNovoStatusForm() {
 
   return {
     form,
-    isLoading: mutation.isPending,
-    isLoadingListas,
-    onSubmit,
-    projetoSelecionado,
+    mutation,
     carteiraSelecionada,
+    setCarteiraSelecionada,
+    projetoSelecionado,
+    setProjetoSelecionado,
     progressoEstimado,
+    setProgressoEstimado,
     entregas,
     setEntregas,
-    handleCarteiraChange,
-    handleProjetoChange,
-    handleProgressoChange,
-    temStatusNaoValidado,
     ultimoStatus,
+    isLoadingUltimoStatus,
+    temStatusNaoValidado,
+    isLoadingListas,
+    camposStatusEntregaExistem
   };
 }

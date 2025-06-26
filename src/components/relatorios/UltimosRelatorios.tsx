@@ -9,6 +9,7 @@ import { useState, useEffect } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Input } from '@/components/ui/input';
+import { useAuth } from '@/hooks/useAuth';
 
 export function UltimosRelatorios() {
   const { historico, removerRelatorio, limparHistorico } = useHistoricoRelatorios();
@@ -18,11 +19,14 @@ export function UltimosRelatorios() {
     excluirRelatorioCompartilhado, 
     copiarLink 
   } = useReportWebhook();
+  const { usuario } = useAuth();
   const [activeTab, setActiveTab] = useState<'gerados' | 'compartilhados'>('gerados');
 
   useEffect(() => {
-    listarRelatoriosCompartilhados();
-  }, []);
+    if (usuario?.uuid) {
+      listarRelatoriosCompartilhados(usuario.uuid);
+    }
+  }, [usuario?.uuid, listarRelatoriosCompartilhados]);
 
   const getIconePorTipo = (tipo: string) => {
     switch (tipo) {
@@ -69,14 +73,13 @@ export function UltimosRelatorios() {
   };
 
   const handleVisualizarRelatorio = (relatorio: RelatorioHistorico) => {
-    // Aqui você pode implementar a lógica para reabrir o relatório
     console.log('Visualizar relatório:', relatorio);
   };
 
   const handleExcluirRelatorioCompartilhado = async (id: string) => {
-    if (confirm('Tem certeza que deseja excluir este relatório compartilhado?')) {
-      await excluirRelatorioCompartilhado(id);
-  }
+    if (confirm('Tem certeza que deseja excluir este relatório compartilhado?') && usuario?.uuid) {
+      await excluirRelatorioCompartilhado(id, usuario.uuid);
+    }
   };
 
   return (
@@ -292,4 +295,4 @@ export function UltimosRelatorios() {
       </CardContent>
     </Card>
   );
-} 
+}

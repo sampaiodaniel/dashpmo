@@ -203,7 +203,8 @@ export function useEditarStatusForm(status: StatusProjeto) {
             nome_entrega: entrega.nome,
             data_entrega: entrega.data || null,
             entregaveis: entrega.entregaveis,
-            status_entrega_id: entrega.statusEntregaId || null
+            status_entrega_id: entrega.statusEntregaId || null,
+            status_da_entrega: 'Em andamento' // Valor padrão obrigatório
           }));
 
           const { error: insertError, data: insertedData } = await supabase

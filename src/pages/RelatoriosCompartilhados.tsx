@@ -1,119 +1,58 @@
+
 import { useState, useEffect } from 'react';
+import { useReportWebhook } from '@/hooks/useReportWebhook';
 import { useAuth } from '@/hooks/useAuth';
-import { LoginForm } from '@/components/auth/LoginForm';
-import { Layout } from '@/components/layout/Layout';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { 
-  Share, 
-  Copy, 
-  Trash2, 
-  ExternalLink, 
-  Calendar, 
-  Eye, 
-  Shield, 
-  Clock,
-  FileText,
-  BarChart3,
-  TrendingUp,
-  Filter,
-  Search
-} from 'lucide-react';
-import { useReportWebhook, RelatorioCompartilhavel } from '@/hooks/useReportWebhook';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Share, Copy, ExternalLink, Trash2, Clock, Shield, FileText, BarChart3, TrendingUp } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 export default function RelatoriosCompartilhados() {
-  const { usuario, userUuid, isLoading } = useAuth();
+  const { usuario } = useAuth();
   const { 
     relatoriosCompartilhados, 
     listarRelatoriosCompartilhados, 
     excluirRelatorioCompartilhado, 
-    copiarLink 
+    copiarLink,
+    loading 
   } = useReportWebhook();
 
-  const [filtroTipo, setFiltroTipo] = useState<string>('todos');
-  const [filtroStatus, setFiltroStatus] = useState<string>('todos');
-  const [busca, setBusca] = useState('');
-
   useEffect(() => {
-    if (userUuid) {
-      listarRelatoriosCompartilhados(userUuid);
+    if (usuario?.uuid) {
+      listarRelatoriosCompartilhados(usuario.uuid);
     }
-  }, [userUuid]);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-pmo-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-white rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <img 
-              src="/lovable-uploads/DashPMO_Icon_recortado.png" 
-              alt="DashPMO" 
-              className="w-12 h-12" 
-            />
-          </div>
-          <div className="text-pmo-gray">Carregando...</div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!usuario) {
-    return <LoginForm />;
-  }
-
-  // Filtrar relatórios
-  const relatoriosFiltrados = relatoriosCompartilhados.filter(relatorio => {
-    const matchTipo = filtroTipo === 'todos' || relatorio.tipo === filtroTipo;
-    const matchBusca = busca === '' || 
-      relatorio.titulo.toLowerCase().includes(busca.toLowerCase()) ||
-      relatorio.metadados.carteira?.toLowerCase().includes(busca.toLowerCase()) ||
-      relatorio.metadados.responsavel?.toLowerCase().includes(busca.toLowerCase());
-
-    const agora = new Date();
-    const expiraEm = new Date(relatorio.criadoEm);
-    expiraEm.setDate(expiraEm.getDate() + relatorio.configuracao.expiraEm);
-    const expirado = agora > expiraEm;
-
-    const matchStatus = filtroStatus === 'todos' || 
-      (filtroStatus === 'ativo' && !expirado) ||
-      (filtroStatus === 'expirado' && expirado) ||
-      (filtroStatus === 'protegido' && relatorio.configuracao.protegidoPorSenha);
-
-    return matchTipo && matchBusca && matchStatus;
-  });
-
-  const handleExcluir = (id: string) => {
-    if (userUuid) {
-      excluirRelatorioCompartilhado(id, userUuid);
-    } else {
-      console.error("UUID do usuário não encontrado para exclusão.");
-    }
-  };
+  }, [usuario?.uuid, listarRelatoriosCompartilhados]);
 
   const getIconePorTipo = (tipo: string) => {
     switch (tipo) {
-      case 'asa': return FileText;
-      case 'visual': return BarChart3;
-      case 'consolidado': return TrendingUp;
-      default: return FileText;
+      case 'asa':
+        return <FileText className="h-4 w-4" />;
+      case 'visual':
+        return <BarChart3 className="h-4 w-4" />;
+      case 'consolidado':
+        return <TrendingUp className="h-4 w-4" />;
+      default:
+        return <FileText className="h-4 w-4" />;
     }
   };
 
   const getCorPorTipo = (tipo: string) => {
     switch (tipo) {
-      case 'asa': return 'bg-blue-100 text-blue-700';
-      case 'visual': return 'bg-green-100 text-green-700';
-      case 'consolidado': return 'bg-purple-100 text-purple-700';
-      default: return 'bg-gray-100 text-gray-700';
+      case 'asa':
+        return 'bg-blue-100 text-blue-800';
+      case 'visual':
+        return 'bg-green-100 text-green-800';
+      case 'consolidado':
+        return 'bg-purple-100 text-purple-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const calcularStatusExpiracao = (relatorio: RelatorioCompartilhavel) => {
+  const calcularStatusExpiracao = (relatorio: any) => {
     const agora = new Date();
     const expiraEm = new Date(relatorio.criadoEm);
     expiraEm.setDate(expiraEm.getDate() + relatorio.configuracao.expiraEm);
@@ -131,290 +70,174 @@ export default function RelatoriosCompartilhados() {
     return { status: 'ativo', texto: `${diasRestantes} dias`, cor: 'bg-green-100 text-green-700' };
   };
 
+  const handleExcluirRelatorio = async (id: string) => {
+    if (confirm('Tem certeza que deseja excluir este relatório compartilhado?') && usuario?.uuid) {
+      await excluirRelatorioCompartilhado(id, usuario.uuid);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="text-center">Carregando relatórios...</div>
+      </div>
+    );
+  }
+
   return (
-    <Layout>
-      <div className="space-y-6">
-        <div className="text-left">
-          <h1 className="text-3xl font-bold text-pmo-primary">Relatórios Compartilhados</h1>
-          <p className="text-pmo-gray mt-2">Gerencie seus links de compartilhamento de relatórios</p>
-        </div>
+    <div className="container mx-auto p-6">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-[#1B365D] mb-2">
+          Relatórios Compartilhados
+        </h1>
+        <p className="text-gray-600">
+          Gerencie seus relatórios compartilhados e links de acesso
+        </p>
+      </div>
 
-        {/* Filtros */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-              <label className="text-sm font-medium text-pmo-gray mb-2 block">
-                <Search className="h-4 w-4 inline mr-1" />
-                Buscar
-              </label>
-              <Input
-                value={busca}
-                onChange={(e) => setBusca(e.target.value)}
-                placeholder="Título, carteira ou responsável..."
-                className="w-full"
-              />
-            </div>
+      {relatoriosCompartilhados.length === 0 ? (
+        <Card>
+          <CardContent className="text-center py-12">
+            <Share className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+            <h3 className="text-xl font-semibold text-gray-700 mb-2">
+              Nenhum relatório compartilhado
+            </h3>
+            <p className="text-gray-500 mb-6">
+              Você ainda não criou nenhum link de compartilhamento de relatórios.
+            </p>
+            <Button onClick={() => window.history.back()}>
+              Voltar aos Relatórios
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-6">
+          {relatoriosCompartilhados.map((relatorio) => {
+            const statusExpiracao = calcularStatusExpiracao(relatorio);
             
-            <div>
-              <label className="text-sm font-medium text-pmo-gray mb-2 block">
-                <Filter className="h-4 w-4 inline mr-1" />
-                Tipo
-              </label>
-              <Select value={filtroTipo} onValueChange={setFiltroTipo}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">Todos os tipos</SelectItem>
-                  <SelectItem value="asa">ASA</SelectItem>
-                  <SelectItem value="visual">Visual</SelectItem>
-                  <SelectItem value="consolidado">Consolidado</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-pmo-gray mb-2 block">
-                <Clock className="h-4 w-4 inline mr-1" />
-                Status
-              </label>
-              <Select value={filtroStatus} onValueChange={setFiltroStatus}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">Todos</SelectItem>
-                  <SelectItem value="ativo">Ativos</SelectItem>
-                  <SelectItem value="expirado">Expirados</SelectItem>
-                  <SelectItem value="protegido">Protegidos</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex items-end">
-              <Button 
-                onClick={() => {
-                  setBusca('');
-                  setFiltroTipo('todos');
-                  setFiltroStatus('todos');
-                }}
-                variant="outline"
-                className="w-full"
-              >
-                Limpar Filtros
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Estatísticas */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Total</p>
-                  <p className="text-2xl font-bold">{relatoriosCompartilhados.length}</p>
-                </div>
-                <Share className="h-8 w-8 text-blue-600" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Ativos</p>
-                  <p className="text-2xl font-bold text-green-600">
-                    {relatoriosCompartilhados.filter(r => {
-                      const agora = new Date();
-                      const expiraEm = new Date(r.criadoEm);
-                      expiraEm.setDate(expiraEm.getDate() + r.configuracao.expiraEm);
-                      return agora <= expiraEm;
-                    }).length}
-                  </p>
-                </div>
-                <Clock className="h-8 w-8 text-green-600" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Protegidos</p>
-                  <p className="text-2xl font-bold text-blue-600">
-                    {relatoriosCompartilhados.filter(r => r.configuracao.protegidoPorSenha).length}
-                  </p>
-                </div>
-                <Shield className="h-8 w-8 text-blue-600" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Total Acessos</p>
-                  <p className="text-2xl font-bold text-purple-600">
-                    {relatoriosCompartilhados.reduce((total, r) => total + (r.acessos || 0), 0)}
-                  </p>
-                </div>
-                <Eye className="h-8 w-8 text-purple-600" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Lista de relatórios */}
-        <div className="space-y-4">
-          {relatoriosFiltrados.length === 0 ? (
-            <Card>
-              <CardContent className="p-8 text-center">
-                <Share className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  {relatoriosCompartilhados.length === 0 
-                    ? 'Nenhum relatório compartilhado'
-                    : 'Nenhum relatório encontrado'
-                  }
-                </h3>
-                <p className="text-gray-500 mb-4">
-                  {relatoriosCompartilhados.length === 0 
-                    ? 'Crie seus primeiros links de compartilhamento na página de relatórios.'
-                    : 'Tente ajustar os filtros para encontrar o que está procurando.'
-                  }
-                </p>
-                <Button 
-                  onClick={() => window.location.href = '/relatorios'}
-                  className="bg-pmo-primary hover:bg-pmo-secondary"
-                >
-                  Ir para Relatórios
-                </Button>
-              </CardContent>
-            </Card>
-          ) : (
-            relatoriosFiltrados.map((relatorio) => {
-              const IconeTipo = getIconePorTipo(relatorio.tipo);
-              const statusExpiracao = calcularStatusExpiracao(relatorio);
-              
-              return (
-                <Card key={relatorio.id} className="hover:shadow-md transition-shadow">
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <div className={`p-2 rounded-lg ${getCorPorTipo(relatorio.tipo)}`}>
-                            <IconeTipo className="h-5 w-5" />
-                          </div>
-                          <div>
-                            <h3 className="text-lg font-semibold text-gray-900">
-                              {relatorio.titulo}
-                            </h3>
-                            <div className="flex items-center gap-2 mt-1">
-                              <Badge variant="outline" className="capitalize">
-                                {relatorio.tipo === 'asa' ? 'ASA' : relatorio.tipo}
+            return (
+              <Card key={relatorio.id} className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className={`p-2 rounded ${getCorPorTipo(relatorio.tipo)}`}>
+                          {getIconePorTipo(relatorio.tipo)}
+                        </div>
+                        <div>
+                          <CardTitle className="text-lg">{relatorio.titulo}</CardTitle>
+                          <div className="flex flex-wrap gap-2 mt-1">
+                            <Badge variant="outline" className="text-xs">
+                              {relatorio.tipo.toUpperCase()}
+                            </Badge>
+                            <Badge variant="outline" className={`text-xs ${statusExpiracao.cor}`}>
+                              <Clock className="h-3 w-3 mr-1" />
+                              {statusExpiracao.texto}
+                            </Badge>
+                            {relatorio.configuracao.protegidoPorSenha && (
+                              <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700">
+                                <Shield className="h-3 w-3 mr-1" />
+                                Protegido
                               </Badge>
-                              <Badge variant="outline" className={statusExpiracao.cor}>
-                                <Calendar className="h-3 w-3 mr-1" />
-                                {statusExpiracao.texto}
-                              </Badge>
-                              {relatorio.configuracao.protegidoPorSenha && (
-                                <Badge variant="outline" className="bg-blue-50 text-blue-700">
-                                  <Shield className="h-3 w-3 mr-1" />
-                                  Protegido
-                                </Badge>
-                              )}
-                            </div>
+                            )}
                           </div>
                         </div>
-
-                        {/* Informações do relatório */}
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600 mb-4">
-                          {relatorio.metadados.carteira && (
-                            <div>
-                              <span className="font-medium">Carteira:</span>
-                              <div>{relatorio.metadados.carteira}</div>
-                            </div>
-                          )}
-                          {relatorio.metadados.responsavel && (
-                            <div>
-                              <span className="font-medium">Responsável:</span>
-                              <div>{relatorio.metadados.responsavel}</div>
-                            </div>
-                          )}
-                          <div>
-                            <span className="font-medium">Criado:</span>
-                            <div>{formatDistanceToNow(new Date(relatorio.criadoEm), { 
-                              addSuffix: true, 
-                              locale: ptBR 
-                            })}</div>
-                          </div>
-                          <div>
-                            <span className="font-medium">Acessos:</span>
-                            <div className="flex items-center gap-1">
-                              <Eye className="h-3 w-3" />
-                              {relatorio.acessos || 0}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Descrição */}
-                        {relatorio.configuracao?.descricao && (
-                          <p className="text-sm text-gray-600 mb-4 p-3 bg-gray-50 rounded border-l-4 border-blue-200">
-                            {relatorio.configuracao.descricao}
-                          </p>
-                        )}
-
-                        {/* URL */}
-                        <div className="bg-gray-50 rounded-lg p-3 mb-4">
-                          <div className="flex items-center gap-2">
-                            <Input
-                              value={relatorio.url}
-                              readOnly
-                              className="font-mono text-sm bg-white"
-                            />
-                            <Button
-                              onClick={() => copiarLink(relatorio)}
-                              variant="outline"
-                              size="sm"
-                              className="shrink-0"
-                            >
-                              <Copy className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Ações */}
-                      <div className="flex gap-2 ml-4">
-                        <Button
-                          onClick={() => window.open(relatorio.url, '_blank')}
-                          variant="outline"
-                          size="sm"
-                          disabled={statusExpiracao.status === 'expirado'}
-                        >
-                          <ExternalLink className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          onClick={() => handleExcluir(relatorio.id)}
-                          variant="destructive"
-                          size="sm"
-                          className="shrink-0"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              );
-            })
-          )}
+                    
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => window.open(relatorio.url, '_blank')}
+                        variant="outline"
+                        size="sm"
+                        disabled={statusExpiracao.status === 'expirado'}
+                      >
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        Abrir
+                      </Button>
+                      <Button
+                        onClick={() => handleExcluirRelatorio(relatorio.id)}
+                        variant="outline"
+                        size="sm"
+                        className="text-red-600 border-red-200 hover:bg-red-50"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div className="space-y-2">
+                      <div className="text-sm text-gray-500">Informações</div>
+                      <div className="space-y-1 text-sm">
+                        {relatorio.metadados.carteira && (
+                          <div>
+                            <span className="font-medium">Carteira:</span> {relatorio.metadados.carteira}
+                          </div>
+                        )}
+                        {relatorio.metadados.responsavel && (
+                          <div>
+                            <span className="font-medium">Responsável:</span> {relatorio.metadados.responsavel}
+                          </div>
+                        )}
+                        <div>
+                          <span className="font-medium">Tamanho:</span> {relatorio.metadados.tamanhoMB} MB
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="text-sm text-gray-500">Estatísticas</div>
+                      <div className="space-y-1 text-sm">
+                        <div>
+                          <span className="font-medium">Criado:</span>{' '}
+                          {formatDistanceToNow(new Date(relatorio.criadoEm), { 
+                            addSuffix: true, 
+                            locale: ptBR 
+                          })}
+                        </div>
+                        <div>
+                          <span className="font-medium">Acessos:</span> {relatorio.acessos || 0}
+                        </div>
+                        {relatorio.ultimoAcesso && (
+                          <div>
+                            <span className="font-medium">Último acesso:</span>{' '}
+                            {formatDistanceToNow(new Date(relatorio.ultimoAcesso), { 
+                              addSuffix: true, 
+                              locale: ptBR 
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="text-sm text-gray-500">Link de compartilhamento</div>
+                    <div className="flex gap-2">
+                      <Input
+                        value={relatorio.url}
+                        readOnly
+                        className="font-mono text-sm bg-gray-50"
+                      />
+                      <Button
+                        onClick={() => copiarLink(relatorio)}
+                        variant="outline"
+                        size="sm"
+                      >
+                        <Copy className="h-4 w-4 mr-2" />
+                        Copiar
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
-      </div>
-    </Layout>
+      )}
+    </div>
   );
-} 
+}
