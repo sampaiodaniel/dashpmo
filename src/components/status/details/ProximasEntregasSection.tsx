@@ -103,10 +103,10 @@ export function ProximasEntregasSection({ status }: ProximasEntregasSectionProps
           console.log('🔄 Iniciando migração de entregas para a nova tabela:', entregasParaMigrar);
           
           try {
-            // Verificar se já existem entregas para evitar duplicação
+            // Verificar se já existem entregas para evitar duplicação - mas buscar dados completos
             const { data: existingEntregas } = await supabase
               .from('entregas_status')
-              .select('id')
+              .select('*')
               .eq('status_id', status.id);
 
             if (!existingEntregas || existingEntregas.length === 0) {
@@ -144,7 +144,7 @@ export function ProximasEntregasSection({ status }: ProximasEntregasSectionProps
               console.log('🧹 Campos legados limpos após migração');
               return migradedData || [];
             } else {
-              console.log('⚠️ Entregas já existem na tabela nova, não migrando');
+              console.log('⚠️ Entregas já existem na tabela nova, retornando dados existentes:', existingEntregas);
               return existingEntregas;
             }
           } catch (migrationError) {
