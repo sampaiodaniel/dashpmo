@@ -11,10 +11,10 @@ import { supabase } from '@/integrations/supabase/client';
 
 interface ProjetoAcoesAdminProps {
   projeto: Projeto;
-  onProjetoAtualizado?: () => void;
+  onRefresh: () => void;
 }
 
-export function ProjetoAcoesAdmin({ projeto, onProjetoAtualizado }: ProjetoAcoesAdminProps) {
+export function ProjetoAcoesAdmin({ projeto, onRefresh }: ProjetoAcoesAdminProps) {
   const [alertAberto, setAlertAberto] = useState<'fechar' | 'arquivar' | 'excluir' | 'reabrir' | 'desarquivar' | null>(null);
   const [dadosVinculados, setDadosVinculados] = useState<{
     totalStatus: number;
@@ -72,7 +72,7 @@ export function ProjetoAcoesAdmin({ projeto, onProjetoAtualizado }: ProjetoAcoes
         title: "Projeto fechado",
         description: "O projeto foi fechado com sucesso. Não será possível adicionar novos status.",
       });
-      onProjetoAtualizado?.();
+      onRefresh();
     }
     setAlertAberto(null);
   };
@@ -84,7 +84,7 @@ export function ProjetoAcoesAdmin({ projeto, onProjetoAtualizado }: ProjetoAcoes
         title: "Projeto reaberto",
         description: "O projeto foi reaberto com sucesso. Agora é possível adicionar novos status.",
       });
-      onProjetoAtualizado?.();
+      onRefresh();
     }
     setAlertAberto(null);
   };
@@ -96,7 +96,7 @@ export function ProjetoAcoesAdmin({ projeto, onProjetoAtualizado }: ProjetoAcoes
         title: "Projeto arquivado",
         description: "O projeto foi arquivado e removido da visualização padrão.",
       });
-      onProjetoAtualizado?.();
+      onRefresh();
       // Se estamos na página de detalhes, voltar para a lista
       if (window.location.pathname.includes('/projetos/')) {
         navigate('/projetos');
@@ -112,7 +112,7 @@ export function ProjetoAcoesAdmin({ projeto, onProjetoAtualizado }: ProjetoAcoes
         title: "Projeto desarquivado",
         description: "O projeto foi desarquivado e voltou à visualização padrão.",
       });
-      onProjetoAtualizado?.();
+      onRefresh();
     }
     setAlertAberto(null);
   };
@@ -120,7 +120,7 @@ export function ProjetoAcoesAdmin({ projeto, onProjetoAtualizado }: ProjetoAcoes
   const handleExcluirProjeto = async () => {
     const sucesso = await apagarProjeto(projeto.id);
     if (sucesso) {
-      onProjetoAtualizado?.();
+      onRefresh();
       // Se estamos na página de detalhes, voltar para a lista
       if (window.location.pathname.includes('/projetos/')) {
         navigate('/projetos');

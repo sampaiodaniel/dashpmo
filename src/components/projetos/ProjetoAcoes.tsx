@@ -6,11 +6,10 @@ import { Projeto } from '@/types/pmo';
 
 interface ProjetoAcoesProps {
   projeto: Projeto;
-  onEditarClick: () => void;
-  onHistoricoClick: () => void;
+  onRefresh: () => void;
 }
 
-export function ProjetoAcoes({ projeto, onEditarClick, onHistoricoClick }: ProjetoAcoesProps) {
+export function ProjetoAcoes({ projeto, onRefresh }: ProjetoAcoesProps) {
   const navigate = useNavigate();
 
   return (
@@ -23,18 +22,10 @@ export function ProjetoAcoes({ projeto, onEditarClick, onHistoricoClick }: Proje
         <Button 
           variant="outline" 
           className="w-full" 
-          onClick={onEditarClick}
+          onClick={() => navigate(`/editar-projeto/${projeto.id}`)}
         >
           <Edit className="h-4 w-4 mr-2" />
           Editar Projeto
-        </Button>
-        <Button 
-          variant="outline" 
-          className="w-full"
-          onClick={onHistoricoClick}
-        >
-          <History className="h-4 w-4 mr-2" />
-          Ver Histórico
         </Button>
       </div>
     </div>

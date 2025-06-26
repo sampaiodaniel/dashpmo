@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
@@ -166,7 +165,7 @@ export default function ProjetoDetalhes() {
         </div>
 
         <div className="space-y-12">
-          <ProjetoInfoGerais projeto={projeto} tipoProjeto={tipoProjeto} />
+          <ProjetoInfoGerais projeto={projeto} />
           
           <Separator />
           
@@ -175,7 +174,7 @@ export default function ProjetoDetalhes() {
       </div>
 
       <HistoricoProjetoModal 
-        projeto={projeto}
+        projetoId={projeto.id}
         isOpen={isHistoricoOpen}
         onClose={() => setIsHistoricoOpen(false)}
       />
