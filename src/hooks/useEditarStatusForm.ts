@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,10 +14,12 @@ export function useEditarStatusForm(status: StatusProjeto) {
   const [carregando, setCarregando] = useState(false);
   const [entregasCarregadas, setEntregasCarregadas] = useState(false);
 
-  // Buscar entregas da tabela entregas_status
+  // Buscar entregas da tabela entregas_status com migração automática
   const { data: entregasExistentes = [] } = useQuery({
-    queryKey: ['entregas-status', status.id],
+    queryKey: ['entregas-status-edit', status.id],
     queryFn: async () => {
+      console.log('🔍 Buscando entregas para edição do status:', status.id);
+      
       const { data, error } = await supabase
         .from('entregas_status')
         .select('*')
@@ -28,6 +29,88 @@ export function useEditarStatusForm(status: StatusProjeto) {
       if (error) {
         console.error('Erro ao buscar entregas:', error);
         return [];
+      }
+
+      console.log('📦 Entregas encontradas para edição:', data?.length || 0, data);
+
+      // Se não há entregas na nova tabela, verificar dados legados
+      if (!data || data.length === 0) {
+        console.log('⚠️ Verificando dados legados para migração durante edição...');
+        
+        // Buscar dados legados específicos
+        const { data: statusData, error: statusError } = await supabase
+          .from('status_projeto')
+          .select('entrega1, entrega2, entrega3, entregaveis1, entregaveis2, entregaveis3, data_marco1, data_marco2, data_marco3, status_entrega1_id, status_entrega2_id, status_entrega3_id')
+          .eq('id', status.id)
+          .single();
+
+        if (statusError) {
+          console.error('Erro ao buscar dados legados:', statusError);
+          return [];
+        }
+
+        console.log('📋 Dados legados para migração:', statusData);
+
+        // Migrar automaticamente se houver dados legados
+        const entregasParaMigrar = [];
+        
+        if (statusData?.entrega1) {
+          entregasParaMigrar.push({
+            status_id: status.id,
+            ordem: 1,
+            nome_entrega: statusData.entrega1,
+            data_entrega: statusData.data_marco1,
+            entregaveis: statusData.entregaveis1,
+            status_entrega_id: statusData.status_entrega1_id,
+            status_da_entrega: 'Em andamento'
+          });
+        }
+
+        if (statusData?.entrega2) {
+          entregasParaMigrar.push({
+            status_id: status.id,
+            ordem: 2,
+            nome_entrega: statusData.entrega2,
+            data_entrega: statusData.data_marco2,
+            entregaveis: statusData.entregaveis2,
+            status_entrega_id: statusData.status_entrega2_id,
+            status_da_entrega: 'Em andamento'
+          });
+        }
+
+        if (statusData?.entrega3) {
+          entregasParaMigrar.push({
+            status_id: status.id,
+            ordem: 3,
+            nome_entrega: statusData.entrega3,
+            data_entrega: statusData.data_marco3,
+            entregaveis: statusData.entregaveis3,
+            status_entrega_id: statusData.status_entrega3_id,
+            status_da_entrega: 'Em andamento'
+          });
+        }
+
+        if (entregasParaMigrar.length > 0) {
+          console.log('🔄 Migrando entregas legadas durante edição:', entregasParaMigrar);
+          
+          try {
+            const { data: migradedData, error: migrateError } = await supabase
+              .from('entregas_status')
+              .insert(entregasParaMigrar)
+              .select();
+
+            if (migrateError) {
+              console.error('❌ Erro ao migrar entregas durante edição:', migrateError);
+              return [];
+            }
+
+            console.log('✅ Entregas migradas durante edição:', migradedData);
+            return migradedData || [];
+          } catch (migrationError) {
+            console.error('❌ Erro no processo de migração durante edição:', migrationError);
+            return [];
+          }
+        }
       }
 
       return data || [];
@@ -71,10 +154,11 @@ export function useEditarStatusForm(status: StatusProjeto) {
       });
     }
     
-    console.log('✅ Total de entregas carregadas:', entregasCompletas.length);
+    console.log('✅ Total de entregas carregadas para edição:', entregasCompletas.length);
     setEntregas(entregasCompletas);
     setEntregasCarregadas(true);
   }, [entregasExistentes, statusEntrega, status.id, setEntregas, entregasCarregadas]);
+  
   
   const [formData, setFormData] = useState({
     data_atualizacao: typeof status.data_atualizacao === 'string' 
@@ -130,7 +214,7 @@ export function useEditarStatusForm(status: StatusProjeto) {
 
     try {
       const entregasParaSalvar = obterEntregasParaSalvar();
-      console.log('📝 Entregas para salvar:', entregasParaSalvar);
+      console.log('📝 Entregas para salvar durante edição:', entregasParaSalvar);
 
       const dataToUpdate = {
         data_atualizacao: formData.data_atualizacao,
@@ -208,7 +292,7 @@ export function useEditarStatusForm(status: StatusProjeto) {
             status_da_entrega: 'Em andamento' // Campo obrigatório
           }));
 
-          console.log('📦 Inserindo entregas:', entregasParaInserir);
+          console.log('📦 Inserindo entregas durante edição:', entregasParaInserir);
 
           const { error: insertError, data: insertedData } = await supabase
             .from('entregas_status')
@@ -220,7 +304,7 @@ export function useEditarStatusForm(status: StatusProjeto) {
             console.error('Dados que causaram erro:', entregasParaInserir);
             throw insertError;
           } else {
-            console.log('✅ Entregas inseridas com sucesso:', insertedData);
+            console.log('✅ Entregas inseridas com sucesso durante edição:', insertedData);
           }
         }
       } catch (entregasError: any) {
@@ -245,6 +329,7 @@ export function useEditarStatusForm(status: StatusProjeto) {
       // Invalidar cache do React Query
       queryClient.invalidateQueries({ queryKey: ['status-list'] });
       queryClient.invalidateQueries({ queryKey: ['entregas-status', status.id] });
+      queryClient.invalidateQueries({ queryKey: ['entregas-status-edit', status.id] });
       
       onSuccess();
     } catch (error) {

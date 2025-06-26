@@ -12,7 +12,7 @@ interface ProximasEntregasSectionProps {
 }
 
 export function ProximasEntregasSection({ status }: ProximasEntregasSectionProps) {
-  // Buscar entregas da tabela entregas_status
+  // Buscar entregas da tabela entregas_status com migração automática mais robusta
   const { data: entregas = [] } = useQuery({
     queryKey: ['entregas-status', status.id],
     queryFn: async () => {
@@ -31,14 +31,14 @@ export function ProximasEntregasSection({ status }: ProximasEntregasSectionProps
 
       console.log('📦 Entregas encontradas na tabela entregas_status:', data?.length || 0, data);
       
-      // Se não encontrou entregas na nova tabela, verificar se existem na tabela antiga e migrar
+      // Se não encontrou entregas na nova tabela, buscar dados legados e migrar
       if (!data || data.length === 0) {
-        console.log('⚠️ Nenhuma entrega encontrada na tabela nova, verificando tabela antiga...');
+        console.log('⚠️ Nenhuma entrega encontrada na tabela nova, buscando dados legados...');
         
-        // Verificar se existem entregas nos campos legados
+        // Buscar dados do status com campos de entrega legados
         const { data: statusData, error: statusError } = await supabase
           .from('status_projeto')
-          .select('entrega1, entrega2, entrega3, entregaveis1, entregaveis2, entregaveis3, data_marco1, data_marco2, data_marco3, status_entrega1_id, status_entrega2_id, status_entrega3_id')
+          .select('*')
           .eq('id', status.id)
           .single();
 
@@ -48,11 +48,20 @@ export function ProximasEntregasSection({ status }: ProximasEntregasSectionProps
         }
 
         console.log('📋 Dados legados encontrados:', statusData);
+        console.log('🔍 Verificando campos de entrega legados:', {
+          entrega1: statusData?.entrega1,
+          entrega2: statusData?.entrega2,
+          entrega3: statusData?.entrega3,
+          entregaveis1: statusData?.entregaveis1,
+          entregaveis2: statusData?.entregaveis2,
+          entregaveis3: statusData?.entregaveis3
+        });
 
         // Migrar entregas legadas para a nova tabela se existirem
         const entregasParaMigrar = [];
         
-        if (statusData.entrega1) {
+        if (statusData?.entrega1) {
+          console.log('🔄 Preparando migração da entrega 1:', statusData.entrega1);
           entregasParaMigrar.push({
             status_id: status.id,
             ordem: 1,
@@ -64,7 +73,8 @@ export function ProximasEntregasSection({ status }: ProximasEntregasSectionProps
           });
         }
 
-        if (statusData.entrega2) {
+        if (statusData?.entrega2) {
+          console.log('🔄 Preparando migração da entrega 2:', statusData.entrega2);
           entregasParaMigrar.push({
             status_id: status.id,
             ordem: 2,
@@ -76,7 +86,8 @@ export function ProximasEntregasSection({ status }: ProximasEntregasSectionProps
           });
         }
 
-        if (statusData.entrega3) {
+        if (statusData?.entrega3) {
+          console.log('🔄 Preparando migração da entrega 3:', statusData.entrega3);
           entregasParaMigrar.push({
             status_id: status.id,
             ordem: 3,
@@ -89,40 +100,59 @@ export function ProximasEntregasSection({ status }: ProximasEntregasSectionProps
         }
 
         if (entregasParaMigrar.length > 0) {
-          console.log('🔄 Migrando entregas para a nova tabela:', entregasParaMigrar);
+          console.log('🔄 Iniciando migração de entregas para a nova tabela:', entregasParaMigrar);
           
-          const { data: migradedData, error: migrateError } = await supabase
-            .from('entregas_status')
-            .insert(entregasParaMigrar)
-            .select();
+          try {
+            // Verificar se já existem entregas para evitar duplicação
+            const { data: existingEntregas } = await supabase
+              .from('entregas_status')
+              .select('id')
+              .eq('status_id', status.id);
 
-          if (migrateError) {
-            console.error('Erro ao migrar entregas:', migrateError);
+            if (!existingEntregas || existingEntregas.length === 0) {
+              const { data: migradedData, error: migrateError } = await supabase
+                .from('entregas_status')
+                .insert(entregasParaMigrar)
+                .select();
+
+              if (migrateError) {
+                console.error('❌ Erro ao migrar entregas:', migrateError);
+                return [];
+              }
+
+              console.log('✅ Entregas migradas com sucesso:', migradedData);
+              
+              // Limpar campos legados após migração bem-sucedida
+              await supabase
+                .from('status_projeto')
+                .update({
+                  entrega1: null,
+                  entrega2: null,
+                  entrega3: null,
+                  entregaveis1: null,
+                  entregaveis2: null,
+                  entregaveis3: null,
+                  data_marco1: null,
+                  data_marco2: null,
+                  data_marco3: null,
+                  status_entrega1_id: null,
+                  status_entrega2_id: null,
+                  status_entrega3_id: null
+                })
+                .eq('id', status.id);
+
+              console.log('🧹 Campos legados limpos após migração');
+              return migradedData || [];
+            } else {
+              console.log('⚠️ Entregas já existem na tabela nova, não migrando');
+              return existingEntregas;
+            }
+          } catch (migrationError) {
+            console.error('❌ Erro durante processo de migração:', migrationError);
             return [];
           }
-
-          console.log('✅ Entregas migradas com sucesso:', migradedData);
-          
-          // Limpar campos legados após migração bem-sucedida
-          await supabase
-            .from('status_projeto')
-            .update({
-              entrega1: null,
-              entrega2: null,
-              entrega3: null,
-              entregaveis1: null,
-              entregaveis2: null,
-              entregaveis3: null,
-              data_marco1: null,
-              data_marco2: null,
-              data_marco3: null,
-              status_entrega1_id: null,
-              status_entrega2_id: null,
-              status_entrega3_id: null
-            })
-            .eq('id', status.id);
-
-          return migradedData;
+        } else {
+          console.log('📝 Nenhuma entrega legada encontrada para migração');
         }
       }
 
