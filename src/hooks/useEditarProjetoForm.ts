@@ -1,9 +1,11 @@
+
 import { useState } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Projeto } from '@/types/pmo';
 import { useQueryClient } from '@tanstack/react-query';
 import { formatarDataParaBanco } from '@/utils/dateFormatting';
+import { useNavigate } from 'react-router-dom';
 
 interface UseEditarProjetoFormProps {
   projeto: Projeto;
@@ -12,6 +14,7 @@ interface UseEditarProjetoFormProps {
 
 export function useEditarProjetoForm({ projeto, onSuccess }: UseEditarProjetoFormProps) {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [carregando, setCarregando] = useState(false);
   
   const [formData, setFormData] = useState({
@@ -131,6 +134,10 @@ export function useEditarProjetoForm({ projeto, onSuccess }: UseEditarProjetoFor
       queryClient.invalidateQueries({ queryKey: ['ultimo-status', projeto.id] });
       queryClient.invalidateQueries({ queryKey: ['status-projetos'] });
       queryClient.invalidateQueries({ queryKey: ['status-list'] });
+      
+      // Navegar de volta para a lista de projetos
+      navigate('/projetos');
+      
       onSuccess();
     } catch (error) {
       console.error('💥 Erro inesperado:', error);

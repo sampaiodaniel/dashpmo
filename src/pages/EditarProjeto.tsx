@@ -35,7 +35,7 @@ export default function EditarProjeto() {
   });
 
   const handleFechar = () => {
-    navigate(-1); // Voltar para a página anterior
+    navigate('/projetos'); // Voltar para a lista de projetos
   };
 
   if (isLoading) {
