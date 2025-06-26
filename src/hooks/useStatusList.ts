@@ -1,3 +1,4 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { StatusProjeto } from '@/types/pmo';
@@ -29,8 +30,7 @@ export function useStatusList() {
             carteira_primaria,
             carteira_secundaria,
             carteira_terciaria
-          ),
-          entregas_extras:entregas_status(*)
+          )
         `)
         .order('data_atualizacao', { ascending: false });
 

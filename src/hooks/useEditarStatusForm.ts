@@ -383,26 +383,28 @@ export function useEditarStatusForm(status: StatusProjeto) {
           console.error('Erro ao remover entregas extras:', deleteError);
         }
 
-        // Inserir TODAS as entregas (ordem inicia em 1)
-        if (entregasParaSalvar.length > 0) {
-          const entregasNovaLista = entregasParaSalvar.map((entrega, index) => ({
+        // Inserir entregas extras (acima das 3 principais)
+        if (entregasParaSalvar.length > 3) {
+          const entregasAdicionais = entregasParaSalvar.slice(3).map((entrega, index) => ({
             status_id: status.id,
-            ordem: index + 1,
+            ordem: index + 4,
             nome_entrega: entrega.nome,
             data_entrega: entrega.data || null,
             entregaveis: entrega.entregaveis,
             ...(camposExistem && { status_entrega_id: entrega.statusEntregaId || null })
           }));
 
-          const { error: insertError, data: insertedData } = await supabase
-            .from('entregas_status')
-            .insert(entregasNovaLista)
-            .select();
+          if (entregasAdicionais.length > 0) {
+            const { error: insertError, data: insertedData } = await supabase
+              .from('entregas_status')
+              .insert(entregasAdicionais)
+              .select();
 
-          if (insertError) {
-            console.error('Erro ao inserir entregas:', insertError);
-          } else {
-            console.log('✅ Entregas inseridas:', insertedData);
+            if (insertError) {
+              console.error('Erro ao inserir entregas extras:', insertError);
+            } else {
+              console.log('✅ Entregas extras inseridas:', insertedData);
+            }
           }
         }
       } catch (extraError) {

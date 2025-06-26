@@ -581,25 +581,28 @@ export function useNovoStatusForm() {
 
       console.log('✅ Status criado com sucesso:', novoStatus);
 
-      // Salvar TODAS as entregas na tabela entregas_status (ordem inicia em 1)
-      for (const [idx, entrega] of entregas.entries()) {
-        if (entrega.nome) {
-          await supabase
-            .from('entregas_status')
-            .insert({
-              status_id: novoStatus.id,
-              nome_entrega: entrega.nome,
-              data_entrega: entrega.data ? (() => {
-                const date = entrega.data;
-                const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const day = String(date.getDate()).padStart(2, '0');
-                return `${year}-${month}-${day}`;
-              })() : null,
-              entregaveis: entrega.entregaveis,
-              ...(camposStatusEntregaExistem && { status_entrega_id: entrega.statusEntregaId || null }),
-              ordem: idx + 1
-            });
+      // Salvar entregas extras se houver
+      if (entregas.length > 3) {
+        const entregasExtras = entregas.slice(3);
+        for (const entrega of entregasExtras) {
+          if (entrega.nome) {
+            await supabase
+              .from('entregas_status')
+              .insert({
+                status_id: novoStatus.id,
+                nome_entrega: entrega.nome,
+                data_entrega: entrega.data ? (() => {
+                  const date = entrega.data;
+                  const year = date.getFullYear();
+                  const month = String(date.getMonth() + 1).padStart(2, '0');
+                  const day = String(date.getDate()).padStart(2, '0');
+                  return `${year}-${month}-${day}`;
+                })() : null,
+                entregaveis: entrega.entregaveis,
+                ...(camposStatusEntregaExistem && { status_entrega_id: entrega.statusEntregaId || null }),
+                ordem: entregas.indexOf(entrega) + 1
+              });
+          }
         }
       }
 

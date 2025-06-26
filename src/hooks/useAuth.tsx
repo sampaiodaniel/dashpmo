@@ -5,16 +5,10 @@ import { verificarCriacaoNoLogin } from '@/utils/debugIncidentes';
 interface Usuario {
   id: number;
   nome: string;
-  sobrenome?: string;
   email: string;
-  tipo_usuario: 'Administrador' | 'Aprovador' | 'Editor' | 'Leitor';
+  tipo_usuario: 'admin' | 'usuario' | 'visualizador';
   areas_acesso: string[];
-  areas_atuacao: string[];
-  senha_padrao?: boolean;
 }
-
-// Tornar a interface pública para outros módulos
-export type { Usuario };
 
 interface AuthContextType {
   usuario: Usuario | null;
@@ -24,11 +18,6 @@ interface AuthContextType {
   logout: () => void;
   isAdmin: () => boolean;
   canAccess: (area: string) => boolean;
-  canAccessArea: (carteira: string) => boolean;
-  canEdit: () => boolean;
-  canApprove: () => boolean;
-  canDelete: () => boolean;
-  isReadOnly: () => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -62,12 +51,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const usuarioMapeado: Usuario = {
             id: data.id,
             nome: data.nome,
-            sobrenome: (data as any).sobrenome || undefined,
             email: data.email,
-            tipo_usuario: data.tipo_usuario as 'Administrador' | 'Aprovador' | 'Editor' | 'Leitor',
-            areas_acesso: data.areas_acesso || [],
-            areas_atuacao: (data as any).areas_atuacao || [],
-            senha_padrao: (data as any).senha_padrao || false
+            tipo_usuario: data.tipo_usuario === 'Admin' ? 'admin' : 
+                         data.tipo_usuario === 'GP' ? 'usuario' : 'visualizador',
+            areas_acesso: data.areas_acesso || []
           };
           setUsuario(usuarioMapeado);
           // Buscar UUID do usuário autenticado no Supabase Auth
@@ -99,10 +86,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             id: -1,
             nome: authUser.user.email || 'Usuário Supabase',
             email: authUser.user.email || '',
-            tipo_usuario: 'Leitor',
-            areas_acesso: [],
-            areas_atuacao: [],
-            senha_padrao: false
+            tipo_usuario: 'visualizador',
+            areas_acesso: []
           });
           console.log('👤 Usuário local mínimo criado via Supabase Auth:', authUser.user.email);
         }
@@ -120,10 +105,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             id: -1,
             nome: session.user.email || 'Usuário Supabase',
             email: session.user.email || '',
-            tipo_usuario: 'Leitor',
-            areas_acesso: [],
-            areas_atuacao: [],
-            senha_padrao: false
+            tipo_usuario: 'visualizador',
+            areas_acesso: []
           });
           console.log('👤 Usuário local mínimo criado via onAuthStateChange:', session.user.email);
         }
@@ -169,12 +152,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const usuarioMapeado: Usuario = {
         id: data.id,
         nome: data.nome,
-        sobrenome: (data as any).sobrenome || undefined,
         email: data.email,
-        tipo_usuario: data.tipo_usuario as 'Administrador' | 'Aprovador' | 'Editor' | 'Leitor',
-        areas_acesso: data.areas_acesso || [],
-        areas_atuacao: (data as any).areas_atuacao || [],
-        senha_padrao: (data as any).senha_padrao || false
+        tipo_usuario: data.tipo_usuario === 'Admin' ? 'admin' : 
+                     data.tipo_usuario === 'GP' ? 'usuario' : 'visualizador',
+        areas_acesso: data.areas_acesso || []
       };
 
       // Salvar no localStorage
@@ -209,68 +190,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const isAdmin = () => {
-    if (!usuario) return false;
-    // Mapear tipos antigos para novos durante a migração
-    const tipoUsuario = (usuario as any).tipo_usuario;
-    return tipoUsuario === 'Administrador' || tipoUsuario === 'Admin';
+    return usuario?.tipo_usuario === 'admin';
   };
 
   const canAccess = (area: string) => {
     if (!usuario) return false;
     if (isAdmin()) return true;
-    return usuario.areas_acesso.includes(area);
-  };
-
-  const canAccessArea = (carteira: string) => {
-    if (!usuario) return false;
-    if (isAdmin()) return true;
-    return usuario.areas_atuacao.includes(carteira);
-  };
-
-  const canEdit = () => {
-    if (!usuario) return false;
-    // Incluir tipos antigos durante migração
-    const tipoUsuario = (usuario as any).tipo_usuario;
-    const tiposQuePodemeditar = ['Administrador', 'Aprovador', 'Editor', 'Admin', 'GP', 'Responsavel'];
-    return tiposQuePodemeditar.includes(tipoUsuario);
-  };
-
-  const canApprove = () => {
-    if (!usuario) return false;
-    // Incluir tipos antigos durante migração
-    const tipoUsuario = (usuario as any).tipo_usuario;
-    const tiposQuePodemAprovar = ['Administrador', 'Aprovador', 'Admin', 'Responsavel'];
-    return tiposQuePodemAprovar.includes(tipoUsuario);
-  };
-
-  const canDelete = () => {
-    if (!usuario) return false;
-    const tipoUsuario = (usuario as any).tipo_usuario;
-    return tipoUsuario === 'Administrador' || tipoUsuario === 'Admin';
-  };
-
-  const isReadOnly = () => {
-    if (!usuario) return true;
-    return (usuario as any).tipo_usuario === 'Leitor';
+    return usuario.areas_acesso?.includes(area) || false;
   };
 
   return (
-    <AuthContext.Provider
-      value={{
-        usuario,
-        userUuid,
-        isLoading,
-        login,
-        logout,
-        isAdmin,
-        canAccess,
-        canAccessArea,
-        canEdit,
-        canApprove,
-        canDelete,
-        isReadOnly,
-      }}
-    >
+    <AuthContext.Provider value={{
+      usuario,
+      userUuid,
+      isLoading,
+      login,
+      logout,
+      isAdmin,
+      canAccess
+    }}>
       {children}
     </AuthContext.Provider>
   );

@@ -162,7 +162,7 @@ export function TimelineEntregas({ projetos, forceMobile = false }: TimelineEntr
   }
 
   // Constantes
-  const entregasPorPagina = 6;
+  const entregasPorPagina = 3;
   
   // Detectar se estamos no mobile - verificar múltiplas condições
   const isMobile = forceMobile || (typeof window !== 'undefined' && (

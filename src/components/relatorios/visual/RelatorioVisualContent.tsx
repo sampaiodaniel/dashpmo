@@ -251,9 +251,9 @@ export function RelatorioVisualContent({ dados }: RelatorioVisualContentProps) {
                       <h4 className="font-semibold text-base text-center">Bloqueios</h4>
                     </div>
                     <div className="bg-gray-50 p-4 rounded-b-lg border-l-4 border-[#6B7280] min-h-[120px]">
-                      {projeto.ultimoStatus?.bloqueios_atuais || projeto.ultimoStatus?.bloqueios ? (
+                      {projeto.ultimoStatus?.bloqueios ? (
                         <div className="space-y-2 text-left">
-                          {(projeto.ultimoStatus.bloqueios_atuais || projeto.ultimoStatus.bloqueios).split('\n').filter((item: string) => item.trim()).map((item: string, i: number) => (
+                          {projeto.ultimoStatus.bloqueios.split('\n').filter((item: string) => item.trim()).map((item: string, i: number) => (
                             <div key={i} className="text-sm text-[#6B7280] leading-relaxed flex items-start">
                               <span className="font-medium text-[#6B7280] mr-2 mt-0.5 flex-shrink-0">🚫</span>
                               <span className="flex-1">{item.trim()}</span>

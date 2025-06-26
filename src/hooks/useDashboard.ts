@@ -1,3 +1,4 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { DashboardMetricas, FiltrosDashboard } from '@/types/pmo';
 import { getResponsavelHierarchy } from './dashboard/useDashboardHierarchy';
@@ -8,13 +9,10 @@ import {
   calculateProximosMarcos, 
   calculateProjetosCriticos 
 } from './dashboard/dashboardMetricsCalculator';
-import { useCarteirasPermitidas } from './useCarteirasPermitidas';
 
 export function useDashboardMetricas(filtros?: FiltrosDashboard) {
-  const carteirasUser = useCarteirasPermitidas();
-
   return useQuery({
-    queryKey: ['dashboard-metricas', filtros, carteirasUser.join('-')],
+    queryKey: ['dashboard-metricas', filtros],
     queryFn: async (): Promise<DashboardMetricas> => {
       console.log('📊 Buscando métricas do dashboard com filtros:', filtros);
 
@@ -25,7 +23,7 @@ export function useDashboardMetricas(filtros?: FiltrosDashboard) {
       }
 
       // Buscar projetos com filtros aplicados
-      const projetos = await fetchDashboardProjects(filtros || {}, hierarchy, carteirasUser);
+      const projetos = await fetchDashboardProjects(filtros || {}, hierarchy);
       console.log('Projetos para dashboard:', projetos);
 
       // Buscar status dos projetos
@@ -50,7 +48,7 @@ export function useDashboardMetricas(filtros?: FiltrosDashboard) {
         proximosMarcos,
         projetosCriticos,
         mudancasAtivas: 0, // Removido a busca por mudanças ativas
-        carteirasPermitidas: carteirasUser.length ? carteirasUser : hierarchy.carteirasPermitidas.map(String)
+        carteirasPermitidas: hierarchy.carteirasPermitidas.map(c => c.toString()) // Converter para string[] para compatibilidade
       };
     },
   });
