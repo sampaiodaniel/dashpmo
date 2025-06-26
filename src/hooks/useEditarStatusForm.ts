@@ -216,6 +216,19 @@ export function useEditarStatusForm(status: StatusProjeto) {
       const entregasParaSalvar = obterEntregasParaSalvar();
       console.log('📝 Entregas para salvar durante edição:', entregasParaSalvar);
 
+      // Validar entregas antes de salvar
+      for (const entrega of entregasParaSalvar) {
+        if (!entrega.nome || !entrega.entregaveis) {
+          toast({
+            title: "Erro de Validação",
+            description: `Entrega "${entrega.nome || 'sem nome'}" deve ter nome e entregáveis preenchidos.`,
+            variant: "destructive",
+          });
+          setCarregando(false);
+          return;
+        }
+      }
+
       const dataToUpdate = {
         data_atualizacao: formData.data_atualizacao,
         status_geral: formData.status_geral,
@@ -227,7 +240,7 @@ export function useEditarStatusForm(status: StatusProjeto) {
         bloqueios_atuais: formData.bloqueios_atuais,
         observacoes_pontos_atencao: formData.observacoes_pontos_atencao,
         progresso_estimado: formData.progresso_estimado,
-        // Limpar campos de entrega legados - não usar mais
+        // Limpar campos de entrega legados
         entrega1: null,
         entrega2: null,
         entrega3: null,
@@ -237,6 +250,9 @@ export function useEditarStatusForm(status: StatusProjeto) {
         data_marco1: null,
         data_marco2: null,
         data_marco3: null,
+        status_entrega1_id: null,
+        status_entrega2_id: null,
+        status_entrega3_id: null,
         // Se for admin editando status aprovado, voltar para revisão
         ...(status.aprovado && isAdmin() && {
           aprovado: false,
@@ -247,7 +263,7 @@ export function useEditarStatusForm(status: StatusProjeto) {
 
       console.log('💾 Dados do status a serem salvos:', dataToUpdate);
 
-      // Salvar no banco de dados
+      // Salvar status
       const { error, data: savedData } = await supabase
         .from('status_projeto')
         .update(dataToUpdate)
@@ -256,7 +272,7 @@ export function useEditarStatusForm(status: StatusProjeto) {
         .single();
 
       if (error) {
-        console.error('Erro ao atualizar status:', error);
+        console.error('❌ Erro ao atualizar status:', error);
         toast({
           title: "Erro",
           description: "Erro ao atualizar status: " + error.message,
@@ -270,48 +286,67 @@ export function useEditarStatusForm(status: StatusProjeto) {
       // Gerenciar entregas na tabela entregas_status
       try {
         // Primeiro, remover todas as entregas existentes para este status
+        console.log('🗑️ Removendo entregas existentes para status:', status.id);
         const { error: deleteError } = await supabase
           .from('entregas_status')
           .delete()
           .eq('status_id', status.id);
 
         if (deleteError) {
-          console.error('Erro ao remover entregas existentes:', deleteError);
+          console.error('❌ Erro ao remover entregas existentes:', deleteError);
           throw deleteError;
         }
 
         // Inserir todas as entregas atualizadas
         if (entregasParaSalvar.length > 0) {
-          const entregasParaInserir = entregasParaSalvar.map((entrega, index) => ({
-            status_id: status.id,
-            ordem: index + 1,
-            nome_entrega: entrega.nome,
-            data_entrega: entrega.data || null,
-            entregaveis: entrega.entregaveis,
-            status_entrega_id: entrega.statusEntregaId,
-            status_da_entrega: 'Em andamento' // Campo obrigatório
-          }));
+          const entregasParaInserir = entregasParaSalvar.map((entrega, index) => {
+            const entregaFormatada = {
+              status_id: status.id,
+              ordem: index + 1,
+              nome_entrega: entrega.nome.trim(),
+              data_entrega: entrega.data || null,
+              entregaveis: entrega.entregaveis.trim(),
+              status_entrega_id: entrega.statusEntregaId || null,
+              status_da_entrega: 'Em andamento' // Campo obrigatório com valor padrão
+            };
+
+            console.log('📦 Entrega formatada para inserção:', entregaFormatada);
+            return entregaFormatada;
+          });
 
           console.log('📦 Inserindo entregas durante edição:', entregasParaInserir);
 
-          const { error: insertError, data: insertedData } = await supabase
-            .from('entregas_status')
-            .insert(entregasParaInserir)
-            .select();
+          // Tentar inserir uma por vez para melhor controle de erro
+          const entregasInseridas = [];
+          for (const entrega of entregasParaInserir) {
+            try {
+              const { error: insertError, data: insertedData } = await supabase
+                .from('entregas_status')
+                .insert(entrega)
+                .select()
+                .single();
 
-          if (insertError) {
-            console.error('Erro detalhado ao inserir entregas:', insertError);
-            console.error('Dados que causaram erro:', entregasParaInserir);
-            throw insertError;
-          } else {
-            console.log('✅ Entregas inseridas com sucesso durante edição:', insertedData);
+              if (insertError) {
+                console.error('❌ Erro ao inserir entrega individual:', entrega.nome_entrega, insertError);
+                console.error('❌ Detalhes do erro:', insertError.message, insertError.details);
+                throw new Error(`Erro ao salvar entrega "${entrega.nome_entrega}": ${insertError.message}`);
+              } else {
+                console.log('✅ Entrega inserida com sucesso:', entrega.nome_entrega, insertedData);
+                entregasInseridas.push(insertedData);
+              }
+            } catch (individualError: any) {
+              console.error('❌ Erro crítico ao inserir entrega:', entrega.nome_entrega, individualError);
+              throw new Error(`Falha crítica ao salvar entrega "${entrega.nome_entrega}": ${individualError.message}`);
+            }
           }
+
+          console.log('✅ Todas as entregas inseridas com sucesso:', entregasInseridas);
         }
       } catch (entregasError: any) {
-        console.error('Erro ao gerenciar entregas:', entregasError);
+        console.error('❌ Erro ao gerenciar entregas:', entregasError);
         toast({
-          title: "Erro",
-          description: `Erro ao salvar entregas: ${entregasError.message || 'Verifique os dados e tente novamente.'}`,
+          title: "Erro ao Salvar Entregas",
+          description: entregasError.message || 'Erro desconhecido ao salvar entregas. Verifique os logs para mais detalhes.',
           variant: "destructive",
         });
         return;
@@ -333,7 +368,7 @@ export function useEditarStatusForm(status: StatusProjeto) {
       
       onSuccess();
     } catch (error) {
-      console.error('Erro inesperado:', error);
+      console.error('❌ Erro inesperado:', error);
       toast({
         title: "Erro",
         description: "Erro inesperado ao atualizar status.",

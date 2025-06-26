@@ -7,118 +7,117 @@ export function useEntregasStatus(status: StatusProjeto) {
   return useQuery({
     queryKey: ['entregas-status', status.id],
     queryFn: async () => {
-      console.log('🔍 Buscando entregas para status:', status.id);
+      console.log('🔍 Investigando entrega "Pacote Anti Fraude Tático" para status:', status.id);
       
-      const { data, error } = await supabase
+      // Primeiro: buscar na tabela nova
+      const { data: entregasNovas, error: errorNovas } = await supabase
         .from('entregas_status')
         .select('*')
         .eq('status_id', status.id)
         .order('ordem', { ascending: true });
 
-      if (error) {
-        console.error('Erro ao buscar entregas:', error);
+      if (errorNovas) {
+        console.error('❌ Erro ao buscar entregas na tabela nova:', errorNovas);
         return [];
       }
 
-      console.log('📦 Entregas encontradas na tabela entregas_status:', data?.length || 0, data);
+      console.log('📦 Entregas encontradas na tabela nova para status', status.id, ':', entregasNovas?.length || 0, entregasNovas);
+
+      // Segundo: buscar especificamente por "Pacote Anti Fraude Tático" em TODA a tabela entregas_status
+      const { data: entregaEspecifica, error: errorEspecifica } = await supabase
+        .from('entregas_status')
+        .select('*')
+        .ilike('nome_entrega', '%Pacote Anti Fraude Tático%');
       
-      // Se não encontrou entregas na nova tabela, buscar dados legados e migrar
-      if (!data || data.length === 0) {
-        console.log('⚠️ Nenhuma entrega encontrada na tabela nova, buscando dados legados...');
-        
-        // Buscar dados do status com campos de entrega legados
-        const { data: statusData, error: statusError } = await supabase
-          .from('status_projeto')
-          .select('*')
-          .eq('id', status.id)
-          .single();
+      console.log('🎯 Busca global por "Pacote Anti Fraude Tático":', entregaEspecifica?.length || 0, entregaEspecifica);
 
-        if (statusError) {
-          console.error('Erro ao buscar dados do status:', statusError);
-          return [];
-        }
+      // Terceiro: buscar dados legados para este status específico
+      const { data: statusLegado, error: errorLegado } = await supabase
+        .from('status_projeto')
+        .select('id, entrega1, entrega2, entrega3, entregaveis1, entregaveis2, entregaveis3, data_marco1, data_marco2, data_marco3, status_entrega1_id, status_entrega2_id, status_entrega3_id')
+        .eq('id', status.id)
+        .single();
 
-        console.log('📋 Dados legados encontrados:', statusData);
-        console.log('🔍 Verificando campos de entrega legados:', {
-          entrega1: statusData?.entrega1,
-          entrega2: statusData?.entrega2,
-          entrega3: statusData?.entrega3,
-          entregaveis1: statusData?.entregaveis1,
-          entregaveis2: statusData?.entregaveis2,
-          entregaveis3: statusData?.entregaveis3
+      if (errorLegado) {
+        console.error('❌ Erro ao buscar dados legados:', errorLegado);
+      } else {
+        console.log('📋 Dados legados do status', status.id, ':', statusLegado);
+        console.log('🔍 Campos de entrega legados:', {
+          entrega1: statusLegado?.entrega1,
+          entrega2: statusLegado?.entrega2,
+          entrega3: statusLegado?.entrega3,
+          entregaveis1: statusLegado?.entregaveis1,
+          entregaveis2: statusLegado?.entregaveis2,
+          entregaveis3: statusLegado?.entregaveis3
         });
 
-        // Buscar TODAS as entregas onde o nome seja similar ao que procuramos
-        console.log('🔍 Procurando por entrega "Pacote Anti Fraude Tático" em toda a tabela entregas_status...');
-        const { data: todasEntregas } = await supabase
-          .from('entregas_status')
-          .select('*')
-          .ilike('nome_entrega', '%Pacote Anti Fraude Tático%');
+        // Verificar se algum campo contém "Pacote Anti Fraude Tático"
+        const contemPacoteAnti = 
+          statusLegado?.entrega1?.includes('Pacote Anti Fraude Tático') ||
+          statusLegado?.entrega2?.includes('Pacote Anti Fraude Tático') ||
+          statusLegado?.entrega3?.includes('Pacote Anti Fraude Tático');
         
-        console.log('🔍 Entregas encontradas com nome similar:', todasEntregas);
+        console.log('🎯 Status contém "Pacote Anti Fraude Tático" nos campos legados?', contemPacoteAnti);
+      }
 
-        // Buscar também na tabela status_projeto por campos legados que contenham esse nome
-        console.log('🔍 Procurando por entrega "Pacote Anti Fraude Tático" nos campos legados...');
-        const { data: statusComEntrega } = await supabase
-          .from('status_projeto')
-          .select('*')
-          .or('entrega1.ilike.%Pacote Anti Fraude Tático%,entrega2.ilike.%Pacote Anti Fraude Tático%,entrega3.ilike.%Pacote Anti Fraude Tático%');
+      // Quarto: buscar todos os status que contêm "Pacote Anti Fraude Tático" nos campos legados
+      const { data: todosStatusComPacote, error: errorTodosStatus } = await supabase
+        .from('status_projeto')
+        .select('id, projeto_id, entrega1, entrega2, entrega3')
+        .or('entrega1.ilike.%Pacote Anti Fraude Tático%,entrega2.ilike.%Pacote Anti Fraude Tático%,entrega3.ilike.%Pacote Anti Fraude Tático%');
+      
+      console.log('🔍 Todos os status que contêm "Pacote Anti Fraude Tático":', todosStatusComPacote?.length || 0, todosStatusComPacote);
+
+      // Se não há entregas na nova tabela, verificar migração
+      if (!entregasNovas || entregasNovas.length === 0) {
+        console.log('⚠️ Nenhuma entrega encontrada na tabela nova, verificando necessidade de migração...');
         
-        console.log('🔍 Status com entrega nos campos legados:', statusComEntrega);
-
-        // Migrar entregas legadas para a nova tabela se existirem
-        const entregasParaMigrar = [];
-        
-        if (statusData?.entrega1) {
-          console.log('🔄 Preparando migração da entrega 1:', statusData.entrega1);
-          entregasParaMigrar.push({
-            status_id: status.id,
-            ordem: 1,
-            nome_entrega: statusData.entrega1,
-            data_entrega: statusData.data_marco1,
-            entregaveis: statusData.entregaveis1,
-            status_entrega_id: statusData.status_entrega1_id,
-            status_da_entrega: 'Em andamento'
-          });
-        }
-
-        if (statusData?.entrega2) {
-          console.log('🔄 Preparando migração da entrega 2:', statusData.entrega2);
-          entregasParaMigrar.push({
-            status_id: status.id,
-            ordem: 2,
-            nome_entrega: statusData.entrega2,
-            data_entrega: statusData.data_marco2,
-            entregaveis: statusData.entregaveis2,
-            status_entrega_id: statusData.status_entrega2_id,
-            status_da_entrega: 'Em andamento'
-          });
-        }
-
-        if (statusData?.entrega3) {
-          console.log('🔄 Preparando migração da entrega 3:', statusData.entrega3);
-          entregasParaMigrar.push({
-            status_id: status.id,
-            ordem: 3,
-            nome_entrega: statusData.entrega3,
-            data_entrega: statusData.data_marco3,
-            entregaveis: statusData.entregaveis3,
-            status_entrega_id: statusData.status_entrega3_id,
-            status_da_entrega: 'Em andamento'
-          });
-        }
-
-        if (entregasParaMigrar.length > 0) {
-          console.log('🔄 Iniciando migração de entregas para a nova tabela:', entregasParaMigrar);
+        if (statusLegado) {
+          const entregasParaMigrar = [];
           
-          try {
-            // Verificar se já existem entregas para evitar duplicação
-            const { data: existingEntregas } = await supabase
-              .from('entregas_status')
-              .select('*')
-              .eq('status_id', status.id);
+          if (statusLegado.entrega1) {
+            console.log('🔄 Preparando migração da entrega 1:', statusLegado.entrega1);
+            entregasParaMigrar.push({
+              status_id: status.id,
+              ordem: 1,
+              nome_entrega: statusLegado.entrega1,
+              data_entrega: statusLegado.data_marco1,
+              entregaveis: statusLegado.entregaveis1,
+              status_entrega_id: statusLegado.status_entrega1_id,
+              status_da_entrega: 'Em andamento'
+            });
+          }
 
-            if (!existingEntregas || existingEntregas.length === 0) {
+          if (statusLegado.entrega2) {
+            console.log('🔄 Preparando migração da entrega 2:', statusLegado.entrega2);
+            entregasParaMigrar.push({
+              status_id: status.id,
+              ordem: 2,
+              nome_entrega: statusLegado.entrega2,
+              data_entrega: statusLegado.data_marco2,
+              entregaveis: statusLegado.entregaveis2,
+              status_entrega_id: statusLegado.status_entrega2_id,
+              status_da_entrega: 'Em andamento'
+            });
+          }
+
+          if (statusLegado.entrega3) {
+            console.log('🔄 Preparando migração da entrega 3:', statusLegado.entrega3);
+            entregasParaMigrar.push({
+              status_id: status.id,
+              ordem: 3,
+              nome_entrega: statusLegado.entrega3,
+              data_entrega: statusLegado.data_marco3,
+              entregaveis: statusLegado.entregaveis3,
+              status_entrega_id: statusLegado.status_entrega3_id,
+              status_da_entrega: 'Em andamento'
+            });
+          }
+
+          if (entregasParaMigrar.length > 0) {
+            console.log('🔄 Iniciando migração automática:', entregasParaMigrar);
+            
+            try {
               const { data: migradedData, error: migrateError } = await supabase
                 .from('entregas_status')
                 .insert(entregasParaMigrar)
@@ -126,46 +125,43 @@ export function useEntregasStatus(status: StatusProjeto) {
 
               if (migrateError) {
                 console.error('❌ Erro ao migrar entregas:', migrateError);
+                console.error('❌ Detalhes do erro:', migrateError.message, migrateError.details, migrateError.hint);
+                
+                // Se erro de constraint, tentar inserir uma por vez para identificar o problema
+                if (migrateError.message.includes('violates check constraint')) {
+                  console.log('🔍 Tentando inserir uma entrega por vez para identificar problema...');
+                  for (const entrega of entregasParaMigrar) {
+                    try {
+                      const { data: singleInsert, error: singleError } = await supabase
+                        .from('entregas_status')
+                        .insert(entrega)
+                        .select();
+                      
+                      if (singleError) {
+                        console.error('❌ Erro ao inserir entrega individual:', entrega.nome_entrega, singleError);
+                      } else {
+                        console.log('✅ Entrega inserida com sucesso:', entrega.nome_entrega, singleInsert);
+                      }
+                    } catch (individualError) {
+                      console.error('❌ Erro crítico ao inserir entrega:', entrega.nome_entrega, individualError);
+                    }
+                  }
+                }
+                
                 return [];
               }
 
               console.log('✅ Entregas migradas com sucesso:', migradedData);
-              
-              // Limpar campos legados após migração bem-sucedida
-              await supabase
-                .from('status_projeto')
-                .update({
-                  entrega1: null,
-                  entrega2: null,
-                  entrega3: null,
-                  entregaveis1: null,
-                  entregaveis2: null,
-                  entregaveis3: null,
-                  data_marco1: null,
-                  data_marco2: null,
-                  data_marco3: null,
-                  status_entrega1_id: null,
-                  status_entrega2_id: null,
-                  status_entrega3_id: null
-                })
-                .eq('id', status.id);
-
-              console.log('🧹 Campos legados limpos após migração');
               return migradedData || [];
-            } else {
-              console.log('⚠️ Entregas já existem na tabela nova, retornando dados existentes:', existingEntregas);
-              return existingEntregas;
+            } catch (migrationError) {
+              console.error('❌ Erro crítico durante migração:', migrationError);
+              return [];
             }
-          } catch (migrationError) {
-            console.error('❌ Erro durante processo de migração:', migrationError);
-            return [];
           }
-        } else {
-          console.log('📝 Nenhuma entrega legada encontrada para migração');
         }
       }
 
-      return data || [];
+      return entregasNovas || [];
     },
   });
 }
