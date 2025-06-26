@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -5,7 +6,7 @@ import { FileText, BarChart3, TrendingUp, Eye, Trash2, History, Share, Copy, Ext
 import { useHistoricoRelatorios, RelatorioHistorico } from '@/hooks/useHistoricoRelatorios';
 import { useReportWebhook, RelatorioCompartilhavel } from '@/hooks/useReportWebhook';
 import { formatarData } from '@/utils/dateFormatting';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Input } from '@/components/ui/input';
@@ -22,13 +23,18 @@ export function UltimosRelatorios() {
   const { usuario } = useAuth();
   const [activeTab, setActiveTab] = useState<'gerados' | 'compartilhados'>('gerados');
 
-  useEffect(() => {
-    if (usuario?.uuid) {
-      listarRelatoriosCompartilhados(usuario.uuid);
+  // Memoizar o carregamento dos relatórios compartilhados
+  const loadSharedReports = useCallback(async () => {
+    if (usuario?.uuid && activeTab === 'compartilhados') {
+      await listarRelatoriosCompartilhados(usuario.uuid);
     }
-  }, [usuario?.uuid, listarRelatoriosCompartilhados]);
+  }, [usuario?.uuid, activeTab, listarRelatoriosCompartilhados]);
 
-  const getIconePorTipo = (tipo: string) => {
+  useEffect(() => {
+    loadSharedReports();
+  }, [loadSharedReports]);
+
+  const getIconePorTipo = useCallback((tipo: string) => {
     switch (tipo) {
       case 'asa':
         return <FileText className="h-4 w-4" />;
@@ -39,9 +45,9 @@ export function UltimosRelatorios() {
       default:
         return <FileText className="h-4 w-4" />;
     }
-  };
+  }, []);
 
-  const getCorPorTipo = (tipo: string) => {
+  const getCorPorTipo = useCallback((tipo: string) => {
     switch (tipo) {
       case 'asa':
         return 'bg-blue-100 text-blue-800';
@@ -52,9 +58,9 @@ export function UltimosRelatorios() {
       default:
         return 'bg-gray-100 text-gray-800';
     }
-  };
+  }, []);
 
-  const calcularStatusExpiracao = (relatorio: RelatorioCompartilhavel) => {
+  const calcularStatusExpiracao = useCallback((relatorio: RelatorioCompartilhavel) => {
     const agora = new Date();
     const expiraEm = new Date(relatorio.criadoEm);
     expiraEm.setDate(expiraEm.getDate() + relatorio.configuracao.expiraEm);
@@ -70,17 +76,25 @@ export function UltimosRelatorios() {
     }
     
     return { status: 'ativo', texto: `${diasRestantes} dias`, cor: 'bg-green-100 text-green-700' };
-  };
+  }, []);
 
-  const handleVisualizarRelatorio = (relatorio: RelatorioHistorico) => {
+  const handleVisualizarRelatorio = useCallback((relatorio: RelatorioHistorico) => {
     console.log('Visualizar relatório:', relatorio);
-  };
+  }, []);
 
-  const handleExcluirRelatorioCompartilhado = async (id: string) => {
+  const handleExcluirRelatorioCompartilhado = useCallback(async (id: string) => {
     if (confirm('Tem certeza que deseja excluir este relatório compartilhado?') && usuario?.uuid) {
       await excluirRelatorioCompartilhado(id, usuario.uuid);
     }
-  };
+  }, [excluirRelatorioCompartilhado, usuario?.uuid]);
+
+  // Memoizar os relatórios compartilhados processados
+  const relatoriosCompartilhadosProcessados = useMemo(() => {
+    return relatoriosCompartilhados.slice(0, 5).map((relatorio) => ({
+      ...relatorio,
+      statusExpiracao: calcularStatusExpiracao(relatorio)
+    }));
+  }, [relatoriosCompartilhados, calcularStatusExpiracao]);
 
   return (
     <Card>
@@ -123,64 +137,64 @@ export function UltimosRelatorios() {
             ) : (
               <>
                 <div className="flex justify-end mb-4">
-          <Button
-            onClick={limparHistorico}
-            size="sm"
-            variant="outline"
-            className="text-red-600 hover:bg-red-50"
-          >
-            <Trash2 className="h-4 w-4 mr-1" />
-            Limpar
-          </Button>
-        </div>
-        <div className="space-y-3">
-          {historico.map((relatorio) => (
-            <div
-              key={relatorio.id}
-              className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-            >
-              <div className="flex items-center gap-3 flex-1">
-                <div className="p-2 bg-white rounded-lg">
-                  {getIconePorTipo(relatorio.tipo)}
+                  <Button
+                    onClick={limparHistorico}
+                    size="sm"
+                    variant="outline"
+                    className="text-red-600 hover:bg-red-50"
+                  >
+                    <Trash2 className="h-4 w-4 mr-1" />
+                    Limpar
+                  </Button>
                 </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Badge className={getCorPorTipo(relatorio.tipo)}>
-                      {relatorio.tipo.toUpperCase()}
-                    </Badge>
-                    <span className="text-sm font-medium text-gray-900">
-                      {relatorio.filtro}: {relatorio.valor}
-                    </span>
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    Gerado em {formatarData(relatorio.dataGeracao)} às{' '}
-                    {relatorio.dataGeracao.toLocaleTimeString('pt-BR', { 
-                      hour: '2-digit', 
-                      minute: '2-digit' 
-                    })}
-                  </div>
+                <div className="space-y-3">
+                  {historico.map((relatorio) => (
+                    <div
+                      key={relatorio.id}
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                    >
+                      <div className="flex items-center gap-3 flex-1">
+                        <div className="p-2 bg-white rounded-lg">
+                          {getIconePorTipo(relatorio.tipo)}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Badge className={getCorPorTipo(relatorio.tipo)}>
+                              {relatorio.tipo.toUpperCase()}
+                            </Badge>
+                            <span className="text-sm font-medium text-gray-900">
+                              {relatorio.filtro}: {relatorio.valor}
+                            </span>
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            Gerado em {formatarData(relatorio.dataGeracao)} às{' '}
+                            {relatorio.dataGeracao.toLocaleTimeString('pt-BR', { 
+                              hour: '2-digit', 
+                              minute: '2-digit' 
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          onClick={() => handleVisualizarRelatorio(relatorio)}
+                          size="sm"
+                          variant="outline"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          onClick={() => removerRelatorio(relatorio.id)}
+                          size="sm"
+                          variant="outline"
+                          className="text-red-600 hover:bg-red-50"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  onClick={() => handleVisualizarRelatorio(relatorio)}
-                  size="sm"
-                  variant="outline"
-                >
-                  <Eye className="h-4 w-4" />
-                </Button>
-                <Button
-                  onClick={() => removerRelatorio(relatorio.id)}
-                  size="sm"
-                  variant="outline"
-                  className="text-red-600 hover:bg-red-50"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
               </>
             )}
           </>
@@ -195,87 +209,83 @@ export function UltimosRelatorios() {
               </div>
             ) : (
               <div className="space-y-4">
-                {relatoriosCompartilhados.slice(0, 5).map((relatorio) => {
-                  const statusExpiracao = calcularStatusExpiracao(relatorio);
-                  
-                  return (
-                    <div
-                      key={relatorio.id}
-                      className="border rounded-lg p-4 hover:shadow-sm transition-shadow"
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <div className={`p-1 rounded ${getCorPorTipo(relatorio.tipo)}`}>
-                              {getIconePorTipo(relatorio.tipo)}
-                            </div>
-                            <span className="font-medium text-sm">{relatorio.titulo}</span>
+                {relatoriosCompartilhadosProcessados.map((relatorio) => (
+                  <div
+                    key={relatorio.id}
+                    className="border rounded-lg p-4 hover:shadow-sm transition-shadow"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className={`p-1 rounded ${getCorPorTipo(relatorio.tipo)}`}>
+                            {getIconePorTipo(relatorio.tipo)}
                           </div>
-                          
-                          <div className="flex flex-wrap gap-2 mb-3">
-                            <Badge variant="outline" className="text-xs">
-                              {relatorio.tipo.toUpperCase()}
+                          <span className="font-medium text-sm">{relatorio.titulo}</span>
+                        </div>
+                        
+                        <div className="flex flex-wrap gap-2 mb-3">
+                          <Badge variant="outline" className="text-xs">
+                            {relatorio.tipo.toUpperCase()}
+                          </Badge>
+                          <Badge variant="outline" className={`text-xs ${relatorio.statusExpiracao.cor}`}>
+                            <Clock className="h-3 w-3 mr-1" />
+                            {relatorio.statusExpiracao.texto}
+                          </Badge>
+                          {relatorio.configuracao.protegidoPorSenha && (
+                            <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700">
+                              <Shield className="h-3 w-3 mr-1" />
+                              Protegido
                             </Badge>
-                            <Badge variant="outline" className={`text-xs ${statusExpiracao.cor}`}>
-                              <Clock className="h-3 w-3 mr-1" />
-                              {statusExpiracao.texto}
-                            </Badge>
-                            {relatorio.configuracao.protegidoPorSenha && (
-                              <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700">
-                                <Shield className="h-3 w-3 mr-1" />
-                                Protegido
-                              </Badge>
-                            )}
-                          </div>
-
-                          <div className="text-xs text-gray-500 mb-3">
-                            {relatorio.metadados.carteira && `Carteira: ${relatorio.metadados.carteira} • `}
-                            Criado {formatDistanceToNow(new Date(relatorio.criadoEm), { 
-                              addSuffix: true, 
-                              locale: ptBR 
-                            })} • {relatorio.acessos || 0} acessos
-                          </div>
-
-                          <div className="flex items-center gap-2">
-                            <Input
-                              value={relatorio.url}
-                              readOnly
-                              className="font-mono text-xs h-8 bg-gray-50"
-                            />
-                            <Button
-                              onClick={() => copiarLink(relatorio)}
-                              variant="outline"
-                              size="sm"
-                              className="h-8 px-2"
-                            >
-                              <Copy className="h-3 w-3" />
-                            </Button>
-                          </div>
+                          )}
                         </div>
 
-                        <div className="flex gap-1 ml-4">
+                        <div className="text-xs text-gray-500 mb-3">
+                          {relatorio.metadados.carteira && `Carteira: ${relatorio.metadados.carteira} • `}
+                          Criado {formatDistanceToNow(new Date(relatorio.criadoEm), { 
+                            addSuffix: true, 
+                            locale: ptBR 
+                          })} • {relatorio.acessos || 0} acessos
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <Input
+                            value={relatorio.url}
+                            readOnly
+                            className="font-mono text-xs h-8 bg-gray-50"
+                          />
                           <Button
-                            onClick={() => window.open(relatorio.url, '_blank')}
+                            onClick={() => copiarLink(relatorio)}
                             variant="outline"
                             size="sm"
-                            className="h-8 w-8 p-0"
-                            disabled={statusExpiracao.status === 'expirado'}
+                            className="h-8 px-2"
                           >
-                            <ExternalLink className="h-3 w-3" />
-                          </Button>
-                          <Button
-                            onClick={() => handleExcluirRelatorioCompartilhado(relatorio.id)}
-                            variant="outline"
-                            size="sm"
-                            className="h-8 w-8 p-0 text-red-600 border-red-200 hover:bg-red-50"
-                          >
-                            <Trash2 className="h-3 w-3" />
+                            <Copy className="h-3 w-3" />
                           </Button>
                         </div>
                       </div>
+
+                      <div className="flex gap-1 ml-4">
+                        <Button
+                          onClick={() => window.open(relatorio.url, '_blank')}
+                          variant="outline"
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                          disabled={relatorio.statusExpiracao.status === 'expirado'}
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          onClick={() => handleExcluirRelatorioCompartilhado(relatorio.id)}
+                          variant="outline"
+                          size="sm"
+                          className="h-8 w-8 p-0 text-red-600 border-red-200 hover:bg-red-50"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
                     </div>
-                  );
-                })}
+                  </div>
+                ))}
                 
                 {relatoriosCompartilhados.length > 5 && (
                   <div className="text-center pt-4">

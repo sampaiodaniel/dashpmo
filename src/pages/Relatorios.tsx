@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Layout } from '@/components/layout/Layout';
@@ -46,10 +46,10 @@ export default function Relatorios() {
   const [carteiraCompartilhamento, setCarteiraCompartilhamento] = useState<string | undefined>();
   const [responsavelCompartilhamento, setResponsavelCompartilhamento] = useState<string | undefined>();
 
-  // Hooks dos relatórios
-  const { gerarRelatorioCarteira, gerarRelatorioGeral, isLoading: isLoadingASA, carteiras } = useRelatorioASA();
-  const { gerarRelatorioCarteira: gerarRelatorioCarteiraVisual, gerarRelatorioResponsavel: gerarRelatorioResponsavelVisual, carteiras: carteirasVisual, responsaveis: responsaveisVisual, isLoading: isLoadingVisual } = useRelatorioVisual();
-  const { gerarRelatorioCarteira: gerarRelatorioCarteiraConsolidado, gerarRelatorioResponsavel: gerarRelatorioResponsavelConsolidado, carteiras: carteirasConsolidado, responsaveis: responsaveisConsolidado } = useRelatorioConsolidado();
+  // Hooks dos relatórios - memoizados para evitar re-instanciações
+  const relatorioASAHooks = useRelatorioASA();
+  const relatorioVisualHooks = useRelatorioVisual();
+  const relatorioConsolidadoHooks = useRelatorioConsolidado();
   const { adicionarRelatorio } = useHistoricoRelatorios();
 
   // Estados dos dados dos relatórios
@@ -59,30 +59,30 @@ export default function Relatorios() {
     window.scrollTo(0, 0);
   }, []);
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-pmo-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-white rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <img 
-              src="/lovable-uploads/DashPMO_Icon_recortado.png" 
-              alt="DashPMO" 
-              className="w-12 h-12" 
-            />
-          </div>
-          <div className="text-pmo-gray">Carregando...</div>
-        </div>
-      </div>
-    );
-  }
+  // Memoizar as carteiras e responsáveis para evitar re-renderizações
+  const carteirasASA = useMemo(() => relatorioASAHooks.carteiras, [relatorioASAHooks.carteiras]);
+  const carteirasVisual = useMemo(() => relatorioVisualHooks.carteiras, [relatorioVisualHooks.carteiras]);
+  const responsaveisVisual = useMemo(() => relatorioVisualHooks.responsaveis, [relatorioVisualHooks.responsaveis]);
+  const carteirasConsolidado = useMemo(() => relatorioConsolidadoHooks.carteiras, [relatorioConsolidadoHooks.carteiras]);
+  const responsaveisConsolidado = useMemo(() => relatorioConsolidadoHooks.responsaveis, [relatorioConsolidadoHooks.responsaveis]);
 
-  if (!usuario) {
-    return <LoginForm />;
-  }
+  // Função para gerar título automático - memoizada
+  const gerarTituloAutomatico = useCallback((tipo: string, filtro: string, valor?: string): string => {
+    const dataAtual = new Date().toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+    
+    const tipoFormatado = tipo === 'asa' ? 'ASA' : tipo === 'visual' ? 'Visual' : 'Consolidado';
+    const carteiraFormatada = valor || 'Geral';
+    
+    return `Report - ${carteiraFormatada} - ${dataAtual}`;
+  }, []);
 
-  const handleGerarRelatorioASA = async () => {
+  const handleGerarRelatorioASA = useCallback(async () => {
     if (filtroASA === 'geral') {
-      const dados = await gerarRelatorioGeral();
+      const dados = await relatorioASAHooks.gerarRelatorioGeral();
       if (dados) {
         setDadosRelatorioASA(dados);
         setTipoRelatorio('asa');
@@ -94,7 +94,7 @@ export default function Relatorios() {
         });
       }
     } else if (carteiraSelecionada) {
-      const dados = await gerarRelatorioCarteira(carteiraSelecionada);
+      const dados = await relatorioASAHooks.gerarRelatorioCarteira(carteiraSelecionada);
       if (dados) {
         setDadosRelatorioASA(dados);
         setTipoRelatorio('asa');
@@ -106,15 +106,15 @@ export default function Relatorios() {
         });
       }
     }
-  };
+  }, [filtroASA, carteiraSelecionada, relatorioASAHooks, adicionarRelatorio]);
 
   const handleGerarRelatorioVisual = async () => {
     console.log('🚀 Iniciando geração do relatório visual desktop');
     console.log('Filtro:', filtroVisual, 'Carteira:', carteiraVisual, 'Responsável:', responsavelVisual);
     
     const dados = filtroVisual === 'carteira' 
-      ? await gerarRelatorioCarteiraVisual(carteiraVisual)
-      : await gerarRelatorioResponsavelVisual(responsavelVisual);
+      ? await relatorioVisualHooks.gerarRelatorioCarteira(carteiraVisual)
+      : await relatorioVisualHooks.gerarRelatorioResponsavel(responsavelVisual);
     
     console.log('📊 Dados do relatório:', dados);
     
@@ -140,8 +140,8 @@ export default function Relatorios() {
 
   const handleGerarRelatorioVisualMobile = async () => {
     const dados = filtroVisual === 'carteira' 
-      ? await gerarRelatorioCarteiraVisual(carteiraVisual)
-      : await gerarRelatorioResponsavelVisual(responsavelVisual);
+      ? await relatorioVisualHooks.gerarRelatorioCarteira(carteiraVisual)
+      : await relatorioVisualHooks.gerarRelatorioResponsavel(responsavelVisual);
     
     if (dados) {
       // Salvar dados no sessionStorage
@@ -161,8 +161,8 @@ export default function Relatorios() {
 
   const handleGerarRelatorioConsolidado = async () => {
     const dados = filtroConsolidado === 'carteira' 
-      ? await gerarRelatorioCarteiraConsolidado(carteiraConsolidado)
-      : await gerarRelatorioResponsavelConsolidado(responsavelConsolidado);
+      ? await relatorioConsolidadoHooks.gerarRelatorioCarteira(carteiraConsolidado)
+      : await relatorioConsolidadoHooks.gerarRelatorioResponsavel(responsavelConsolidado);
     
     if (dados) {
       // Criar URL para abrir em nova aba
@@ -183,25 +183,11 @@ export default function Relatorios() {
     }
   };
 
-  // Função para gerar título automático
-  const gerarTituloAutomatico = (tipo: string, filtro: string, valor?: string): string => {
-    const dataAtual = new Date().toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    });
-    
-    const tipoFormatado = tipo === 'asa' ? 'ASA' : tipo === 'visual' ? 'Visual' : 'Consolidado';
-    const carteiraFormatada = valor || 'Geral';
-    
-    return `Report - ${carteiraFormatada} - ${dataAtual}`;
-  };
-
   // Funções para compartilhamento de relatórios
   const handleCompartilharRelatorioASA = async () => {
     const dados = filtroASA === 'geral' 
-      ? await gerarRelatorioGeral()
-      : await gerarRelatorioCarteira(carteiraSelecionada);
+      ? await relatorioASAHooks.gerarRelatorioGeral()
+      : await relatorioASAHooks.gerarRelatorioCarteira(carteiraSelecionada);
     
     if (dados) {
       const titulo = gerarTituloAutomatico('asa', filtroASA, filtroASA === 'carteira' ? carteiraSelecionada : undefined);
@@ -217,8 +203,8 @@ export default function Relatorios() {
 
   const handleCompartilharRelatorioVisual = async () => {
     const dados = filtroVisual === 'carteira' 
-      ? await gerarRelatorioCarteiraVisual(carteiraVisual)
-      : await gerarRelatorioResponsavelVisual(responsavelVisual);
+      ? await relatorioVisualHooks.gerarRelatorioCarteira(carteiraVisual)
+      : await relatorioVisualHooks.gerarRelatorioResponsavel(responsavelVisual);
     
     if (dados) {
       const valor = filtroVisual === 'carteira' ? carteiraVisual : responsavelVisual;
@@ -235,8 +221,8 @@ export default function Relatorios() {
 
   const handleCompartilharRelatorioConsolidado = async () => {
     const dados = filtroConsolidado === 'carteira' 
-      ? await gerarRelatorioCarteiraConsolidado(carteiraConsolidado)
-      : await gerarRelatorioResponsavelConsolidado(responsavelConsolidado);
+      ? await relatorioConsolidadoHooks.gerarRelatorioCarteira(carteiraConsolidado)
+      : await relatorioConsolidadoHooks.gerarRelatorioResponsavel(responsavelConsolidado);
     
     if (dados) {
       const valor = filtroConsolidado === 'carteira' ? carteiraConsolidado : responsavelConsolidado;
@@ -250,6 +236,27 @@ export default function Relatorios() {
       setModalCompartilhamento(true);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-pmo-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-white rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+            <img 
+              src="/lovable-uploads/DashPMO_Icon_recortado.png" 
+              alt="DashPMO" 
+              className="w-12 h-12" 
+            />
+          </div>
+          <div className="text-pmo-gray">Carregando...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!usuario) {
+    return <LoginForm />;
+  }
 
   if (tipoRelatorio === 'asa') {
     return (
@@ -323,14 +330,14 @@ export default function Relatorios() {
               <div className="space-y-2">
                 <Button 
                   onClick={handleGerarRelatorioASA}
-                  disabled={isLoadingASA || (filtroASA === 'carteira' && !carteiraSelecionada)}
+                  disabled={relatorioASAHooks.isLoading || (filtroASA === 'carteira' && !carteiraSelecionada)}
                   className="w-full bg-pmo-primary hover:bg-pmo-secondary text-white"
                 >
-                  {isLoadingASA ? 'Gerando...' : 'Gerar Relatório'}
+                  {relatorioASAHooks.isLoading ? 'Gerando...' : 'Gerar Relatório'}
                 </Button>
                 <Button 
                   onClick={handleCompartilharRelatorioASA}
-                  disabled={isLoadingASA || (filtroASA === 'carteira' && !carteiraSelecionada)}
+                  disabled={relatorioASAHooks.isLoading || (filtroASA === 'carteira' && !carteiraSelecionada)}
                   variant="outline"
                   className="w-full border-blue-600 text-blue-600 hover:bg-blue-50"
                 >
@@ -435,19 +442,19 @@ export default function Relatorios() {
                       }
                     }}
                     disabled={
-                      isLoadingVisual ||
+                      relatorioVisualHooks.isLoading ||
                       (filtroVisual === 'carteira' && !carteiraVisual) || 
                       (filtroVisual === 'responsavel' && !responsavelVisual) ||
                       !versaoRelatorioVisual
                     }
                     className="w-full bg-pmo-primary hover:bg-pmo-secondary text-white"
                   >
-                    {isLoadingVisual ? 'Gerando...' : 'Gerar Relatório'}
+                    {relatorioVisualHooks.isLoading ? 'Gerando...' : 'Gerar Relatório'}
                   </Button>
                   <Button 
                     onClick={handleCompartilharRelatorioVisual}
                     disabled={
-                      isLoadingVisual ||
+                      relatorioVisualHooks.isLoading ||
                       (filtroVisual === 'carteira' && !carteiraVisual) || 
                       (filtroVisual === 'responsavel' && !responsavelVisual)
                     }
@@ -527,6 +534,7 @@ export default function Relatorios() {
                 <Button 
                   onClick={handleGerarRelatorioConsolidado}
                   disabled={
+                    relatorioConsolidadoHooks.isLoading ||
                     (filtroConsolidado === 'carteira' && !carteiraConsolidado) || 
                     (filtroConsolidado === 'responsavel' && !responsavelConsolidado)
                   }
@@ -537,6 +545,7 @@ export default function Relatorios() {
                 <Button 
                   onClick={handleCompartilharRelatorioConsolidado}
                   disabled={
+                    relatorioConsolidadoHooks.isLoading ||
                     (filtroConsolidado === 'carteira' && !carteiraConsolidado) || 
                     (filtroConsolidado === 'responsavel' && !responsavelConsolidado)
                   }
