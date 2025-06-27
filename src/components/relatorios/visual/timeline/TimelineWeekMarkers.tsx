@@ -1,15 +1,24 @@
 
 
 export function useTimelineWeekMarkers() {
-  // Função para calcular semanas entre duas datas
+  // Função para calcular semanas entre duas datas - VERSÃO CORRIGIDA
   const calcularSemanas = (data1: string, data2: string): number => {
     // Se alguma data for TBD, retornar 1 semana padrão
     if (data1 === 'TBD' || data2 === 'TBD') return 1;
     
     const d1 = new Date(data1);
     const d2 = new Date(data2);
+    
+    // Calcular diferença em dias e depois converter para semanas
     const diffTime = Math.abs(d2.getTime() - d1.getTime());
-    const diffWeeks = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 7));
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    // Para calcular semanas de forma mais precisa: cada 7 dias = 1 semana
+    // Mas vamos usar uma lógica que considera semanas completas
+    const diffWeeks = Math.ceil(diffDays / 7);
+    
+    console.log(`📅 Cálculo de semanas: ${data1} -> ${data2} = ${diffDays} dias = ${diffWeeks} semanas`);
+    
     return diffWeeks;
   };
 
@@ -75,10 +84,13 @@ export function useTimelineWeekMarkers() {
         const semanasConexao = calcularSemanas(ultimaEntregaPagina.data, proximaEntrega.data);
         console.log(`🔗 CONEXÃO CRÍTICA: ${semanasConexao} semanas entre "${ultimaEntregaPagina.titulo}" (${ultimaEntregaPagina.data}) e "${proximaEntrega.titulo}" (${proximaEntrega.data})`);
         
-        // FORÇAR todos os traços intermediários nesta página
+        // TODOS os traços intermediários devem aparecer nesta página
         const posUltimaEntrega = posEntregas[entregasPagina.length - 1];
         const espacoRestante = 100 - posUltimaEntrega;
-        const tracosIntermediarios = semanasConexao - 1; // Excluir início (entrega atual) e fim (próxima entrega)
+        
+        // Para 4 semanas entre 30/08 e 30/09, queremos 4 traços intermediários
+        // (não subtraímos 1, pois queremos mostrar todas as semanas intermediárias)
+        const tracosIntermediarios = semanasConexao;
         
         console.log(`📏 FORÇANDO ${tracosIntermediarios} traços após a última entrega desta página`);
         console.log(`📐 Posição última entrega: ${posUltimaEntrega}%, espaço restante: ${espacoRestante}%`);
