@@ -23,7 +23,7 @@ export function useCarteiraOverview(filtros?: FiltrosDashboard) {
   return useQuery({
     queryKey: ['carteira-overview', filtros],
     queryFn: async (): Promise<CarteiraOverviewData[]> => {
-      console.log('📊 Buscando dados de overview por carteira com filtros:', filtros);
+      console.log('📊 Buscando dados de overview por carteira com filtros (apenas status mais recentes e aprovados):', filtros);
 
       // Buscar hierarquia ASA se necessário
       let hierarchy = { responsaveisHierarquia: [], carteirasPermitidas: [] };
@@ -63,10 +63,11 @@ export function useCarteiraOverview(filtros?: FiltrosDashboard) {
         throw projetosError;
       }
 
-      // Buscar status dos projetos
+      // Buscar APENAS status aprovados dos projetos, ordenados por data de atualização
       const { data: statusData, error: statusError } = await supabase
         .from('status_projeto')
         .select('*')
+        .eq('aprovado', true)
         .order('data_atualizacao', { ascending: false });
 
       if (statusError) {
@@ -84,14 +85,16 @@ export function useCarteiraOverview(filtros?: FiltrosDashboard) {
         throw mudancasError;
       }
 
-      // Mapear status mais recente por projeto
-      const statusPorProjeto = new Map();
+      // Mapear APENAS o status mais recente aprovado por projeto
+      const statusMaisRecentePorProjeto = new Map();
       statusData?.forEach(status => {
-        if (!statusPorProjeto.has(status.projeto_id) || 
-            new Date(status.data_atualizacao) > new Date(statusPorProjeto.get(status.projeto_id).data_atualizacao)) {
-          statusPorProjeto.set(status.projeto_id, status);
+        if (!statusMaisRecentePorProjeto.has(status.projeto_id) || 
+            new Date(status.data_atualizacao) > new Date(statusMaisRecentePorProjeto.get(status.projeto_id).data_atualizacao)) {
+          statusMaisRecentePorProjeto.set(status.projeto_id, status);
         }
       });
+
+      console.log('📈 Status mais recentes mapeados por projeto:', statusMaisRecentePorProjeto.size);
 
       // Data atual e data limite (15 dias à frente)
       const hoje = new Date();
@@ -111,7 +114,7 @@ export function useCarteiraOverview(filtros?: FiltrosDashboard) {
           return projeto?.area_responsavel === carteira;
         }) || [];
 
-        // Contar por nível de risco
+        // Contar por nível de risco usando APENAS status mais recentes aprovados
         let baixo = 0, medio = 0, alto = 0;
         let emDia = 0, comAtraso = 0, entregues = 0;
         let entregasProximos15Dias = 0;
@@ -128,7 +131,7 @@ export function useCarteiraOverview(filtros?: FiltrosDashboard) {
         ).length;
 
         projetosCarteira.forEach(projeto => {
-          const status = statusPorProjeto.get(projeto.id);
+          const status = statusMaisRecentePorProjeto.get(projeto.id);
           if (status) {
             // Contar riscos
             const risco = status.prob_x_impact || 'Baixo';
@@ -179,7 +182,7 @@ export function useCarteiraOverview(filtros?: FiltrosDashboard) {
         };
       });
 
-      console.log('📈 Overview por carteira calculado:', carteiraOverview);
+      console.log('📈 Overview por carteira calculado (apenas status mais recentes aprovados):', carteiraOverview);
       return carteiraOverview;
     },
   });

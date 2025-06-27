@@ -16,7 +16,7 @@ export function DashboardOverviewTable({ filtros, carteirasPermitidas }: Dashboa
   const { data: statusPorCarteira = {} } = useQuery({
     queryKey: ['status-por-carteira', filtros],
     queryFn: async () => {
-      console.log('📊 Buscando status por carteira com filtros:', filtros);
+      console.log('📊 Buscando status por carteira com filtros (apenas mais recentes e aprovados):', filtros);
       
       // Primeiro buscar a hierarquia se necessário
       let hierarchy = { responsaveisHierarquia: [], carteirasPermitidas: [] };
@@ -25,14 +25,20 @@ export function DashboardOverviewTable({ filtros, carteirasPermitidas }: Dashboa
         hierarchy = await getResponsavelHierarchy(filtros.responsavel_asa);
       }
 
+      // Primeiro, buscar todos os status aprovados ordenados por data de atualização (mais recente primeiro)
       let query = supabase
         .from('status_projeto')
         .select(`
+          id,
+          projeto_id,
           status_visao_gp,
-          projeto:projetos!inner(area_responsavel, responsavel_asa)
+          data_atualizacao,
+          aprovado,
+          projeto:projetos!inner(area_responsavel, responsavel_asa, status_ativo)
         `)
         .eq('aprovado', true)
-        .eq('projeto.status_ativo', true);
+        .eq('projeto.status_ativo', true)
+        .order('data_atualizacao', { ascending: false });
 
       // Aplicar filtros
       if (filtros?.carteira && filtros.carteira !== 'todas') {
@@ -52,9 +58,22 @@ export function DashboardOverviewTable({ filtros, carteirasPermitidas }: Dashboa
         return {};
       }
 
+      // Filtrar apenas o status mais recente de cada projeto
+      const statusMaisRecentesPorProjeto = new Map();
+      data.forEach((status) => {
+        const projetoId = status.projeto_id;
+        if (!statusMaisRecentesPorProjeto.has(projetoId) || 
+            new Date(status.data_atualizacao) > new Date(statusMaisRecentesPorProjeto.get(projetoId).data_atualizacao)) {
+          statusMaisRecentesPorProjeto.set(projetoId, status);
+        }
+      });
+
+      console.log('📈 Status mais recentes filtrados por projeto:', statusMaisRecentesPorProjeto.size);
+
+      // Contar status por carteira usando apenas os mais recentes
       const statusCount: Record<string, { verde: number; amarelo: number; vermelho: number }> = {};
 
-      data.forEach((status) => {
+      statusMaisRecentesPorProjeto.forEach((status) => {
         const carteira = status.projeto?.area_responsavel;
         if (!carteira) return;
 
@@ -75,6 +94,7 @@ export function DashboardOverviewTable({ filtros, carteirasPermitidas }: Dashboa
         }
       });
 
+      console.log('📊 Contagem final de status por carteira:', statusCount);
       return statusCount;
     },
   });
