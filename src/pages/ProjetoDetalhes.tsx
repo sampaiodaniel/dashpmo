@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
@@ -9,7 +8,6 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { useProjetos } from '@/hooks/useProjetos';
 import { ProjetoInfoGerais } from '@/components/projetos/ProjetoInfoGerais';
-import { ProjetoStatus } from '@/components/projetos/ProjetoStatus';
 import { ProjetoAcoesAdmin } from '@/components/projetos/ProjetoAcoesAdmin';
 import { useState } from 'react';
 import { useScrollToTop } from '@/hooks/useScrollToTop';
@@ -94,16 +92,7 @@ export default function ProjetoDetalhes() {
               <h1 className="text-3xl font-bold text-pmo-primary">{projeto.nome_projeto}</h1>
               <div className="flex items-center gap-2 mt-2">
                 <p className="text-pmo-gray">Detalhes do projeto</p>
-                {projeto.status_ativo && (
-                  <Badge variant="default" className="bg-green-100 text-green-800">
-                    Ativo
-                  </Badge>
-                )}
-                {!projeto.status_ativo && (
-                  <Badge variant="secondary" className="bg-red-100 text-red-800">
-                    Inativo
-                  </Badge>
-                )}
+                {/* Badge de status removido conforme solicitação */}
               </div>
             </div>
           </div>
@@ -160,8 +149,7 @@ export default function ProjetoDetalhes() {
           <ProjetoInfoGerais projeto={projeto} />
           
           <Separator />
-          
-          <ProjetoStatus projeto={projeto} />
+          {/* Badge/status removido do rodapé conforme solicitação */}
         </div>
       </div>
     </Layout>

@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -32,6 +31,7 @@ import Administracao from "./pages/Administracao";
 import Configuracoes from "./pages/Configuracoes";
 import NotFound from "./pages/NotFound";
 import { AuthProvider } from '@/hooks/useAuth';
+import AdminImportacao from "./pages/AdminImportacao";
 
 import "./App.css";
 
@@ -67,13 +67,14 @@ function App() {
               <Route path="/licoes" element={<Licoes />} />
               <Route path="/licoes/:id" element={<LicaoDetalhes />} />
               <Route path="/relatorios" element={<Relatorios />} />
-                <Route path="/relatorio-compartilhado/:id" element={<RelatorioCompartilhado />} />
-                <Route path="/relatorios-compartilhados" element={<RelatoriosCompartilhados />} />
+              <Route path="/relatorio-compartilhado/:id" element={<RelatorioCompartilhado />} />
+              <Route path="/relatorios-compartilhados" element={<RelatoriosCompartilhados />} />
               <Route path="/relatorio-consolidado" element={<RelatorioConsolidado />} />
               <Route path="/relatorio-visual" element={<RelatorioVisualPagina />} />
               <Route path="/relatorio-visual-mobile" element={<RelatorioVisualMobile />} />
               <Route path="/administracao" element={<Administracao />} />
               <Route path="/configuracoes" element={<Configuracoes />} />
+              <Route path="/admin/importacao" element={<AdminImportacao />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

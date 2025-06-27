@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
@@ -88,7 +87,7 @@ export default function LicaoDetalhes() {
               Voltar
             </Button>
             <div>
-              <h1 className="text-3xl font-bold text-pmo-primary">{licao.titulo}</h1>
+              <h1 className="text-3xl font-bold text-pmo-primary">{licao.situacao_ocorrida}</h1>
               <p className="text-pmo-gray mt-1">Lição aprendida</p>
             </div>
           </div>
@@ -104,14 +103,14 @@ export default function LicaoDetalhes() {
               {/* Título e Categoria */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="text-sm font-medium text-pmo-gray block mb-2">Título</label>
-                  <span className="text-sm text-gray-900">{licao.titulo}</span>
+                  <label className="text-sm font-medium text-pmo-gray block mb-2">Situação Ocorrida</label>
+                  <span className="text-sm text-gray-900">{licao.situacao_ocorrida}</span>
                 </div>
 
                 <div>
                   <label className="text-sm font-medium text-pmo-gray block mb-2">Categoria</label>
-                  <Badge className={`text-xs ${getCategoriaColor(licao.categoria)}`}>
-                    {licao.categoria}
+                  <Badge className={`text-xs ${getCategoriaColor(licao.categoria_licao)}`}>
+                    {licao.categoria_licao}
                   </Badge>
                 </div>
               </div>
@@ -120,7 +119,7 @@ export default function LicaoDetalhes() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="text-sm font-medium text-pmo-gray block mb-2">Projeto</label>
-                  <span className="text-sm text-gray-900">{licao.projeto}</span>
+                  <span className="text-sm text-gray-900">{licao.projeto?.nome_projeto || 'N/A'}</span>
                 </div>
 
                 <div>
@@ -132,13 +131,13 @@ export default function LicaoDetalhes() {
               {/* Autor e Carteira */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="text-sm font-medium text-pmo-gray block mb-2">Autor</label>
-                  <span className="text-sm text-gray-900">{licao.autor}</span>
+                  <label className="text-sm font-medium text-pmo-gray block mb-2">Responsável</label>
+                  <span className="text-sm text-gray-900">{licao.responsavel_registro}</span>
                 </div>
 
                 <div>
                   <label className="text-sm font-medium text-pmo-gray block mb-2">Carteira</label>
-                  <span className="text-sm text-gray-900">{licao.carteira}</span>
+                  <span className="text-sm text-gray-900">{licao.projeto?.area_responsavel || 'N/A'}</span>
                 </div>
               </div>
             </CardContent>
@@ -151,7 +150,7 @@ export default function LicaoDetalhes() {
             </CardHeader>
             <CardContent className="text-left">
               <p className="text-sm text-gray-900 leading-relaxed">
-                {licao.contexto || 'Não informado'}
+                {licao.impacto_gerado || 'Não informado'}
               </p>
             </CardContent>
           </Card>
@@ -169,30 +168,30 @@ export default function LicaoDetalhes() {
           </Card>
 
           {/* Recomendações */}
-          {licao.recomendacoes && (
+          {licao.acao_recomendada && (
             <Card>
               <CardHeader>
                 <CardTitle className="text-left">Recomendações</CardTitle>
               </CardHeader>
               <CardContent className="text-left">
                 <p className="text-sm text-gray-900 leading-relaxed">
-                  {licao.recomendacoes}
+                  {licao.acao_recomendada}
                 </p>
               </CardContent>
             </Card>
           )}
 
           {/* Tags */}
-          {licao.tags && licao.tags.length > 0 && (
+          {licao.tags_busca && licao.tags_busca.split(',').filter(tag => tag.trim().length > 0).length > 0 && (
             <Card>
               <CardHeader>
                 <CardTitle className="text-left">Tags</CardTitle>
               </CardHeader>
               <CardContent className="text-left">
                 <div className="flex flex-wrap gap-2">
-                  {licao.tags.map((tag, index) => (
+                  {licao.tags_busca.split(',').map((tag, index) => (
                     <Badge key={index} variant="secondary" className="text-xs">
-                      {tag}
+                      {tag.trim()}
                     </Badge>
                   ))}
                 </div>

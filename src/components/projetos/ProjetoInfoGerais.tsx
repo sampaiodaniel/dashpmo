@@ -1,10 +1,10 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Building, Calendar, User, Users, FileType, FileText } from 'lucide-react';
 import { Projeto } from '@/types/pmo';
 import { useTiposProjeto } from '@/hooks/useTiposProjeto';
 import { formatarData } from '@/utils/dateFormatting';
+import { CarteirasTags } from '@/components/common/CarteirasTags';
 
 interface ProjetoInfoGeraisProps {
   projeto: Projeto;
@@ -23,7 +23,10 @@ export function ProjetoInfoGerais({ projeto }: ProjetoInfoGeraisProps) {
   return (
     <Card>
       <CardHeader>
+        <div className="flex items-center justify-between flex-wrap gap-4">
         <CardTitle className="text-left">Informações Gerais</CardTitle>
+          <CarteirasTags projeto={projeto} />
+        </div>
       </CardHeader>
       <CardContent className="space-y-6 text-left">
         {/* Descrição */}
@@ -55,14 +58,14 @@ export function ProjetoInfoGerais({ projeto }: ProjetoInfoGeraisProps) {
         </div>
 
         {/* Tipo de Projeto e Equipe */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
             <label className="text-sm font-medium text-pmo-gray block mb-2">Tipo de Projeto</label>
             <span className="text-sm text-gray-900">{tipoProjeto?.nome || 'Não informado'}</span>
           </div>
 
           {projeto.equipe && (
-            <div>
+            <div className="md:col-span-2">
               <label className="text-sm font-medium text-pmo-gray block mb-2">Equipe do Projeto</label>
               <span className="text-sm text-gray-900">{projeto.equipe}</span>
             </div>
@@ -87,28 +90,6 @@ export function ProjetoInfoGerais({ projeto }: ProjetoInfoGeraisProps) {
             <div>
               <label className="text-sm font-medium text-pmo-gray block mb-2">Responsável Técnico</label>
               <span className="text-sm text-gray-900">{projeto.responsavel_cwi}</span>
-            </div>
-          )}
-        </div>
-
-        {/* Carteiras */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div>
-            <label className="text-sm font-medium text-pmo-gray block mb-2">Carteira Primária</label>
-            <span className="text-sm text-gray-900">{projeto.area_responsavel}</span>
-          </div>
-
-          {projeto.carteira_secundaria && projeto.carteira_secundaria !== 'none' && (
-            <div>
-              <label className="text-sm font-medium text-pmo-gray block mb-2">Carteira Secundária</label>
-              <span className="text-sm text-gray-900">{projeto.carteira_secundaria}</span>
-            </div>
-          )}
-
-          {projeto.carteira_terciaria && projeto.carteira_terciaria !== 'none' && (
-            <div>
-              <label className="text-sm font-medium text-pmo-gray block mb-2">Carteira Terciária</label>
-              <span className="text-sm text-gray-900">{projeto.carteira_terciaria}</span>
             </div>
           )}
         </div>

@@ -192,14 +192,7 @@ export default function Projetos() {
                         </span>
                         <CarteirasTags projeto={projeto} />
                       </div>
-                      <div className="flex items-center gap-4 text-sm text-gray-600">
-                        <div className="flex items-center gap-1">
-                          <Calendar className="h-4 w-4" />
-                          {projeto.ultimoStatus ? 
-                            formatarData(projeto.ultimoStatus.data_atualizacao) : 
-                            formatarData(projeto.data_criacao)
-                          }
-                        </div>
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
                         <Badge variant={projeto.status_ativo ? "default" : "secondary"}>
                           {projeto.status_ativo ? "Ativo" : "Inativo"}
                         </Badge>

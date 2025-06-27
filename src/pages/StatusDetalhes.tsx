@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
@@ -19,6 +18,7 @@ import { Calendar, User, Building, FileType } from 'lucide-react';
 import { formatarData } from '@/utils/dateFormatting';
 import { useTiposProjeto } from '@/hooks/useTiposProjeto';
 import { useScrollToTop } from '@/hooks/useScrollToTop';
+import { CarteirasTags } from '@/components/common/CarteirasTags';
 
 export default function StatusDetalhes() {
   const { id } = useParams<{ id: string }>();
@@ -171,85 +171,93 @@ export default function StatusDetalhes() {
           {/* Status do Projeto */}
           <Card>
             <CardHeader>
+              <div className="flex items-center justify-between flex-wrap gap-4">
               <CardTitle className="flex items-center gap-2 text-xl font-medium text-gray-700">
                 <Calendar className="h-5 w-5 text-pmo-primary" />
                 Status do Projeto
               </CardTitle>
+                {status.projeto && <CarteirasTags projeto={status.projeto as any} />}
+              </div>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Primeira linha: Descrição do Projeto - ocupa linha toda */}
-              <div className="text-left">
-                <label className="text-sm font-medium text-pmo-gray block mb-2 text-left">Descrição do Projeto</label>
-                <p className="text-sm text-gray-900 leading-relaxed text-left">
+              {/* Descrição do Projeto */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="md:col-span-2 md:pl-12 text-left">
+                  <label className="text-sm font-medium text-pmo-gray block mb-2">Descrição do Projeto</label>
+                  <p className="text-sm text-gray-900 leading-relaxed">
                   {status.projeto?.descricao || status.projeto?.descricao_projeto || 'Não informado'}
                 </p>
+                </div>
               </div>
 
-              {/* Segunda linha: Data do Status e Visão Chefe do Projeto */}
+              {/* Campos organizados em duas colunas */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Coluna Esquerda */}
+                <div className="space-y-6">
+                  {/* Data do Status */}
                 <div>
                   <label className="text-sm font-medium text-pmo-gray block mb-2">Data do Status</label>
                   <span className="text-sm text-gray-900">{formatarData(status.data_atualizacao)}</span>
                 </div>
 
+                  {/* Data de Aprovação, se houver */}
+                  {status.aprovado && status.data_aprovacao && (
+                    <div>
+                      <label className="text-sm font-medium text-pmo-gray block mb-2">Revisão OK em:</label>
+                      <span className="text-sm text-gray-900">{formatarData(status.data_aprovacao)}</span>
+                    </div>
+                  )}
+
+                  {/* Responsável ASA */}
+                  <div>
+                    <label className="text-sm font-medium text-pmo-gray block mb-2">Responsável ASA</label>
+                    <span className="text-sm text-gray-900">{status.projeto?.responsavel_asa || status.projeto?.responsavel_interno || 'Não informado'}</span>
+                  </div>
+
+                  {/* Chefe do Projeto */}
+                  <div>
+                    <label className="text-sm font-medium text-pmo-gray block mb-2">Chefe do Projeto</label>
+                    <span className="text-sm text-gray-900">{status.projeto?.gp_responsavel}</span>
+                  </div>
+
+                  {/* Tipo de Projeto */}
+                  <div>
+                    <label className="text-sm font-medium text-pmo-gray block mb-2">Tipo de Projeto</label>
+                    <span className="text-sm text-gray-900">{tipoProjeto?.nome || 'Não informado'}</span>
+                  </div>
+                </div>
+
+                {/* Coluna Direita */}
+                <div className="space-y-6">
+                  {/* Revisado */}
+                  <div>
+                    <label className="text-sm font-medium text-pmo-gray block mb-2">Revisado?</label>
+                    <Badge variant={status.aprovado ? "default" : "secondary"} className="text-xs">
+                      {status.aprovado ? "Sim" : "Não"}
+                    </Badge>
+                  </div>
+
+                  {/* Visão Chefe do Projeto */}
                 <div>
                   <label className="text-sm font-medium text-pmo-gray block mb-2">Visão Chefe do Projeto</label>
                   <Badge className={`text-xs ${getStatusColor(status.status_visao_gp)}`}>
                     {status.status_visao_gp}
                   </Badge>
-                </div>
               </div>
 
-              {/* Terceira linha: Progresso e Status de Revisão */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Progresso */}
                 <div>
                   <label className="text-sm font-medium text-pmo-gray block mb-2">Progresso</label>
                   <span className="text-sm text-gray-900">{(status as any).progresso_estimado || 0}%</span>
                 </div>
 
-                <div>
-                  <label className="text-sm font-medium text-pmo-gray block mb-2">Revisado ?</label>
-                  <Badge variant={status.aprovado ? "default" : "secondary"} className="text-xs">
-                    {status.aprovado ? "Sim" : "Não"}
-                  </Badge>
-                </div>
-              </div>
-
-              {/* Data de Aprovação, se houver */}
-              {status.aprovado && status.data_aprovacao && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="text-sm font-medium text-pmo-gray block mb-2">Data de Aprovação</label>
-                    <span className="text-sm text-gray-900">{formatarData(status.data_aprovacao)}</span>
-                  </div>
-                </div>
-              )}
-
-              {/* Responsáveis - Chefe do Projeto e Responsável ASA */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="text-sm font-medium text-pmo-gray block mb-2">Chefe do Projeto</label>
-                  <span className="text-sm text-gray-900">{status.projeto?.gp_responsavel}</span>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium text-pmo-gray block mb-2">Responsável ASA</label>
-                  <span className="text-sm text-gray-900">{status.projeto?.responsavel_asa || status.projeto?.responsavel_interno || 'Não informado'}</span>
-                </div>
-              </div>
-
-              {/* Última linha: Tipo de Projeto e Status Geral */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="text-sm font-medium text-pmo-gray block mb-2">Tipo de Projeto</label>
-                  <span className="text-sm text-gray-900">{tipoProjeto?.nome || 'Não informado'}</span>
-                </div>
-                
+                  {/* Status Geral */}
                 <div>
                   <label className="text-sm font-medium text-pmo-gray block mb-2">Status Geral</label>
                   <Badge className={`text-xs ${getStatusGeralColor(status.status_geral)}`}>
                     {status.status_geral}
                   </Badge>
+                  </div>
                 </div>
               </div>
             </CardContent>

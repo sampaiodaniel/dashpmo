@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Layout } from '@/components/layout/Layout';
@@ -9,10 +8,13 @@ import { AdminLogs } from '@/components/admin/AdminLogs';
 import { AdminStatusEntrega } from '@/components/admin/AdminStatusEntrega';
 import { Users, Settings, UserCheck, FileText, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
+import { AdminCard } from '@/components/admin/AdminCard';
 
 export default function Administracao() {
   const { usuario, isAdmin } = useAuth();
   const [activeTab, setActiveTab] = useState('usuarios');
+  const navigate = useNavigate();
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -95,6 +97,17 @@ export default function Administracao() {
             {activeTab === 'responsaveis-asa' && <AdminResponsaveisASA />}
             {activeTab === 'status-entrega' && <AdminStatusEntrega />}
             {activeTab === 'logs' && <AdminLogs />}
+          </div>
+        </div>
+
+        <div className="mt-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <AdminCard
+              icon={FileText}
+              title="Importação"
+              description="Importar projetos e status via planilha Excel"
+              onClick={() => navigate('/admin/importacao')}
+            />
           </div>
         </div>
       </div>
