@@ -189,43 +189,40 @@ export default function MudancaDetalhes() {
           {/* Informações da Mudança */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-2xl font-normal text-gray-700">
-                <FileText className="h-6 w-6 text-pmo-primary" />
-                Informações da Mudança
-              </CardTitle>
+              <CardTitle className="text-left">Informações da Mudança</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-8">
+            <CardContent className="space-y-6 text-left">
               {/* Primeira linha: Descrição - ocupa linha toda */}
               <div className="text-left">
-                <label className="text-base font-medium text-pmo-gray block mb-3 text-left">Descrição</label>
-                <p className="text-base text-gray-900 leading-relaxed text-left">
+                <label className="text-sm font-medium text-pmo-gray block mb-2 text-left">Descrição</label>
+                <p className="text-sm text-gray-900 leading-relaxed text-left">
                   {mudanca.descricao || 'Não informado'}
                 </p>
               </div>
 
               {/* Segunda linha: Tipo e Data */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="text-base font-medium text-pmo-gray block mb-3">Tipo da Mudança</label>
-                  <span className="text-base text-gray-900">{mudanca.tipo_mudanca}</span>
+                  <label className="text-sm font-medium text-pmo-gray block mb-2">Tipo da Mudança</label>
+                  <span className="text-sm text-gray-900">{mudanca.tipo_mudanca}</span>
                 </div>
 
                 <div>
-                  <label className="text-base font-medium text-pmo-gray block mb-3">Data de Solicitação</label>
-                  <span className="text-base text-gray-900">{formatarData(mudanca.data_solicitacao)}</span>
+                  <label className="text-sm font-medium text-pmo-gray block mb-2">Data de Solicitação</label>
+                  <span className="text-sm text-gray-900">{formatarData(mudanca.data_solicitacao)}</span>
                 </div>
               </div>
 
               {/* Terceira linha: Solicitante e Impacto */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="text-base font-medium text-pmo-gray block mb-3">Solicitante</label>
-                  <span className="text-base text-gray-900">{mudanca.solicitante}</span>
+                  <label className="text-sm font-medium text-pmo-gray block mb-2">Solicitante</label>
+                  <span className="text-sm text-gray-900">{mudanca.solicitante}</span>
                 </div>
 
                 <div>
-                  <label className="text-base font-medium text-pmo-gray block mb-3">Impacto no Prazo</label>
-                  <span className="text-base text-gray-900">
+                  <label className="text-sm font-medium text-pmo-gray block mb-2">Impacto no Prazo</label>
+                  <span className="text-sm text-gray-900">
                     {mudanca.impacto_prazo_dias} {mudanca.impacto_prazo_dias === 1 ? 'dia' : 'dias'}
                   </span>
                 </div>
@@ -236,13 +233,10 @@ export default function MudancaDetalhes() {
           {/* Justificativa de Negócio */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-2xl font-normal text-gray-700">
-                <MessageSquare className="h-6 w-6 text-pmo-primary" />
-                Justificativa de Negócio
-              </CardTitle>
+              <CardTitle className="text-left">Justificativa de Negócio</CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="text-base text-gray-900 leading-relaxed">
+            <CardContent className="text-left">
+              <p className="text-sm text-gray-900 leading-relaxed">
                 {mudanca.justificativa_negocio || 'Não informado'}
               </p>
             </CardContent>
@@ -251,47 +245,44 @@ export default function MudancaDetalhes() {
           {/* Informações Adicionais */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-2xl font-normal text-gray-700">
-                <User className="h-6 w-6 text-pmo-primary" />
-                Informações Adicionais
-              </CardTitle>
+              <CardTitle className="text-left">Informações Adicionais</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-8">
+            <CardContent className="space-y-6 text-left">
               {/* Observações - linha inteira se existir */}
               {mudanca.observacoes && (
                 <div className="text-left">
-                  <label className="text-base font-medium text-pmo-gray block mb-3 text-left">Observações</label>
-                  <p className="text-base text-gray-900 leading-relaxed text-left">
+                  <label className="text-sm font-medium text-pmo-gray block mb-2 text-left">Observações</label>
+                  <p className="text-sm text-gray-900 leading-relaxed text-left">
                     {mudanca.observacoes}
                   </p>
                 </div>
               )}
 
               {/* Criação e Responsável */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="text-base font-medium text-pmo-gray block mb-3">Criado por</label>
-                  <span className="text-base text-gray-900">{mudanca.criado_por}</span>
+                  <label className="text-sm font-medium text-pmo-gray block mb-2">Criado por</label>
+                  <span className="text-sm text-gray-900">{mudanca.criado_por}</span>
                 </div>
 
                 <div>
-                  <label className="text-base font-medium text-pmo-gray block mb-3">Data de Criação</label>
-                  <span className="text-base text-gray-900">{formatarData(mudanca.data_criacao)}</span>
+                  <label className="text-sm font-medium text-pmo-gray block mb-2">Data de Criação</label>
+                  <span className="text-sm text-gray-900">{formatarData(mudanca.data_criacao)}</span>
                 </div>
               </div>
 
               {/* Aprovação (se existir) */}
               {mudanca.responsavel_aprovacao && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="text-base font-medium text-pmo-gray block mb-3">Responsável pela Avaliação</label>
-                    <span className="text-base text-gray-900">{mudanca.responsavel_aprovacao}</span>
+                    <label className="text-sm font-medium text-pmo-gray block mb-2">Responsável pela Avaliação</label>
+                    <span className="text-sm text-gray-900">{mudanca.responsavel_aprovacao}</span>
                   </div>
 
                   {mudanca.data_aprovacao && (
                     <div>
-                      <label className="text-base font-medium text-pmo-gray block mb-3">Data da Avaliação</label>
-                      <span className="text-base text-gray-900">{formatarData(mudanca.data_aprovacao)}</span>
+                      <label className="text-sm font-medium text-pmo-gray block mb-2">Data da Avaliação</label>
+                      <span className="text-sm text-gray-900">{formatarData(mudanca.data_aprovacao)}</span>
                     </div>
                   )}
                 </div>
