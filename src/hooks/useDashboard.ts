@@ -9,8 +9,11 @@ import {
   calculateProximosMarcos, 
   calculateProjetosCriticos 
 } from './dashboard/dashboardMetricsCalculator';
+import { useCarteirasComDados } from './useCarteirasComDados';
 
 export function useDashboardMetricas(filtros?: FiltrosDashboard) {
+  const carteirasComDados = useCarteirasComDados('projetos');
+
   return useQuery({
     queryKey: ['dashboard-metricas', filtros],
     queryFn: async (): Promise<DashboardMetricas> => {
@@ -48,7 +51,7 @@ export function useDashboardMetricas(filtros?: FiltrosDashboard) {
         proximosMarcos,
         projetosCriticos,
         mudancasAtivas: 0, // Removido a busca por mudanças ativas
-        carteirasPermitidas: hierarchy.carteirasPermitidas.map(c => c.toString()) // Converter para string[] para compatibilidade
+        carteirasPermitidas: carteirasComDados // Usar carteiras com dados
       };
     },
   });

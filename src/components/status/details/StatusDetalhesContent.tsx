@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, AlertTriangle, FileText } from 'lucide-react';
@@ -40,13 +41,13 @@ export function StatusDetalhesContent({ status }: StatusDetalhesContentProps) {
 
   // Função para formatar texto com quebras de linha em bullets
   const formatarTextoComQuebrasEBullets = (texto: string | null) => {
-    if (!texto) return <p className="text-gray-500">Nada reportado</p>;
+    if (!texto) return <p className="text-gray-500 text-sm">Nada reportado</p>;
     
     const linhas = texto.split('\n').filter(linha => linha.trim());
-    if (linhas.length === 0) return <p className="text-gray-500">Nada reportado</p>;
+    if (linhas.length === 0) return <p className="text-gray-500 text-sm">Nada reportado</p>;
     
     return (
-      <ul className="list-disc list-inside space-y-1 text-gray-900">
+      <ul className="list-disc list-inside space-y-1 text-gray-900 text-sm">
         {linhas.map((linha, index) => (
           <li key={index}>{linha.trim()}</li>
         ))}
@@ -60,31 +61,31 @@ export function StatusDetalhesContent({ status }: StatusDetalhesContentProps) {
       {/* Gestão de Riscos */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-2xl font-normal text-gray-700">
-            <AlertTriangle className="h-6 w-6 text-pmo-primary" />
+          <CardTitle className="flex items-center gap-2 text-xl font-medium text-gray-700">
+            <AlertTriangle className="h-5 w-5 text-pmo-primary" />
             Gestão de Riscos
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
-              <label className="text-base font-medium text-pmo-gray block mb-3">Probabilidade</label>
-              <Badge className={`text-sm ${getRiscoColor(status.probabilidade_riscos)}`}>
+              <label className="text-sm font-medium text-pmo-gray block mb-2">Probabilidade</label>
+              <Badge className={`text-xs ${getRiscoColor(status.probabilidade_riscos)}`}>
                 {status.probabilidade_riscos}
               </Badge>
             </div>
 
             <div>
-              <label className="text-base font-medium text-pmo-gray block mb-3">Impacto</label>
-              <Badge className={`text-sm ${getRiscoColor(status.impacto_riscos)}`}>
+              <label className="text-sm font-medium text-pmo-gray block mb-2">Impacto</label>
+              <Badge className={`text-xs ${getRiscoColor(status.impacto_riscos)}`}>
                 {status.impacto_riscos}
               </Badge>
             </div>
 
             {status.prob_x_impact && (
               <div>
-                <label className="text-base font-medium text-pmo-gray block mb-3">Prob. x Impacto</label>
-                <Badge className={`text-sm ${getRiscoColor(status.prob_x_impact)}`}>
+                <label className="text-sm font-medium text-pmo-gray block mb-2">Prob. x Impacto</label>
+                <Badge className={`text-xs ${getRiscoColor(status.prob_x_impact)}`}>
                   {status.prob_x_impact}
                 </Badge>
               </div>
@@ -96,35 +97,35 @@ export function StatusDetalhesContent({ status }: StatusDetalhesContentProps) {
       {/* Detalhes do Status */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-2xl font-normal text-gray-700">
-            <FileText className="h-6 w-6 text-pmo-primary" />
+          <CardTitle className="flex items-center gap-2 text-xl font-medium text-gray-700">
+            <FileText className="h-5 w-5 text-pmo-primary" />
             Detalhes do Status
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-8">
+        <CardContent className="space-y-6">
           <div className="text-left">
-            <label className="text-base font-medium text-pmo-gray block mb-3 text-left">Itens Trabalhados na Semana</label>
+            <label className="text-sm font-medium text-pmo-gray block mb-2 text-left">Itens Trabalhados na Semana</label>
             <div className="text-left">
               {formatarTextoComQuebrasEBullets(status.realizado_semana_atual)}
             </div>
           </div>
 
           <div className="text-left">
-            <label className="text-base font-medium text-pmo-gray block mb-3 text-left">Backlog</label>
+            <label className="text-sm font-medium text-pmo-gray block mb-2 text-left">Backlog</label>
             <div className="text-left">
               {formatarTextoComQuebrasEBullets(status.backlog)}
             </div>
           </div>
 
           <div className="text-left">
-            <label className="text-base font-medium text-pmo-gray block mb-3 text-left">Bloqueios Atuais</label>
+            <label className="text-sm font-medium text-pmo-gray block mb-2 text-left">Bloqueios Atuais</label>
             <div className="text-left">
               {formatarTextoComQuebrasEBullets(status.bloqueios_atuais)}
             </div>
           </div>
 
           <div className="text-left">
-            <label className="text-base font-medium text-pmo-gray block mb-3 text-left">Observações ou Pontos de Atenção</label>
+            <label className="text-sm font-medium text-pmo-gray block mb-2 text-left">Observações ou Pontos de Atenção</label>
             <div className="text-left">
               {formatarTextoComQuebrasEBullets(status.observacoes_pontos_atencao)}
             </div>

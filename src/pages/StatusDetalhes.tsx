@@ -1,3 +1,4 @@
+
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
@@ -170,45 +171,45 @@ export default function StatusDetalhes() {
           {/* Status do Projeto */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-2xl font-normal text-gray-700">
-                <Calendar className="h-6 w-6 text-pmo-primary" />
+              <CardTitle className="flex items-center gap-2 text-xl font-medium text-gray-700">
+                <Calendar className="h-5 w-5 text-pmo-primary" />
                 Status do Projeto
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-8">
+            <CardContent className="space-y-6">
               {/* Primeira linha: Descrição do Projeto - ocupa linha toda */}
               <div className="text-left">
-                <label className="text-base font-medium text-pmo-gray block mb-3 text-left">Descrição do Projeto</label>
-                <p className="text-base text-gray-900 leading-relaxed text-left">
+                <label className="text-sm font-medium text-pmo-gray block mb-2 text-left">Descrição do Projeto</label>
+                <p className="text-sm text-gray-900 leading-relaxed text-left">
                   {status.projeto?.descricao || status.projeto?.descricao_projeto || 'Não informado'}
                 </p>
               </div>
 
               {/* Segunda linha: Data do Status e Visão Chefe do Projeto */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="text-base font-medium text-pmo-gray block mb-3">Data do Status</label>
-                  <span className="text-base text-gray-900">{formatarData(status.data_atualizacao)}</span>
+                  <label className="text-sm font-medium text-pmo-gray block mb-2">Data do Status</label>
+                  <span className="text-sm text-gray-900">{formatarData(status.data_atualizacao)}</span>
                 </div>
 
                 <div>
-                  <label className="text-base font-medium text-pmo-gray block mb-3">Visão Chefe do Projeto</label>
-                  <Badge className={`text-sm ${getStatusColor(status.status_visao_gp)}`}>
+                  <label className="text-sm font-medium text-pmo-gray block mb-2">Visão Chefe do Projeto</label>
+                  <Badge className={`text-xs ${getStatusColor(status.status_visao_gp)}`}>
                     {status.status_visao_gp}
                   </Badge>
                 </div>
               </div>
 
               {/* Terceira linha: Progresso e Status de Revisão */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="text-base font-medium text-pmo-gray block mb-3">Progresso</label>
-                  <span className="text-base text-gray-900">{(status as any).progresso_estimado || 0}%</span>
+                  <label className="text-sm font-medium text-pmo-gray block mb-2">Progresso</label>
+                  <span className="text-sm text-gray-900">{(status as any).progresso_estimado || 0}%</span>
                 </div>
 
                 <div>
-                  <label className="text-base font-medium text-pmo-gray block mb-3">Revisado ?</label>
-                  <Badge variant={status.aprovado ? "default" : "secondary"} className="text-sm">
+                  <label className="text-sm font-medium text-pmo-gray block mb-2">Revisado ?</label>
+                  <Badge variant={status.aprovado ? "default" : "secondary"} className="text-xs">
                     {status.aprovado ? "Sim" : "Não"}
                   </Badge>
                 </div>
@@ -216,37 +217,37 @@ export default function StatusDetalhes() {
 
               {/* Data de Aprovação, se houver */}
               {status.aprovado && status.data_aprovacao && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="text-base font-medium text-pmo-gray block mb-3">Data de Aprovação</label>
-                    <span className="text-base text-gray-900">{formatarData(status.data_aprovacao)}</span>
+                    <label className="text-sm font-medium text-pmo-gray block mb-2">Data de Aprovação</label>
+                    <span className="text-sm text-gray-900">{formatarData(status.data_aprovacao)}</span>
                   </div>
                 </div>
               )}
 
               {/* Responsáveis - Chefe do Projeto e Responsável ASA */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="text-base font-medium text-pmo-gray block mb-3">Chefe do Projeto</label>
-                  <span className="text-base text-gray-900">{status.projeto?.gp_responsavel}</span>
+                  <label className="text-sm font-medium text-pmo-gray block mb-2">Chefe do Projeto</label>
+                  <span className="text-sm text-gray-900">{status.projeto?.gp_responsavel}</span>
                 </div>
 
                 <div>
-                  <label className="text-base font-medium text-pmo-gray block mb-3">Responsável ASA</label>
-                  <span className="text-base text-gray-900">{status.projeto?.responsavel_asa || status.projeto?.responsavel_interno || 'Não informado'}</span>
+                  <label className="text-sm font-medium text-pmo-gray block mb-2">Responsável ASA</label>
+                  <span className="text-sm text-gray-900">{status.projeto?.responsavel_asa || status.projeto?.responsavel_interno || 'Não informado'}</span>
                 </div>
               </div>
 
               {/* Última linha: Tipo de Projeto e Status Geral */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="text-base font-medium text-pmo-gray block mb-3">Tipo de Projeto</label>
-                  <span className="text-base text-gray-900">{tipoProjeto?.nome || 'Não informado'}</span>
+                  <label className="text-sm font-medium text-pmo-gray block mb-2">Tipo de Projeto</label>
+                  <span className="text-sm text-gray-900">{tipoProjeto?.nome || 'Não informado'}</span>
                 </div>
                 
                 <div>
-                  <label className="text-base font-medium text-pmo-gray block mb-3">Status Geral</label>
-                  <Badge className={`text-sm ${getStatusGeralColor(status.status_geral)}`}>
+                  <label className="text-sm font-medium text-pmo-gray block mb-2">Status Geral</label>
+                  <Badge className={`text-xs ${getStatusGeralColor(status.status_geral)}`}>
                     {status.status_geral}
                   </Badge>
                 </div>

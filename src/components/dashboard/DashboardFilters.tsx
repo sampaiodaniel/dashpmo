@@ -1,11 +1,10 @@
 
-import { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Filter } from 'lucide-react';
 import { FiltrosDashboard } from '@/types/pmo';
-import { useCarteiras } from '@/hooks/useListaValores';
 import { useResponsaveisASADropdown } from '@/hooks/useResponsaveisASADropdown';
-import { X } from 'lucide-react';
+import { useCarteirasComDados } from '@/hooks/useCarteirasComDados';
 
 interface DashboardFiltersProps {
   filtros: FiltrosDashboard;
@@ -13,12 +12,12 @@ interface DashboardFiltersProps {
 }
 
 export function DashboardFilters({ filtros, onFiltroChange }: DashboardFiltersProps) {
-  const { data: carteiras, isLoading: loadingCarteiras } = useCarteiras();
-  const { data: responsaveisASA, isLoading: loadingResponsaveis } = useResponsaveisASADropdown();
+  const { data: responsaveisASA } = useResponsaveisASADropdown();
+  const carteiras = useCarteirasComDados('projetos');
 
   const handleCarteiraChange = (value: string) => {
     const novosFiltros = { ...filtros };
-    if (value === 'todas' || !value) {
+    if (value === 'Todas') {
       delete novosFiltros.carteira;
     } else {
       novosFiltros.carteira = value;
@@ -26,9 +25,9 @@ export function DashboardFilters({ filtros, onFiltroChange }: DashboardFiltersPr
     onFiltroChange(novosFiltros);
   };
 
-  const handleResponsavelChange = (value: string) => {
+  const handleResponsavelASAChange = (value: string) => {
     const novosFiltros = { ...filtros };
-    if (value === 'todos' || !value) {
+    if (value === 'todos') {
       delete novosFiltros.responsavel_asa;
     } else {
       novosFiltros.responsavel_asa = value;
@@ -36,72 +35,52 @@ export function DashboardFilters({ filtros, onFiltroChange }: DashboardFiltersPr
     onFiltroChange(novosFiltros);
   };
 
-  const handleLimparFiltros = () => {
-    onFiltroChange({});
-  };
-
-  const temFiltrosAtivos = Object.keys(filtros).length > 0;
-
   return (
-    <div className="bg-white p-6 rounded-lg shadow-sm border">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold text-pmo-primary">Filtros do Dashboard</h2>
-        {temFiltrosAtivos && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleLimparFiltros}
-            className="gap-2"
-          >
-            <X className="h-4 w-4" />
-            Limpar Filtros
-          </Button>
-        )}
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-pmo-gray">Carteira</label>
-          <Select value={filtros.carteira || 'todas'} onValueChange={handleCarteiraChange}>
-            <SelectTrigger>
-              <SelectValue placeholder="Selecione uma carteira" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="todas">Todas as carteiras</SelectItem>
-              {loadingCarteiras ? (
-                <SelectItem value="loading" disabled>Carregando...</SelectItem>
-              ) : (
-                carteiras?.filter(carteira => carteira && carteira.trim() !== '').map((carteira) => (
-                  <SelectItem key={carteira} value={carteira}>
-                    {carteira}
-                  </SelectItem>
-                ))
-              )}
-            </SelectContent>
-          </Select>
-        </div>
+    <Card className="bg-white shadow-sm">
+      <CardContent className="p-4">
+        <div className="flex items-center gap-4 flex-wrap">
+          <div className="flex items-center gap-2">
+            <Filter className="h-4 w-4 text-pmo-gray" />
+            <span className="text-sm font-medium text-pmo-gray">Filtros:</span>
+          </div>
+          
+          <div className="flex gap-4 flex-wrap">
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-pmo-gray">Carteira:</label>
+              <Select value={filtros.carteira || 'Todas'} onValueChange={handleCarteiraChange}>
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Todas" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Todas">Todas</SelectItem>
+                  {carteiras.map((carteira) => (
+                    <SelectItem key={carteira} value={carteira}>
+                      {carteira}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-pmo-gray">Responsável ASA</label>
-          <Select value={filtros.responsavel_asa || 'todos'} onValueChange={handleResponsavelChange}>
-            <SelectTrigger>
-              <SelectValue placeholder="Selecione um responsável" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="todos">Todos os responsáveis</SelectItem>
-              {loadingResponsaveis ? (
-                <SelectItem value="loading" disabled>Carregando...</SelectItem>
-              ) : (
-                responsaveisASA?.filter(responsavel => responsavel && responsavel.trim() !== '').map((responsavel) => (
-                  <SelectItem key={responsavel} value={responsavel}>
-                    {responsavel}
-                  </SelectItem>
-                ))
-              )}
-            </SelectContent>
-          </Select>
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-pmo-gray">Responsável ASA:</label>
+              <Select value={filtros.responsavel_asa || 'todos'} onValueChange={handleResponsavelASAChange}>
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Todos" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Todos</SelectItem>
+                  {responsaveisASA?.map((responsavel) => (
+                    <SelectItem key={responsavel.id} value={responsavel.nome}>
+                      {responsavel.nome}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
