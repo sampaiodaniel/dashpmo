@@ -11,6 +11,7 @@ import { useLicoesAprendidas } from '@/hooks/useLicoesAprendidas';
 import { NovaLicaoModal } from '@/components/licoes/NovaLicaoModal';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
+import { ErrorBoundary } from '@/components/ui/error-boundary';
 
 interface LicoesFiltersType {
   categoria?: string;
@@ -91,12 +92,12 @@ export default function Licoes() {
     }
 
     // Filtro por categoria
-    if (filtros.categoria && filtros.categoria !== '' && licao.categoria_licao !== filtros.categoria) {
+    if (filtros.categoria && filtros.categoria !== '' && filtros.categoria !== 'all' && licao.categoria_licao !== filtros.categoria) {
       return false;
     }
 
     // Filtro por status
-    if (filtros.status && filtros.status !== '' && licao.status_aplicacao !== filtros.status) {
+    if (filtros.status && filtros.status !== '' && filtros.status !== 'all' && licao.status_aplicacao !== filtros.status) {
       return false;
     }
 
@@ -117,50 +118,52 @@ export default function Licoes() {
 
   return (
     <Layout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="text-left">
-            <h1 className="text-3xl font-bold text-pmo-primary">Lições Aprendidas</h1>
-            <p className="text-pmo-gray mt-2">Gestão de conhecimento e aprendizados dos projetos</p>
+      <ErrorBoundary>
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="text-left">
+              <h1 className="text-3xl font-bold text-pmo-primary">Lições Aprendidas</h1>
+              <p className="text-pmo-gray mt-2">Gestão de conhecimento e aprendizados dos projetos</p>
+            </div>
+            <Button 
+              onClick={handleNovaLicao}
+              className="bg-pmo-primary hover:bg-pmo-primary/90"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Nova Lição
+            </Button>
           </div>
-          <Button 
-            onClick={handleNovaLicao}
-            className="bg-pmo-primary hover:bg-pmo-primary/90"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Nova Lição
-          </Button>
+
+          <LicoesMetricas 
+            totalLicoes={totalLicoes}
+            boasPraticas={boasPraticas}
+            pontosAtencao={pontosAtencao}
+            onFiltrarBoasPraticas={handleFiltrarBoasPraticas}
+            onFiltrarPontosAtencao={handleFiltrarPontosAtencao}
+            onFiltrarTodas={handleFiltrarTodas}
+          />
+
+          <LicoesFilters
+            filters={filtros}
+            onFiltersChange={setFiltros}
+          />
+
+          <LicoesSearchBar
+            termoBusca={termoBusca}
+            onTermoBuscaChange={setTermoBusca}
+            totalResults={licoesFiltradas.length}
+          />
+          
+          <LicoesList licoes={licoesFiltradas} />
         </div>
 
-        <LicoesMetricas 
-          totalLicoes={totalLicoes}
-          boasPraticas={boasPraticas}
-          pontosAtencao={pontosAtencao}
-          onFiltrarBoasPraticas={handleFiltrarBoasPraticas}
-          onFiltrarPontosAtencao={handleFiltrarPontosAtencao}
-          onFiltrarTodas={handleFiltrarTodas}
+        <NovaLicaoModal
+          isOpen={modalAberto}
+          onClose={() => setModalAberto(false)}
+          onLicaoCreated={handleLicaoCriada}
+          categorias={['Técnica', 'Processo', 'Comunicação', 'Recursos', 'Planejamento']}
         />
-
-        <LicoesFilters
-          filters={filtros}
-          onFiltersChange={setFiltros}
-        />
-
-        <LicoesSearchBar
-          termoBusca={termoBusca}
-          onTermoBuscaChange={setTermoBusca}
-          totalResults={licoesFiltradas.length}
-        />
-        
-        <LicoesList licoes={licoesFiltradas} />
-      </div>
-
-      <NovaLicaoModal
-        isOpen={modalAberto}
-        onClose={() => setModalAberto(false)}
-        onLicaoCreated={handleLicaoCriada}
-        categorias={['Técnica', 'Processo', 'Comunicação', 'Recursos', 'Planejamento']}
-      />
+      </ErrorBoundary>
     </Layout>
   );
 }

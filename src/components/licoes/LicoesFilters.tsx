@@ -20,7 +20,7 @@ export function LicoesFilters({ filters, onFiltersChange }: LicoesFiltersProps) 
 
   const handleFilterChange = (campo: string, valor: string) => {
     const novosFiltros = { ...filters };
-    if (valor === 'todas' || valor === 'todos' || valor === '') {
+    if (valor === 'todas' || valor === 'todos' || valor === 'all') {
       delete novosFiltros[campo];
     } else {
       novosFiltros[campo] = valor;
@@ -61,14 +61,14 @@ export function LicoesFilters({ filters, onFiltersChange }: LicoesFiltersProps) 
             <div className="flex items-center gap-2">
               <label className="text-sm text-pmo-gray">Categoria:</label>
               <Select
-                value={filters.categoria || ''}
+                value={filters.categoria || 'all'}
                 onValueChange={(value) => handleFilterChange('categoria', value)}
               >
                 <SelectTrigger className="w-40">
                   <SelectValue placeholder="Todas" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todas</SelectItem>
+                  <SelectItem value="all">Todas</SelectItem>
                   <SelectItem value="Técnica">Técnica</SelectItem>
                   <SelectItem value="Processo">Processo</SelectItem>
                   <SelectItem value="Comunicação">Comunicação</SelectItem>
@@ -85,14 +85,14 @@ export function LicoesFilters({ filters, onFiltersChange }: LicoesFiltersProps) 
             <div className="flex items-center gap-2">
               <label className="text-sm text-pmo-gray">Status:</label>
               <Select
-                value={filters.status || ''}
+                value={filters.status || 'all'}
                 onValueChange={(value) => handleFilterChange('status', value)}
               >
                 <SelectTrigger className="w-40">
                   <SelectValue placeholder="Todos" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todos</SelectItem>
+                  <SelectItem value="all">Todos</SelectItem>
                   <SelectItem value="Aplicada">Aplicada</SelectItem>
                   <SelectItem value="Não aplicada">Não aplicada</SelectItem>
                   <SelectItem value="Em análise">Em análise</SelectItem>
