@@ -96,18 +96,24 @@ export class HtmlTemplateBuilder {
             opacity: 1 !important;
         }
         
-        /* Melhorar botões de navegação da timeline */
+        /* Estilos específicos para setas de navegação da timeline */
         button[data-direction] {
             position: relative !important;
-            z-index: 1000 !important;
+            z-index: 9999 !important;
             cursor: pointer !important;
             pointer-events: auto !important;
             opacity: 1 !important;
             visibility: visible !important;
+            border: 2px solid #A6926B !important;
+            border-radius: 6px !important;
+            padding: 8px !important;
+            background-color: white !important;
+            transition: all 0.2s ease !important;
         }
         
         button[data-direction]:hover {
-            opacity: 0.8 !important;
+            background-color: #A6926B !important;
+            color: white !important;
             transform: scale(1.1) !important;
         }
         
@@ -115,12 +121,9 @@ export class HtmlTemplateBuilder {
             transform: scale(0.95) !important;
         }
         
-        /* Garantir que itens da timeline sejam posicionáveis */
-        .timeline-box,
-        [class*="absolute"][style*="left"],
-        .delivery-item,
-        [data-entrega] {
-            transition: opacity 0.3s ease !important;
+        /* Garantir que itens da timeline sejam controláveis */
+        [data-timeline-index] {
+            transition: opacity 0.3s ease, visibility 0.3s ease !important;
         }
         
         /* Melhorar layout de tabelas */
@@ -161,11 +164,93 @@ export class HtmlTemplateBuilder {
     ${clonedElement.outerHTML}
     
     <script>
-        console.log('DashPMO HTML carregado com sucesso!');
+        console.log('🚀 DashPMO HTML carregado com sucesso!');
+        
+        // Função principal para navegação das setas da timeline
+        window.navigateTimelineArrow = function(arrowId, direction, containerIndex) {
+            console.log(\`🎯 Navegação ativada: \${arrowId}, direção: \${direction}, container: \${containerIndex}\`);
+            
+            try {
+                // Encontrar o container da timeline
+                const container = document.querySelector(\`[data-timeline-container="\${containerIndex}"]\`);
+                if (!container) {
+                    console.error('❌ Container da timeline não encontrado:', containerIndex);
+                    return false;
+                }
+                
+                // Obter informações do estado atual
+                const currentPage = parseInt(container.getAttribute('data-timeline-current-page') || '0');
+                const totalItems = parseInt(container.getAttribute('data-timeline-total-items') || '0');
+                const itemsPerPage = parseInt(container.getAttribute('data-timeline-items-per-page') || '3');
+                
+                console.log(\`📊 Estado atual: página \${currentPage}, \${totalItems} itens, \${itemsPerPage} por página\`);
+                
+                // Calcular nova página
+                let newPage = currentPage;
+                const maxPages = Math.ceil(totalItems / itemsPerPage) - 1;
+                
+                if (direction === 'left') {
+                    newPage = Math.max(0, currentPage - 1);
+                } else if (direction === 'right') {
+                    newPage = Math.min(maxPages, currentPage + 1);
+                }
+                
+                // Se não mudou a página, não fazer nada
+                if (newPage === currentPage) {
+                    console.log(\`⚠️ Já na página limite: \${currentPage}\`);
+                    return false;
+                }
+                
+                console.log(\`➡️ Mudando da página \${currentPage} para \${newPage}\`);
+                
+                // Encontrar todos os itens da timeline neste container
+                const timelineItems = container.querySelectorAll('[data-timeline-index]');
+                
+                if (timelineItems.length === 0) {
+                    console.error('❌ Nenhum item da timeline encontrado no container');
+                    return false;
+                }
+                
+                // Ocultar todos os itens primeiro
+                timelineItems.forEach(item => {
+                    item.style.display = 'none';
+                    item.style.visibility = 'hidden';
+                    item.style.opacity = '0';
+                    item.setAttribute('data-timeline-visible', 'false');
+                });
+                
+                // Mostrar itens da nova página
+                const startIndex = newPage * itemsPerPage;
+                const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+                
+                let itemsShown = 0;
+                for (let i = startIndex; i < endIndex; i++) {
+                    const item = container.querySelector(\`[data-timeline-index="\${i}"]\`);
+                    if (item) {
+                        item.style.display = 'block';
+                        item.style.visibility = 'visible';
+                        item.style.opacity = '1';
+                        item.setAttribute('data-timeline-visible', 'true');
+                        itemsShown++;
+                    }
+                }
+                
+                // Atualizar o estado do container
+                container.setAttribute('data-timeline-current-page', newPage.toString());
+                
+                console.log(\`✅ Navegação concluída! Página: \${newPage}, itens exibidos: \${itemsShown}\`);
+                
+                return false; // Prevenir propagação do evento
+                
+            } catch (error) {
+                console.error('❌ Erro na navegação da timeline:', error);
+                return false;
+            }
+        };
         
         // Implementar navegação interna robusta
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM carregado, configurando navegação...');
+            console.log('📋 DOM carregado, configurando funcionalidades...');
             
             // Configurar smooth scroll para todos os links internos
             document.querySelectorAll('a[href^="#"]').forEach(link => {
@@ -183,16 +268,49 @@ export class HtmlTemplateBuilder {
                 });
             });
             
-            // Configurar estado inicial das timelines
-            initializeTimelineNavigation();
+            // Validar configuração das timelines
+            validateTimelineSetup();
             
             // Log para debug
-            console.log('Links configurados:', document.querySelectorAll('a[href^="#"]').length);
-            console.log('Botões configurados:', document.querySelectorAll('button[onclick]').length);
-            console.log('Linhas clicáveis:', document.querySelectorAll('tr[onclick]').length);
-            console.log('Elementos timeline clicáveis:', document.querySelectorAll('[data-projeto-id][onclick]').length);
-            console.log('Botões de navegação timeline:', document.querySelectorAll('button[data-direction]').length);
+            console.log('🔗 Links configurados:', document.querySelectorAll('a[href^="#"]').length);
+            console.log('🔘 Botões configurados:', document.querySelectorAll('button[onclick]').length);
+            console.log('📋 Linhas clicáveis:', document.querySelectorAll('tr[onclick]').length);
+            console.log('⏰ Elementos timeline clicáveis:', document.querySelectorAll('[data-projeto-id][onclick]').length);
+            console.log('🎯 Setas de navegação timeline:', document.querySelectorAll('button[data-direction]').length);
         });
+        
+        // Função para validar configuração das timelines
+        function validateTimelineSetup() {
+            console.log('🔍 Validando configuração das timelines...');
+            
+            const timelineContainers = document.querySelectorAll('[data-timeline-container]');
+            
+            timelineContainers.forEach((container, index) => {
+                const totalItems = container.getAttribute('data-timeline-total-items');
+                const currentPage = container.getAttribute('data-timeline-current-page');
+                const visibleItems = container.querySelectorAll('[data-timeline-visible="true"]');
+                const leftArrows = container.querySelectorAll('button[data-direction="left"]');
+                const rightArrows = container.querySelectorAll('button[data-direction="right"]');
+                
+                console.log(\`📊 Timeline \${index}:\`);
+                console.log(\`  - Total de itens: \${totalItems}\`);
+                console.log(\`  - Página atual: \${currentPage}\`);
+                console.log(\`  - Itens visíveis: \${visibleItems.length}\`);
+                console.log(\`  - Setas esquerda: \${leftArrows.length}\`);
+                console.log(\`  - Setas direita: \${rightArrows.length}\`);
+                
+                // Testar se as setas têm onclick configurado
+                leftArrows.forEach((arrow, arrowIndex) => {
+                    const onclick = arrow.getAttribute('onclick');
+                    console.log(\`  - Seta esquerda \${arrowIndex} onclick: \${onclick ? '✅' : '❌'}\`);
+                });
+                
+                rightArrows.forEach((arrow, arrowIndex) => {
+                    const onclick = arrow.getAttribute('onclick');
+                    console.log(\`  - Seta direita \${arrowIndex} onclick: \${onclick ? '✅' : '❌'}\`);
+                });
+            });
+        }
         
         // Função auxiliar para scroll suave
         function scrollToElement(elementId) {
@@ -206,90 +324,6 @@ export class HtmlTemplateBuilder {
                 return true;
             }
             return false;
-        }
-        
-        // Função para inicializar navegação da timeline
-        function initializeTimelineNavigation() {
-            console.log('Inicializando navegação da timeline...');
-            
-            // Encontrar todos os containers de timeline
-            const timelineContainers = document.querySelectorAll('.timeline-card, [class*="timeline"]');
-            
-            timelineContainers.forEach((container, index) => {
-                const deliveryItems = container.querySelectorAll(
-                    '.timeline-box, [class*="absolute"][style*="left"], .delivery-item, [data-entrega]'
-                );
-                
-                console.log(\`Timeline \${index}: \${deliveryItems.length} itens encontrados\`);
-                
-                if (deliveryItems.length > 3) {
-                    // Mostrar apenas os primeiros 3 itens
-                    deliveryItems.forEach((item, itemIndex) => {
-                        if (itemIndex >= 3) {
-                            item.style.display = 'none';
-                        } else {
-                            item.style.display = 'block';
-                            item.style.visibility = 'visible';
-                        }
-                    });
-                    
-                    console.log(\`Timeline \${index}: Ocultados \${deliveryItems.length - 3} itens\`);
-                }
-                
-                // Adicionar indicadores visuais aos botões de navegação
-                const navButtons = container.querySelectorAll('button[data-direction]');
-                navButtons.forEach(button => {
-                    button.style.border = '2px solid #A6926B';
-                    button.style.borderRadius = '6px';
-                    button.title = button.getAttribute('data-direction') === 'previous' 
-                        ? 'Página anterior (3 entregas)' 
-                        : 'Próxima página (3 entregas)';
-                });
-            });
-            
-            console.log('Navegação da timeline inicializada com sucesso');
-        }
-        
-        // Função de fallback para navegação manual
-        function navigateTimeline(containerId, direction) {
-            console.log(\`Navegação manual: container \${containerId}, direção \${direction}\`);
-            
-            const container = document.querySelector(\`[data-container-id="\${containerId}"], .timeline-card:nth-child(\${containerId + 1})\`);
-            if (!container) {
-                console.warn('Container não encontrado para navegação manual');
-                return;
-            }
-            
-            const deliveryItems = container.querySelectorAll(
-                '.timeline-box, [class*="absolute"][style*="left"], .delivery-item, [data-entrega]'
-            );
-            
-            // Implementar lógica de paginação simples
-            let currentPage = 0;
-            const itemsPerPage = 3;
-            
-            // Encontrar página atual
-            for (let i = 0; i < deliveryItems.length; i += itemsPerPage) {
-                if (deliveryItems[i] && deliveryItems[i].style.display !== 'none') {
-                    currentPage = Math.floor(i / itemsPerPage);
-                    break;
-                }
-            }
-            
-            const totalPages = Math.ceil(deliveryItems.length / itemsPerPage);
-            let newPage = direction === 'previous' 
-                ? Math.max(0, currentPage - 1)
-                : Math.min(totalPages - 1, currentPage + 1);
-            
-            if (newPage !== currentPage) {
-                // Aplicar nova página
-                deliveryItems.forEach((item, index) => {
-                    const pageIndex = Math.floor(index / itemsPerPage);
-                    item.style.display = pageIndex === newPage ? 'block' : 'none';
-                });
-                
-                console.log(\`Navegação concluída: página \${currentPage} -> \${newPage}\`);
-            }
         }
     </script>
 </body>

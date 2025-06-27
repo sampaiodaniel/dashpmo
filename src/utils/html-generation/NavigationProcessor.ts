@@ -87,170 +87,129 @@ export class NavigationProcessor {
       }
     });
 
-    // Nova abordagem para navegação da timeline - mais simples e confiável
-    this.processTimelineNavigation(clonedElement);
+    // Implementar navegação específica para setas da timeline
+    this.implementTimelineArrowNavigation(clonedElement);
   }
 
-  private processTimelineNavigation(clonedElement: HTMLElement) {
+  private implementTimelineArrowNavigation(clonedElement: HTMLElement) {
+    console.log('🔍 Iniciando implementação de navegação por setas da timeline...');
+    
     // Encontrar todos os containers de timeline
-    const timelineContainers = clonedElement.querySelectorAll('.timeline-card, [class*="timeline"]');
+    const timelineContainers = clonedElement.querySelectorAll('.timeline-card, [class*="timeline"], .relative');
     
     timelineContainers.forEach((container, containerIndex) => {
-      // Encontrar botões de navegação dentro do container
-      const navButtons = container.querySelectorAll('button');
-      
-      navButtons.forEach((button, buttonIndex) => {
-        // Verificar se é um botão de navegação através do conteúdo SVG
-        const svg = button.querySelector('svg');
-        if (!svg) return;
-        
-        // Identificar direção através de classes, data attributes ou conteúdo SVG
-        const svgContent = svg.innerHTML.toLowerCase();
-        const isLeftButton = svgContent.includes('chevron-left') || 
-                            svgContent.includes('left') ||
-                            button.getAttribute('aria-label')?.toLowerCase().includes('previous') ||
-                            button.getAttribute('aria-label')?.toLowerCase().includes('anterior');
-        
-        const isRightButton = svgContent.includes('chevron-right') || 
-                             svgContent.includes('right') ||
-                             button.getAttribute('aria-label')?.toLowerCase().includes('next') ||
-                             button.getAttribute('aria-label')?.toLowerCase().includes('próximo');
-        
-        if (!isLeftButton && !isRightButton) return;
-        
-        const direction = isLeftButton ? 'previous' : 'next';
-        const uniqueId = `timeline-nav-${containerIndex}-${direction}-${buttonIndex}`;
-        
-        button.setAttribute('id', uniqueId);
-        button.setAttribute('data-direction', direction);
-        button.setAttribute('data-container-index', containerIndex.toString());
-        
-        // Implementar navegação simplificada
-        button.setAttribute('onclick', `
-          (function() {
-            try {
-              const button = document.getElementById('${uniqueId}');
-              const container = button.closest('.timeline-card, [class*="timeline"]');
-              
-              if (!container) {
-                console.warn('Container da timeline não encontrado');
-                return false;
-              }
-              
-              // Encontrar elementos de entrega na timeline
-              const deliveryItems = container.querySelectorAll(
-                '.timeline-box, [class*="absolute"][style*="left"], .delivery-item, [data-entrega]'
-              );
-              
-              if (deliveryItems.length === 0) {
-                console.warn('Nenhum item de entrega encontrado');
-                return false;
-              }
-              
-              console.log('Encontrados', deliveryItems.length, 'itens de entrega');
-              
-              const itemsPerPage = 3;
-              const direction = '${direction}';
-              
-              // Encontrar página atual baseada em visibilidade
-              let currentPage = 0;
-              for (let i = 0; i < deliveryItems.length; i += itemsPerPage) {
-                const item = deliveryItems[i];
-                const style = window.getComputedStyle(item);
-                
-                if (style.display !== 'none' && style.visibility !== 'hidden') {
-                  currentPage = Math.floor(i / itemsPerPage);
-                  break;
-                }
-              }
-              
-              // Calcular nova página
-              const totalPages = Math.ceil(deliveryItems.length / itemsPerPage);
-              let newPage = currentPage;
-              
-              if (direction === 'previous') {
-                newPage = Math.max(0, currentPage - 1);
-              } else {
-                newPage = Math.min(totalPages - 1, currentPage + 1);
-              }
-              
-              // Se não mudou, não fazer nada
-              if (newPage === currentPage) {
-                console.log('Já na página limite');
-                return false;
-              }
-              
-              console.log('Mudando da página', currentPage, 'para', newPage);
-              
-              // Ocultar todos os itens
-              deliveryItems.forEach(item => {
-                item.style.display = 'none';
-              });
-              
-              // Mostrar itens da nova página
-              const startIndex = newPage * itemsPerPage;
-              const endIndex = Math.min(startIndex + itemsPerPage, deliveryItems.length);
-              
-              for (let i = startIndex; i < endIndex; i++) {
-                const item = deliveryItems[i];
-                item.style.display = 'block';
-                item.style.visibility = 'visible';
-                
-                // Reposicionar item se necessário
-                const positionIndex = i - startIndex;
-                const positions = ['16.67%', '50%', '83.33%'];
-                
-                if (positions[positionIndex] && item.style.left !== undefined) {
-                  item.style.left = positions[positionIndex];
-                  item.style.transform = 'translateX(-50%)';
-                }
-              }
-              
-              console.log('Navegação da timeline concluída com sucesso');
-              return false;
-              
-            } catch (error) {
-              console.error('Erro na navegação da timeline:', error);
-              return false;
-            }
-          })();
-        `);
-        
-        // Garantir que o botão seja clicável
-        const buttonEl = button as HTMLElement;
-        buttonEl.style.cursor = 'pointer';
-        buttonEl.style.pointerEvents = 'auto';
-        buttonEl.style.position = 'relative';
-        buttonEl.style.zIndex = '1000';
-        
-        console.log(`Configurado botão de navegação ${direction} para container ${containerIndex}`);
-      });
-    });
-    
-    // Adicionar estado inicial - mostrar apenas primeiros 3 itens de cada timeline
-    this.initializeTimelineStates(clonedElement);
-  }
-  
-  private initializeTimelineStates(clonedElement: HTMLElement) {
-    const timelineContainers = clonedElement.querySelectorAll('.timeline-card, [class*="timeline"]');
-    
-    timelineContainers.forEach((container) => {
       const deliveryItems = container.querySelectorAll(
-        '.timeline-box, [class*="absolute"][style*="left"], .delivery-item, [data-entrega]'
+        '.timeline-box, [class*="absolute"][style*="left"], .delivery-item, [data-entrega], [class*="absolute"][class*="transform"]'
       );
       
-      if (deliveryItems.length > 3) {
-        // Ocultar itens além dos primeiros 3
-        deliveryItems.forEach((item, index) => {
-          const itemEl = item as HTMLElement;
-          if (index >= 3) {
-            itemEl.style.display = 'none';
-          } else {
-            itemEl.style.display = 'block';
-            itemEl.style.visibility = 'visible';
-          }
-        });
+      if (deliveryItems.length <= 3) {
+        console.log(`Container ${containerIndex}: Apenas ${deliveryItems.length} entregas, navegação não necessária`);
+        return;
+      }
+
+      console.log(`Container ${containerIndex}: ${deliveryItems.length} entregas encontradas, configurando navegação...`);
+      
+      // Procurar por botões de seta especificamente
+      const leftArrows = container.querySelectorAll('button:has(svg), [role="button"]:has(svg)');
+      const rightArrows = container.querySelectorAll('button:has(svg), [role="button"]:has(svg)');
+      
+      // Identificar setas baseado na posição ou conteúdo SVG
+      leftArrows.forEach((arrow, arrowIndex) => {
+        const svg = arrow.querySelector('svg');
+        if (!svg) return;
+        
+        const svgHTML = svg.innerHTML.toLowerCase();
+        const isLeftArrow = svgHTML.includes('chevron-left') || 
+                           svgHTML.includes('arrow-left') ||
+                           svgHTML.includes('m15 18l-6-6 6-6') || // Chevron left path
+                           arrow.getAttribute('aria-label')?.toLowerCase().includes('previous') ||
+                           arrow.getAttribute('aria-label')?.toLowerCase().includes('anterior');
+        
+        if (isLeftArrow) {
+          const arrowId = `timeline-left-${containerIndex}-${arrowIndex}`;
+          arrow.setAttribute('id', arrowId);
+          arrow.setAttribute('data-direction', 'left');
+          arrow.setAttribute('data-container', containerIndex.toString());
+          
+          // Remover qualquer onclick anterior e adicionar novo
+          arrow.removeAttribute('onclick');
+          arrow.setAttribute('onclick', `navigateTimelineArrow('${arrowId}', 'left', ${containerIndex}); return false;`);
+          
+          const arrowEl = arrow as HTMLElement;
+          arrowEl.style.cursor = 'pointer';
+          arrowEl.style.zIndex = '9999';
+          arrowEl.style.position = 'relative';
+          
+          console.log(`✅ Seta esquerda configurada: ${arrowId}`);
+        }
+      });
+      
+      rightArrows.forEach((arrow, arrowIndex) => {
+        const svg = arrow.querySelector('svg');
+        if (!svg) return;
+        
+        const svgHTML = svg.innerHTML.toLowerCase();
+        const isRightArrow = svgHTML.includes('chevron-right') || 
+                            svgHTML.includes('arrow-right') ||
+                            svgHTML.includes('m9 18l6-6-6-6') || // Chevron right path
+                            arrow.getAttribute('aria-label')?.toLowerCase().includes('next') ||
+                            arrow.getAttribute('aria-label')?.toLowerCase().includes('próximo');
+        
+        if (isRightArrow) {
+          const arrowId = `timeline-right-${containerIndex}-${arrowIndex}`;
+          arrow.setAttribute('id', arrowId);
+          arrow.setAttribute('data-direction', 'right');
+          arrow.setAttribute('data-container', containerIndex.toString());
+          
+          // Remover qualquer onclick anterior e adicionar novo
+          arrow.removeAttribute('onclick');
+          arrow.setAttribute('onclick', `navigateTimelineArrow('${arrowId}', 'right', ${containerIndex}); return false;`);
+          
+          const arrowEl = arrow as HTMLElement;
+          arrowEl.style.cursor = 'pointer';
+          arrowEl.style.zIndex = '9999';
+          arrowEl.style.position = 'relative';
+          
+          console.log(`✅ Seta direita configurada: ${arrowId}`);
+        }
+      });
+      
+      // Configurar estado inicial - mostrar apenas os primeiros 3 itens
+      this.setInitialTimelineState(container, deliveryItems);
+      
+      // Adicionar identificador único ao container
+      container.setAttribute('data-timeline-container', containerIndex.toString());
+    });
+  }
+  
+  private setInitialTimelineState(container: Element, deliveryItems: NodeListOf<Element>) {
+    console.log(`🔧 Configurando estado inicial para ${deliveryItems.length} entregas...`);
+    
+    deliveryItems.forEach((item, index) => {
+      const itemEl = item as HTMLElement;
+      
+      if (index < 3) {
+        // Mostrar os primeiros 3 itens
+        itemEl.style.display = 'block';
+        itemEl.style.visibility = 'visible';
+        itemEl.style.opacity = '1';
+        itemEl.setAttribute('data-timeline-visible', 'true');
+        itemEl.setAttribute('data-timeline-index', index.toString());
+      } else {
+        // Ocultar os demais
+        itemEl.style.display = 'none';
+        itemEl.style.visibility = 'hidden';
+        itemEl.style.opacity = '0';
+        itemEl.setAttribute('data-timeline-visible', 'false');
+        itemEl.setAttribute('data-timeline-index', index.toString());
       }
     });
+    
+    // Salvar informações do estado no container
+    container.setAttribute('data-timeline-current-page', '0');
+    container.setAttribute('data-timeline-total-items', deliveryItems.length.toString());
+    container.setAttribute('data-timeline-items-per-page', '3');
+    
+    console.log(`✅ Estado inicial configurado: página 0, ${deliveryItems.length} itens totais`);
   }
 }
