@@ -717,19 +717,18 @@ export function useNovoStatusForm() {
 
   return {
     form,
-    mutation,
-    carteiraSelecionada,
-    setCarteiraSelecionada,
+    isLoading: mutation.isPending,
+    isLoadingListas,
+    onSubmit,
     projetoSelecionado,
-    setProjetoSelecionado,
+    carteiraSelecionada,
     progressoEstimado,
-    setProgressoEstimado,
     entregas,
     setEntregas,
-    ultimoStatus,
-    isLoadingUltimoStatus,
+    handleCarteiraChange,
+    handleProjetoChange,
+    handleProgressoChange,
     temStatusNaoValidado,
-    isLoadingListas,
-    camposStatusEntregaExistem
+    ultimoStatus
   };
 }
