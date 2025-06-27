@@ -1,15 +1,7 @@
 
 import { TimelineArrowProcessor } from './TimelineArrowProcessor';
 import { LinkNavigationProcessor } from './LinkNavigationProcessor';
-
-interface DadosRelatorioVisual {
-  carteira?: string;
-  responsavel?: string;
-  projetos: any[];
-  statusProjetos: any[];
-  incidentes: any[];
-  dataGeracao: Date;
-}
+import { DadosRelatorioVisual } from './types';
 
 export class NavigationProcessor {
   private linkProcessor: LinkNavigationProcessor;
