@@ -184,7 +184,7 @@ export function TimelineEntregas({ projetos, forceMobile = false }: TimelineEntr
     return diffWeeks;
   };
 
-  // Função para gerar posições dos traços baseado nas semanas
+  // Função melhorada para gerar posições dos traços baseado nas semanas e paginação
   const gerarPosicoesSemanas = (entregasPagina: any[], todasEntregas: any[], paginaAtual: number) => {
     if (entregasPagina.length <= 1) return [];
     
@@ -195,25 +195,13 @@ export function TimelineEntregas({ projetos, forceMobile = false }: TimelineEntr
     
     const posEntregas = [posicaoEntrega1, posicaoEntrega2, posicaoEntrega3];
     
-    // Processar todas as entregas da página atual
+    // Calcular índices das entregas na página atual no contexto de todas as entregas
+    const indiceInicioPagina = paginaAtual * entregasPorPagina;
+    
+    // Processar traços entre entregas da página atual
     for (let i = 1; i < entregasPagina.length; i++) {
-      let entregaAnterior, entregaAtual;
-      
-      if (i === 1 && paginaAtual > 0 && todasEntregas.length > 0) {
-        // Para a primeira entrega da página (que não é a primeira página),
-        // usar a última entrega da página anterior
-        const indiceAnterior = (paginaAtual * entregasPorPagina) - 1;
-        if (indiceAnterior >= 0 && indiceAnterior < todasEntregas.length) {
-          entregaAnterior = todasEntregas[indiceAnterior];
-          entregaAtual = entregasPagina[i];
-        } else {
-          entregaAnterior = entregasPagina[i - 1];
-          entregaAtual = entregasPagina[i];
-        }
-      } else {
-        entregaAnterior = entregasPagina[i - 1];
-        entregaAtual = entregasPagina[i];
-      }
+      const entregaAnterior = entregasPagina[i - 1];
+      const entregaAtual = entregasPagina[i];
       
       const semanas = calcularSemanas(entregaAnterior.data, entregaAtual.data);
       
@@ -232,30 +220,57 @@ export function TimelineEntregas({ projetos, forceMobile = false }: TimelineEntr
       }
     }
     
-    // Se há mais entregas após esta página, adicionar traços entre a última entrega
-    // desta página e a primeira da próxima página
-    if (paginaAtual >= 0 && todasEntregas.length > 0) {
-      const indiceFinalPagina = ((paginaAtual + 1) * entregasPorPagina) - 1;
-      const indiceProximaEntrega = indiceFinalPagina + 1;
+    // Se esta não é a última página, adicionar traços que conectam à próxima página
+    const ultimoIndicePagina = indiceInicioPagina + entregasPagina.length - 1;
+    const proximoIndice = ultimoIndicePagina + 1;
+    
+    if (proximoIndice < todasEntregas.length) {
+      const ultimaEntregaPagina = entregasPagina[entregasPagina.length - 1];
+      const proximaEntrega = todasEntregas[proximoIndice];
       
-      if (indiceFinalPagina < todasEntregas.length && indiceProximaEntrega < todasEntregas.length) {
-        const ultimaEntregaPagina = todasEntregas[indiceFinalPagina];
-        const primeiraEntregaProxima = todasEntregas[indiceProximaEntrega];
+      if (ultimaEntregaPagina && proximaEntrega) {
+        const semanasConexao = calcularSemanas(ultimaEntregaPagina.data, proximaEntrega.data);
         
-        if (ultimaEntregaPagina && primeiraEntregaProxima) {
-          const semanas = calcularSemanas(ultimaEntregaPagina.data, primeiraEntregaProxima.data);
+        // Dividir os traços entre o final desta página e o início da próxima
+        // Na página atual: mostrar apenas alguns traços que indicam continuidade
+        const tracosNestaPagina = Math.min(2, Math.floor(semanasConexao / 2));
+        const posInicio = posEntregas[entregasPagina.length - 1]; // Posição da última entrega desta página
+        const distanciaAteProximaPagina = 100 - posInicio; // Até o final da tela
+        const intervaloPorSemana = distanciaAteProximaPagina / semanasConexao;
+        
+        for (let j = 1; j <= tracosNestaPagina; j++) {
+          const posicao = posInicio + (intervaloPorSemana * j);
+          if (posicao <= 95) { // Não ultrapassar muito a borda
+            posicoes.push({
+              tipo: 'semana',
+              posicao: posicao
+            });
+          }
+        }
+      }
+    }
+    
+    // Se esta não é a primeira página, adicionar traços que conectam da página anterior
+    if (paginaAtual > 0 && entregasPagina.length > 0) {
+      const indiceAnterior = indiceInicioPagina - 1;
+      
+      if (indiceAnterior >= 0 && indiceAnterior < todasEntregas.length) {
+        const entregaAnterior = todasEntregas[indiceAnterior];
+        const primeiraEntregaPagina = entregasPagina[0];
+        
+        if (entregaAnterior && primeiraEntregaPagina) {
+          const semanasConexao = calcularSemanas(entregaAnterior.data, primeiraEntregaPagina.data);
           
-          // Os traços vão da última posição (83.33%) até além da página (simular continuidade)
-          const posInicio = 83.33;
-          const posFim = 100; // Vai até o final da página atual
-          const distancia = posFim - posInicio;
-          const intervaloPorSemana = distancia / semanas;
+          // Na página atual: mostrar traços do início até a primeira entrega
+          const tracosNestaPagina = Math.min(2, Math.ceil(semanasConexao / 2));
+          const posFim = posEntregas[0]; // Posição da primeira entrega desta página
+          const distanciaDoInicio = posFim; // Do início da tela até a primeira entrega
+          const intervaloPorSemana = distanciaDoInicio / semanasConexao;
           
-          // Adicionar apenas alguns traços para mostrar continuidade
-          const maxTracos = Math.min(semanas - 1, 2); // Máximo 2 traços para não poluir
-          for (let j = 1; j <= maxTracos; j++) {
-            const posicao = posInicio + (intervaloPorSemana * j);
-            if (posicao <= 95) { // Não ultrapassar muito a borda
+          // Começar do início da página
+          for (let j = 1; j <= tracosNestaPagina; j++) {
+            const posicao = intervaloPorSemana * j;
+            if (posicao >= 5 && posicao < posFim - 2) { // Não muito próximo das bordas
               posicoes.push({
                 tipo: 'semana',
                 posicao: posicao
