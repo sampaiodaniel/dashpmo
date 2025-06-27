@@ -70,9 +70,9 @@ export function DashboardFilters({ filtros, onFiltroChange }: DashboardFiltersPr
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="todos">Todos</SelectItem>
-                  {responsaveisASA?.map((responsavel) => (
-                    <SelectItem key={responsavel.id} value={responsavel.nome}>
-                      {responsavel.nome}
+                  {responsaveisASA?.map((responsavelNome) => (
+                    <SelectItem key={responsavelNome} value={responsavelNome}>
+                      {responsavelNome}
                     </SelectItem>
                   ))}
                 </SelectContent>
