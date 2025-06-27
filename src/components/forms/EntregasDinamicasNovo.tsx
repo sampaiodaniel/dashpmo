@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -93,10 +94,10 @@ export function EntregasDinamicasNovo({ form, entregas, onEntregasChange }: Entr
                 <DatePicker
                   date={entrega.data}
                   onDateChange={(date) => atualizarEntrega(entrega.id, 'data', date)}
-                  placeholder="Selecione a data de entrega"
+                  placeholder="Selecione a data"
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Pode ser deixado em branco se não houver definição
+                  Em branco = TBD
                 </p>
               </div>
               
@@ -107,9 +108,6 @@ export function EntregasDinamicasNovo({ form, entregas, onEntregasChange }: Entr
                   onChange={(value) => atualizarEntrega(entrega.id, 'statusEntregaId', value)}
                   placeholder="Selecionar status"
                 />
-                <p className="text-xs text-gray-500 mt-1">
-                  Status atual da entrega (opcional)
-                </p>
               </div>
             </div>
             
