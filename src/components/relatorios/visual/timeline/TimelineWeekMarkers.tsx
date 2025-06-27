@@ -49,7 +49,7 @@ export function useTimelineWeekMarkers() {
       }
     }
     
-    // Processar conexões entre páginas
+    // Processar conexões entre páginas - VERSÃO CORRIGIDA
     const ultimoIndicePagina = indiceInicioPagina + entregasPagina.length - 1;
     const proximoIndice = ultimoIndicePagina + 1;
     
@@ -62,56 +62,19 @@ export function useTimelineWeekMarkers() {
         const semanasConexao = calcularSemanas(ultimaEntregaPagina.data, proximaEntrega.data);
         console.log(`🔗 Conexão para próxima página: ${semanasConexao} semanas entre ${ultimaEntregaPagina.titulo} e ${proximaEntrega.titulo}`);
         
-        // Calcular quantos traços devem aparecer nesta página
-        // Distribuir proporcionalmente baseado na posição da última entrega
-        const posUltimaEntrega = posEntregas[entregasPagina.length - 1]; // Posição da última entrega desta página
-        const espacoRestante = 100 - posUltimaEntrega; // Espaço até o fim da página
-        const espacoTotalConexao = espacoRestante + posEntregas[0]; // Espaço total da conexão (desta página + início da próxima)
+        // Colocar TODOS os traços restantes nesta página (após a última entrega)
+        const posUltimaEntrega = posEntregas[entregasPagina.length - 1];
+        const espacoRestante = 100 - posUltimaEntrega;
+        const tracosRestantes = semanasConexao - 1; // Excluir início e fim
         
-        // Distribuir traços proporcionalmente
-        const tracosNestaPagina = Math.floor((semanasConexao - 1) * (espacoRestante / espacoTotalConexao));
-        const intervaloPorSemana = espacoRestante / semanasConexao;
-        
-        console.log(`📏 Traços nesta página: ${tracosNestaPagina} de ${semanasConexao - 1} total`);
-        
-        for (let j = 1; j <= tracosNestaPagina; j++) {
-          const posicao = posUltimaEntrega + (intervaloPorSemana * j);
-          if (posicao <= 95) { // Não ultrapassar muito a borda
-            posicoes.push({
-              tipo: 'semana',
-              posicao: posicao
-            });
-          }
-        }
-      }
-    }
-    
-    // Se há uma entrega na página anterior, calcular traços de conexão do início
-    if (paginaAtual > 0 && entregasPagina.length > 0) {
-      const indiceAnterior = indiceInicioPagina - 1;
-      
-      if (indiceAnterior >= 0 && indiceAnterior < todasEntregas.length) {
-        const entregaAnterior = todasEntregas[indiceAnterior];
-        const primeiraEntregaPagina = entregasPagina[0];
-        
-        if (entregaAnterior && primeiraEntregaPagina) {
-          const semanasConexao = calcularSemanas(entregaAnterior.data, primeiraEntregaPagina.data);
-          console.log(`🔗 Conexão da página anterior: ${semanasConexao} semanas entre ${entregaAnterior.titulo} e ${primeiraEntregaPagina.titulo}`);
+        if (tracosRestantes > 0) {
+          const intervaloPorSemana = espacoRestante / semanasConexao;
           
-          // Calcular quantos traços devem aparecer nesta página
-          const posPrimeiraEntrega = posEntregas[0]; // Posição da primeira entrega desta página
-          const espacoInicial = posPrimeiraEntrega; // Espaço do início da página até primeira entrega
-          const espacoTotalConexao = (100 - posEntregas[2]) + espacoInicial; // Espaço total da conexão
+          console.log(`📏 Adicionando ${tracosRestantes} traços após última entrega desta página`);
           
-          // Distribuir traços proporcionalmente - os traços restantes da conexão anterior
-          const tracosNestaPagina = Math.ceil((semanasConexao - 1) * (espacoInicial / espacoTotalConexao));
-          const intervaloPorSemana = espacoInicial / semanasConexao;
-          
-          console.log(`📏 Traços do início: ${tracosNestaPagina} de ${semanasConexao - 1} total`);
-          
-          for (let j = 1; j <= tracosNestaPagina; j++) {
-            const posicao = intervaloPorSemana * j;
-            if (posicao >= 5 && posicao < posPrimeiraEntrega - 5) { // Não muito próximo das bordas
+          for (let j = 1; j <= tracosRestantes; j++) {
+            const posicao = posUltimaEntrega + (intervaloPorSemana * j);
+            if (posicao <= 95) { // Não ultrapassar muito a borda
               posicoes.push({
                 tipo: 'semana',
                 posicao: posicao
@@ -121,6 +84,9 @@ export function useTimelineWeekMarkers() {
         }
       }
     }
+    
+    // Se há uma entrega na página anterior, NÃO adicionar traços no início
+    // (eles já foram adicionados na página anterior)
     
     console.log(`📊 Página ${paginaAtual + 1}: ${posicoes.length} traços gerados`);
     return posicoes;
