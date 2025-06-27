@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
@@ -16,6 +17,7 @@ interface LicoesFiltersType {
   status?: string;
   responsavel?: string;
   projeto?: string;
+  carteira?: string;
 }
 
 export default function Licoes() {
@@ -81,6 +83,11 @@ export default function Licoes() {
       )) {
         return false;
       }
+    }
+
+    // Filtro por carteira
+    if (filtros.carteira && filtros.carteira !== '' && licao.projeto?.area_responsavel !== filtros.carteira) {
+      return false;
     }
 
     // Filtro por categoria

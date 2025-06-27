@@ -3,7 +3,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Filter } from 'lucide-react';
-import { CARTEIRAS, FiltrosProjeto } from '@/types/pmo';
+import { FiltrosProjeto } from '@/types/pmo';
+import { useCarteirasComDados } from '@/hooks/useCarteirasComDados';
 
 interface ProjetoFiltersProps {
   filtros: FiltrosProjeto;
@@ -12,6 +13,8 @@ interface ProjetoFiltersProps {
 }
 
 export function ProjetoFilters({ filtros, onFiltroChange, responsaveis }: ProjetoFiltersProps) {
+  const carteiras = useCarteirasComDados('projetos');
+
   const handleCarteiraChange = (value: string) => {
     const novosFiltros = { ...filtros };
     if (value === 'todas') {
@@ -70,7 +73,7 @@ export function ProjetoFilters({ filtros, onFiltroChange, responsaveis }: Projet
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="todas">Todas</SelectItem>
-                  {CARTEIRAS.map((carteira) => (
+                  {carteiras.map((carteira) => (
                     <SelectItem key={carteira} value={carteira}>
                       {carteira}
                     </SelectItem>

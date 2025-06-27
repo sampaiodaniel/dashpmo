@@ -1,10 +1,9 @@
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Filter } from 'lucide-react';
-import { useCarteiraOverview } from '@/hooks/useCarteiraOverview';
 import { StatusFilters as StatusFiltersType } from './filters/FilterUtils';
+import { useCarteirasComDados } from '@/hooks/useCarteirasComDados';
 
 interface StatusFiltersProps {
   filtros: StatusFiltersType;
@@ -13,7 +12,7 @@ interface StatusFiltersProps {
 }
 
 export function StatusFilters({ filtros, onFiltroChange, responsaveis }: StatusFiltersProps) {
-  const { data: carteiraOverview } = useCarteiraOverview();
+  const carteiras = useCarteirasComDados('status');
 
   const handleFiltroChange = (campo: keyof StatusFiltersType, valor: string) => {
     onFiltroChange({
@@ -21,9 +20,6 @@ export function StatusFilters({ filtros, onFiltroChange, responsaveis }: StatusF
       [campo]: valor === 'todos' || valor === 'Todas' ? undefined : valor
     });
   };
-
-  // Extract carteira names from overview data
-  const carteiras = carteiraOverview?.map(item => item.carteira) || [];
 
   return (
     <Card className="bg-white shadow-sm">

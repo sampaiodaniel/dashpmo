@@ -1,46 +1,31 @@
 
-import React from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
 import { Filter } from 'lucide-react';
-
-const CATEGORIAS_LICAO = [
-  'Técnica',
-  'Processo', 
-  'Comunicação',
-  'Recursos',
-  'Planejamento',
-  'Qualidade',
-  'Fornecedores',
-  'Riscos',
-  'Mudanças',
-  'Conhecimento'
-] as const;
-
-const STATUS_APLICACAO = [
-  'Aplicada',
-  'Em andamento', 
-  'Não aplicada'
-] as const;
-
-interface LicoesFiltersType {
-  categoria?: string;
-  status?: string;
-  responsavel?: string;
-  projeto?: string;
-}
+import { useCarteirasComDados } from '@/hooks/useCarteirasComDados';
 
 interface LicoesFiltersProps {
-  filters: LicoesFiltersType;
-  onFiltersChange: (filters: LicoesFiltersType) => void;
+  filters: {
+    categoria?: string;
+    status?: string;
+    responsavel?: string;
+    projeto?: string;
+    carteira?: string;
+  };
+  onFiltersChange: (filters: any) => void;
 }
 
 export function LicoesFilters({ filters, onFiltersChange }: LicoesFiltersProps) {
-  const updateFilter = (key: keyof LicoesFiltersType, value: string) => {
-    onFiltersChange({
-      ...filters,
-      [key]: value === 'all' ? '' : value,
-    });
+  const carteiras = useCarteirasComDados('licoes');
+
+  const handleFilterChange = (campo: string, valor: string) => {
+    const novosFiltros = { ...filters };
+    if (valor === 'todas' || valor === 'todos' || valor === '') {
+      delete novosFiltros[campo];
+    } else {
+      novosFiltros[campo] = valor;
+    }
+    onFiltersChange(novosFiltros);
   };
 
   return (
@@ -54,16 +39,19 @@ export function LicoesFilters({ filters, onFiltersChange }: LicoesFiltersProps) 
           
           <div className="flex gap-4 flex-wrap">
             <div className="flex items-center gap-2">
-              <label className="text-sm text-pmo-gray">Categoria:</label>
-              <Select value={filters.categoria || 'all'} onValueChange={(value) => updateFilter('categoria', value)}>
+              <label className="text-sm text-pmo-gray">Carteira:</label>
+              <Select
+                value={filters.carteira || 'todas'}
+                onValueChange={(value) => handleFilterChange('carteira', value)}
+              >
                 <SelectTrigger className="w-40">
                   <SelectValue placeholder="Todas" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todas</SelectItem>
-                  {CATEGORIAS_LICAO.map((categoria) => (
-                    <SelectItem key={categoria} value={categoria}>
-                      {categoria}
+                  <SelectItem value="todas">Todas</SelectItem>
+                  {carteiras.map((carteira) => (
+                    <SelectItem key={carteira} value={carteira}>
+                      {carteira}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -71,42 +59,43 @@ export function LicoesFilters({ filters, onFiltersChange }: LicoesFiltersProps) 
             </div>
 
             <div className="flex items-center gap-2">
-              <label className="text-sm text-pmo-gray">Status de Aplicação:</label>
-              <Select value={filters.status || 'all'} onValueChange={(value) => updateFilter('status', value)}>
+              <label className="text-sm text-pmo-gray">Categoria:</label>
+              <Select
+                value={filters.categoria || ''}
+                onValueChange={(value) => handleFilterChange('categoria', value)}
+              >
                 <SelectTrigger className="w-40">
-                  <SelectValue placeholder="Todos" />
+                  <SelectValue placeholder="Todas" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  {STATUS_APLICACAO.map((status) => (
-                    <SelectItem key={status} value={status}>
-                      {status}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="">Todas</SelectItem>
+                  <SelectItem value="Técnica">Técnica</SelectItem>
+                  <SelectItem value="Processo">Processo</SelectItem>
+                  <SelectItem value="Comunicação">Comunicação</SelectItem>
+                  <SelectItem value="Recursos">Recursos</SelectItem>
+                  <SelectItem value="Planejamento">Planejamento</SelectItem>
+                  <SelectItem value="Qualidade">Qualidade</SelectItem>
+                  <SelectItem value="Riscos">Riscos</SelectItem>
+                  <SelectItem value="Mudanças">Mudanças</SelectItem>
+                  <SelectItem value="Conhecimento">Conhecimento</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="flex items-center gap-2">
-              <label className="text-sm text-pmo-gray">Responsável:</label>
-              <Select value={filters.responsavel || 'all'} onValueChange={(value) => updateFilter('responsavel', value)}>
+              <label className="text-sm text-pmo-gray">Status:</label>
+              <Select
+                value={filters.status || ''}
+                onValueChange={(value) => handleFilterChange('status', value)}
+              >
                 <SelectTrigger className="w-40">
                   <SelectValue placeholder="Todos" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <label className="text-sm text-pmo-gray">Projeto:</label>
-              <Select value={filters.projeto || 'all'} onValueChange={(value) => updateFilter('projeto', value)}>
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="Todos" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
+                  <SelectItem value="">Todos</SelectItem>
+                  <SelectItem value="Aplicada">Aplicada</SelectItem>
+                  <SelectItem value="Não aplicada">Não aplicada</SelectItem>
+                  <SelectItem value="Em análise">Em análise</SelectItem>
                 </SelectContent>
               </Select>
             </div>

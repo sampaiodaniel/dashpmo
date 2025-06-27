@@ -1,84 +1,50 @@
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent } from '@/components/ui/card';
 import { Filter } from 'lucide-react';
-import { CARTEIRAS, RESPONSAVEIS_ASA } from '@/types/pmo';
+import { MudancasFilters as MudancasFiltersType } from '@/hooks/useMudancasFiltradas';
+import { useCarteirasComDados } from '@/hooks/useCarteirasComDados';
 
 interface MudancasFiltersProps {
-  filtros: {
-    status?: string;
-    carteira?: string;
-    responsavel_asa?: string;
-  };
-  onFiltrosChange: (filtros: any) => void;
+  filtros: MudancasFiltersType;
+  onFiltrosChange: (filtros: MudancasFiltersType) => void;
 }
 
 export function MudancasFilters({ filtros, onFiltrosChange }: MudancasFiltersProps) {
-  const handleStatusChange = (value: string) => {
-    const novosFiltros = { ...filtros };
-    if (value === 'todos') {
-      delete novosFiltros.status;
-    } else {
-      novosFiltros.status = value;
-    }
-    onFiltrosChange(novosFiltros);
-  };
+  const carteiras = useCarteirasComDados('mudancas');
 
-  const handleCarteiraChange = (value: string) => {
+  const handleFiltroChange = (campo: keyof MudancasFiltersType, valor: string) => {
     const novosFiltros = { ...filtros };
-    if (value === 'todas') {
-      delete novosFiltros.carteira;
+    if (valor === 'todas' || valor === 'todos') {
+      delete novosFiltros[campo];
     } else {
-      novosFiltros.carteira = value;
-    }
-    onFiltrosChange(novosFiltros);
-  };
-
-  const handleResponsavelChange = (value: string) => {
-    const novosFiltros = { ...filtros };
-    if (value === 'todos') {
-      delete novosFiltros.responsavel_asa;
-    } else {
-      novosFiltros.responsavel_asa = value;
+      novosFiltros[campo] = valor;
     }
     onFiltrosChange(novosFiltros);
   };
 
   return (
-    <Card>
+    <Card className="bg-white shadow-sm">
       <CardContent className="p-4">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 flex-wrap">
           <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-medium text-muted-foreground">Filtros:</span>
+            <Filter className="h-4 w-4 text-pmo-gray" />
+            <span className="text-sm font-medium text-pmo-gray">Filtros:</span>
           </div>
           
-          <div className="flex gap-4">
+          <div className="flex gap-4 flex-wrap">
             <div className="flex items-center gap-2">
-              <label className="text-sm text-muted-foreground">Status:</label>
-              <Select value={filtros.status || 'todos'} onValueChange={handleStatusChange}>
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="Todos" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">Todos</SelectItem>
-                  <SelectItem value="Pendente">Pendente</SelectItem>
-                  <SelectItem value="Em Análise">Em Análise</SelectItem>
-                  <SelectItem value="Aprovada">Aprovada</SelectItem>
-                  <SelectItem value="Reprovada">Reprovada</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <label className="text-sm text-muted-foreground">Carteira:</label>
-              <Select value={filtros.carteira || 'todas'} onValueChange={handleCarteiraChange}>
+              <label className="text-sm text-pmo-gray">Carteira:</label>
+              <Select
+                value={filtros.carteira || 'todas'}
+                onValueChange={(value) => handleFiltroChange('carteira', value)}
+              >
                 <SelectTrigger className="w-40">
                   <SelectValue placeholder="Todas" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="todas">Todas</SelectItem>
-                  {CARTEIRAS.map((carteira) => (
+                  {carteiras.map((carteira) => (
                     <SelectItem key={carteira} value={carteira}>
                       {carteira}
                     </SelectItem>
@@ -88,18 +54,56 @@ export function MudancasFilters({ filtros, onFiltrosChange }: MudancasFiltersPro
             </div>
 
             <div className="flex items-center gap-2">
-              <label className="text-sm text-muted-foreground">Responsável:</label>
-              <Select value={filtros.responsavel_asa || 'todos'} onValueChange={handleResponsavelChange}>
+              <label className="text-sm text-pmo-gray">Status:</label>
+              <Select
+                value={filtros.statusAprovacao || 'todos'}
+                onValueChange={(value) => handleFiltroChange('statusAprovacao', value)}
+              >
                 <SelectTrigger className="w-40">
                   <SelectValue placeholder="Todos" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="todos">Todos</SelectItem>
-                  {RESPONSAVEIS_ASA.map((responsavel) => (
-                    <SelectItem key={responsavel} value={responsavel}>
-                      {responsavel}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="Pendente">Pendente</SelectItem>
+                  <SelectItem value="Em Análise">Em Análise</SelectItem>
+                  <SelectItem value="Aprovado">Aprovado</SelectItem>
+                  <SelectItem value="Rejeitado">Rejeitado</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-pmo-gray">Tipo de Mudança:</label>
+              <Select
+                value={filtros.tipoMudanca || 'todos'}
+                onValueChange={(value) => handleFiltroChange('tipoMudanca', value)}
+              >
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Todos" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Todos</SelectItem>
+                  <SelectItem value="Escopo">Escopo</SelectItem>
+                  <SelectItem value="Cronograma">Cronograma</SelectItem>
+                  <SelectItem value="Recursos">Recursos</SelectItem>
+                  <SelectItem value="Qualidade">Qualidade</SelectItem>
+                  <SelectItem value="Riscos">Riscos</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-pmo-gray">Responsável:</label>
+              <Select
+                value={filtros.responsavel || 'todos'}
+                onValueChange={(value) => handleFiltroChange('responsavel', value)}
+              >
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Todos" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Todos</SelectItem>
+                  {/* Adicionar responsáveis dinamicamente se necessário */}
                 </SelectContent>
               </Select>
             </div>
