@@ -58,7 +58,10 @@ export function useImportacaoExcel() {
         projeto._erros.push('Nome do projeto é obrigatório');
       }
       
-      if (!projeto.area_responsavel?.trim()) {
+      // Para projetos já existentes, não exigir campos obrigatórios que podem estar vazios na planilha
+      const projetoEhNovo = !projeto._existe; // flag definida no upload
+
+      if (projetoEhNovo && !projeto.area_responsavel?.trim()) {
         erros.push(`Linha ${projeto._numeroLinha}: Carteira primária é obrigatória`);
         projeto._erros = projeto._erros || [];
         projeto._erros.push('Carteira primária é obrigatória');
@@ -75,11 +78,11 @@ export function useImportacaoExcel() {
         const carteiraCorrigida = encontrarValorProximo(projeto.area_responsavel, carteirasValidas);
         if (carteiraCorrigida) {
           projeto.area_responsavel = carteiraCorrigida; // Corrigir automaticamente
-        } else {
+        } else if (projetoEhNovo) {
           erros.push(`Linha ${projeto._numeroLinha}: Carteira primária inválida: ${projeto.area_responsavel}`);
           projeto._erros = projeto._erros || [];
           projeto._erros.push(`Carteira primária inválida: ${projeto.area_responsavel}`);
-        }
+        } // se existir e inválida, apenas mantemos dado atual da base
       }
     });
 
@@ -100,7 +103,7 @@ export function useImportacaoExcel() {
       }
 
       // Validar status geral
-      const statusValidos = ['Verde', 'Amarelo', 'Vermelho', 'Em Andamento', 'Concluído', 'Cancelado', 'Pausado'];
+      const statusValidos = ['Verde', 'Amarelo', 'Vermelho', 'Em Andamento', 'Concluído', 'Cancelado', 'Pausado', 'Aguardando Homologação', 'Aguardando Homologacao', 'Em Especificação', 'Em Especificacao'];
       if (status.status_geral) {
         const statusCorrigido = encontrarValorProximo(status.status_geral, statusValidos);
         if (statusCorrigido) {
@@ -154,7 +157,7 @@ export function useImportacaoExcel() {
       }
 
       // Validar status da entrega
-      const statusEntregaValidos = ['Não Iniciado', 'Em Progresso', 'Concluído', 'Atrasado', 'Cancelado', 'No Prazo'];
+      const statusEntregaValidos = ['Não Iniciado', 'Em Progresso', 'Concluído', 'Atrasado', 'Cancelado', 'No Prazo', 'Atenção'];
       if (entrega.status_entrega) {
         const statusCorrigido = encontrarValorProximo(entrega.status_entrega, statusEntregaValidos);
         if (statusCorrigido) {
