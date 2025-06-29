@@ -1,5 +1,3 @@
-
-
 export function useTimelineWeekMarkers() {
   // Função para calcular semanas entre duas datas - VERSÃO CORRIGIDA
   const calcularSemanas = (data1: string, data2: string): number => {
@@ -13,9 +11,15 @@ export function useTimelineWeekMarkers() {
     const diffTime = Math.abs(d2.getTime() - d1.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
+    // CORREÇÃO: Se há menos de 7 dias, não mostrar traços de semana
+    // Só mostrar traços se há pelo menos 7 dias (1 semana completa) entre as entregas
+    if (diffDays < 7) {
+      console.log(`📅 Entregas muito próximas: ${data1} -> ${data2} = ${diffDays} dias (< 7 dias, sem traços)`);
+      return 0; // Retorna 0 para não mostrar traços
+    }
+    
     // Para calcular semanas de forma mais precisa: cada 7 dias = 1 semana
-    // Mas vamos usar uma lógica que considera semanas completas
-    const diffWeeks = Math.ceil(diffDays / 7);
+    const diffWeeks = Math.floor(diffDays / 7); // Usar floor para semanas completas
     
     console.log(`📅 Cálculo de semanas: ${data1} -> ${data2} = ${diffDays} dias = ${diffWeeks} semanas`);
     
@@ -54,18 +58,21 @@ export function useTimelineWeekMarkers() {
       const semanas = calcularSemanas(entregaAnterior.data, entregaAtual.data);
       console.log(`🔗 Entre entregas da mesma página: ${semanas} semanas entre "${entregaAnterior.titulo}" e "${entregaAtual.titulo}"`);
       
-      // Calcular posições dos traços entre as entregas
-      const posInicio = posEntregas[i - 1];
-      const posFim = posEntregas[i];
-      const distancia = posFim - posInicio;
-      const intervaloPorSemana = distancia / semanas;
-      
-      // Adicionar traços para as semanas intermediárias (excluindo início e fim)
-      for (let j = 1; j < semanas; j++) {
-        posicoes.push({
-          tipo: 'semana',
-          posicao: posInicio + (intervaloPorSemana * j)
-        });
+      // CORREÇÃO: Só adicionar traços se há pelo menos 1 semana entre as entregas
+      if (semanas > 0) {
+        // Calcular posições dos traços entre as entregas
+        const posInicio = posEntregas[i - 1];
+        const posFim = posEntregas[i];
+        const distancia = posFim - posInicio;
+        const intervaloPorSemana = distancia / semanas;
+        
+        // Adicionar traços para as semanas intermediárias (excluindo início e fim)
+        for (let j = 1; j < semanas; j++) {
+          posicoes.push({
+            tipo: 'semana',
+            posicao: posInicio + (intervaloPorSemana * j)
+          });
+        }
       }
     }
     
@@ -84,29 +91,32 @@ export function useTimelineWeekMarkers() {
         const semanasConexao = calcularSemanas(ultimaEntregaPagina.data, proximaEntrega.data);
         console.log(`🔗 CONEXÃO CRÍTICA: ${semanasConexao} semanas entre "${ultimaEntregaPagina.titulo}" (${ultimaEntregaPagina.data}) e "${proximaEntrega.titulo}" (${proximaEntrega.data})`);
         
-        // TODOS os traços intermediários devem aparecer nesta página
-        const posUltimaEntrega = posEntregas[entregasPagina.length - 1];
-        const espacoRestante = 100 - posUltimaEntrega;
-        
-        // Para 4 semanas entre 30/08 e 30/09, queremos 4 traços intermediários
-        // (não subtraímos 1, pois queremos mostrar todas as semanas intermediárias)
-        const tracosIntermediarios = semanasConexao;
-        
-        console.log(`📏 FORÇANDO ${tracosIntermediarios} traços após a última entrega desta página`);
-        console.log(`📐 Posição última entrega: ${posUltimaEntrega}%, espaço restante: ${espacoRestante}%`);
-        
-        if (tracosIntermediarios > 0 && espacoRestante > 0) {
-          const intervaloPorTraco = espacoRestante / (tracosIntermediarios + 1); // +1 para dar espaço até a borda
+        // CORREÇÃO: Só adicionar traços de conexão se há pelo menos 1 semana
+        if (semanasConexao > 0) {
+          // TODOS os traços intermediários devem aparecer nesta página
+          const posUltimaEntrega = posEntregas[entregasPagina.length - 1];
+          const espacoRestante = 100 - posUltimaEntrega;
           
-          for (let j = 1; j <= tracosIntermediarios; j++) {
-            const posicao = posUltimaEntrega + (intervaloPorTraco * j);
-            console.log(`➕ Adicionando traço ${j}/${tracosIntermediarios} na posição ${posicao.toFixed(2)}%`);
+          // Para 4 semanas entre 30/08 e 30/09, queremos 4 traços intermediários
+          // (não subtraímos 1, pois queremos mostrar todas as semanas intermediárias)
+          const tracosIntermediarios = semanasConexao;
+          
+          console.log(`📏 FORÇANDO ${tracosIntermediarios} traços após a última entrega desta página`);
+          console.log(`📐 Posição última entrega: ${posUltimaEntrega}%, espaço restante: ${espacoRestante}%`);
+          
+          if (tracosIntermediarios > 0 && espacoRestante > 0) {
+            const intervaloPorTraco = espacoRestante / (tracosIntermediarios + 1); // +1 para dar espaço até a borda
             
-            if (posicao <= 95) { // Não ultrapassar muito a borda
-              posicoes.push({
-                tipo: 'semana',
-                posicao: posicao
-              });
+            for (let j = 1; j <= tracosIntermediarios; j++) {
+              const posicao = posUltimaEntrega + (intervaloPorTraco * j);
+              console.log(`➕ Adicionando traço ${j}/${tracosIntermediarios} na posição ${posicao.toFixed(2)}%`);
+              
+              if (posicao <= 95) { // Não ultrapassar muito a borda
+                posicoes.push({
+                  tipo: 'semana',
+                  posicao: posicao
+                });
+              }
             }
           }
         }

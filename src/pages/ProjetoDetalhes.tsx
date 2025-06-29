@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { useProjetos } from '@/hooks/useProjetos';
 import { ProjetoInfoGerais } from '@/components/projetos/ProjetoInfoGerais';
 import { ProjetoAcoesAdmin } from '@/components/projetos/ProjetoAcoesAdmin';
+import { UltimoStatusResumo } from '@/components/projetos/UltimoStatusResumo';
 import { useState } from 'react';
 import { useScrollToTop } from '@/hooks/useScrollToTop';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -145,11 +146,10 @@ export default function ProjetoDetalhes() {
           </div>
         </div>
 
-        <div className="space-y-12">
+        <div className="space-y-6">
           <ProjetoInfoGerais projeto={projeto} />
           
-          <Separator />
-          {/* Badge/status removido do rodapé conforme solicitação */}
+          <UltimoStatusResumo projetoId={projeto.id} />
         </div>
       </div>
     </Layout>

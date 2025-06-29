@@ -180,6 +180,24 @@ export function useNovoStatusForm() {
         return null;
       }
 
+      // Buscar entregas da tabela entregas_status para este status
+      if (data) {
+        console.log('📦 Buscando entregas para status:', data.id);
+        const { data: entregas, error: entregasError } = await supabase
+          .from('entregas_status')
+          .select('*')
+          .eq('status_id', data.id)
+          .order('ordem', { ascending: true });
+
+        if (entregasError) {
+          console.error('Erro ao buscar entregas:', entregasError);
+        } else {
+          console.log('📋 Entregas encontradas:', entregas?.length || 0, entregas);
+          // Anexar entregas ao status
+          (data as any).entregas_status = entregas || [];
+        }
+      }
+
       console.log('📋 Último status encontrado:', data);
       return data;
     },
@@ -236,37 +254,56 @@ export function useNovoStatusForm() {
       form.setValue('entregas_realizadas', '');
       form.setValue('bloqueios_atuais', '');
 
-      // Preencher entregas com base no último status
+      // Preencher entregas com base no último status - priorizar entregas_status
       const entregasPreenchidas: EntregaDinamica[] = [];
+      const entregasStatus = (ultimoStatus as any).entregas_status || [];
       
-      if (ultimoStatus.entrega1) {
-        entregasPreenchidas.push({
-          id: '1',
-          nome: ultimoStatus.entrega1,
-          data: ultimoStatus.data_marco1 ? new Date(ultimoStatus.data_marco1) : null,
-          entregaveis: ultimoStatus.entregaveis1 || '',
-          statusEntregaId: (ultimoStatus as any).status_entrega1_id || null
-        });
-      }
+      console.log('📦 Entregas do status para preenchimento:', entregasStatus);
       
-      if (ultimoStatus.entrega2) {
-        entregasPreenchidas.push({
-          id: '2',
-          nome: ultimoStatus.entrega2,
-          data: ultimoStatus.data_marco2 ? new Date(ultimoStatus.data_marco2) : null,
-          entregaveis: ultimoStatus.entregaveis2 || '',
-          statusEntregaId: (ultimoStatus as any).status_entrega2_id || null
+      if (entregasStatus.length > 0) {
+        // Usar entregas da tabela entregas_status
+        entregasStatus.forEach((entrega: any, index: number) => {
+          entregasPreenchidas.push({
+            id: (index + 1).toString(),
+            nome: entrega.nome_entrega || '',
+            data: entrega.data_entrega ? new Date(entrega.data_entrega) : null,
+            entregaveis: entrega.entregaveis || '',
+            statusEntregaId: entrega.status_entrega_id || null
+          });
         });
-      }
-      
-      if (ultimoStatus.entrega3) {
-        entregasPreenchidas.push({
-          id: '3',
-          nome: ultimoStatus.entrega3,
-          data: ultimoStatus.data_marco3 ? new Date(ultimoStatus.data_marco3) : null,
-          entregaveis: ultimoStatus.entregaveis3 || '',
-          statusEntregaId: (ultimoStatus as any).status_entrega3_id || null
-        });
+      } else {
+        // Fallback para campos legados se não houver entregas na nova tabela
+        console.log('⚠️ Usando campos legados como fallback');
+        
+        if (ultimoStatus.entrega1) {
+          entregasPreenchidas.push({
+            id: '1',
+            nome: ultimoStatus.entrega1,
+            data: ultimoStatus.data_marco1 ? new Date(ultimoStatus.data_marco1) : null,
+            entregaveis: ultimoStatus.entregaveis1 || '',
+            statusEntregaId: (ultimoStatus as any).status_entrega1_id || null
+          });
+        }
+        
+        if (ultimoStatus.entrega2) {
+          entregasPreenchidas.push({
+            id: '2',
+            nome: ultimoStatus.entrega2,
+            data: ultimoStatus.data_marco2 ? new Date(ultimoStatus.data_marco2) : null,
+            entregaveis: ultimoStatus.entregaveis2 || '',
+            statusEntregaId: (ultimoStatus as any).status_entrega2_id || null
+          });
+        }
+        
+        if (ultimoStatus.entrega3) {
+          entregasPreenchidas.push({
+            id: '3',
+            nome: ultimoStatus.entrega3,
+            data: ultimoStatus.data_marco3 ? new Date(ultimoStatus.data_marco3) : null,
+            entregaveis: ultimoStatus.entregaveis3 || '',
+            statusEntregaId: (ultimoStatus as any).status_entrega3_id || null
+          });
+        }
       }
 
       // Se não houver entregas, criar uma vazia

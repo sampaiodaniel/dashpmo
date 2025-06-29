@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Timeline Navigation</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .timeline-card { 
+            border: 1px solid #ccc; 
+            border-radius: 8px; 
+            padding: 20px; 
+            margin: 20px 0; 
+            background: white; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .timeline-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 20px; 
+        }
+        .timeline-nav { display: flex; gap: 10px; }
+        .nav-button { 
+            padding: 8px 12px; 
+            border: 1px solid #ccc; 
+            background: white; 
+            cursor: pointer; 
+            border-radius: 4px; 
+            transition: background 0.2s;
+        }
+        .nav-button:hover { background: #f0f0f0; }
+        .nav-button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .timeline-desktop { 
+            min-height: 250px; 
+            border: 1px dashed #ddd; 
+            padding: 20px; 
+            border-radius: 8px;
+            background: #fafafa;
+        }
+        .timeline-content { 
+            display: flex; 
+            justify-content: space-around; 
+            align-items: center; 
+            min-height: 200px; 
+            gap: 20px;
+        }
+        .timeline-item { 
+            flex: 1;
+            max-width: 300px;
+            padding: 15px; 
+            border: 2px solid; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        .timeline-item:hover { transform: translateY(-2px); }
+        .entrega-title { font-weight: bold; margin-bottom: 8px; font-size: 16px; }
+        .entrega-date { font-size: 14px; margin-top: 8px; opacity: 0.9; }
+        .entrega-entregaveis { font-size: 12px; margin-top: 8px; line-height: 1.4; }
+        .log-area { 
+            margin-top: 30px; 
+            padding: 15px; 
+            background: #f8f9fa; 
+            border: 1px solid #e9ecef; 
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Teste de Navegação da Timeline</h1>
+    <p>Este teste simula a navegação da timeline com 5 entregas distribuídas em 2 páginas (3 + 2).</p>
+    
+    <!-- Timeline Container -->
+    <div class="timeline-card" data-timeline-container>
+        <div class="timeline-header">
+            <h3 class="card-title">Timeline de Entregas - Nova POC (1 de 2)</h3>
+            <div class="timeline-nav">
+                <button class="nav-button" data-direction="left" onclick="navigateTimelineArrow(this, 'prev')" aria-label="Página anterior">
+                    ◀ Anterior
+                </button>
+                <button class="nav-button" data-direction="right" onclick="navigateTimelineArrow(this, 'next')" aria-label="Próxima página">
+                    Próxima ▶
+                </button>
+            </div>
+        </div>
+        
+        <div class="timeline-desktop">
+            <div class="timeline-content" id="timeline-content">
+                <!-- As entregas serão renderizadas aqui dinamicamente -->
+            </div>
+        </div>
+    </div>
+
+    <div class="log-area" id="log-area">
+        <strong>Log de Debug:</strong><br/>
+    </div>
+
+    <script>
+        // Dados das entregas
+        const ENTREGAS_DATA = [
+            {
+                titulo: "Telas de Listagem",
+                data: "02/07/2025",
+                entregaveis: "Tela de listagem de POC",
+                cor: "#A6926B",
+                corTexto: "#FFFFFF",
+                corBorda: "#A6926B"
+            },
+            {
+                titulo: "Telas de listagem",
+                data: "04/07/2025",
+                entregaveis: "Tela de listagem de tipos de comitê",
+                cor: "#2E5984",
+                corTexto: "#FFFFFF",
+                corBorda: "#2E5984"
+            },
+            {
+                titulo: "Telas de detalhamento",
+                data: "07/07/2025",
+                entregaveis: "Tela de detalhamento de POC",
+                cor: "#6B7280",
+                corTexto: "#FFFFFF",
+                corBorda: "#6B7280"
+            },
+            {
+                titulo: "Tela de Criação e Detalhamento",
+                data: "08/07/2025",
+                entregaveis: "Tela de Criação e Detalhamento de Tipos de Comitê",
+                cor: "#8B5A2B",
+                corTexto: "#FFFFFF",
+                corBorda: "#8B5A2B"
+            },
+            {
+                titulo: "Tela de Criação e Detalhamento",
+                data: "14/07/2025",
+                entregaveis: "Tela de Criação de Linha de Crédito",
+                cor: "#4A5568",
+                corTexto: "#FFFFFF",
+                corBorda: "#4A5568"
+            }
+        ];
+
+        let currentPage = 1;
+        const totalPages = Math.ceil(ENTREGAS_DATA.length / 3);
+
+        // Função de log
+        function log(message) {
+            const logArea = document.getElementById('log-area');
+            const timestamp = new Date().toLocaleTimeString();
+            logArea.innerHTML += `[${timestamp}] ${message}<br/>`;
+            logArea.scrollTop = logArea.scrollHeight;
+            console.log(message);
+        }
+
+        // Função que será chamada pelos botões de navegação
+        function navigateTimelineArrow(buttonElement, direction) {
+            log(`🎯 navigateTimelineArrow chamada: ${direction}`);
+            
+            // Encontrar o container da timeline
+            const timelineContainer = buttonElement.closest('[data-timeline-container]');
+            if (!timelineContainer) {
+                log('❌ Container da timeline não encontrado');
+                return;
+            }
+            
+            // Extrair informações do título
+            const titleElement = timelineContainer.querySelector('h3, .card-title');
+            if (!titleElement) {
+                log('❌ Elemento do título não encontrado');
+                return;
+            }
+            
+            const titleText = titleElement.textContent;
+            const match = titleText.match(/\((\d+) de (\d+)\)/);
+            
+            if (!match) {
+                log(`❌ Formato do título não reconhecido: ${titleText}`);
+                return;
+            }
+            
+            const currentPageFromTitle = parseInt(match[1]);
+            const totalPagesFromTitle = parseInt(match[2]);
+            
+            log(`📊 Informações extraídas: página ${currentPageFromTitle} de ${totalPagesFromTitle}, direção: ${direction}`);
+            
+            // Chamar a função de navegação
+            switchTimelinePage(timelineContainer, currentPageFromTitle, totalPagesFromTitle, direction);
+        }
+
+        // Função principal para navegação da timeline
+        function switchTimelinePage(timelineContainer, currentPageParam, totalPagesParam, direction) {
+            log(`🔄 switchTimelinePage iniciada: página ${currentPageParam}, total ${totalPagesParam}, direção ${direction}`);
+            
+            try {
+                // Calcular nova página
+                let newPage = currentPageParam;
+                if (direction === 'next' && currentPageParam < totalPagesParam) {
+                    newPage = currentPageParam + 1;
+                } else if (direction === 'prev' && currentPageParam > 1) {
+                    newPage = currentPageParam - 1;
+                }
+                
+                if (newPage === currentPageParam) {
+                    log(`⚠️ Página não alterada: ${newPage}`);
+                    return;
+                }
+                
+                log(`📄 Navegando para página: ${newPage}`);
+                
+                // Atualizar página global
+                currentPage = newPage;
+                
+                // Atualizar título
+                updateTimelineTitle(timelineContainer, newPage, totalPagesParam);
+                
+                // Renderizar nova timeline
+                renderTimelinePage(newPage);
+                
+                log(`✅ Navegação concluída para página: ${newPage}`);
+                
+            } catch (error) {
+                log(`❌ Erro na navegação da timeline: ${error.message}`);
+            }
+        }
+        
+        // Atualizar título da timeline
+        function updateTimelineTitle(timelineContainer, newPage, totalPages) {
+            const titleElement = timelineContainer.querySelector('h3, .card-title');
+            if (titleElement) {
+                const currentTitle = titleElement.textContent;
+                const newTitle = currentTitle.replace(/\(\d+\s+de\s+\d+\)/, `(${newPage} de ${totalPages})`);
+                titleElement.textContent = newTitle;
+                log(`📝 Título atualizado: ${newTitle}`);
+            }
+        }
+        
+        // Renderizar página da timeline
+        function renderTimelinePage(page) {
+            try {
+                const timelineContent = document.getElementById('timeline-content');
+                if (!timelineContent) {
+                    log('⚠️ Container da timeline não encontrado');
+                    return;
+                }
+                
+                // Calcular entregas para a página atual
+                const entregasPorPagina = 3;
+                const startIndex = (page - 1) * entregasPorPagina;
+                const endIndex = startIndex + entregasPorPagina;
+                const entregasPagina = ENTREGAS_DATA.slice(startIndex, endIndex);
+                
+                log(`📄 Renderizando página ${page}: entregas ${startIndex + 1} a ${Math.min(endIndex, ENTREGAS_DATA.length)}`);
+                
+                // Limpar conteúdo atual
+                timelineContent.innerHTML = '';
+                
+                // Renderizar cada entrega
+                entregasPagina.forEach((entrega, index) => {
+                    const entregaElement = createEntregaElement(entrega, index);
+                    timelineContent.appendChild(entregaElement);
+                });
+                
+                log(`🎨 Timeline renderizada com ${entregasPagina.length} entregas`);
+                
+            } catch (error) {
+                log(`❌ Erro ao renderizar timeline: ${error.message}`);
+            }
+        }
+        
+        // Criar elemento de entrega
+        function createEntregaElement(entrega, index) {
+            const entregaDiv = document.createElement('div');
+            entregaDiv.className = 'timeline-item';
+            entregaDiv.style.backgroundColor = entrega.cor;
+            entregaDiv.style.borderColor = entrega.corBorda;
+            entregaDiv.style.color = entrega.corTexto;
+            
+            // Título
+            const titulo = document.createElement('div');
+            titulo.className = 'entrega-title';
+            titulo.textContent = entrega.titulo;
+            entregaDiv.appendChild(titulo);
+            
+            // Entregáveis
+            const entregaveis = document.createElement('div');
+            entregaveis.className = 'entrega-entregaveis';
+            entregaveis.innerHTML = `<strong>Entregáveis:</strong><br/>• ${entrega.entregaveis}`;
+            entregaDiv.appendChild(entregaveis);
+            
+            // Data
+            const dataDiv = document.createElement('div');
+            dataDiv.className = 'entrega-date';
+            dataDiv.textContent = entrega.data;
+            entregaDiv.appendChild(dataDiv);
+            
+            return entregaDiv;
+        }
+
+        // Inicialização quando a página carrega
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🚀 Página carregada, sistema de navegação timeline ativo');
+            log(`📊 Total de entregas: ${ENTREGAS_DATA.length}`);
+            log(`📄 Total de páginas: ${totalPages}`);
+            
+            // Renderizar página inicial
+            renderTimelinePage(currentPage);
+        });
+    </script>
+</body>
+</html> 
