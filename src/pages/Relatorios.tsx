@@ -36,7 +36,7 @@ export default function Relatorios() {
   const [responsavelConsolidado, setResponsavelConsolidado] = useState<string>('');
   
   // Estado para versão do relatório visual
-  const [versaoRelatorioVisual, setVersaoRelatorioVisual] = useState<'desktop' | 'mobile'>('desktop');
+  const [versaoRelatorioVisual, setVersaoRelatorioVisual] = useState<'desktop' | 'mobile' | 'impressao' | null>(null);
 
   // Estados para o modal de compartilhamento
   const [modalCompartilhamento, setModalCompartilhamento] = useState(false);
@@ -155,6 +155,24 @@ export default function Relatorios() {
         filtro: filtroVisual === 'carteira' ? 'Carteira' : 'Responsável ASA',
         valor: filtroVisual === 'carteira' ? carteiraVisual : responsavelVisual,
         nomeArquivo: `relatorio-visual-mobile-${(filtroVisual === 'carteira' ? carteiraVisual : responsavelVisual).toLowerCase().replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`
+      });
+    }
+  };
+
+  const handleGerarRelatorioVisualImpressao = async () => {
+    const dados = filtroVisual === 'carteira' 
+      ? await relatorioVisualHooks.gerarRelatorioCarteira(carteiraVisual)
+      : await relatorioVisualHooks.gerarRelatorioResponsavel(responsavelVisual);
+
+    if (dados) {
+      sessionStorage.setItem('relatorio-visual-dados', JSON.stringify(dados));
+      window.open('/relatorio-visual-impressao', '_blank');
+
+      adicionarRelatorio({
+        tipo: 'visual',
+        filtro: filtroVisual === 'carteira' ? 'Carteira' : 'Responsável ASA',
+        valor: filtroVisual === 'carteira' ? carteiraVisual : responsavelVisual,
+        nomeArquivo: `relatorio-visual-impressao-${(filtroVisual === 'carteira' ? carteiraVisual : responsavelVisual).toLowerCase().replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`
       });
     }
   };
@@ -414,7 +432,7 @@ export default function Relatorios() {
                   <label className="text-sm font-medium text-pmo-gray mb-2 block">Versão do Relatório:</label>
                   <Select 
                     value={versaoRelatorioVisual} 
-                    onValueChange={(value: 'desktop' | 'mobile') => setVersaoRelatorioVisual(value)}
+                    onValueChange={(value: 'desktop' | 'mobile' | 'impressao') => setVersaoRelatorioVisual(value)}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione a versão" />
@@ -428,6 +446,7 @@ export default function Relatorios() {
                           {isMobile && <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Recomendado</span>}
                         </div>
                       </SelectItem>
+                      <SelectItem value="impressao">Versão Impressão</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -437,8 +456,10 @@ export default function Relatorios() {
                     onClick={() => {
                       if (versaoRelatorioVisual === 'desktop') {
                         handleGerarRelatorioVisual();
-                      } else {
+                      } else if (versaoRelatorioVisual === 'mobile') {
                         handleGerarRelatorioVisualMobile();
+                      } else if (versaoRelatorioVisual === 'impressao') {
+                        handleGerarRelatorioVisualImpressao();
                       }
                     }}
                     disabled={

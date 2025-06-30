@@ -27,6 +27,7 @@ import RelatoriosCompartilhados from "./pages/RelatoriosCompartilhados";
 import RelatorioConsolidado from "./pages/RelatorioConsolidado";
 import RelatorioVisualPagina from "./pages/RelatorioVisualPagina";
 import RelatorioVisualMobile from "./pages/RelatorioVisualMobile";
+import RelatorioVisualImpressao from "./pages/RelatorioVisualImpressao";
 import Administracao from "./pages/Administracao";
 import Configuracoes from "./pages/Configuracoes";
 import NotFound from "./pages/NotFound";
@@ -72,6 +73,7 @@ function App() {
               <Route path="/relatorio-consolidado" element={<RelatorioConsolidado />} />
               <Route path="/relatorio-visual" element={<RelatorioVisualPagina />} />
               <Route path="/relatorio-visual-mobile" element={<RelatorioVisualMobile />} />
+              <Route path="/relatorio-visual-impressao" element={<RelatorioVisualImpressao />} />
               <Route path="/administracao" element={<Administracao />} />
               <Route path="/configuracoes" element={<Configuracoes />} />
               <Route path="/admin/importacao" element={<AdminImportacao />} />

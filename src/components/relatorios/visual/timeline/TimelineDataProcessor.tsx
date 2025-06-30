@@ -1,4 +1,3 @@
-
 import { useStatusEntrega } from '@/hooks/useStatusEntrega';
 
 interface EntregaData {
@@ -15,6 +14,26 @@ interface EntregaData {
 
 export function useTimelineDataProcessor() {
   const { carregarStatusCache, statusEntrega } = useStatusEntrega();
+
+  // Paleta ASA refinada
+  const PALETA = {
+    ouro: '#D4AF37',          // ouro ASA
+    azulEscuro: '#003566',    // azul ASA
+    bronze: '#8B5A2B',        // bronze elegante
+    bronzeClaro: '#B8865B',   // bronze claro
+    cinzaEscuro: '#4B5563',   // cinza forte
+    cinzaClaro: '#E5E7EB'     // cinza leve
+  } as const;
+
+  const getTextoCor = (bg: string) => {
+    // contraste simples: se cor é clara usar #000, caso contrário #FFF
+    const c = bg.replace('#','');
+    const r = parseInt(c.substr(0,2),16);
+    const g = parseInt(c.substr(2,2),16);
+    const b = parseInt(c.substr(4,2),16);
+    const luminancia = (0.299*r + 0.587*g + 0.114*b)/255;
+    return luminancia > 0.6 ? '#000000' : '#FFFFFF';
+  };
 
   const coletarEntregasProjeto = (projeto: any): EntregaData[] => {
     const status = projeto.ultimoStatus;
@@ -47,9 +66,9 @@ export function useTimelineDataProcessor() {
         entregaveis: status.entregaveis1,
         projeto: projeto.nome_projeto || 'Projeto',
         tipo: 'marco1',
-        cor: '#A6926B',
-        corTexto: '#FFFFFF',
-        corBorda: '#A6926B',
+        cor: PALETA.ouro,
+        corTexto: getTextoCor(PALETA.ouro),
+        corBorda: PALETA.ouro,
         statusEntregaId: statusEntregaId
       });
     }
@@ -73,9 +92,9 @@ export function useTimelineDataProcessor() {
         entregaveis: status.entregaveis2,
         projeto: projeto.nome_projeto || 'Projeto',
         tipo: 'marco2',
-        cor: '#2E5984',
-        corTexto: '#FFFFFF',
-        corBorda: '#2E5984',
+        cor: PALETA.bronze,
+        corTexto: getTextoCor(PALETA.bronze),
+        corBorda: PALETA.bronze,
         statusEntregaId: statusEntregaId
       });
     }
@@ -99,16 +118,16 @@ export function useTimelineDataProcessor() {
         entregaveis: status.entregaveis3,
         projeto: projeto.nome_projeto || 'Projeto',
         tipo: 'marco3',
-        cor: '#6B7280',
-        corTexto: '#FFFFFF',
-        corBorda: '#6B7280',
+        cor: PALETA.bronzeClaro,
+        corTexto: getTextoCor(PALETA.bronzeClaro),
+        corBorda: PALETA.bronzeClaro,
         statusEntregaId: statusEntregaId
       });
     }
 
     // Extras
     if (status.entregasExtras && Array.isArray(status.entregasExtras)) {
-      const cores = ['#8B5A2B', '#4A5568', '#2D3748', '#1A202C'];
+      const cores = [PALETA.azulEscuro, PALETA.cinzaEscuro, PALETA.ouro, PALETA.bronze, PALETA.bronzeClaro];
       status.entregasExtras.forEach((entregaExtra: any, index: number) => {
         let statusEntregaId = null;
         if (entregaExtra.status_entrega_id !== undefined && entregaExtra.status_entrega_id !== null) {
@@ -126,7 +145,7 @@ export function useTimelineDataProcessor() {
           projeto: projeto.nome_projeto || 'Projeto',
           tipo: `extra${index + 4}`,
           cor: cores[index % cores.length],
-          corTexto: '#FFFFFF',
+          corTexto: getTextoCor(cores[index % cores.length]),
           corBorda: cores[index % cores.length],
           statusEntregaId: statusEntregaId
         });
