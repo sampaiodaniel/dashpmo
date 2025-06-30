@@ -10,6 +10,8 @@ import { ProjetosOverview } from '../asa/ProjetosOverview';
 import { TabelaIncidentes } from '../asa/TabelaIncidentes';
 import { DadosRelatorioASA } from '@/hooks/useRelatorioASA';
 import { formatarData } from '@/utils/dateFormatting';
+import { Badge } from '@/components/ui/badge';
+import { useTiposProjeto } from '@/hooks/useTiposProjeto';
 
 interface DadosRelatorioVisual {
   carteira?: string;
@@ -33,12 +35,23 @@ export function RelatorioVisualContentImpressao({ dados }: RelatorioVisualConten
     return { ...projeto, ultimoStatus };
   }).filter(p => p.ultimoStatus);
 
+  const { data: tiposProjeto = [] } = useTiposProjeto();
+
   const dadosASAFormat: DadosRelatorioASA = {
     carteira: dados.carteira || 'Visual',
     dataRelatorio: dataGeracao.toLocaleDateString('pt-BR'),
     projetos: projetosComStatus,
     incidentes: dados.incidentes,
     resumoCarteira: `Relatório visual executivo contendo ${projetosComStatus.length} projetos ativos`
+  };
+
+  const getRiscoColor = (nivel: string) => {
+    switch (nivel) {
+      case 'Baixo': return 'bg-green-100 text-green-800';
+      case 'Médio': return 'bg-yellow-100 text-yellow-800';
+      case 'Alto': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
   };
 
   return (
@@ -106,6 +119,14 @@ export function RelatorioVisualContentImpressao({ dados }: RelatorioVisualConten
                       <div><span className="text-[#6B7280] font-medium">Chefe do Projeto:</span><div className="font-semibold text-[#1B365D]">{projeto.gp_responsavel || 'Não informado'}</div></div>
                       <div><span className="text-[#6B7280] font-medium">Status Geral:</span><div className="font-semibold text-[#1B365D]">{projeto.ultimoStatus?.status_geral || 'Não informado'}</div></div>
                       <div><span className="text-[#6B7280] font-medium">Progresso:</span><div className="font-semibold text-[#1B365D]">{projeto.ultimoStatus?.progresso_estimado ? `${projeto.ultimoStatus.progresso_estimado}%` : 'Não informado'}</div></div>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mt-4">
+                      <div className="md:col-span-2 col-span-2"><span className="text-[#6B7280] font-medium">Equipe:</span><div className="font-semibold text-[#1B365D]">{projeto.equipe || 'Não informado'}</div></div>
+                      <div><span className="text-[#6B7280] font-medium">Matriz de Risco:</span><div className="mt-0.5"><Badge className={`text-xs ${getRiscoColor(projeto.ultimoStatus?.prob_x_impact)}`}>{projeto.ultimoStatus?.prob_x_impact || '-'}</Badge></div></div>
+                      <div><span className="text-[#6B7280] font-medium">Tipo:</span><div className="font-semibold text-[#1B365D]">{(() => {
+                        const tipo = tiposProjeto.find(t => t.id === projeto.tipo_projeto_id);
+                        return tipo?.nome || 'Não informado';
+                      })()}</div></div>
                     </div>
                   </div>
                 </div>
