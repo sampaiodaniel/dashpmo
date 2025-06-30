@@ -1,6 +1,6 @@
-
 import { useState, useMemo } from 'react';
 import { useLicoes } from './useLicoes';
+import { normalizeText } from '@/utils/textNormalization';
 
 export interface LicoesFilters {
   categoria?: string;
@@ -48,15 +48,15 @@ export function useLicoesFiltradas() {
       );
     }
 
-    // Filtrar por busca
+    // Filtrar por busca (case/acentuação insensitive)
     if (busca) {
-      const termoBusca = busca.toLowerCase();
+      const termoBuscaNorm = normalizeText(busca);
       filtradas = filtradas.filter(licao =>
-        licao.licao_aprendida?.toLowerCase().includes(termoBusca) ||
-        licao.situacao_ocorrida?.toLowerCase().includes(termoBusca) ||
-        licao.acao_recomendada?.toLowerCase().includes(termoBusca) ||
-        licao.tags_busca?.toLowerCase().includes(termoBusca) ||
-        licao.responsavel_registro?.toLowerCase().includes(termoBusca)
+        normalizeText(licao.licao_aprendida).includes(termoBuscaNorm) ||
+        normalizeText(licao.situacao_ocorrida).includes(termoBuscaNorm) ||
+        normalizeText(licao.acao_recomendada).includes(termoBuscaNorm) ||
+        normalizeText(licao.tags_busca).includes(termoBuscaNorm) ||
+        normalizeText(licao.responsavel_registro).includes(termoBuscaNorm)
       );
     }
 

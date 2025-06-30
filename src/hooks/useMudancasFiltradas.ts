@@ -1,6 +1,6 @@
-
 import { useMemo } from 'react';
 import { MudancaReplanejamento } from '@/types/pmo';
+import { normalizeText } from '@/utils/textNormalization';
 
 export interface MudancasFilters {
   statusAprovacao?: string;
@@ -21,11 +21,11 @@ export function useMudancasFiltradas(
 
     // Filtro por termo de busca
     if (termoBusca.trim()) {
-      const termo = termoBusca.toLowerCase().trim();
+      const termo = normalizeText(termoBusca.trim());
       mudancasFiltradas = mudancasFiltradas.filter(mudanca =>
-        mudanca.descricao.toLowerCase().includes(termo) ||
-        mudanca.tipo_mudanca.toLowerCase().includes(termo) ||
-        mudanca.solicitante.toLowerCase().includes(termo)
+        normalizeText(mudanca.descricao).includes(termo) ||
+        normalizeText(mudanca.tipo_mudanca).includes(termo) ||
+        normalizeText(mudanca.solicitante).includes(termo)
       );
     }
 

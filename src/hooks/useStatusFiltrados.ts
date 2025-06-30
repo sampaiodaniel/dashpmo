@@ -1,7 +1,7 @@
-
 import { useMemo } from 'react';
 import { useStatusList } from './useStatusList';
 import { StatusFilters } from '@/components/status/filters/FilterUtils';
+import { normalizeText } from '@/utils/textNormalization';
 
 interface UseStatusFiltradosParams {
   filtros: StatusFilters;
@@ -53,14 +53,16 @@ export function useStatusFiltrados({
       });
     }
 
-    // Filtro por busca
+    // Filtro por busca (case/acentuação insensitive)
     if (termoBusca) {
-      const termo = termoBusca.toLowerCase();
-      statusFiltrados = statusFiltrados.filter(status =>
-        status.projeto?.nome_projeto?.toLowerCase().includes(termo) ||
-        status.status_geral?.toLowerCase().includes(termo) ||
-        status.realizado_semana_atual?.toLowerCase().includes(termo)
-      );
+      const termo = normalizeText(termoBusca);
+      statusFiltrados = statusFiltrados.filter(status => {
+        return (
+          normalizeText(status.projeto?.nome_projeto).includes(termo) ||
+          normalizeText(status.status_geral).includes(termo) ||
+          normalizeText(status.realizado_semana_atual).includes(termo)
+        );
+      });
     }
 
     // Ordenação: "Em Revisão" primeiro, depois por data de atualização decrescente

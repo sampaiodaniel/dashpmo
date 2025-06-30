@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Projeto, FiltrosProjeto, CARTEIRAS } from '@/types/pmo';
+import { normalizeText } from '@/utils/textNormalization';
 
 export function useProjetos(filtros?: FiltrosProjeto) {
   return useQuery({
@@ -47,9 +48,7 @@ export function useProjetos(filtros?: FiltrosProjeto) {
         query = query.eq('gp_responsavel', filtros.gp_responsavel);
       }
 
-      if (filtros?.busca) {
-        query = query.ilike('nome_projeto', `%${filtros.busca}%`);
-      }
+      // Removida filtragem por busca no servidor para permitir acentuação/case insensitive
 
       const { data, error } = await query;
 
@@ -87,7 +86,14 @@ export function useProjetos(filtros?: FiltrosProjeto) {
         };
       }) || []);
 
-      return projetos;
+      // Filtro de busca local (case/acentuação insensitive)
+      let projetosFiltrados = [...projetos];
+      if (filtros?.busca) {
+        const termo = normalizeText(filtros.busca);
+        projetosFiltrados = projetosFiltrados.filter(p => normalizeText(p.nome_projeto).includes(termo));
+      }
+
+      return projetosFiltrados;
     },
     // Configurações melhoradas para evitar problemas de cache
     staleTime: 15 * 1000, // 15 segundos - dados ficam stale mais rápido
